@@ -21,6 +21,40 @@ export class NivelacionParaleloViewRepository extends INivelacionParaleloViewRep
       { replacements: [paraleloGestionId], type: sequelize.QueryTypes.SELECT },
     );
   }
+
+  /**
+   * @returns {Promise<Array<Object>>}
+   */
+  async contarPendientesPorParalelo() {
+    return sequelize.query(
+      `
+      SELECT
+        paralelo_gestion_id,
+        COUNT(DISTINCT estudiante_id) AS total_estudiantes,
+        COUNT(DISTINCT CASE
+          WHEN historial_matricula_id IS NOT NULL THEN estudiante_id
+        END) AS total_pendientes
+      FROM vista_base_nivelacion_paralelo_fila
+      GROUP BY paralelo_gestion_id
+      `,
+      { type: sequelize.QueryTypes.SELECT },
+    );
+  }
+
+  /**
+   * @returns {Promise<Array<Object>>}
+   */
+  async listarNivelacionesPendientes() {
+    return sequelize.query(
+      `
+      SELECT *
+      FROM vista_base_nivelacion_bandeja_fila
+      WHERE nivelacion_estado IN ('PROGRAMADA', 'EN_CURSO')
+      ORDER BY nombre_completo ASC, asignatura_sigla ASC
+      `,
+      { type: sequelize.QueryTypes.SELECT },
+    );
+  }
 }
 
 export default NivelacionParaleloViewRepository;

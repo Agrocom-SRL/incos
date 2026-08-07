@@ -1,5 +1,10 @@
 # Centralizador de notas ↔ Libro de registro (+ hallazgo Nivelación) — plan de desarrollo
 
+> **CERRADO/HECHO — continúa en `docs/plan/calificaciones-centralizador-nivelacion-rediseno.md`.**
+> Este documento no se reabre; el siguiente ciclo (auditoría de la base
+> Calificaciones + hoja de ruta Fases A-E, incluida la decisión de
+> arquitectura Centralizador↔Nivelación) vive en ese archivo nuevo.
+
 > Plan de alineación (2026-08-06), persistido para retomar en sesión nueva sin
 > depender de la memoria de la conversación. **Alcance decidido con el
 > usuario: "solo alinear y corregir"** — se mantienen "Centralizador de notas"

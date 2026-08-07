@@ -104,6 +104,8 @@ export const ACADEMICO_TOKENS = {
   exportLibroExcelUseCase: 'academico.exportLibroExcelUseCase',
   // Nivelaciones (schema 16 — Fase D)
   listHistorialMatriculaParaleloUseCase: 'academico.listHistorialMatriculaParaleloUseCase',
+  listPendientesNivelacionParaleloUseCase: 'academico.listPendientesNivelacionParaleloUseCase',
+  listNivelacionesPendientesUseCase: 'academico.listNivelacionesPendientesUseCase',
   registrarEventoHistorialMatriculaUseCase:
     'academico.registrarEventoHistorialMatriculaUseCase',
   registrarDecisionAdministrativaUseCase: 'academico.registrarDecisionAdministrativaUseCase',
@@ -229,6 +231,9 @@ export const ACADEMICO_TOKENS = {
   exportLibroExcelController: 'academico.exportLibroExcelController',
   // Nivelaciones (schema 16 — Fase D)
   listHistorialMatriculaParaleloController: 'academico.listHistorialMatriculaParaleloController',
+  listPendientesNivelacionParaleloController:
+    'academico.listPendientesNivelacionParaleloController',
+  listNivelacionesPendientesController: 'academico.listNivelacionesPendientesController',
   registrarEventoHistorialMatriculaController:
     'academico.registrarEventoHistorialMatriculaController',
   registrarDecisionAdministrativaController:

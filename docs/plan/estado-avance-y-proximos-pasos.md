@@ -325,11 +325,22 @@ Documentos fuente reales a revisar:
   iteraciones hechas.
 - `docs/plan/capacitacion-plan-desarrollo.md` — módulo CAP, ya completo
   (código + BD), sin relación con el trabajo pendiente de arriba.
-- `docs/plan/centralizador-nivelacion-plan-desarrollo.md` — alineación
-  Centralizador↔Libros HECHA (bug de veredicto aprobado/reprobado en el
-  Libro corregido, badge P3, leyenda NP); más el hallazgo "Nivelación"
-  (schema 16 ya diseñado, sin application/presentation) documentado como
-  iniciativa separada pendiente, sin relación con el trabajo pendiente de arriba.
+- `docs/plan/centralizador-nivelacion-plan-desarrollo.md` — CERRADO/HECHO:
+  alineación Centralizador↔Libros (bug de veredicto aprobado/reprobado en el
+  Libro corregido, badge P3, leyenda NP). No reabrir — continúa en el
+  siguiente documento.
+- `docs/plan/calificaciones-centralizador-nivelacion-rediseno.md` — auditoría
+  base (Calificaciones/cuaderno, abrir-cerrar-reabrir bimestre, boletín
+  estudiante, Nivelación/Traspasos/Transitabilidad) + hoja de ruta por etapas
+  (Fases A-E). **Fase A HECHA** (tercer consumidor divergente de nota final
+  en `GetRegistroNotasCursoUseCase.js` corregido; ⛔ pendiente BD: recrear
+  vista 116). Fases B-E pendientes. Decisión de arquitectura CONFIRMADA:
+  Centralizador y Nivelación quedan SEPARADOS.
+- `docs/plan/centralizador-nivelacion-frontend-diseno.md` — diseño frontend
+  (Parte A: ajustes de Centralizador — carrera-tabs, quitar export directo,
+  banda visual del folio en P3, catálogo fijo de verdicto, baja de menús
+  Traspasos/Transitabilidad; Parte B: 3 pantallas nuevas de Nivelación,
+  BLOQUEADA hasta que exista el backend de la Fase D de arriba).
 - `docs/referencia/matriz-permisos-sistema.md` — changelog acumulado de
   todos los permisos tocados esta sesión.
 

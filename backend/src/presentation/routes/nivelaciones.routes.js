@@ -34,7 +34,17 @@ export function buildNivelacionesRouter({ controllers, middlewares }) {
     verificarPermiso('academico.nivelacion.aprobar', 'APROBAR'),
   ];
 
-  /** GET /?paraleloGestionId=<entero> — historial de nivelaciones del paralelo. */
+  /** GET /pendientes-por-paralelo — conteo para el selector P1 nivel 1 (antes de /?...). */
+  router.get('/pendientes-por-paralelo', ...nivelacionVer, (req, res, next) =>
+    controllers.listPendientesNivelacionParaleloController.handle(req, res, next),
+  );
+
+  /** GET /pendientes — bandeja plana PROGRAMADA/EN_CURSO cruzando paralelos (B3). */
+  router.get('/pendientes', ...nivelacionAprobar, (req, res, next) =>
+    controllers.listNivelacionesPendientesController.handle(req, res, next),
+  );
+
+  /** GET /?paraleloGestionId=<entero> — grilla de nivelaciones del paralelo. */
   router.get(
     '/',
     ...nivelacionVer,
