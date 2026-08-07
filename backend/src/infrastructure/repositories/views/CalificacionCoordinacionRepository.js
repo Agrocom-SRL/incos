@@ -190,6 +190,7 @@ export class CalificacionCoordinacionRepository extends ICalificacionCoordinacio
         nombre_completo,
         matricula_materia_id,
         nota_final,
+        estado_materia,
         bimestre,
         nota_teorico,
         nota_practico,

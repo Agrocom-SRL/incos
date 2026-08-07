@@ -7,11 +7,18 @@
  * La exportación de boletines vive en la vista anual (CentralizadorAnualPage).
  */
 
-import { Input, Table } from 'antd';
+import { Select, Table } from 'antd';
+import { VERDICTOS_OBSERVACION_BIMESTRE_OPTIONS } from '@application-academico/centralizador/utils/centralizadorDoc.js';
 import CeldaEstudiante from './CeldaEstudiante.jsx';
 import CabeceraAsignatura from './CabeceraAsignatura.jsx';
 
-const { TextArea } = Input;
+/** Variante de pill por verdicto (lectura), mismo lenguaje que la columna Estado de P2. */
+const OBSERVACION_PILL_VARIANTE = {
+  'APROBADO/A': 'aprobado',
+  'REPROBADO/A': 'reprobado',
+  ABANDONO: 'abandono',
+  'NO SE PRESENTO': 'no-presento',
+};
 
 /** Nota del bimestre activo para una asignatura. */
 const notaBimestre = (nota, bimestre) => {
@@ -47,24 +54,40 @@ const CeldaObservacionBimestre = ({
   onChange,
   onBlur,
 }) => {
+  const texto = valor?.trim();
+
   if (!editable) {
-    const texto = valor?.trim();
+    if (!texto) {
+      return <span className="cal-centralizador-grid__obs-vacio">—</span>;
+    }
+    const variante = OBSERVACION_PILL_VARIANTE[texto];
+    if (!variante) {
+      return <span className="cal-centralizador-grid__obs-texto">{texto}</span>;
+    }
     return (
-      <span className="cal-centralizador-grid__obs-texto">
-        {texto || <span className="cal-centralizador-grid__obs-vacio">—</span>}
+      <span
+        className={`cal-centralizador-grid__estado cal-centralizador-grid__estado--${variante}`}
+      >
+        {texto}
       </span>
     );
   }
 
   return (
-    <TextArea
-      className="cal-centralizador-grid__obs-input"
-      value={valor ?? ''}
-      onChange={(e) => onChange?.(estudianteId, e.target.value)}
-      onBlur={(e) => onBlur?.(estudianteId, e.target.value)}
+    <Select
+      className="cal-centralizador-grid__obs-select"
+      size="small"
+      value={texto || undefined}
+      options={VERDICTOS_OBSERVACION_BIMESTRE_OPTIONS}
+      onChange={(nuevoValor) => {
+        const valorNormalizado = nuevoValor ?? null;
+        onChange?.(estudianteId, valorNormalizado);
+        onBlur?.(estudianteId, valorNormalizado);
+      }}
+      allowClear
       placeholder="Observación del bimestre…"
-      autoSize={{ minRows: 2, maxRows: 4 }}
-      maxLength={2000}
+      style={{ width: '100%' }}
+      popupMatchSelectWidth={false}
       aria-label="Observaciones del bimestre"
     />
   );

@@ -159,6 +159,8 @@ router.use('/avance-academico', container.resolve(ACADEMICO_TOKENS.avanceAcademi
 router.use('/desercion', container.resolve(ACADEMICO_TOKENS.desercionRouter));
 // Libros de registro del centralizador (ACA, schema 25 — Fase 4)
 router.use('/libros', container.resolve(ACADEMICO_TOKENS.librosRouter));
+// Nivelaciones (ACA, schema 16 — Fase D)
+router.use('/nivelaciones', container.resolve(ACADEMICO_TOKENS.nivelacionesRouter));
 router.use('/asignacion-horarios', container.resolve(ACADEMICO_TOKENS.asignacionHorariosRouter));
 router.use('/conflictos', container.resolve(ACADEMICO_TOKENS.conflictosRouter));
 router.use('/horarios/docentes', container.resolve(ACADEMICO_TOKENS.horariosDocenteRouter));

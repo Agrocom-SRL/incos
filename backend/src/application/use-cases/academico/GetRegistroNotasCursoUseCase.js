@@ -7,6 +7,8 @@ import {
 } from '../../utils/cuadernoNotasCalculo.js';
 import { obtenerCuotasDesdePolitica } from '../../utils/obtenerCuotasDesdePolitica.js';
 import { sincronizarNotasAsistenciaBimestre } from '../../utils/sincronizarNotasAsistenciaBimestre.js';
+import { calcularVeredictoMateria } from './libros/helpers/folioCeldasHelper.js';
+import { ESTADOS_ACADEMICOS_FOLIO } from '../../../domain/constants/libros.constants.js';
 
 const BIMESTRES_TOTAL = 4;
 
@@ -24,27 +26,28 @@ const agruparEstudiantes = (filas, notaMinima, pesosBimestres) => {
         nombre: row.nombre_completo ?? '',
         matriculaMateriaId: row.matricula_materia_id,
         notaFinal: redondear(row.nota_final),
+        estadoMateria: row.estado_materia ?? null,
         recuperatorio: null,
         bimestresPorNumero: new Map()
       });
     }
     const est = map.get(id);
     const num = Number(row.bimestre);
-    if (!Number.isFinite(num) || num < 1 || num > 4) continue;
+    if (Number.isFinite(num) && num >= 1 && num <= 4) {
+      const teorico = redondear(row.nota_teorico);
+      const practico = redondear(row.nota_practico);
+      const notaBimestre = redondear(row.nota_bimestre);
 
-    const teorico = redondear(row.nota_teorico);
-    const practico = redondear(row.nota_practico);
-    const notaBimestre = redondear(row.nota_bimestre);
+      const suma = notaBimestre != null ? notaBimestre : calcularNotaBimestre(teorico, practico);
 
-    const suma = notaBimestre != null ? notaBimestre : calcularNotaBimestre(teorico, practico);
-
-    est.bimestresPorNumero.set(num, {
-      numero: num,
-      teorico,
-      practico,
-      suma,
-      estado: row.estado_bimestre ?? null
-    });
+      est.bimestresPorNumero.set(num, {
+        numero: num,
+        teorico,
+        practico,
+        suma,
+        estado: row.estado_bimestre ?? null
+      });
+    }
   }
 
   const lista = [...map.values()];
@@ -66,16 +69,28 @@ const agruparEstudiantes = (filas, notaMinima, pesosBimestres) => {
       );
     });
 
-    const { notaFinal, gestionCompleta } = calcularNotaFinalGestion(
+    // gestionCompleta (¿están los 4 bimestres cargados?) sigue viniendo de
+    // calcularNotaFinalGestion — eso no cambia. El veredicto YA NO se
+    // recalcula aquí: notaFinal es el caché real (est.notaFinal, ya leído de
+    // matriculas_materia.nota_final) y observacion sale de
+    // calcularVeredictoMateria (misma función que usan Centralizador y el
+    // folio del Libro), para que las tres pantallas coincidan siempre.
+    const { gestionCompleta } = calcularNotaFinalGestion(
       bimestres.map((b) => ({ numero: b.numero, nota: b.suma })),
       pesosBimestres
     );
-    const observacion =
-      gestionCompleta && notaFinal != null
-        ? notaFinal >= notaMinima
-          ? 'APROBADO'
-          : 'REPROBADO'
-        : null;
+    let observacion = null;
+    if (gestionCompleta) {
+      const veredicto = calcularVeredictoMateria(
+        { nota_final: est.notaFinal, estado: est.estadoMateria },
+        notaMinima
+      );
+      observacion =
+        veredicto === ESTADOS_ACADEMICOS_FOLIO.APROBADO ||
+        veredicto === ESTADOS_ACADEMICOS_FOLIO.REPROBADO
+          ? veredicto
+          : null;
+    }
     return {
       nro: index + 1,
       id: est.id,
@@ -83,7 +98,7 @@ const agruparEstudiantes = (filas, notaMinima, pesosBimestres) => {
       cedula: est.cedula,
       nombre: est.nombre,
       bimestres,
-      notaFinal,
+      notaFinal: est.notaFinal,
       recuperatorio: est.recuperatorio,
       observacion
     };
@@ -200,12 +215,10 @@ export class GetRegistroNotasCursoUseCase {
 
     // Bimestres REABIERTO por curso (misma señal que GET cuaderno / assertBimestreEditable).
     const bimestresReabiertos = new Set();
+    const bimesterRepo = this.subjectEnrollmentBimesterRepository;
     for (let numero = 1; numero <= BIMESTRES_TOTAL; numero += 1) {
       // eslint-disable-next-line no-await-in-loop
-      const reabiertos = await this.subjectEnrollmentBimesterRepository.contarBimestreReabiertoCurso(
-        asignacionIdNum,
-        numero,
-      );
+      const reabiertos = await bimesterRepo.contarBimestreReabiertoCurso(asignacionIdNum, numero);
       if (reabiertos > 0) {
         bimestresReabiertos.add(numero);
       }
@@ -236,16 +249,18 @@ export class GetRegistroNotasCursoUseCase {
       estudiantes: estudiantes.length
     });
 
+    let gestionVigente = null;
+    if (ctx.gestion_nombre != null) {
+      gestionVigente = String(ctx.gestion_nombre);
+    } else if (ctx.gestion_anio != null) {
+      gestionVigente = String(ctx.gestion_anio);
+    }
+
     return {
       docente: {
         id: docenteRow?.docente_id ?? docenteIdAsignacion,
         nombre: docenteRow?.docente_nombre ?? '',
-        gestionVigente:
-          ctx.gestion_nombre != null
-            ? String(ctx.gestion_nombre)
-            : ctx.gestion_anio != null
-              ? String(ctx.gestion_anio)
-              : null,
+        gestionVigente,
         bimestreVigente,
         bimestreNombre: ctx.bimestre_nombre ?? null,
         notaMinimaAprobacion,

@@ -272,6 +272,18 @@
   border-color: var(--cuaderno-borde);
 }
 
+.cal-centralizador-grid__estado--abandono {
+  color: var(--ant-color-warning, #d46b08);
+  background: color-mix(in srgb, var(--ant-color-warning, #d46b08) 12%, transparent);
+  border-color: color-mix(in srgb, var(--ant-color-warning, #d46b08) 32%, transparent);
+}
+
+.cal-centralizador-grid__estado--no-presento {
+  color: var(--cuaderno-texto-medio);
+  background: var(--cuaderno-fondo);
+  border-color: var(--cuaderno-borde);
+}
+
 /* —— Separador visual por folio (10 estudiantes por hoja del Libro de
    registro): borde superior más marcado en la primera fila de cada folio +
    etiqueta "FOLIO N°" sobre el nombre del estudiante. Solo aparece cuando el
@@ -424,11 +436,9 @@
   vertical-align: top !important;
 }
 
-.cal-centralizador-grid__obs-input {
+.cal-centralizador-grid__obs-select {
   font-size: 12px;
-  line-height: 1.4;
-  resize: vertical;
-  min-height: 52px;
+  width: 100%;
 }
 
 .cal-centralizador-grid__obs-texto {

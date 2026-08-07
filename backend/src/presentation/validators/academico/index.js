@@ -48,6 +48,13 @@ export {
   generarFoliosGestionValidator,
 } from './libros.validator.js';
 export {
+  listHistorialMatriculaParaleloValidator,
+  registrarEventoHistorialMatriculaValidator,
+  registrarDecisionAdministrativaValidator,
+  programarNivelacionValidator,
+  registrarResultadoNivelacionValidator,
+} from './nivelaciones.validator.js';
+export {
   estudianteIdParamValidator,
   listAlertasRiesgoValidator,
   alertaEstudianteValidator,

@@ -21,6 +21,7 @@ import { registerAsistenciaResource } from './asistencia.container.js';
 import { registerAvanceResource } from './avance.container.js';
 import { registerLicenciasResource } from './licencias.container.js';
 import { registerLibrosResource } from './libros.container.js';
+import { registerNivelacionesResource } from './nivelaciones.container.js';
 import { registerHorariosResource } from './horarios.container.js';
 import { registerAcompanamientoResource } from './acompanamiento.container.js';
 
@@ -41,6 +42,7 @@ export function registerAcademicoModule(container) {
     registerAvanceResource(container);
     registerLicenciasResource(container);
     registerLibrosResource(container);
+    registerNivelacionesResource(container);
     // Acompañamiento pedagógico (reclasificado desde el módulo Titulación/TUT
     // el 2026-07-31: sus datos se derivan de asignaciones_docentes/vistas del
     // centralizador, sin FK a proyectos_grado/modalidades_grado).

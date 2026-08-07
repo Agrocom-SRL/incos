@@ -102,6 +102,13 @@ export const ACADEMICO_TOKENS = {
   cambiarEstadoFolioUseCase: 'academico.cambiarEstadoFolioUseCase',
   editarFolioEstudianteUseCase: 'academico.editarFolioEstudianteUseCase',
   exportLibroExcelUseCase: 'academico.exportLibroExcelUseCase',
+  // Nivelaciones (schema 16 — Fase D)
+  listHistorialMatriculaParaleloUseCase: 'academico.listHistorialMatriculaParaleloUseCase',
+  registrarEventoHistorialMatriculaUseCase:
+    'academico.registrarEventoHistorialMatriculaUseCase',
+  registrarDecisionAdministrativaUseCase: 'academico.registrarDecisionAdministrativaUseCase',
+  programarNivelacionUseCase: 'academico.programarNivelacionUseCase',
+  registrarResultadoNivelacionUseCase: 'academico.registrarResultadoNivelacionUseCase',
   exportCentralizadorAnualParaleloExcelUseCase:
     'academico.exportCentralizadorAnualParaleloExcelUseCase',
 
@@ -220,6 +227,14 @@ export const ACADEMICO_TOKENS = {
   cambiarEstadoFolioController: 'academico.cambiarEstadoFolioController',
   editarFolioEstudianteController: 'academico.editarFolioEstudianteController',
   exportLibroExcelController: 'academico.exportLibroExcelController',
+  // Nivelaciones (schema 16 — Fase D)
+  listHistorialMatriculaParaleloController: 'academico.listHistorialMatriculaParaleloController',
+  registrarEventoHistorialMatriculaController:
+    'academico.registrarEventoHistorialMatriculaController',
+  registrarDecisionAdministrativaController:
+    'academico.registrarDecisionAdministrativaController',
+  programarNivelacionController: 'academico.programarNivelacionController',
+  registrarResultadoNivelacionController: 'academico.registrarResultadoNivelacionController',
   exportCentralizadorAnualParaleloController:
     'academico.exportCentralizadorAnualParaleloController',
 
@@ -321,5 +336,6 @@ export const ACADEMICO_TOKENS = {
   avanceAcademicoRouter: 'academico.avanceAcademicoRouter',
   desercionRouter: 'academico.desercionRouter',
   librosRouter: 'academico.librosRouter',
+  nivelacionesRouter: 'academico.nivelacionesRouter',
   acompanamientoRouter: 'academico.acompanamientoRouter'
 };

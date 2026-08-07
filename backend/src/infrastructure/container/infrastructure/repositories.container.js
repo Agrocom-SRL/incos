@@ -139,6 +139,7 @@ import { HistorialAcademicoRepository } from '../../repositories/views/Historial
 import { GestionBimestresRepository } from '../../repositories/GestionBimestresRepository.js';
 import { CronogramaGestionRepository } from '../../repositories/views/CronogramaGestionRepository.js';
 import { LevelingRepository } from '../../repositories/LevelingRepository.js';
+import { NivelacionParaleloViewRepository } from '../../repositories/views/NivelacionParaleloViewRepository.js';
 import { AttendanceRepository } from '../../repositories/AttendanceRepository.js';
 import { MissedClassRepository } from '../../repositories/MissedClassRepository.js';
 import { SesionClaseRepository } from '../../repositories/SesionClaseRepository.js';
@@ -401,6 +402,11 @@ export function registerRepositoriesModule(container) {
     // NIVELACIONES
     // ============================================
     registerRepository(container, REPOSITORIOS_TOKENS.levelingRepository, LevelingRepository);
+    registerRepository(
+      container,
+      REPOSITORIOS_TOKENS.nivelacionParaleloViewRepository,
+      NivelacionParaleloViewRepository,
+    );
 
     // ============================================
     // ASISTENCIAS

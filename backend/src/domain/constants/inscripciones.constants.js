@@ -88,3 +88,26 @@ export const TIPOS_ESTADO_HISTORIAL_MATRICULA = Object.freeze({
 export const TIPOS_ESTADO_HISTORIAL_MATRICULA_VALUES = Object.freeze(
     Object.values(TIPOS_ESTADO_HISTORIAL_MATRICULA)
 );
+
+/**
+ * Subconjunto "intento académico" de TIPOS_ESTADO_HISTORIAL_MATRICULA (examen
+ * de nivelación/recuperatorio — ver SubjectEnrollmentHistory.isAcademicAttempt()).
+ * Usado por ProgramarNivelacionUseCase y su validador HTTP.
+ */
+export const TIPOS_INTENTO_ACADEMICO_VALUES = Object.freeze([
+    TIPOS_ESTADO_HISTORIAL_MATRICULA.NIVELACION_1RA,
+    TIPOS_ESTADO_HISTORIAL_MATRICULA.NIVELACION_2DA,
+    TIPOS_ESTADO_HISTORIAL_MATRICULA.PRUEBA_EXCEPCIONAL,
+    TIPOS_ESTADO_HISTORIAL_MATRICULA.RECUPERATORIO_ANUAL,
+    TIPOS_ESTADO_HISTORIAL_MATRICULA.ARTICULO_18,
+]);
+
+/**
+ * Subconjunto "decisión administrativa" (ABANDONO/RETIRADO — ver
+ * SubjectEnrollmentHistory.isAdministrativeGradeState()). Usado por
+ * RegistrarDecisionAdministrativaUseCase y su validador HTTP.
+ */
+export const TIPOS_DECISION_ADMINISTRATIVA_VALUES = Object.freeze([
+    TIPOS_ESTADO_HISTORIAL_MATRICULA.ABANDONO,
+    TIPOS_ESTADO_HISTORIAL_MATRICULA.RETIRADO,
+]);

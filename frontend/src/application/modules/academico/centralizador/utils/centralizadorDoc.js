@@ -49,4 +49,23 @@ export const BIMESTRE_COLORES = ['#2196F3', '#FF9800', '#9C27B0', '#F44336'];
 /** Color hex del bimestre por número (1..4); null si fuera de rango. */
 export const colorBimestre = (numero) => BIMESTRE_COLORES[Number(numero) - 1] ?? null;
 
+/**
+ * Catálogo fijo del verdicto de "Observación del bimestre" (P3,
+ * `CentralizadorGrid.jsx`). Espejo de
+ * `backend/src/domain/constants/evaluaciones.constants.js`
+ * (`VERDICTOS_OBSERVACION_BIMESTRE`) — mismos literales que ya usan los
+ * exports Excel de Consolidado/Planilla y el documento oficial impreso.
+ */
+export const VERDICTOS_OBSERVACION_BIMESTRE = {
+  APROBADO: 'APROBADO/A',
+  REPROBADO: 'REPROBADO/A',
+  ABANDONO: 'ABANDONO',
+  NO_SE_PRESENTO: 'NO SE PRESENTO',
+};
+
+/** Opciones para el `Select` de la columna Observación del bimestre. */
+export const VERDICTOS_OBSERVACION_BIMESTRE_OPTIONS = Object.values(
+  VERDICTOS_OBSERVACION_BIMESTRE,
+).map((valor) => ({ value: valor, label: valor }));
+
 export default CENTRALIZADOR_DOC;

@@ -84,6 +84,7 @@ export function toFolioDTO(row) {
     totalAprobados: Number(row.total_aprobados ?? 0),
     totalReprobados: Number(row.total_reprobados ?? 0),
     totalAbandonos: Number(row.total_abandonos ?? 0),
+    totalCursando: Number(row.total_cursando ?? 0),
   };
 }
 

@@ -149,14 +149,20 @@ export class GetCentralizadorParaleloUseCase {
       // la observación — mostrar un número aquí induciría a leerlo como
       // definitivo cuando en realidad es un cálculo parcial sobre bimestres
       // sin cargar (bug histórico ya corregido: antes solo se gateaba 'observacion').
+      // ABANDONO es la excepción: `calcularVeredictoMateria` lo decide por
+      // `row.estado` (retiro real), no por bimestres cargados — un estudiante
+      // en abandono nunca completa los 4 bimestres, así que gatearlo detrás de
+      // `gestionCompleta` lo escondía siempre (Fase B, hallazgo relacionado).
+      const veredicto = calcularVeredictoMateria(row, notaMinimaAprobacion);
       let observacion = null;
-      if (gestionCompleta) {
-        const veredicto = calcularVeredictoMateria(row, notaMinimaAprobacion);
-        observacion =
-          veredicto === ESTADOS_ACADEMICOS_FOLIO.APROBADO ||
-          veredicto === ESTADOS_ACADEMICOS_FOLIO.REPROBADO
-            ? veredicto
-            : null;
+      if (veredicto === ESTADOS_ACADEMICOS_FOLIO.ABANDONO) {
+        observacion = veredicto;
+      } else if (
+        gestionCompleta &&
+        (veredicto === ESTADOS_ACADEMICOS_FOLIO.APROBADO ||
+          veredicto === ESTADOS_ACADEMICOS_FOLIO.REPROBADO)
+      ) {
+        observacion = veredicto;
       }
 
       estudiante.notas[ofertaCursoId] = {
@@ -184,21 +190,20 @@ export class GetCentralizadorParaleloUseCase {
     );
 
     // Observaciones del bimestre (bimestres_matricula.observaciones), una por estudiante.
-    if (this.subjectEnrollmentBimesterRepository) {
-      const obsRows =
-        await this.subjectEnrollmentBimesterRepository.listarObservacionesBimestrePorParaleloGestion(
-          pgId,
-        );
+    const bimesterRepo = this.subjectEnrollmentBimesterRepository;
+    if (bimesterRepo) {
+      const obsRows = await bimesterRepo.listarObservacionesBimestrePorParaleloGestion(pgId);
       const obsPorEstudiante = new Map();
       for (const row of obsRows ?? []) {
         const estId = Number(row.estudiante_id);
         const bim = Number(row.bimestre);
-        if (!Number.isFinite(estId) || !Number.isFinite(bim)) continue;
-        if (!obsPorEstudiante.has(estId)) {
-          obsPorEstudiante.set(estId, { 1: null, 2: null, 3: null, 4: null });
+        if (Number.isFinite(estId) && Number.isFinite(bim)) {
+          if (!obsPorEstudiante.has(estId)) {
+            obsPorEstudiante.set(estId, { 1: null, 2: null, 3: null, 4: null });
+          }
+          const texto = row.observacion != null ? String(row.observacion).trim() : '';
+          obsPorEstudiante.get(estId)[bim] = texto || null;
         }
-        const texto = row.observacion != null ? String(row.observacion).trim() : '';
-        obsPorEstudiante.get(estId)[bim] = texto || null;
       }
       for (const est of estudiantes) {
         est.observacionesBimestre = obsPorEstudiante.get(est.estudianteId) ?? {
