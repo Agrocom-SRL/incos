@@ -102,7 +102,18 @@ SELECT
       AND fe.deleted_at IS NULL
       AND fe.activo = TRUE
       AND fe.estado_academico = 'ABANDONO'
-  ) AS total_abandonos
+  ) AS total_abandonos,
+  -- Pendientes: estudiante con alguna materia sin nota_final (CURSANDO en
+  -- derivarEstadoAcademico). No entra en ningún bucket aprobado/reprobado/
+  -- abandono de arriba — sin esta columna quedaba oculto (Fase C2, 2026-08-06).
+  (
+    SELECT COUNT(*)
+    FROM folio_estudiantes fe
+    WHERE fe.folio_id = fl.id
+      AND fe.deleted_at IS NULL
+      AND fe.activo = TRUE
+      AND fe.estado_academico = 'CURSANDO'
+  ) AS total_cursando
 FROM folios_libro fl
 INNER JOIN libros_registro lr
   ON lr.id = fl.libro_id

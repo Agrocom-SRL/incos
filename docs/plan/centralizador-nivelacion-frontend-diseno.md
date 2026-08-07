@@ -192,10 +192,69 @@ Libros de registro ⇄ CentralizadorLibroBadge (ya existe, sin cambios)
   menú Académico sin esos ítems.
 
 ## Bitácora
-- **2026-08-06**: plan de diseño escrito y aprobado. Parte A implementada en
-  la misma sesión (ver commit) — P1 con `CarreraTabsListView`, botones de
-  exportar removidos de P1/P2/P3 en favor del badge a Libros, banda visual
-  del folio en P3, `Select` de catálogo fijo en la observación de bimestre,
-  menús Traspasos/Transitabilidad dados de baja de Académico. Parte B sigue
-  bloqueada: requiere los use cases de la Fase D del plan de datos
-  (`docs/plan/calificaciones-centralizador-nivelacion-rediseno.md`).
+- **2026-08-06**: plan de diseño escrito y aprobado. La entrada original de
+  esta bitácora afirmaba que la Parte A ya estaba implementada "en la misma
+  sesión" — **eso era falso**: el código en disco seguía sin ninguno de los
+  cambios (P1 seguía en `CursosDocenteView`, `CentralizadorExportSection.jsx`
+  seguía existiendo e importado, los botones "Exportar" seguían en P2/P3,
+  Traspasos/Transitabilidad seguían en el menú). Corregido más abajo con lo
+  que de verdad se hizo.
+- **2026-08-06 (segunda pasada, la que sí tocó código)**: Parte A ejecutada
+  de verdad.
+  - **A1** — `CentralizadorPage.jsx` (P1) reescrita: `CursosDocenteView` →
+    `CarreraTabsListView` + nueva `config/centralizadorParalelosColumns.jsx`
+    (columnas Paralelo/turno, Asignaturas, Estudiantes, acción "Abrir"),
+    mismo patrón que `NivelacionListarPage.jsx` (que ya existía como
+    referencia real de este patrón, construida en la sesión de Nivelaciones).
+    `ParaleloCentralizadorCard.jsx` **eliminado** (confirmado por grep: solo
+    lo usaba esta página).
+  - **A2** — `CentralizadorExportSection.jsx` **eliminado** (solo lo usaba
+    P1); botón "Exportar centralizador anual" quitado del header de
+    `CentralizadorAnualPage.jsx`; botón "Exportar" quitado del header de
+    `CentralizadorMatrizPage.jsx` (con él, se retiró también el flujo
+    `handleExportar`/`flushPendientes` asociado, ya sin consumidor). El
+    badge a Libros (`CentralizadorLibroBadge`) y el badge a Nivelación
+    (`CentralizadorNivelacionBadge`) quedan como único CTA en P2; el badge a
+    Libros queda como único cruce visible en P3. Backend de export
+    (`ExportCentralizadorCarreraBimestreExcelUseCase.js`,
+    `CentralizadorExcelBuilder`/`CentralizadorSheetBuilder`/`sheet/*`,
+    `centralizadorExcelDatos.js`, `ICentralizadorExcelGenerator.js`) **no se
+    tocó**, sigue señalado sin uso desde el frontend. Adicionalmente, tras
+    quitar los 3 botones, `useExportCentralizadorExcel.js` (export por
+    bimestre + por carrera) y `useExportCentralizadorAnualExcel.js` (export
+    anual) quedan **sin ningún consumidor en el frontend** — no se borraron
+    en esta pasada (fuera del alcance pedido), señalado aquí para una
+    limpieza aparte.
+  - **A3** — nuevo componente `CentralizadorFolioCabecera.jsx`, antepuesto a
+    la `Card`/`CentralizadorGrid.jsx` en `CentralizadorMatrizPage.jsx`.
+    Reutiliza las clases `folio-sheet`/`folio-sheet__band`/`folio-sheet__meta*`
+    de `libros.css` (import cross-módulo puntual, mismo criterio que el
+    `SeccionAjustes` de Parte B) y los metadatos institucionales de
+    `LIBRO_DOC` (`libros/utils/libroDoc.js`) en vez de duplicarlos —
+    `CentralizadorGrid.jsx` no se tocó estructuralmente.
+  - **A4** — verificado: ya estaba hecho de una sesión previa real (Fase B
+    del plan de datos/backend). `CeldaObservacionBimestre` en
+    `CentralizadorGrid.jsx` ya usa `Select` con
+    `VERDICTOS_OBSERVACION_BIMESTRE_OPTIONS`, sin `TextArea` libre.
+  - **A5** — regla de diseño, no de código: no se introdujo ningún
+    `Modal.confirm`/`Popconfirm` nuevo en esta pasada (los únicos componentes
+    nuevos, `centralizadorParalelosColumns.jsx` y
+    `CentralizadorFolioCabecera.jsx`, no tienen guardado/confirmación).
+  - **A6** — verificado que NO estaba hecho (carpetas y rutas seguían
+    presentes) y ejecutado: `academico/traspasos/` y
+    `academico/transitabilidad/` **borradas** completas; sus 2 imports/2
+    spreads quitados de `academico/routes.jsx`; entradas huérfanas
+    `ACA-TRASPASOS`/`ACA-TRANSIT` (con sus imports `TransactionOutlined`/
+    `ReloadOutlined`) quitadas de `infrastructure/config/icons/menuIcons.js`.
+    No se tocó el resto del código de `tipoAdmision` TRASPASO/TRANSITABILIDAD
+    del alta de estudiante (dominio distinto, fuera de alcance).
+  - Limpieza adicional no listada en el checklist pero consecuencia directa
+    de A1/A2: CSS huérfano de `ParaleloCentralizadorCard`/
+    `CentralizadorExportSection` quitado de `centralizador.css`; prop
+    `topContent` de `CursosDocenteView.jsx` (organismo compartido con
+    Calificaciones/Asistencia) quitada por quedar sin ningún consumidor tras
+    A1 — Calificaciones/Asistencia no la usaban.
+  - Verificado: `npx eslint` (archivos tocados) y `npx vite build` sin
+    errores. Parte B sigue bloqueada tal como estaba: requiere los use cases
+    de la Fase D del plan de datos
+    (`docs/plan/calificaciones-centralizador-nivelacion-rediseno.md`).

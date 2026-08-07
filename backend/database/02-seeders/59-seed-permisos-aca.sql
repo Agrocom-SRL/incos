@@ -424,6 +424,14 @@ JOIN permisos p ON p.codigo = g.codigo;
 -- REHABILITADOS — el backend de Avance/Deserción existe (vistas 170-173,
 -- endpoints /avance-academico y /desercion); la página con tabs es la
 -- iteración frontend siguiente. `academico.desercion` nace activo.
+-- 2026-08-07 (Fase D de nivelación construida): `academico.nivelacion.*` y su
+-- grupo `aca_nivelaciones` REHABILITADOS — backend completo (use cases,
+-- vistas 130/135/185/187 pendientes solo de aplicarse en BD) y frontend
+-- completo (`/academico/nivelaciones/{listar,inscribir,aprobar}`, badge
+-- cruzado con Centralizador) ya construidos. Traspasos/Transitabilidad
+-- siguen ocultos: sus menús de Académico fueron dados de baja (la función
+-- migra a una tab de la ficha de Inscripción, sesión aparte, ver
+-- `docs/plan/centralizador-nivelacion-frontend-diseno.md` A6).
 -- Se marca activo=0 y deleted_at = fecha de baja en permisos, sus acciones
 -- (permiso_acciones), sus asignaciones a roles (roles_permisos) y los grupos
 -- de UI. Quedan ocultas para TODOS los roles, incluido ADMIN_SISTEMA, que
@@ -436,10 +444,7 @@ SET @fecha_baja := '2026-06-24 00:00:00';
 UPDATE permisos
 SET activo = 0, deleted_at = @fecha_baja
 WHERE codigo IN (
-  -- Nivelaciones
-  'academico.nivelacion.ver',
-  'academico.nivelacion.inscribir',
-  'academico.nivelacion.aprobar',
+  -- Nivelaciones rehabilitado (2026-08-07): pantallas construidas, ver arriba.
   -- Traspasos
   'academico.trazabilidad.traspaso.ver',
   'academico.trazabilidad.traspaso.solicitar',
@@ -477,11 +482,11 @@ WHERE p.modulo = 'ACA' AND p.deleted_at IS NOT NULL;
 UPDATE grupos_ui
 SET activo = 0, deleted_at = @fecha_baja
 WHERE codigo IN (
-  'aca_nivelaciones',
   'aca_traspasos',
   'aca_transitabilidad'
   -- 'aca_historial' reactivado (2026-07-02): la pantalla de historial existe.
   -- 'aca_avance' reactivado (2026-07-29): backend Avance/Deserción construido.
+  -- 'aca_nivelaciones' reactivado (2026-08-07): pantallas de Nivelación construidas.
 );
 
 -- ============================================================

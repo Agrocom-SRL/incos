@@ -21,6 +21,12 @@
 -- Uso:
 -- SELECT * FROM vista_base_asignacion_docente_detalle
 -- WHERE docente_id = ? AND gestion_id = ? AND activo = TRUE AND vigente = TRUE;
+--
+-- 2026-08-06 (aditivo, Fase D frontend): se agregó asignatura_plan_id
+-- (oc.asignatura_plan_id, ya estaba en el JOIN, solo faltaba seleccionarlo)
+-- para que la vista 135 y la 185 (Nivelación) puedan matchear un evento de
+-- historial_matricula ANCLADO a una materia arrastrada (sin matrícula) con
+-- la columna correcta del pivote del paralelo actual.
 -- ============================================
 
 USE instituto_incos;
@@ -32,6 +38,7 @@ SELECT
   ad.id AS id,
   ad.gestion_plan_id AS gestion_plan_id,
   ad.oferta_curso_id AS oferta_curso_id,
+  oc.asignatura_plan_id AS asignatura_plan_id,
   pg.id AS paralelo_gestion_id,
   gp.gestion_id AS gestion_id,
   ad.docente_id AS docente_id,

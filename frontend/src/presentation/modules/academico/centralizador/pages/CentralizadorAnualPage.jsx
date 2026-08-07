@@ -14,28 +14,29 @@
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, App, Card, Flex, Spin } from 'antd';
-import { ArrowLeftOutlined, FileExcelOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
-import { ActionButton, BackButton, Button } from '@atoms';
+import { BackButton, Button } from '@atoms';
 import { allSpacing } from '@theme/tokens';
 import {
   useCentralizadorParalelo,
   BIMESTRES_CENTRALIZADOR,
 } from '@application-academico/centralizador/hooks/useCentralizadorParalelo.js';
 import { useExportBoletinEstudiante } from '@application-academico/centralizador/hooks/api/useExportBoletinEstudiante.js';
-import { useExportCentralizadorAnualExcel } from '@application-academico/centralizador/hooks/api/useExportCentralizadorAnualExcel.js';
 import {
   CENTRALIZADOR_PATH,
   centralizadorMatrizPath,
 } from '@application-academico/centralizador/utils/centralizadorPaths.js';
 import { nombreBimestre } from '@application-academico/centralizador/utils/centralizadorDoc.js';
-import { CENTRALIZADOR_PERMISOS } from '@application-academico/centralizador/utils/centralizadorPermisos.js';
 import { LIBROS_LIST_PATH } from '@application-academico/libros/utils/librosPaths.js';
+import { nivelacionParaleloPath } from '@application-academico/nivelaciones/utils/nivelacionPaths.js';
+import { useNivelacionPendientesBadge } from '@application-academico/nivelaciones/hooks/useNivelacionPendientesBadge.js';
 import { sectionCardProps } from '@presentation-utils/cards/sectionCardProps.js';
 import CentralizadorContextoHeader from '../components/CentralizadorContextoHeader.jsx';
 import CentralizadorAnualGrid from '../components/CentralizadorAnualGrid.jsx';
 import CentralizadorLibroBadge from '../components/CentralizadorLibroBadge.jsx';
+import CentralizadorNivelacionBadge from '../components/CentralizadorNivelacionBadge.jsx';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/centralizador.css';
 
@@ -63,25 +64,11 @@ const CentralizadorAnualPage = () => {
   } = useCentralizadorParalelo('ACA-CENTRALIZADOR-ANUAL');
 
   const { exportar: exportarBoletin, descargandoId } = useExportBoletinEstudiante();
-  const { exportar: exportarAnual, loading: exportandoAnual } = useExportCentralizadorAnualExcel();
+  const { totalPendientes: totalPendientesNivelacion } = useNivelacionPendientesBadge(paraleloGestionId);
 
   const abrirBimestre = (n) => navigate(centralizadorMatrizPath(paraleloGestionId, n));
   const abrirLibrosDeRegistro = () => navigate(LIBROS_LIST_PATH);
-
-  const handleExportarAnual = useCallback(async () => {
-    const result = await exportarAnual(paraleloGestionId);
-    if (result.success) {
-      notification.success({
-        title: 'Centralizador anual exportado',
-        description: 'La descarga del Excel se inició correctamente.',
-      });
-    } else {
-      notification.error({
-        title: 'No se pudo exportar el centralizador anual',
-        description: result.error || 'Reintente en unos segundos.',
-      });
-    }
-  }, [exportarAnual, paraleloGestionId, notification]);
+  const abrirNivelacion = () => navigate(nivelacionParaleloPath(paraleloGestionId));
 
   const handleDescargarBoletin = useCallback(
     async (estudianteId) => {
@@ -107,22 +94,6 @@ const CentralizadorAnualPage = () => {
       breadcrumbItems={breadcrumbItems}
       actions={
         <Flex gap={allSpacing.marginSM} wrap="wrap">
-          <ActionButton
-            permiso={CENTRALIZADOR_PERMISOS.centralizador}
-            accion="EXPORTAR"
-            variant="info"
-            icon={<FileExcelOutlined />}
-            loading={exportandoAnual}
-            disabled={isLoading || estudiantes.length === 0 || !libro}
-            onClick={handleExportarAnual}
-            title={
-              libro
-                ? 'Exporta el centralizador anual del paralelo a Excel (una sola hoja, sobre el folio del libro de la gestión)'
-                : 'Genere primero los folios de este paralelo en Libros de registro para habilitar la exportación'
-            }
-          >
-            Exportar centralizador anual
-          </ActionButton>
           <BackButton
             icon={<ArrowLeftOutlined />}
             onClick={() => navigate(CENTRALIZADOR_PATH)}
@@ -182,6 +153,14 @@ const CentralizadorAnualPage = () => {
         <Flex wrap="wrap" gap={allSpacing.marginSM} align="center">
           <span className="cal-centralizador-bim__selector-label">Libro de registro:</span>
           <CentralizadorLibroBadge libro={libro} onAbrirLibros={abrirLibrosDeRegistro} />
+        </Flex>
+
+        <Flex wrap="wrap" gap={allSpacing.marginSM} align="center">
+          <span className="cal-centralizador-bim__selector-label">Nivelación:</span>
+          <CentralizadorNivelacionBadge
+            totalPendientes={totalPendientesNivelacion}
+            onAbrirNivelacion={abrirNivelacion}
+          />
         </Flex>
 
         <Flex wrap="wrap" gap={allSpacing.marginSM} align="center">

@@ -470,6 +470,30 @@ export const LIBROS_ENDPOINTS = {
   EXPORT: (id) => `${API_BASE}/libros/${id}/export`,
 };
 
+/**
+ * Nivelación (Académico · schema 16 · /academico/nivelaciones). Tracking de
+ * materias ARRASTRADAS de gestiones anteriores (`historial_matricula` +
+ * `nivelaciones`). Permisos `academico.nivelacion.{ver,inscribir,aprobar}`
+ * (seed 59, RECTOR/DIR_ACADEMICO — ABANDONO/RETIRADO es SIEMPRE decisión
+ * administrativa, nunca del docente).
+ */
+export const NIVELACIONES_ENDPOINTS = {
+  /** GET — grilla del paralelo (query `paraleloGestionId`) / POST — no aplica. */
+  BASE: `${API_BASE}/nivelaciones`,
+  /** GET — conteo de pendientes por paralelo (selector P1 nivel 1). */
+  PENDIENTES_POR_PARALELO: `${API_BASE}/nivelaciones/pendientes-por-paralelo`,
+  /** GET — bandeja plana PROGRAMADA/EN_CURSO cruzando paralelos (P3). */
+  PENDIENTES: `${API_BASE}/nivelaciones/pendientes`,
+  /** POST — evento genérico de historial_matricula (sin nota). */
+  EVENTOS: `${API_BASE}/nivelaciones/eventos`,
+  /** POST — decisión administrativa ABANDONO/RETIRADO (nota forzada). */
+  DECISIONES_ADMINISTRATIVAS: `${API_BASE}/nivelaciones/decisiones-administrativas`,
+  /** POST — programa un examen de nivelación (crea evento + fila `nivelaciones`). */
+  EXAMENES: `${API_BASE}/nivelaciones/examenes`,
+  /** PATCH — cierra el examen con resultado (nota/estado). */
+  EXAMEN_RESULTADO: (levelingId) => `${API_BASE}/nivelaciones/examenes/${levelingId}/resultado`,
+};
+
 // ============================================
 // MÓDULO: GEOGRÁFICOS
 // ============================================

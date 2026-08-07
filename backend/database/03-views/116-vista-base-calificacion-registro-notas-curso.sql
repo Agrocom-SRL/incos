@@ -17,6 +17,7 @@ SELECT
   emc.nombre AS nombre_completo,
   emc.matricula_materia_id,
   mm.nota_final,
+  mm.estado AS estado_materia,
   rb.bimestre,
   rb.nota_teorico,
   rb.nota_practico,

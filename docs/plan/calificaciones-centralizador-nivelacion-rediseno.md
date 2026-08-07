@@ -7,10 +7,10 @@
 > usuario pidió ir a la BASE del flujo (Calificaciones) en vez de seguir
 > ajustando Centralizador de arriba hacia abajo.
 >
-> **Estado:** ✔ Fases A, B, C2 y D-backend HECHAS (ver bitácora). Fase C
-> (vista 119/110) sigue pendiente. Fase D-frontend (reemplazar los 3
-> `<UnderConstruction />` de nivelaciones) pendiente para una sesión aparte
-> (backend-first). Vista 185 preparada, sin aplicar en BD real.
+> **Estado:** ✔ Fases A, B, C2 y D (backend + frontend) HECHAS (ver bitácora).
+> Fase C (vista 119/110) sigue pendiente. Vistas 130/135/185/187 preparadas,
+> sin aplicar en BD real — Nivelación no mostrará datos reales hasta que se
+> apliquen.
 
 ## Contexto
 
@@ -646,3 +646,115 @@ comportamiento donde no correspondía.
     letra, con Libros (`routes.jsx`+P1→P2) y Configuración
     (`academico/routes.jsx`) como referencia de estilo/arquitectura ya
     revisada.
+- **2026-08-06 (continuación, Fase D frontend ejecutada):** reemplazados los
+  3 `<UnderConstruction />` de `nivelaciones/routes.jsx` por las pantallas
+  reales, siguiendo `centralizador-nivelacion-frontend-diseno.md` Parte B
+  (B0-B4) al pie de la letra, con Libros/Centralizador como referencia de
+  estilo.
+  - **Capa completa nueva**: `NivelacionRepository.js` (7 métodos, unwrap
+    `dataFieldName`) + 7 use cases `domain/useCases/academico/nivelaciones/`
+    + wiring en `academico.container.js` (7 factory methods) +
+    `application/modules/academico/nivelaciones/` (utils: paths/permisos/
+    estados/breadcrumbs/paralelo-normalizer/contexto-querystring; hooks:
+    4 de estado + 4 de mutación en `hooks/api/`, más
+    `useNivelacionPendientesBadge.js` para el badge cruzado) +
+    `presentation/modules/academico/nivelaciones/` (4 páginas, 4
+    connectors, `NivelacionGrid.jsx` + duplicados locales
+    `CabeceraAsignatura`/`CeldaEstudiante`, 2 Drawers, 3 config de columnas,
+    `nivelaciones.css`, `nivelacionDrawerLayout.js` copiado con prefijo
+    `niv-`).
+  - **B1**: nivel 1 (`CarreraTabsListView` + `useParalelosEstadoApi` fusionado
+    con `listarNivelacionesPendientesPorParalelo` por `paraleloGestionId`,
+    sin reconstruir el listado de paralelos) → nivel 2 (`/listar/:id`, nueva
+    ruta `ACA-NIV-GRID`, `menu:null`, mismo permiso `.ver`) con
+    `NivelacionGrid.jsx` (N°/Nómina/[asignaturas], sin columna C.I. — el
+    endpoint no la trae, se omitió en vez de fabricarla) y
+    `CentralizadorContextoHeader.jsx` reutilizado TAL CUAL (cross-import
+    directo, no duplicado, incluida su CSS) tal como pide el documento.
+  - **B2/B3 — decisión de diseño no 100% explícita en el documento**: el
+    Select de tipo de evento de `EventoHistorialDrawer` (B2, permiso
+    `inscribir`·CREAR) EXCLUYE el grupo "decisión administrativa"
+    (ABANDONO/RETIRADO) — esa acción vive únicamente en
+    `ResultadoNivelacionDrawer` (B3, permiso `aprobar`·APROBAR), espejo
+    exacto del gate real del backend (`POST /decisiones-administrativas`
+    exige `aprobar`, no `inscribir`). El documento mencionaba "nota forzada"
+    en el paso 3 de ambos drawers; se resolvió a favor de la coherencia RBAC
+    ruta↔UI↔backend en vez de duplicar la acción en dos permisos distintos.
+  - **Click en StatusPill de la grilla (B1 nivel 2)**: solo celdas CON
+    evento son clicables (conforme al documento). Si el evento tiene
+    nivelación PROGRAMADA/EN_CURSO → `/aprobar?nivelacionId=` (la página
+    busca la fila real, con su `subjectEnrollmentId` si aplica, en la
+    bandeja que ya carga — no duplica contexto por querystring). Si no →
+    `/inscribir?historialMatriculaId=...` en modo SOLO LECTURA: la grilla no
+    expone `subjectEnrollmentId`/`enrollmentId`+`planSubjectId` de la celda
+    (gap real del contrato, no solo del B2 sin contexto), así que no hay
+    ancla para reescribir un evento nuevo desde ahí.
+  - **Gap B2 sin contexto**: la landing por buscador (`useNivelacionSelector`,
+    calcada de `useHistorialSelector`) es 100% funcional para BUSCAR/listar
+    estudiantes (reusa `useEstudiantesApi`/`useBuscarEstudiantesHistorial`,
+    ambos reales), pero seleccionar un estudiante muestra un `Alert`
+    "próximamente" en vez de fabricar materias pendientes — falta el
+    endpoint de materias arrastradas por estudiante (Gap 2, ya documentado
+    arriba). `EventoHistorialDrawer` sí soporta modo `crear` con ancla real
+    vía querystring (`parseCrearEventoContexto`) para cuando ese endpoint
+    exista; hoy no tiene ningún llamador real.
+  - **Badge cruzado bidireccional**: `CentralizadorNivelacionBadge.jsx`
+    (nuevo, en `centralizador/components/`) en `CentralizadorAnualPage.jsx`
+    junto al badge de Libro ya existente, alimentado por
+    `useNivelacionPendientesBadge.js` (llamada propia a
+    `listarNivelacionesPendientesPorParalelo`, ya que
+    `GET /calificaciones/centralizador` no embebe ese conteo y no se tocó
+    el backend). Sentido inverso ya existía como "Ver en Centralizador" en
+    la cabecera de B1 nivel 2.
+  - **Observación fuera de alcance de esta fase**: al revisar
+    `CentralizadorPage.jsx`/`CentralizadorExportSection.jsx` como referencia
+    se detectó que la Parte A de `centralizador-nivelacion-frontend-diseno.md`
+    (P1 con `CarreraTabsListView`, quitar botones de exportar) quedó anotada
+    como HECHA en esa bitácora pero el código en disco todavía usa
+    `CursosDocenteView` y conserva `CentralizadorExportSection.jsx` — no se
+    tocó (fuera del alcance de esta tarea), queda señalado para que el
+    usuario decida si retomarlo.
+  - Verificado: `npx eslint` limpio (0 errores) en todos los archivos nuevos/
+    tocados; `npx vite build` sin errores (4 chunks nuevos de Nivelación +
+    chunk de Centralizador actualizado); smoke E2E con navegador real
+    (Playwright headless, sin instalar nada en el repo): login con el único
+    usuario sembrado (`admin`, ADMIN_SISTEMA) y verificación NEGATIVA de RBAC
+    — las 3 rutas `/academico/nivelaciones/*` redirigen a `/dashboard` sin
+    errores de consola (admin no tiene `academico.nivelacion.*`, coherente
+    con el seed 59: solo RECTOR/DIR_ACADEMICO) y el ítem "Nivelaciones" no
+    aparece en el menú Académico; `GET /nivelaciones/pendientes-por-paralelo`
+    responde 401 sin token y 403 con token de `admin` (`codigo:
+    "academico.nivelacion.ver"`). No se pudo hacer la verificación POSITIVA
+    (pantallas con datos) porque no existe ningún usuario RECTOR/DIR_ACADEMICO
+    sembrado en la BD local y no se creó uno (evita tocar la BD real sin
+    autorización expresa) — pendiente para cuando el usuario cree/indique
+    una credencial con ese rol, o apruebe aplicar las vistas 130/135/185/187
+    y sembrar un usuario de prueba.
+- **2026-08-07 (continuación, RBAC de Nivelación rehabilitado en el seed):**
+  causa raíz de la verificación NEGATIVA anterior confirmada y corregida en
+  `backend/database/02-seeders/59-seed-permisos-aca.sql`: el bloque
+  "DESHABILITACIÓN TEMPORAL · páginas aún no construidas (2026-06-24)" seguía
+  marcando `academico.nivelacion.ver/inscribir/aprobar` y el grupo
+  `aca_nivelaciones` como `activo=0` ("se ocultan hasta que las pantallas
+  existan") — por eso ni siquiera RECTOR/DIR_ACADEMICO habría visto el menú
+  tras sembrar, aunque backend+frontend ya estén completos. Corregido
+  siguiendo EXACTAMENTE el mismo patrón ya usado para rehabilitar
+  `academico.avance`/`aca_avance` (2026-07-29) e `historial.academico`
+  (2026-07-02): se quitaron los 3 códigos de permiso y `aca_nivelaciones` de
+  las listas `WHERE codigo IN (...)` que los desactivan (dejan de perder
+  `activo`/`deleted_at` al re-sembrar), con comentario inline explicando la
+  fecha y el motivo. Traspasos/Transitabilidad **se dejaron intactos**
+  (siguen desactivados) — su baja es definitiva por ahora (A6 del diseño
+  frontend: menús de Académico eliminados, función migra a una tab de
+  Inscripción en sesión aparte), no un "todavía no construido" a revertir.
+  No se tocó la BD real (solo el archivo `.sql` del seeder, sin ejecutarlo).
+  - Verificado: diff acotado a los 3 bloques exactos (comentario de cabecera +
+    2 listas `IN (...)`), sin tocar la cascada de `permiso_acciones`/
+    `roles_permisos` (que ya sigue automáticamente al `deleted_at IS NOT NULL`
+    de `permisos`, sin necesitar cambios propios) ni las asignaciones RECTOR/
+    DIR_ACADEMICO de las líneas 237-244 (ya correctas desde la Fase D).
+  - Pendiente para desbloquear la verificación POSITIVA completa: (1) el
+    usuario re-ejecute el seeder 59 (resiembra ACA completo) contra la BD
+    local; (2) apruebe aplicar las vistas 130/135/176/116/185/187 (siguen
+    como diffs de archivo, no aplicadas); (3) exista o se cree un usuario de
+    prueba con rol RECTOR o DIR_ACADEMICO.

@@ -36,8 +36,6 @@ import {
     CheckCircleOutlined,
     GiftOutlined,
     SyncOutlined,
-    TransactionOutlined,
-    ReloadOutlined,
     HistoryOutlined,
     LineChartOutlined,
     FileTextOutlined,
@@ -91,8 +89,6 @@ export const menuIconMap = {
     'ACA-CENTRALIZADOR': TableOutlined,
     'ACA-LIBROS': ProfileOutlined,
     'ACA-NIV': SyncOutlined,
-    'ACA-TRASPASOS': TransactionOutlined,
-    'ACA-TRANSIT': ReloadOutlined,
     'ACA-HIS': HistoryOutlined,
     'ACA-SEGUIMIENTO': LineChartOutlined,
 
