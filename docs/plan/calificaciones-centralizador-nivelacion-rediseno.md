@@ -7,10 +7,11 @@
 > usuario pidió ir a la BASE del flujo (Calificaciones) en vez de seguir
 > ajustando Centralizador de arriba hacia abajo.
 >
-> **Estado:** ✔ Fases A, B, C2 y D (backend + frontend) HECHAS (ver bitácora).
-> Fase C (vista 119/110) sigue pendiente. Vistas 130/135/185/187 preparadas,
-> sin aplicar en BD real — Nivelación no mostrará datos reales hasta que se
-> apliquen.
+> **Estado:** ✔ Fases A, B, C2, D (backend + frontend) y C HECHAS (ver
+> bitácora). Fase E (verificación cruzada final) sigue pendiente. Vistas
+> 130/135/116/119/176 (modificadas), 185/187/188 (nuevas) preparadas, sin
+> aplicar en BD real — nada de esto mostrará datos reales hasta que se
+> apliquen + se re-siembre el seed 59 (RBAC de Nivelación ya rehabilitado).
 
 ## Contexto
 
@@ -211,7 +212,7 @@ sin tilde, mismo literal que ya usan `ConsolidadoSheetBuilder.js` /
 
 Riesgo: BAJO (B1).
 
-### Fase C — ABANDONO en el boletín bimestral
+### Fase C — ABANDONO en el boletín bimestral ✔ HECHA (rediseñada, ver bitácora)
 - `backend/database/03-views/119-vista-base-calificacion-resumen-curso-bimestre-fila.sql`
   — evaluar ampliar el `WHERE` (hoy excluye ABANDONO/RETIRADO; auditar antes
   qué otros consumidores dependen del filtro restringido).
@@ -758,3 +759,107 @@ comportamiento donde no correspondía.
     local; (2) apruebe aplicar las vistas 130/135/176/116/185/187 (siguen
     como diffs de archivo, no aplicadas); (3) exista o se cree un usuario de
     prueba con rol RECTOR o DIR_ACADEMICO.
+- **2026-08-07 (continuación, Fase C ejecutada — rediseñada, más amplia que
+  el alcance original):** al retomar la Fase C se encontró que el problema
+  real era mucho más grande que "el boletín no muestra ABANDONO": en cuanto
+  `RegistrarDecisionAdministrativaUseCase` (Fase D) escribe
+  `matriculas_materia.estado = ABANDONO/RETIRADO` de verdad (antes del cierre
+  de la Fase D esto era 100% teórico, ningún caso de uso lo hacía), el
+  estudiante desaparecía POR COMPLETO de Centralizador (135) y Consolidado
+  (116) — no solo perdía el texto "ABANDONO" en el boletín — porque ambas
+  vistas heredan de la 110 (`vista_base_calificacion_estudiante_matricula_curso`),
+  restringida a `INSCRITO/CURSANDO`. El folio del Libro también habría
+  perdido la celda "NP" que `folioCeldasHelper.js` ya tenía programada para
+  este caso (comentario propio del helper: "Sin filas... → ABANDONO" — una
+  rama hasta ahora inalcanzable). Diseño confirmado con el usuario antes de
+  codear (ver hoja de ruta de la conversación): mantener la 110 intacta
+  (protege el roster vivo de cuaderno/asistencia) y abrir un camino paralelo
+  para las pantallas de registro/reporte, siguiendo el precedente YA
+  existente en el propio repo: la vista 177 (`vista_base_libro_paralelo_estudiante`)
+  resolvió el mismo problema hace tiempo componiendo las vistas base 04
+  (`vista_base_asignaciones_inscripciones`, sin filtro de estado) + 03
+  (`vista_base_inscripciones_estudiantes`), en vez de duplicar la 110.
+  - **Vista nueva 188** (`vista_base_calificacion_estudiante_matricula_curso_completa`):
+    mismo grano/columnas que la 110, compuesta de 04+03 (reutilización, no
+    vista duplicada), SIN filtro de `mm.estado`. La 110 no se tocó.
+  - **Vistas 135 y 116**: un solo JOIN cambia de fuente (110→188), sin tocar
+    el resto de la cadena. La 116 cierra un gap real de la Fase A que había
+    quedado "muerto": `GetRegistroNotasCursoUseCase` ya sabía calcular el
+    veredicto ABANDONO (`calcularVeredictoMateria`) pero la fila nunca podía
+    llegar a existir mientras `emc` viniera de la 110.
+  - **Vista 119** (`vista_base_calificacion_resumen_curso_bimestre_fila`):
+    se agregó `estado_matricula` (`mm.estado`) y se amplió su propio `WHERE`
+    a incluir ABANDONO/RETIRADO — necesario para NO perder las notas de
+    bimestres YA cargados antes del retiro (el filtro usa el estado ACTUAL
+    de la matrícula, no uno histórico; sin esto, un estudiante retirado en el
+    bimestre 3 también habría perdido sus notas reales de los bimestres 1-2
+    en Consolidado/boletín). Efecto colateral corregido en el mismo cambio:
+    `CalificacionCoordinacionRepository.listarResumenBimestresCursosPorDocente`
+    (KPI "Mis cursos" del docente) ahora excluye explícitamente
+    `estado_matricula NOT IN ('ABANDONO', 'RETIRADO')` en su propio WHERE,
+    para que el tablero del docente no absorba a estos estudiantes en sus
+    totales (mismo patrón que el bucket `total_cursando` de la Fase C2:
+    aditivo en la vista + exclusión explícita en el consumidor agregado que
+    lo necesitaba).
+  - **`boletinPdfDatos.js`** (rama `esBimestral`): cuando el bimestre pedido
+    NO tiene registro real (`tiene_registro=0`, el retiro ocurrió antes de
+    que el docente cargara ese bimestre) Y la matriz ya trae
+    `observacion === 'ABANDONO'` para esa celda (dato que llega gratis desde
+    la 135 ya ensanchada, sin recalcular nada), se muestra "ABANDONO" en vez
+    de dejar el estado en blanco. Un bimestre con nota real ya cargada ANTES
+    del retiro conserva su nota tal cual (no se pisa historia real) — caso
+    verificado explícitamente en el smoke test.
+  - **`CentralizadorAnualGrid.jsx`** (frontend, P2): corregido el bug que la
+    propia bitácora de la Fase B había dejado señalado y sin resolver
+    ("el pill Estado sigue mostrando EN CURSO para un estudiante en abandono
+    real"). Causa: `resumenAnualEstudiante` filtraba las celdas por
+    `notaAnual != null` ANTES de mirar `observacion` (una celda ABANDONO
+    nunca tiene `notaAnual`, así que se descartaba siempre) y además
+    evaluaba `gestionCompleta` antes que el veredicto. Reescrito con la
+    MISMA prioridad que `derivarEstadoAcademico` del folio del Libro
+    (backend, `folioCeldasHelper.js`) para que ambas pantallas emitan
+    siempre el mismo veredicto: REPROBADO > EN CURSO > ABANDONO (todas) >
+    APROBADO. Se agregó la variante `abandono` al pill `CeldaEstado`
+    reutilizando la clase CSS `cal-centralizador-grid__estado--abandono`
+    que la Fase B ya había dejado lista (sin usar) en `centralizador.css`.
+  - Verificado: `npx eslint` limpio (0 errores) en los 2 archivos backend
+    tocados (`CalificacionCoordinacionRepository.js`, `boletinPdfDatos.js`) y
+    en `CentralizadorAnualGrid.jsx`; `npx vite build` sin errores nuevos;
+    balance de paréntesis/comillas verificado en las 4 vistas SQL
+    tocadas/creadas; smoke test aislado de `construirDatosBoletinEstudiante`
+    (3 casos: bimestre con nota real antes del retiro → conserva la nota;
+    bimestre sin registro tras el retiro → ABANDONO; estudiante normal sin
+    registro → sigue en blanco, no inventa ABANDONO); smoke test aislado de
+    `resumenAnualEstudiante` (7 casos: todas aprobadas, una reprobada,
+    gestión incompleta sin abandono, todas abandono —el caso que antes
+    fallaba—, abandono+reprobado, abandono+en curso, sin celdas). No se tocó
+    la BD real: las 4 vistas (135/116/119 modificadas, 188 nueva) quedan
+    como diffs/archivo nuevo, pendientes de aprobación explícita para
+    aplicarse junto con las de la Fase D.
+  - Pendiente: Fase E (verificación cruzada final Consolidado↔Centralizador
+    P2/P3↔Folio del Libro, ahora también con un caso ABANDONO real una vez
+    se apliquen las vistas y exista un usuario RECTOR/DIR_ACADEMICO de
+    prueba).
+- **2026-08-07 (continuación, KPI del docente convertido a vista SQL):** a
+  pedido del usuario, se sacó el JOIN que había quedado embebido como SQL
+  crudo dentro de `CalificacionCoordinacionRepository.listarResumenBimestresCursosPorDocente`
+  (agregado en el punto anterior para excluir ABANDONO/RETIRADO) y se llevó a
+  una vista nueva **189** (`vista_calificacion_resumen_bimestre_docente_fila`,
+  reutiliza 119+107, mismo patrón "vista final delgada" que `108
+  vista_calificacion_cursos_docente`) — así todas las vistas de esta ronda
+  quedan en `03-views/` para aplicarse juntas, en vez de una quedar oculta en
+  código de aplicación. El repositorio queda con una consulta mucho más
+  delgada: filtra `docente_id` y agrega aprobados/reprobados contra el umbral
+  de nota mínima, que sigue llegando por parámetro desde
+  `cargarCuotasPoliticaGestion` a propósito — ese umbral vive en un documento
+  JSON de `configuracion_evaluacion` parseado en JS
+  (`politicaInstitucionalPayload.js`, con *fallback* a 61 si falta o está mal
+  formado); bakearlo en SQL habría duplicado ese parseo en dos lenguajes y
+  arriesgado la misma clase de bug que ya cerró la Fase A (dos fuentes de
+  verdad divergentes para el mismo número). La vista 189 sí incluye la
+  exclusión de ABANDONO/RETIRADO (regla de negocio fija, no un parámetro).
+  - Verificado: `npx eslint` limpio en el repositorio tocado; balance de
+    paréntesis/comillas en la vista nueva; los 3 `?` de la consulta siguen en
+    el mismo orden (`min`, `min`, `docenteId`) que sus `replacements`. No se
+    tocó la BD real: la 189 queda como archivo nuevo, para aplicarse junto
+    con el resto de esta ronda (135/116/119/188 + las de la Fase D).

@@ -1,3 +1,4 @@
+import { Op } from 'sequelize';
 import { BaseRepository } from './BaseRepository.js';
 import { FichaSeguimientoClase as FichaSeguimientoClaseModel } from '../database/models/ficha_seguimiento_clase.js';
 
@@ -58,6 +59,9 @@ export class FichaSeguimientoClaseRepository extends BaseRepository {
 
   buildWhereClause(filters) {
     const where = {};
+    if (Array.isArray(filters.ids) && filters.ids.length > 0) {
+      where.id = { [Op.in]: filters.ids };
+    }
     if (filters.asignacionDocenteId !== undefined) {
       where.asignacionDocenteId = filters.asignacionDocenteId;
     }

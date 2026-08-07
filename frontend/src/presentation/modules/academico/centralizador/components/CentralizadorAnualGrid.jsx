@@ -44,13 +44,19 @@ const CeldaNotaAnual = ({ valor, notaMinima, definitiva }) => {
   );
 };
 
-/** Pill de estado de promoción del estudiante (APROBADO / REPROBADO / EN CURSO). */
+/** Pill de estado de promoción del estudiante (APROBADO / REPROBADO / ABANDONO / EN CURSO). */
 const CeldaEstado = ({ estado }) => {
   if (!estado) {
     return <span className="cal-centralizador-grid__nota cal-centralizador-grid__nota--vacia">—</span>;
   }
   const variante =
-    estado === 'APROBADO' ? 'aprobado' : estado === 'REPROBADO' ? 'reprobado' : 'en-curso';
+    estado === 'APROBADO'
+      ? 'aprobado'
+      : estado === 'REPROBADO'
+        ? 'reprobado'
+        : estado === 'ABANDONO'
+          ? 'abandono'
+          : 'en-curso';
   return (
     <span className={`cal-centralizador-grid__estado cal-centralizador-grid__estado--${variante}`}>
       {estado}
@@ -61,21 +67,30 @@ const CeldaEstado = ({ estado }) => {
 /**
  * Resumen anual del estudiante a partir de sus notas por asignatura:
  *   - promedio: media de las notas anuales ponderadas presentes (entero).
- *   - estado: EN CURSO mientras alguna asignatura no tenga los 4 bimestres;
- *     con la gestión completa, APROBADO si todas aprueban, REPROBADO si alguna
- *     no; null si aún no hay ninguna nota.
+ *   - estado: mismo orden de prioridad que `derivarEstadoAcademico` del folio
+ *     del Libro (backend, `folioCeldasHelper.js`) para que ambas pantallas
+ *     emitan siempre el mismo veredicto — REPROBADO (alguna asignatura no
+ *     llega a la mínima) > EN CURSO (alguna asignatura sin gestión completa
+ *     y sin retiro) > ABANDONO (todas las asignaturas retiradas) > APROBADO;
+ *     null si aún no hay ninguna nota. ABANDONO no depende de `gestionCompleta`
+ *     (Fase B): un estudiante retirado nunca completa los 4 bimestres, así
+ *     que filtrar antes por `notaAnual != null` lo escondía siempre.
  */
 const resumenAnualEstudiante = (estudiante, asignaturas) => {
-  const celdas = asignaturas
-    .map((a) => estudiante.notas?.[a.ofertaCursoId])
-    .filter((c) => c && c.notaAnual != null);
-  if (celdas.length === 0) return { promedio: null, estado: null };
-  const promedio = Math.round(
-    celdas.reduce((acc, c) => acc + Number(c.notaAnual), 0) / celdas.length,
-  );
+  const celdas = asignaturas.map((a) => estudiante.notas?.[a.ofertaCursoId]).filter(Boolean);
+  const celdasConNota = celdas.filter((c) => c.notaAnual != null);
+  const promedio =
+    celdasConNota.length > 0
+      ? Math.round(
+          celdasConNota.reduce((acc, c) => acc + Number(c.notaAnual), 0) / celdasConNota.length,
+        )
+      : null;
+  if (celdas.length === 0) return { promedio, estado: null };
   let estado;
-  if (celdas.some((c) => !c.gestionCompleta)) estado = 'EN CURSO';
-  else estado = celdas.every((c) => c.observacion === 'APROBADO') ? 'APROBADO' : 'REPROBADO';
+  if (celdas.some((c) => c.observacion === 'REPROBADO')) estado = 'REPROBADO';
+  else if (celdas.some((c) => c.observacion == null)) estado = 'EN CURSO';
+  else if (celdas.every((c) => c.observacion === 'ABANDONO')) estado = 'ABANDONO';
+  else estado = 'APROBADO';
   return { promedio, estado };
 };
 
@@ -266,7 +281,8 @@ const CentralizadorAnualGrid = ({
         <span className="cal-centralizador-grid__leyenda-item">
           <strong>Estado</strong>: EN CURSO mientras falten bimestres; con los 4
           cargados, APROBADO si toda asignatura llega a {notaMinimaAprobacion},
-          REPROBADO si alguna no llega.
+          REPROBADO si alguna no llega; ABANDONO si el estudiante fue retirado
+          de todas sus asignaturas.
         </span>
       </div>
     </div>

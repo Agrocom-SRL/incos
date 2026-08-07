@@ -164,13 +164,21 @@
 > Ybeth). G: build + lint limpios, `dataKey`==`dataFieldName` verificado contra
 > la API real (ambos formatos, aplanado y anidado), RBAC verificado en 3 capas
 > (permiso, `PrivateRoute`+menú, backend 403), PDF exportado y comparado contra
-> la foto real. **Hallazgo a escalar:** `GET /mis-fichas` reutiliza la vista
-> 174 (listado) y NO trae los 9 TEXT de observaciones ni los 4 SI/NO de
-> documentación (solo existen en la entidad raíz, expuesta por `GET /:id`
-> DETALLE, sin permiso para DOCENTE) — la tab del portal degrada mostrando
-> solo cabecera + cantidad de estudiantes; el docente no puede leer el
-> feedback textual de su propia supervisión. Requiere decisión de producto
-> (¿nuevo permiso de solo lectura para DOCENTE, o ampliar `/mis-fichas`?).
+> la foto real. **Hallazgo a escalar — RESUELTO 2026-08-07:** el usuario
+> decidió dar acceso completo. `ListMisFichasSeguimientoDocenteUseCase` ahora
+> batchea la entidad raíz (`fichaSeguimientoClaseRepository.findAll({ ids })`,
+> nuevo soporte `ids` en `buildWhereClause` vía `Op.in`, mismo idioma que
+> `BimesterEvaluationRepository`/`AttendanceRepository`) por los ids que ya
+> resuelve la vista 174 (contexto + anti-IDOR), y los mezcla con
+> `FichaSeguimientoMapper.toDetail` (misma función que usa `GET /:id`) — el
+> docente lee ahora el feedback textual completo de sus propias fichas, sin
+> permiso nuevo. Cero cambio de frontend: `FichaSeguimientoFichaView.jsx` ya
+> tenía el flag `tieneDetalleCompleto` construido para esto, ahora se activa
+> solo. Verificado: eslint limpio, dry-run del contenedor DI (token resuelve
+> con la nueva dependencia inyectada), `vite build` sin errores, smoke test
+> aislado con repos mockeados (3 casos: 2 fichas con detalle completo, 0
+> fichas sin llamar `findAll` (evita `IN ()` vacío), entidad borrada entre
+> queries se omite sin romper). No se tocó BD ni RBAC.
 
 ### Bloque D — Frontend (React + AntD 6, módulo DOC + portal docente)
 

@@ -139,12 +139,8 @@ export class CalificacionCoordinacionRepository extends ICalificacionCoordinacio
           END
         ) AS pendientes,
         SUM(CASE WHEN f.estado_bimestre = 'CERRADO' THEN 1 ELSE 0 END) AS cerrados,
-        COALESCE(MAX(ev.cantidad_evaluaciones), 0) AS evaluaciones
-      FROM vista_base_calificacion_resumen_curso_bimestre_fila f
-      LEFT JOIN vista_base_calificacion_evaluaciones_curso_bimestre ev
-        ON ev.asignacion_docente_id = f.asignacion_docente_id
-        AND ev.gestion_id = f.gestion_id
-        AND ev.bimestre = f.bimestre
+        MAX(f.cantidad_evaluaciones) AS evaluaciones
+      FROM vista_calificacion_resumen_bimestre_docente_fila f
       WHERE f.docente_id = ?
       GROUP BY f.asignacion_docente_id, f.bimestre
       `,

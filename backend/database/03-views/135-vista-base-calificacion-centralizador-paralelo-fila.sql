@@ -34,6 +34,13 @@
 -- JOIN) para que la vista 185 (Nivelación) pueda matchear un evento de
 -- historial_matricula anclado a una materia arrastrada (sin matrícula, ancla
 -- inscripcion_id+asignatura_plan_id) contra la columna correcta del pivote.
+--
+-- 2026-08-07 (Fase C, ABANDONO en Centralizador/Boletín): `emc` pasa de la
+-- vista 110 (restringida a INSCRITO/CURSANDO, pensada para el roster vivo de
+-- cuaderno/asistencia) a la 188 (mismo grano, sin filtro de estado) — un
+-- estudiante marcado ABANDONO/RETIRADO (Fase D, RegistrarDecisionAdministrativaUseCase)
+-- ya NO desaparece de esta vista; `mm.estado`/`nota_final` siguen viniendo
+-- del mismo caché de siempre, sin recalcular nada.
 -- ============================================
 
 USE instituto_incos;
@@ -71,10 +78,11 @@ SELECT
   mm.nota_final              AS nota_final,
   mm.estado                  AS estado
 FROM vista_base_asignacion_docente_detalle add_
--- Base = matrícula ACTIVA (estudiante × asignatura), NO las notas: incluye a
--- todos los matriculados (estado INSCRITO/CURSANDO) aunque aún no tengan notas
--- de bimestre; las notas entran por LEFT JOIN (NULL donde no hay).
-INNER JOIN vista_base_calificacion_estudiante_matricula_curso emc
+-- Base = matrícula (estudiante × asignatura), NO las notas: incluye a todos
+-- los matriculados en CUALQUIER estado (INSCRITO/CURSANDO/ABANDONO/RETIRADO,
+-- ver 188) aunque aún no tengan notas de bimestre; las notas entran por LEFT
+-- JOIN (NULL donde no hay).
+INNER JOIN vista_base_calificacion_estudiante_matricula_curso_completa emc
   ON emc.asignacion_docente_id = add_.id
 INNER JOIN matriculas_materia mm
   ON mm.id = emc.matricula_materia_id

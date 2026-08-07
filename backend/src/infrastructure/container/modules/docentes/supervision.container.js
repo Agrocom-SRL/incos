@@ -112,6 +112,7 @@ export function registerSupervisionDocenteResource(container) {
         fichaSeguimientoListadoViewRepository: c.resolve(
           DOCENTES_TOKENS.fichaSeguimientoListadoViewRepository
         ),
+        fichaSeguimientoClaseRepository: c.resolve(DOCENTES_TOKENS.fichaSeguimientoClaseRepository),
         teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
         userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
