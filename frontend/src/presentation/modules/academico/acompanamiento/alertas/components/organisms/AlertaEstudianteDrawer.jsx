@@ -22,7 +22,7 @@ const { Text, Title } = Typography;
 const AlertaEstudianteDrawer = ({ open, onCerrar, detalle, loading, error }) => {
   const columns = useMemo(() => createAlertaEstudianteMateriasColumns(), []);
 
-  const materiasEnRiesgo = detalle?.materiasEnRiesgo ?? 0;
+  const materiasEnRiesgo = detalle?.materiasEnRiesgoTotal ?? 0;
 
   return (
     <Drawer
@@ -97,7 +97,8 @@ const AlertaEstudianteDrawer = ({ open, onCerrar, detalle, loading, error }) => 
 
               <Text type="secondary">
                 Se considera en riesgo la materia con nota menor al umbral en el último bimestre
-                registrado o en el promedio de la gestión.
+                registrado o en el promedio de la gestión, o con % de asistencia menor al umbral
+                en el último bimestre registrado.
               </Text>
             </>
           ) : null}

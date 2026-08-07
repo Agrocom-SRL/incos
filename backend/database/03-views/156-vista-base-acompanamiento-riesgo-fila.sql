@@ -19,15 +19,34 @@
 --   - en_riesgo = 1 si nota_ultimo_bimestre < umbral O promedio_anual < umbral;
 --     0 si aún no hay notas (sin datos no se alerta).
 --
+-- 2026-08-07 (segunda dimensión — riesgo por INASISTENCIA, Fase D del plan
+-- `calificaciones-centralizador-nivelacion-rediseno.md`): agregado aditivo,
+-- mismo grano/criterio que la nota, pero leyendo % de asistencia en vez de
+-- nota. Detecta el abandono DE FACTO (el estudiante deja de asistir antes de
+-- que alguien lo marque ABANDONO/RETIRADO administrativamente) — sigue siendo
+-- 100% informativo, nunca dispara ningún cambio de estado por sí solo.
+--   - pct_asistencia_ultimo_bimestre = último bimestre con asistencia
+--     registrada (misma regla COALESCE que la nota).
+--   - umbral_asistencia: configuracion_evaluacion, clave
+--     ACOMPANAMIENTO_ASISTENCIA, `$.umbralAsistencia`; fallback 75 (mismo
+--     valor institucional por defecto que `politicaAsistenciaDefault.minimoAsistencia`).
+--   - en_riesgo_asistencia = 1 si pct_asistencia_ultimo_bimestre < umbral;
+--     0 si aún no hay asistencia registrada (sin datos no se alerta, igual
+--     que en_riesgo).
+--
 -- Consumidores:
 --   - RiesgoAcademicoViewRepository (backend) → endpoints
 --     GET /acompanamiento/alertas, /alertas/mis-alumnos, /alertas/estudiante/:id
 --     y el top de casos críticos de GET /acompanamiento/panel.
---   - Vistas agregadas 157 (por carrera) y 158 (por materia).
+--     `findAlertas` filtra por (en_riesgo = 1 OR en_riesgo_asistencia = 1).
+--   - Vistas agregadas 157 (por carrera) y 158 (por materia): sin cambios,
+--     siguen agregando solo la dimensión de nota — la de asistencia se ve en
+--     el listado/detalle de alertas, no en los totales del panel (alcance
+--     documentado, no un olvido).
 --
 -- Uso:
 --   SELECT * FROM vista_base_acompanamiento_riesgo_fila
---   WHERE gestion_id = ? AND en_riesgo = 1
+--   WHERE gestion_id = ? AND (en_riesgo = 1 OR en_riesgo_asistencia = 1)
 --   ORDER BY nombre_completo, asignatura_sigla;
 -- ============================================
 
@@ -69,7 +88,16 @@ SELECT
            < COALESCE(CAST(JSON_UNQUOTE(JSON_EXTRACT(ce.valor, '$.umbralRiesgo')) AS DECIMAL(5,2)), 61)
     THEN 1
     ELSE 0
-  END AS en_riesgo
+  END AS en_riesgo,
+  COALESCE(asi.bim4, asi.bim3, asi.bim2, asi.bim1) AS pct_asistencia_ultimo_bimestre,
+  COALESCE(CAST(JSON_UNQUOTE(JSON_EXTRACT(ce_asi.valor, '$.umbralAsistencia')) AS DECIMAL(5,2)), 75) AS umbral_asistencia,
+  CASE
+    WHEN COALESCE(asi.bim4, asi.bim3, asi.bim2, asi.bim1) IS NULL THEN 0
+    WHEN COALESCE(asi.bim4, asi.bim3, asi.bim2, asi.bim1)
+           < COALESCE(CAST(JSON_UNQUOTE(JSON_EXTRACT(ce_asi.valor, '$.umbralAsistencia')) AS DECIMAL(5,2)), 75)
+    THEN 1
+    ELSE 0
+  END AS en_riesgo_asistencia
 FROM vista_base_calificacion_centralizador_paralelo_fila cen
 INNER JOIN paralelos_gestion pg
   ON pg.id = cen.paralelo_gestion_id
@@ -88,4 +116,23 @@ LEFT JOIN configuracion_evaluacion ce
   AND ce.clave = 'ACOMPANAMIENTO_PEDAGOGICO'
   AND ce.vigente = TRUE
   AND ce.activo = TRUE
-  AND ce.deleted_at IS NULL;
+  AND ce.deleted_at IS NULL
+LEFT JOIN configuracion_evaluacion ce_asi
+  ON ce_asi.gestion_id = cen.gestion_id
+  AND ce_asi.clave = 'ACOMPANAMIENTO_ASISTENCIA'
+  AND ce_asi.vigente = TRUE
+  AND ce_asi.activo = TRUE
+  AND ce_asi.deleted_at IS NULL
+LEFT JOIN (
+  SELECT
+    a.oferta_curso_id,
+    a.estudiante_id,
+    MAX(CASE WHEN a.bimestre = 1 THEN a.pct_asistencia END) AS bim1,
+    MAX(CASE WHEN a.bimestre = 2 THEN a.pct_asistencia END) AS bim2,
+    MAX(CASE WHEN a.bimestre = 3 THEN a.pct_asistencia END) AS bim3,
+    MAX(CASE WHEN a.bimestre = 4 THEN a.pct_asistencia END) AS bim4
+  FROM vista_asistencia_consolidado_bimestre_fila a
+  GROUP BY a.oferta_curso_id, a.estudiante_id
+) asi
+  ON asi.oferta_curso_id = cen.oferta_curso_id
+  AND asi.estudiante_id = cen.estudiante_id;

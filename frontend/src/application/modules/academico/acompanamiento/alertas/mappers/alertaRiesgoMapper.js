@@ -63,6 +63,9 @@ export const mapAlertaRiesgo = (raw) => {
     notaUltimoBimestre: toNumber(raw.notaUltimoBimestre),
     umbralRiesgo: toNumber(raw.umbralRiesgo, 61),
     enRiesgo: raw.enRiesgo === 1 || raw.enRiesgo === true,
+    pctAsistenciaUltimoBimestre: toNumber(raw.pctAsistenciaUltimoBimestre),
+    umbralAsistencia: toNumber(raw.umbralAsistencia, 75),
+    enRiesgoAsistencia: raw.enRiesgoAsistencia === 1 || raw.enRiesgoAsistencia === true,
     matriculaEstado: cleanText(raw.matriculaEstado),
   };
 };
@@ -86,5 +89,7 @@ export const mapAlertaEstudiante = (raw) => {
     carreraNombre: cleanText(raw.carreraNombre) ?? primera?.carreraNombre,
     materias,
     materiasEnRiesgo: materias.filter((m) => m.enRiesgo).length,
+    materiasEnRiesgoAsistencia: materias.filter((m) => m.enRiesgoAsistencia).length,
+    materiasEnRiesgoTotal: materias.filter((m) => m.enRiesgo || m.enRiesgoAsistencia).length,
   };
 };

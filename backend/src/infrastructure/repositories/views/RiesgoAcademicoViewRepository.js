@@ -27,7 +27,9 @@ export class RiesgoAcademicoViewRepository extends IRiesgoAcademicoViewRepositor
     const replacements = [];
 
     if (filters.soloEnRiesgo !== false) {
-      whereConditions.push('en_riesgo = 1');
+      // Cualquiera de las 2 dimensiones (nota vía 156 base, asistencia vía
+      // 169 pivotada en la misma vista 156) dispara la alerta.
+      whereConditions.push('(en_riesgo = 1 OR en_riesgo_asistencia = 1)');
     }
     if (filters.gestionId) {
       whereConditions.push('gestion_id = ?');

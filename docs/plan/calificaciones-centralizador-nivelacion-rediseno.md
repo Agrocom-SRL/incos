@@ -7,11 +7,12 @@
 > usuario pidió ir a la BASE del flujo (Calificaciones) en vez de seguir
 > ajustando Centralizador de arriba hacia abajo.
 >
-> **Estado:** ✔ Fases A, B, C2, D (backend + frontend) y C HECHAS (ver
-> bitácora). Fase E (verificación cruzada final) sigue pendiente. Vistas
-> 130/135/116/119/176 (modificadas), 185/187/188 (nuevas) preparadas, sin
-> aplicar en BD real — nada de esto mostrará datos reales hasta que se
-> apliquen + se re-siembre el seed 59 (RBAC de Nivelación ya rehabilitado).
+> **Estado:** ✔ Fases A, B, C2, D (backend + frontend), C y "riesgo por
+> inasistencia" (extensión de Fase D, ver bitácora) HECHAS. Fase E
+> (verificación cruzada final) sigue pendiente. Vistas 130/135/116/119/156/176
+> (modificadas), 185/187/188/189 (nuevas) preparadas, sin aplicar en BD real
+> — nada de esto mostrará datos reales hasta que se apliquen + se re-siembre
+> los seeds 54 y 59 (RBAC de Nivelación ya rehabilitado).
 
 ## Contexto
 
@@ -288,6 +289,7 @@ quién marca ABANDONO/RETIRADO y cómo se entera el docente.
   con su propio umbral configurable — mismo patrón que el riesgo por notas,
   sin infraestructura nueva. Sigue siendo solo informativo: la directiva ve
   la alerta y decide, en el peor caso marcando RETIRADO — nunca automático.
+  **✔ HECHA 2026-08-07** — ver bitácora "riesgo por inasistencia" al pie.
 - **Cómo se protege al docente de seguir tomando asistencia/notas a un
   estudiante ya retirado**: NO hace falta notificación nueva. La vista 110
   (`vista_base_calificacion_estudiante_matricula_curso`), que alimenta
@@ -863,3 +865,71 @@ comportamiento donde no correspondía.
     el mismo orden (`min`, `min`, `docenteId`) que sus `replacements`. No se
     tocó la BD real: la 189 queda como archivo nuevo, para aplicarse junto
     con el resto de esta ronda (135/116/119/188 + las de la Fase D).
+- **2026-08-07 (continuación, "riesgo por inasistencia" — cierre de la
+  extensión de Fase D pendiente):** a pedido explícito del usuario, se
+  construyó la segunda dimensión de riesgo que había quedado solo diseñada
+  (nota de Fase D, arriba) y nunca implementada — confirmado por `grep`
+  exhaustivo de `pct_asistencia`/`umbralRiesgo` en todo el repo antes de
+  empezar: la vista 156 seguía siendo 100% por notas.
+  - **Vista 156 ampliada (aditivo, misma vista, sin vista nueva)**: se agregó
+    un `LEFT JOIN` a un pivote de la vista 169
+    (`vista_asistencia_consolidado_bimestre_fila`, agrupado por
+    `oferta_curso_id`+`estudiante_id`, mismo patrón MAX/CASE que el pivote de
+    `cuad` en la 119) + un segundo `LEFT JOIN` a `configuracion_evaluacion`
+    (nueva clave `ACOMPANAMIENTO_ASISTENCIA`, alias `ce_asi` para no chocar
+    con el `ce` de `ACOMPANAMIENTO_PEDAGOGICO`). 3 columnas nuevas:
+    `pct_asistencia_ultimo_bimestre` (mismo criterio COALESCE que
+    `nota_ultimo_bimestre`), `umbral_asistencia` (fallback 75, mismo valor
+    institucional que `politicaAsistenciaDefault.minimoAsistencia`) y
+    `en_riesgo_asistencia`. `en_riesgo` (nota) no se tocó — aditivo puro, sin
+    renombrar ni redefinir semántica existente.
+  - **Seed 54** (`54-seed-configuracion-evaluacion.sql`): fila nueva `id=4`,
+    clave `ACOMPANAMIENTO_ASISTENCIA`, `{"umbralAsistencia":75,"criterio":
+    "ULTIMO_BIMESTRE"}`, vigente para la gestión 2026.
+  - **`RiesgoAcademicoViewRepository.findAlertas`**: `soloEnRiesgo` ahora
+    filtra `(en_riesgo = 1 OR en_riesgo_asistencia = 1)` — un estudiante con
+    notas normales pero mala asistencia ahora SÍ aparece en el listado de
+    alertas, "Mis alumnos en riesgo" y el top de casos críticos del panel
+    (los 3 consumen el mismo método, ningún cambio adicional en esos 2 use
+    cases). **Alcance documentado, no un olvido**: las vistas agregadas 157
+    (por carrera) y 158 (por materia) del panel siguen agregando solo la
+    dimensión de nota — la de asistencia se ve en el listado/detalle de
+    alertas, no en los totales agregados del panel.
+  - **`GetAlertaRiesgoEstudianteUseCase`**: el resumen por estudiante (A3)
+    ahora cuenta `materiasEnRiesgoAsistencia` y `materiasEnRiesgoTotal`
+    (unión de ambas dimensiones) además del `materiasEnRiesgo` (nota) que ya
+    existía; `enRiesgo` de nivel estudiante pasa a considerar cualquiera de
+    las 2. Verificado que ningún otro consumidor leía esos campos con la
+    semántica vieja (`grep` sin resultados) antes de ensancharlos.
+  - **Frontend**: `NotaRiesgoText.jsx` gana un `suffix` opcional (retrocompatible,
+    default `''`) para poder mostrar el % de asistencia con el mismo átomo
+    que ya pinta notas en rojo bajo el umbral. Nuevos helpers
+    `formatSituacionRiesgo`/`getSituacionRiesgoPillClass` en
+    `acompanamientoPills.js` (un solo lugar para la combinación de las 2
+    dimensiones, evita repetir la lógica 4 veces) — reemplazan el pill
+    binario `enRiesgo ? 'En riesgo' : 'Regular'` en los 4 lugares que lo
+    usaban (`alertasRiesgoTableColumns.jsx`, `misAlumnosEnRiesgoTableColumns.jsx`,
+    `panelCasosCriticosTableColumns.jsx` —que antes ni siquiera evaluaba la
+    condición, todas sus filas ya estaban pre-filtradas a `en_riesgo=1`, y
+    ahora sí necesita mirar ambas dimensiones— y
+    `alertaEstudianteMateriasColumns.jsx`), cada uno con una columna
+    "Asistencia" nueva junto a "Último bim."/"Promedio". `alertaRiesgoMapper.js`
+    propaga los 3 campos nuevos por materia + `materiasEnRiesgoAsistencia`/
+    `materiasEnRiesgoTotal` a nivel estudiante. `AlertaEstudianteDrawer.jsx`
+    usa `materiasEnRiesgoTotal` para el pill de cabecera y el texto de pie
+    menciona ahora también el criterio de asistencia.
+  - Verificado: `npx eslint` limpio (0 errores) en los 4 archivos backend y
+    los 8 archivos frontend tocados; balance de paréntesis/comillas en la
+    vista 156 y el seed 54; dry-run del contenedor DI (los 4 use cases de
+    Acompañamiento resuelven sin cambios de wiring, ninguno necesitó tokens
+    nuevos); `npx vite build` sin errores; smoke test aislado (mapper backend
+    con una fila mixta nota-regular/asistencia-en-riesgo; las 4 combinaciones
+    de `formatSituacionRiesgo`/`getSituacionRiesgoPillClass`; conteo
+    combinado de `materiasEnRiesgoTotal` en un caso con 1 materia solo-nota +
+    1 solo-asistencia + 1 sin riesgo). No se tocó la BD real: vista 156 y
+    seed 54 quedan como diffs de archivo, para aplicarse junto con el resto
+    de esta ronda.
+  - Sigue siendo 100% informativo, tal como pedía el diseño original: ninguna
+    escritura nueva, ningún cambio de estado automático — el radar solo
+    alimenta las mismas pantallas de Acompañamiento que ya usa la directiva
+    para decidir.

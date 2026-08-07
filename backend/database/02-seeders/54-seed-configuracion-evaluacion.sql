@@ -8,6 +8,10 @@
 --   id=2 → gestión 2026 (id=1), VIGENTE (política activa actual).
 --   id=3 → gestión 2026 (id=1), VIGENTE, clave ACOMPANAMIENTO_PEDAGOGICO
 --          (umbral de riesgo del módulo TUT; consumida por la vista 156).
+--   id=4 → gestión 2026 (id=1), VIGENTE, clave ACOMPANAMIENTO_ASISTENCIA
+--          (umbral de riesgo por inasistencia, segunda dimensión de la vista
+--          156 — 2026-08-07, detecta abandono de facto antes de la decisión
+--          administrativa de Nivelación).
 -- ============================================
 
 USE instituto_incos;
@@ -25,6 +29,9 @@ INSERT INTO configuracion_evaluacion (id, gestion_id, clave, valor, tipo, vigent
 'JSON', TRUE, 'Política institucional de evaluación y notas', TRUE),
 (3, 1, 'ACOMPANAMIENTO_PEDAGOGICO',
 '{"umbralRiesgo":61,"criterio":"ULTIMO_BIMESTRE_O_ACUMULADO"}',
-'JSON', TRUE, 'Umbral de riesgo pedagógico del módulo Tutorías (vista 156)', TRUE);
+'JSON', TRUE, 'Umbral de riesgo pedagógico del módulo Tutorías (vista 156)', TRUE),
+(4, 1, 'ACOMPANAMIENTO_ASISTENCIA',
+'{"umbralAsistencia":75,"criterio":"ULTIMO_BIMESTRE"}',
+'JSON', TRUE, 'Umbral de riesgo por inasistencia del módulo Acompañamiento (vista 156)', TRUE);
 
 SET FOREIGN_KEY_CHECKS = 1;
