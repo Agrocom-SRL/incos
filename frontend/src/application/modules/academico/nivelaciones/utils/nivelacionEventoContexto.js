@@ -79,13 +79,42 @@ export const buildDetalleEventoContextoParams = ({
 };
 
 /**
+ * Arma los params de contexto de CREACIÓN de /inscribir — único llamador real:
+ * la landing sin contexto (B2, `NivelacionInscribirPage.jsx`) al elegir una
+ * materia pendiente de `useNivelacionSelector.js` (que SÍ trae el ancla,
+ * cierre del "Gap 2"; la grilla sigue sin exponerla, ver `buildDetalleEventoContextoParams`).
+ */
+export const buildCrearEventoContextoParams = ({
+  subjectEnrollmentId,
+  enrollmentId,
+  planSubjectId,
+  estudianteNombre,
+  estudianteCodigo,
+  asignaturaSigla,
+  asignaturaNombre,
+} = {}) => {
+  const params = new URLSearchParams();
+  const set = (key, value) => {
+    const v = toQueryValue(value);
+    if (v !== undefined) params.set(key, v);
+  };
+  if (subjectEnrollmentId != null) {
+    set('subjectEnrollmentId', subjectEnrollmentId);
+  } else {
+    set('enrollmentId', enrollmentId);
+    set('planSubjectId', planSubjectId);
+  }
+  set('estudiante', estudianteNombre);
+  set('codigo', estudianteCodigo);
+  set('asignaturaSigla', asignaturaSigla);
+  set('asignaturaNombre', asignaturaNombre);
+  return params;
+};
+
+/**
  * Lee el contexto de CREACIÓN de /inscribir cuando el deep-link SÍ trae un
  * ancla de escritura real (`subjectEnrollmentId` XOR `enrollmentId`+
- * `planSubjectId`). Hoy no hay ningún llamador que arme este querystring
- * (la grilla solo expone `historialMatriculaId` en celdas con evento —
- * `parseDetalleEventoContexto` — y la landing sin contexto todavía no
- * resuelve el ancla, ver `useNivelacionSelector.js`), pero el Drawer queda
- * listo para consumirlo en cuanto exista un origen real.
+ * `planSubjectId`) — armado por `buildCrearEventoContextoParams`.
  */
 export const parseCrearEventoContexto = (searchParams) => {
   const subjectEnrollmentId = searchParams.get('subjectEnrollmentId');

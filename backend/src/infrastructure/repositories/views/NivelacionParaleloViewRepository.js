@@ -55,6 +55,23 @@ export class NivelacionParaleloViewRepository extends INivelacionParaleloViewRep
       { type: sequelize.QueryTypes.SELECT },
     );
   }
+
+  /**
+   * @param {number} estudianteId
+   * @returns {Promise<Array<Object>>}
+   */
+  async listarEventosPorEstudiante(estudianteId) {
+    return sequelize.query(
+      `
+      SELECT *
+      FROM vista_base_nivelacion_paralelo_fila
+      WHERE estudiante_id = ?
+        AND historial_matricula_id IS NOT NULL
+      ORDER BY asignatura_sigla ASC
+      `,
+      { replacements: [estudianteId], type: sequelize.QueryTypes.SELECT },
+    );
+  }
 }
 
 export default NivelacionParaleloViewRepository;

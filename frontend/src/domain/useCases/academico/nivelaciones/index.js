@@ -6,6 +6,7 @@
 
 export { ListPendientesPorParaleloUseCase } from './ListPendientesPorParaleloUseCase';
 export { ObtenerNivelacionParaleloUseCase } from './ObtenerNivelacionParaleloUseCase';
+export { ListarMateriasPendientesEstudianteUseCase } from './ListarMateriasPendientesEstudianteUseCase';
 export { ListNivelacionesPendientesUseCase } from './ListNivelacionesPendientesUseCase';
 export { RegistrarEventoHistorialUseCase } from './RegistrarEventoHistorialUseCase';
 export { RegistrarDecisionAdministrativaUseCase } from './RegistrarDecisionAdministrativaUseCase';

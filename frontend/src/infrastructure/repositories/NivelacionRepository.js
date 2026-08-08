@@ -164,6 +164,29 @@ class NivelacionRepository {
       return handleErrorResponse(error, 'Error al registrar el resultado del examen de nivelación');
     }
   }
+
+  /**
+   * GET /v1/nivelaciones/estudiante/:estudianteId/pendientes — materias
+   * pendientes/arrastradas de un estudiante (B2, buscador sin contexto,
+   * "Gap 2"). `null` si el estudiante no tiene ningún evento vigente.
+   * @param {number} estudianteId
+   * @returns {Promise<{success:boolean,data?:Object|null,error?:string}>}
+   */
+  async listarMateriasPendientesEstudiante(estudianteId) {
+    try {
+      const response = await apiClient.get(
+        NIVELACIONES_ENDPOINTS.MATERIAS_PENDIENTES_ESTUDIANTE(estudianteId),
+      );
+      const result = unwrap(response);
+      if (!result.success) return result;
+      return { success: true, data: result.data.materiasPendientesEstudiante ?? null };
+    } catch (error) {
+      return handleErrorResponse(
+        error,
+        'Error al cargar las materias pendientes del estudiante',
+      );
+    }
+  }
 }
 
 export default new NivelacionRepository();

@@ -111,6 +111,7 @@ export const ACADEMICO_TOKENS = {
   registrarDecisionAdministrativaUseCase: 'academico.registrarDecisionAdministrativaUseCase',
   programarNivelacionUseCase: 'academico.programarNivelacionUseCase',
   registrarResultadoNivelacionUseCase: 'academico.registrarResultadoNivelacionUseCase',
+  listMateriasPendientesEstudianteUseCase: 'academico.listMateriasPendientesEstudianteUseCase',
   exportCentralizadorAnualParaleloExcelUseCase:
     'academico.exportCentralizadorAnualParaleloExcelUseCase',
 
@@ -240,6 +241,8 @@ export const ACADEMICO_TOKENS = {
     'academico.registrarDecisionAdministrativaController',
   programarNivelacionController: 'academico.programarNivelacionController',
   registrarResultadoNivelacionController: 'academico.registrarResultadoNivelacionController',
+  listMateriasPendientesEstudianteController:
+    'academico.listMateriasPendientesEstudianteController',
   exportCentralizadorAnualParaleloController:
     'academico.exportCentralizadorAnualParaleloController',
 

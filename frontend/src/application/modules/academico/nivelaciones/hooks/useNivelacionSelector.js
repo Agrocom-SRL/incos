@@ -6,18 +6,15 @@
  * (`useBuscarEstudiantesHistorial`, ya expuesta y reutilizable — no es
  * específica de Historial, es un mapper de selección de estudiante).
  *
- * GAP CONOCIDO (documentado en el plan de datos, Fase D — "Gap 2"): no existe
- * todavía un endpoint de "materias pendientes/arrastradas de un estudiante
- * concreto" (reutilizaría la vista 185 filtrada por estudiante en vez de por
- * paralelo). Por eso `seleccionarEstudiante` NO resuelve materias — solo deja
- * el estudiante elegido en `estudianteSeleccionado` para que la página
- * muestre el estado "próximamente" en vez de fabricar datos. El flujo QUE SÍ
- * funciona hoy es el deep-link con contexto desde la grilla (P1 nivel 2).
+ * Al seleccionar un estudiante, carga sus materias pendientes/arrastradas
+ * (`GET /nivelaciones/estudiante/:id/pendientes`, cierre del "Gap 2" — antes
+ * mostraba un estado "próximamente" en vez de fabricar datos).
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useEstudiantesApi } from '@application-estudiantes/hooks/api/useEstudiantesApi';
 import { useServerPaginatedList } from '@application/utils';
+import { useCasesFactory } from '@container';
 import {
   useBuscarEstudiantesHistorial,
   MIN_QUERY_LENGTH,
@@ -26,6 +23,9 @@ import {
 export const useNivelacionSelector = () => {
   const [query, setQuery] = useState('');
   const [estudianteSeleccionado, setEstudianteSeleccionado] = useState(null);
+  const [materiasPendientes, setMateriasPendientes] = useState(null);
+  const [materiasPendientesLoading, setMateriasPendientesLoading] = useState(false);
+  const [materiasPendientesError, setMateriasPendientesError] = useState(null);
 
   const { fetch: fetchEstudiantes } = useEstudiantesApi();
   const {
@@ -65,6 +65,39 @@ export const useNivelacionSelector = () => {
 
   const limpiarSeleccion = useCallback(() => setEstudianteSeleccionado(null), []);
 
+  const cargarMateriasPendientes = useCallback(async (estudianteId) => {
+    if (estudianteId == null) {
+      setMateriasPendientes(null);
+      setMateriasPendientesError(null);
+      return;
+    }
+    setMateriasPendientesLoading(true);
+    setMateriasPendientesError(null);
+    try {
+      const result = await useCasesFactory
+        .listarMateriasPendientesEstudiante()
+        .ejecutar({ estudianteId });
+      if (!result?.success) {
+        setMateriasPendientesError(
+          result?.error || 'No se pudieron cargar las materias pendientes del estudiante',
+        );
+        setMateriasPendientes(null);
+        return;
+      }
+      setMateriasPendientes(result.data ?? null);
+    } catch (err) {
+      setMateriasPendientesError(err?.message || String(err));
+      setMateriasPendientes(null);
+    } finally {
+      setMateriasPendientesLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const estudianteId = estudianteSeleccionado?.id ?? estudianteSeleccionado?.estudianteId;
+    cargarMateriasPendientes(estudianteId);
+  }, [cargarMateriasPendientes, estudianteSeleccionado]);
+
   return {
     query,
     onQueryChange,
@@ -79,6 +112,9 @@ export const useNivelacionSelector = () => {
     estudianteSeleccionado,
     seleccionarEstudiante,
     limpiarSeleccion,
+    materiasPendientes,
+    materiasPendientesLoading,
+    materiasPendientesError,
   };
 };
 

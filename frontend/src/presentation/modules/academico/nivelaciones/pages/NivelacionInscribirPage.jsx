@@ -6,30 +6,31 @@
  *    ancla real) o `detalle` (solo lectura, caso más común hoy — ver
  *    `nivelacionEventoContexto.js`).
  * 2) Landing SIN contexto (acceso por menú): buscador de estudiante calcado
- *    de `HistorialSelectorPage.jsx`. GAP CONOCIDO: no existe todavía un
- *    endpoint de "materias pendientes de un estudiante" (Fase D del plan de
- *    datos, "Gap 2") — seleccionar un estudiante aquí muestra ese estado
- *    "próximamente" en vez de fabricar datos; el flujo que SÍ funciona hoy
- *    es la entrada 1 (deep-link desde la grilla).
+ *    de `HistorialSelectorPage.jsx`. Al elegir un estudiante,
+ *    `useNivelacionSelector` carga sus materias pendientes/arrastradas
+ *    (cierre del "Gap 2" — antes mostraba un estado "próximamente"); cada
+ *    fila navega con el mismo contrato de querystring que la entrada 1, ya
+ *    con el ancla real (`subjectEnrollmentId` XOR `enrollmentId`+`planSubjectId`).
  */
 
 import { useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Alert, Flex, Typography } from 'antd';
-import { InfoCircleOutlined } from '@ant-design/icons';
+import { Empty, Flex, Spin, Typography } from 'antd';
 import { PageTemplate } from '@templates';
 import { CarreraTabsListView, TableListView } from '@organisms';
 import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
-import { SearchBar } from '@atoms';
+import { SearchBar, Text } from '@atoms';
 import { allSpacing } from '@theme/tokens';
 import { useNivelacionSelector } from '@application-academico/nivelaciones/hooks/useNivelacionSelector.js';
 import {
+  buildCrearEventoContextoParams,
   parseCrearEventoContexto,
   parseDetalleEventoContexto,
 } from '@application-academico/nivelaciones/utils/nivelacionEventoContexto.js';
 import { createBreadcrumbItems } from '@presentation-utils/breadcrumbs';
 import { createNivelacionSelectorColumns } from '../config/nivelacionSelectorColumns.jsx';
+import { createMateriasPendientesEstudianteColumns } from '../config/materiasPendientesEstudianteColumns.jsx';
 import EventoHistorialDrawer from '../components/EventoHistorialDrawer.jsx';
 import '@configuracion/academico/styles/academico-form-page.css';
 import '../styles/nivelaciones.css';
@@ -59,6 +60,9 @@ const NivelacionInscribirPage = () => {
     estudianteSeleccionado,
     seleccionarEstudiante,
     limpiarSeleccion,
+    materiasPendientes,
+    materiasPendientesLoading,
+    materiasPendientesError,
   } = useNivelacionSelector();
 
   const contextoCrear = parseCrearEventoContexto(searchParams);
@@ -69,9 +73,30 @@ const NivelacionInscribirPage = () => {
     setSearchParams({}, { replace: true });
   }, [setSearchParams]);
 
+  const onSeleccionarMateria = useCallback(
+    (materia) => {
+      const params = buildCrearEventoContextoParams({
+        subjectEnrollmentId: materia.esAnclaDirecta ? materia.matriculaMateriaId : null,
+        enrollmentId: materia.esAnclaDirecta ? null : materia.inscripcionId,
+        planSubjectId: materia.esAnclaDirecta ? null : materia.asignaturaPlanId,
+        estudianteNombre: estudianteSeleccionado?.nombreCompleto,
+        estudianteCodigo: estudianteSeleccionado?.codigoEstudiante,
+        asignaturaSigla: materia.asignaturaSigla,
+        asignaturaNombre: materia.asignaturaNombre,
+      });
+      setSearchParams(params, { replace: false });
+    },
+    [estudianteSeleccionado, setSearchParams],
+  );
+
   const columns = useMemo(
     () => createNivelacionSelectorColumns({ onSeleccionar: seleccionarEstudiante }),
     [seleccionarEstudiante],
+  );
+
+  const columnasMaterias = useMemo(
+    () => createMateriasPendientesEstudianteColumns({ onSeleccionar: onSeleccionarMateria }),
+    [onSeleccionarMateria],
   );
 
   const breadcrumbItems = useMemo(
@@ -103,20 +128,37 @@ const NivelacionInscribirPage = () => {
           </header>
 
           {estudianteSeleccionado ? (
-            <Alert
-              type="info"
-              showIcon
-              icon={<InfoCircleOutlined />}
-              title={`Materias pendientes de ${estudianteSeleccionado.nombreCompleto} — próximamente`}
-              description="Esta búsqueda todavía no tiene un endpoint que resuelva las materias arrastradas/pendientes de un estudiante concreto (gap documentado en el plan de datos de Nivelación). Por ahora, ingrese a Nivelaciones → un paralelo → la grilla del curso y haga clic en el estado de la materia arrastrada."
-              action={
-                <a onClick={limpiarSeleccion} role="button" tabIndex={0}>
-                  Elegir otro estudiante
-                </a>
-              }
-              className="niv-ajustes-drawer__alert"
-              style={{ marginBottom: 16 }}
-            />
+            <section className="cfg-academico-workspace" style={{ marginBottom: allSpacing.marginLG }}>
+              <header className="cfg-academico-workspace__header">
+                <ListPanelHeader
+                  title={`Materias pendientes de ${(estudianteSeleccionado.nombreCompleto || '').toUpperCase()}`}
+                />
+                <Text type="secondary">
+                  <a onClick={limpiarSeleccion} role="button" tabIndex={0}>
+                    Elegir otro estudiante
+                  </a>
+                </Text>
+              </header>
+
+              <Spin spinning={materiasPendientesLoading} tip="Cargando materias pendientes…">
+                {!materiasPendientesLoading && materiasPendientesError ? (
+                  <Text type="danger">{materiasPendientesError}</Text>
+                ) : !materiasPendientesLoading && !materiasPendientes ? (
+                  <Empty
+                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                    description="Este estudiante no tiene materias pendientes o arrastradas registradas."
+                  />
+                ) : materiasPendientes ? (
+                  <TableListView
+                    embedded
+                    showSearch={false}
+                    data={materiasPendientes.materiasPendientes}
+                    columns={columnasMaterias}
+                    rowKey={(record) => `${record.asignaturaPlanId}-${record.matriculaMateriaId ?? 'arrastrada'}`}
+                  />
+                ) : null}
+              </Spin>
+            </section>
           ) : null}
 
           {modoBusqueda ? (

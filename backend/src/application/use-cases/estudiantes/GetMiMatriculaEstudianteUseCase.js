@@ -96,8 +96,15 @@ export class GetMiMatriculaEstudianteUseCase {
 
     // Materias matriculadas (DISTINCT por asignatura; el grano de la vista 135 es
     // una fila por estudiante × oferta_curso, así que ya viene una por materia).
+    // Excluye ABANDONO/RETIRADO: desde la Fase C la 135 ya no filtra por estado
+    // (para que Centralizador/boletín las sigan mostrando), pero "Mi matrícula"
+    // es el roster de lo que el estudiante cursa ACTIVAMENTE — igual criterio
+    // que ya protege al docente en cuaderno/asistencia (vista 110). Sin este
+    // filtro, una materia retirada aparecía en la lista sin ninguna marca.
+    const ESTADOS_MATERIA_ACTIVA = ['INSCRITO', 'CURSANDO'];
     const seen = new Set();
     const materias = [...filas]
+      .filter((row) => ESTADOS_MATERIA_ACTIVA.includes(row.estado))
       .sort((a, b) => (a.asignatura_orden ?? 0) - (b.asignatura_orden ?? 0))
       .filter((row) => {
         const key = row.asignatura_sigla ?? row.asignatura_nombre ?? JSON.stringify(row);

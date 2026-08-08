@@ -7,6 +7,7 @@ import {
   registrarDecisionAdministrativaValidator,
   programarNivelacionValidator,
   registrarResultadoNivelacionValidator,
+  estudianteIdParamValidator,
 } from '../validators/academico/index.js';
 
 /**
@@ -42,6 +43,16 @@ export function buildNivelacionesRouter({ controllers, middlewares }) {
   /** GET /pendientes — bandeja plana PROGRAMADA/EN_CURSO cruzando paralelos (B3). */
   router.get('/pendientes', ...nivelacionAprobar, (req, res, next) =>
     controllers.listNivelacionesPendientesController.handle(req, res, next),
+  );
+
+  /** GET /estudiante/:estudianteId/pendientes — B2, buscador sin contexto ("Gap 2"). */
+  router.get(
+    '/estudiante/:estudianteId/pendientes',
+    ...nivelacionVer,
+    estudianteIdParamValidator,
+    validateRequest,
+    (req, res, next) =>
+      controllers.listMateriasPendientesEstudianteController.handle(req, res, next),
   );
 
   /** GET /?paraleloGestionId=<entero> — grilla de nivelaciones del paralelo. */

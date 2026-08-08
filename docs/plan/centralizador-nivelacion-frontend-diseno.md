@@ -6,11 +6,9 @@
 > es exclusivamente de diseño/composición de pantallas — cómo se ven y se
 > arman, no la lógica de notas.
 >
-> **Estado:** Parte A (ajustes de Centralizador) lista para ejecutar — bajo
-> riesgo, componentes ya existentes, sin depender de backend nuevo. Parte B
-> (pantallas de Nivelación) diseñada pero **bloqueada**: depende de los use
-> cases de la Fase D del plan de datos (`ListHistorialMatriculaParaleloUseCase`
-> y hermanos), que todavía no existen.
+> **Estado:** ✔ Parte A y Parte B (B0-B4) HECHAS, incluidos los 3 "Gaps de
+> backend" que este diseño destapó — ver bitácora al pie. Nada pendiente de
+> código en este documento.
 
 ## Contexto
 
@@ -176,9 +174,9 @@ Libros de registro ⇄ CentralizadorLibroBadge (ya existe, sin cambios)
 ```
 
 ### Gaps de backend que este diseño destapa (sumar a la Fase D del plan de datos)
-- Contador "pendientes de nivelación" por paralelo (B1 nivel 1).
-- Lookup "materias del plan pendientes/arrastradas de un estudiante" (B2 sin contexto).
-- Bandeja "`nivelaciones` PROGRAMADA/EN_CURSO cross-paralelo" (B3).
+- ✔ Contador "pendientes de nivelación" por paralelo (B1 nivel 1) — HECHO, Fase D.
+- ✔ Lookup "materias del plan pendientes/arrastradas de un estudiante" (B2 sin contexto) — HECHO 2026-08-07, ver bitácora.
+- ✔ Bandeja "`nivelaciones` PROGRAMADA/EN_CURSO cross-paralelo" (B3) — HECHO, Fase D.
 
 ---
 
@@ -258,3 +256,38 @@ Libros de registro ⇄ CentralizadorLibroBadge (ya existe, sin cambios)
     errores. Parte B sigue bloqueada tal como estaba: requiere los use cases
     de la Fase D del plan de datos
     (`docs/plan/calificaciones-centralizador-nivelacion-rediseno.md`).
+- **2026-08-07 (cierre del Gap B2 — "lookup materias pendientes de un
+  estudiante sin contexto"):** a pedido del usuario, se cerró el único de los
+  3 "Gaps de backend" (arriba) que seguía sin resolver tras la Fase D
+  (contador P1 nivel 1 y bandeja B3 ya se habían cerrado en esa fase). La
+  landing de `/inscribir` ya no muestra el Alert "próximamente" al elegir un
+  estudiante sin contexto.
+  - **Backend**: nuevo método `NivelacionParaleloViewRepository.listarEventosPorEstudiante`
+    — reutiliza la MISMA vista 185, filtrada por `estudiante_id` en vez de
+    `paralelo_gestion_id` (tal como estaba planeado, sin vista nueva). Se
+    detectó y corrigió de paso que la 185 no exponía `inscripcion_id`
+    (aditivo, ya estaba en la 135 desde la Fase D) — sin esa columna no se
+    podía armar el ancla ALTERNA (materia arrastrada). Nuevo use case
+    `ListMateriasPendientesEstudianteUseCase` (a diferencia de la grilla,
+    que no expone el ancla de escritura — gap real del contrato ya
+    documentado — este SÍ expone `matriculaMateriaId`/`inscripcionId`+
+    `asignaturaPlanId`, el origen real para el que quedó preparado el modo
+    `crear` del Drawer). Endpoint `GET /nivelaciones/estudiante/:estudianteId/pendientes`
+    (permiso `.ver` LISTAR, mismo criterio que los otros GET del recurso).
+  - **Frontend**: `useNivelacionSelector.js` carga las materias pendientes al
+    seleccionar un estudiante (patrón `cargar` en `useCallback` +
+    `useEffect` que solo lo invoca, igual que `useNivelacionParalelo.js` —
+    necesario para no disparar el lint `react-hooks/set-state-in-effect`).
+    Nueva tabla `materiasPendientesEstudianteColumns.jsx`; cada fila navega
+    con el mismo contrato de querystring que ya usa la grilla (B1 nivel 2),
+    ahora con un builder nuevo `buildCrearEventoContextoParams` (antes solo
+    existía el parser, sin ningún llamador real) — el Drawer se abre en modo
+    `crear`, no `detalle`, a diferencia del flujo degradado de la grilla.
+  - Verificado: `npx eslint` limpio en los 9 archivos backend+frontend
+    tocados/nuevos; dry-run del router de nivelaciones completo (8 rutas);
+    `npx vite build` sin errores; smoke test aislado del use case backend (2
+    casos: ancla directa + alterna en un mismo estudiante, estudiante sin
+    eventos → `null`) y del builder/parser de contexto (round-trip
+    build→parse para ambas anclas). No se tocó la BD real: vista 185 (mod.)
+    queda como diff de archivo, para aplicarse junto con el resto de la
+    ronda de Nivelación.

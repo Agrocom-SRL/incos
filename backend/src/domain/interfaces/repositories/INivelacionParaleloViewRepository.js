@@ -38,6 +38,19 @@ export class INivelacionParaleloViewRepository {
   async listarNivelacionesPendientes() {
     throw new Error('Method listarNivelacionesPendientes() must be implemented');
   }
+
+  /**
+   * Eventos de historial de UN estudiante (todos sus paralelos, con evento
+   * vigente), desde la MISMA vista 185 filtrada por `estudiante_id` en vez de
+   * por `paralelo_gestion_id`. Para el buscador sin contexto de
+   * `/academico/nivelaciones/inscribir` (B2, "Gap 2").
+   * @param {number} estudianteId
+   * @returns {Promise<Array<Object>>}
+   */
+  // eslint-disable-next-line no-unused-vars
+  async listarEventosPorEstudiante(estudianteId) {
+    throw new Error('Method listarEventosPorEstudiante() must be implemented');
+  }
 }
 
 export default INivelacionParaleloViewRepository;

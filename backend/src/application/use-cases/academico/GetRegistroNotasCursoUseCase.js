@@ -75,21 +75,28 @@ const agruparEstudiantes = (filas, notaMinima, pesosBimestres) => {
     // matriculas_materia.nota_final) y observacion sale de
     // calcularVeredictoMateria (misma función que usan Centralizador y el
     // folio del Libro), para que las tres pantallas coincidan siempre.
+    // ABANDONO es la excepción a gestionCompleta (mismo criterio que
+    // GetCentralizadorParaleloUseCase, Fase B): un estudiante retirado nunca
+    // completa los 4 bimestres, así que gatearlo detrás de gestionCompleta
+    // lo escondía siempre en Consolidado mientras Centralizador y el folio
+    // del Libro ya lo mostraban — divergencia detectada y cerrada en Fase E.
     const { gestionCompleta } = calcularNotaFinalGestion(
       bimestres.map((b) => ({ numero: b.numero, nota: b.suma })),
       pesosBimestres
     );
+    const veredicto = calcularVeredictoMateria(
+      { nota_final: est.notaFinal, estado: est.estadoMateria },
+      notaMinima
+    );
     let observacion = null;
-    if (gestionCompleta) {
-      const veredicto = calcularVeredictoMateria(
-        { nota_final: est.notaFinal, estado: est.estadoMateria },
-        notaMinima
-      );
-      observacion =
-        veredicto === ESTADOS_ACADEMICOS_FOLIO.APROBADO ||
-        veredicto === ESTADOS_ACADEMICOS_FOLIO.REPROBADO
-          ? veredicto
-          : null;
+    if (veredicto === ESTADOS_ACADEMICOS_FOLIO.ABANDONO) {
+      observacion = veredicto;
+    } else if (
+      gestionCompleta &&
+      (veredicto === ESTADOS_ACADEMICOS_FOLIO.APROBADO ||
+        veredicto === ESTADOS_ACADEMICOS_FOLIO.REPROBADO)
+    ) {
+      observacion = veredicto;
     }
     return {
       nro: index + 1,

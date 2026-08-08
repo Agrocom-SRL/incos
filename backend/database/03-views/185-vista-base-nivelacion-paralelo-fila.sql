@@ -36,6 +36,11 @@
 -- ⛔ Redefinida (Fase D frontend, 2026-08-06), preparada pero SIN aplicar en
 -- BD real: pendiente de aprobación explícita del usuario.
 --
+-- 2026-08-07 (aditivo, cierre Gap B2): se agrega `inscripcion_id` (ya
+-- propagado por la 135 desde `mm.inscripcion_id`) — sin esto, el ancla
+-- ALTERNA (materia arrastrada, `enrollmentId`+`planSubjectId`) no se podía
+-- armar desde esta vista para `ListMateriasPendientesEstudianteUseCase`.
+--
 -- Uso:
 --   SELECT * FROM vista_base_nivelacion_paralelo_fila
 --   WHERE paralelo_gestion_id = ? ORDER BY nombre_completo, asignatura_orden;
@@ -55,6 +60,7 @@ SELECT
   cen.oferta_curso_id          AS oferta_curso_id,
   cen.asignatura_plan_id       AS asignatura_plan_id,
   cen.matricula_materia_id     AS matricula_materia_id,
+  cen.inscripcion_id           AS inscripcion_id,
   cen.asignatura_sigla         AS asignatura_sigla,
   cen.asignatura_nombre        AS asignatura_nombre,
   cen.asignatura_orden         AS asignatura_orden,

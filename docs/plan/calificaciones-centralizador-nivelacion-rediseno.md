@@ -7,11 +7,15 @@
 > usuario pidió ir a la BASE del flujo (Calificaciones) en vez de seguir
 > ajustando Centralizador de arriba hacia abajo.
 >
-> **Estado:** ✔ Fases A, B, C2, D (backend + frontend), C y "riesgo por
-> inasistencia" (extensión de Fase D, ver bitácora) HECHAS. Fase E
-> (verificación cruzada final) sigue pendiente. Vistas 130/135/116/119/156/176
-> (modificadas), 185/187/188/189 (nuevas) preparadas, sin aplicar en BD real
-> — nada de esto mostrará datos reales hasta que se apliquen + se re-siembre
+> **Estado:** ✔ CICLO COMPLETO CERRADO, verificado con datos reales
+> (2026-08-08) — TODAS las fases HECHAS (A, B, C2, D backend+frontend, C,
+> "riesgo por inasistencia", Gap B2 y E). Fase E encontró y corrigió 2 bugs
+> reales de divergencia/regresión por código; la verificación POSITIVA
+> corrió en el navegador (Centralizador↔Nivelación↔Libro, badges cruzados,
+> cero errores). Único pendiente: aplicar la vista 189 (KPI docente, ver
+> bitácora). Vistas 130/135/116/119/156/176/185 (modificadas), 187/188(→22)
+> preparadas, sin aplicar en BD real — nada de esto mostrará datos reales
+> hasta que se apliquen + se re-siembre
 > los seeds 54 y 59 (RBAC de Nivelación ya rehabilitado).
 
 ## Contexto
@@ -321,7 +325,7 @@ y permisos YA existen, sin tocar RBAC/menú); grilla propia inspirada en el
 Excel real (estudiante × 4 bimestres × ANUAL, celdas = nota O estado de
 nivelación), con su propia query — NO reutiliza el pivote de Centralizador.
 
-### Fase E — Verificación de coherencia Libro/Folio tras A-C
+### Fase E — Verificación de coherencia Libro/Folio tras A-C ✔ HECHA (lo verificable sin BD real, ver bitácora)
 Re-ejecutar la verificación de la bitácora de
 `centralizador-nivelacion-plan-desarrollo.md`, más un caso nuevo: mismo
 estudiante×materia comparado en `BimestreConsolidadoPage` (post Fase A) vs
@@ -933,3 +937,110 @@ comportamiento donde no correspondía.
     escritura nueva, ningún cambio de estado automático — el radar solo
     alimenta las mismas pantallas de Acompañamiento que ya usa la directiva
     para decidir.
+- **2026-08-07 (Fase E ejecutada — lo verificable sin BD real):** la
+  verificación POSITIVA con datos reales (generar folios, abrir P2/P3 en
+  pantalla, exportar Excel) sigue bloqueada hasta aplicar las vistas +
+  usuario RECTOR/DIR_ACADEMICO de prueba — eso lo ejecuta el usuario. Se hizo
+  todo lo verificable por código:
+  - **Bug real encontrado y corregido — divergencia Consolidado vs
+    Centralizador/Folio**: `GetRegistroNotasCursoUseCase.agruparEstudiantes`
+    seguía gateando el veredicto detrás de `gestionCompleta` (igual que
+    `GetCentralizadorParaleloUseCase` ANTES de su fix de Fase B). Un
+    estudiante en ABANDONO/RETIRADO nunca completa los 4 bimestres, así que
+    Consolidado mostraba la observación en blanco mientras Centralizador y el
+    folio del Libro ya mostraban "ABANDONO" — exactamente la clase de
+    divergencia que esta fase existe para atrapar. Corregido con el MISMO
+    reordenamiento ya aplicado en Centralizador: `calcularVeredictoMateria`
+    se evalúa primero; ABANDONO se muestra siempre, APROBADO/REPROBADO siguen
+    gateados por `gestionCompleta`.
+  - **Auditoría completa de consumidores de 135/119** (más allá de los ya
+    revisados en Fase C): `ExportBoletinEstudiantePdfUseCase.js` confirmado
+    sin cambios necesarios (ya delega en `GetCentralizadorParaleloUseCase` +
+    `construirDatosBoletinEstudiante`, ambos ya corregidos en Fase C).
+    **Bug real encontrado y corregido — portal del estudiante**:
+    `GetMiMatriculaEstudianteUseCase` ("Mi matrícula") lee la MISMA vista 135
+    ya ensanchada por la Fase C, pero su lista de materias no llevaba
+    `estado` — una materia ABANDONO/RETIRADO aparecía en la lista como si el
+    estudiante la cursara activamente, sin ninguna marca. Corregido con un
+    filtro `ESTADOS_MATERIA_ACTIVA = ['INSCRITO', 'CURSANDO']` antes de armar
+    la lista (mismo criterio que ya protege al docente en cuaderno/asistencia,
+    vista 110) — deliberadamente NO se tocó la resolución de
+    `paraleloGestionId`/carrera/horario, que sigue usando las filas sin
+    filtrar. `GetMiBoletinEstudianteUseCase` ("Mi boletín") se dejó TAL CUAL
+    — ahí sí es correcto que la materia ABANDONO aparezca (el boletín es
+    historial, no roster activo); se le agregó de paso el color ámbar de
+    ABANDONO en `miBoletinColumns.jsx`/`mi-boletin.css` (caía al caso gris
+    por defecto, hallazgo menor de la misma auditoría).
+  - **Hallazgo menor, no corregido (documentado)**: `promedioGeneral` de
+    "Mi boletín" (usado también en la tarjeta de "Mi perfil") promedia
+    `promedioAnual` de TODAS las asignaturas con algún bimestre cargado,
+    incluida una materia ABANDONO con solo 1-2 bimestres antes del retiro —
+    antes de la Fase C esa materia ni siquiera entraba al promedio (estaba
+    excluida de la 135). Es una decisión de negocio abierta (¿el promedio
+    parcial de una materia abandonada debe contar en el promedio general?),
+    no un bug claro en ningún sentido — queda anotado para que el usuario
+    decida en una sesión aparte si hace falta excluirla.
+  - Verificado: `npx eslint` limpio en los 5 archivos backend+frontend
+    tocados de esta fase; smoke test cruzado con las funciones REALES
+    (`calcularVeredictoMateria`, `calcularNotaFinalGestion`, no
+    reimplementadas) comparando Centralizador/Consolidado/Folio en 5 casos
+    (aprobado, reprobado, cursando incompleto, ABANDONO incompleto, RETIRADO
+    sin ningún bimestre) — los 3 coinciden en todos los casos de
+    ABANDONO/RETIRADO tras el fix; smoke test aislado de
+    `GetMiMatriculaEstudianteUseCase` (3 materias, 1 ABANDONO → se excluye,
+    paralelo/carrera/horario se resuelven igual); dry-run del contenedor DI
+    completo (boot + resolución de ambos use cases tocados). No se tocó la
+    BD real en ningún momento.
+  - **Pendiente, requiere al usuario**: aplicar en BD las vistas
+    130/135/116/119/156/176/185 (modificadas) + 187/188(→22)/189 (nuevas),
+    re-sembrar los seeds 54 y 59, y crear/indicar un usuario RECTOR o
+    DIR_ACADEMICO de prueba — recién ahí se puede correr la verificación
+    POSITIVA completa (generar folios, comparar pantallas con datos reales,
+    exportar Excel/PDF).
+- **2026-08-08 (verificación POSITIVA ejecutada con datos reales — usuario
+  aplicó las vistas en la BD local):** el usuario aplicó por su cuenta las
+  vistas y los seeds 54/59 contra MAMP (`instituto_incos`). Verificado por
+  lectura (solo `SELECT`, sin tocar la BD):
+  - **9 de 10 vistas de esta ronda aplicadas y funcionando** contra datos
+    reales (2919 matrículas, 384 estudiantes, 140 asignaciones, todas en
+    `INSCRITO` — nadie usó aún la decisión administrativa de retiro):
+    135/116/156/185/22(ex-188)/176/130 devuelven filas sin error; 119/187
+    devuelven 0 filas correctamente (dependen de `bimestres_matricula`/
+    `nivelaciones`, ambas vacías — 0 filas es el resultado correcto, no un
+    error). Columnas nuevas confirmadas por valor real: `umbral_asistencia`
+    = 75.00 (seed 54), `inscripcion_id` poblado en la 185 (ancla alterna de
+    Nivelación lista), `estado` = INSCRITO en la 22.
+  - **Falta la vista 189** (`vista_calificacion_resumen_bimestre_docente_fila`,
+    KPI "Mis cursos" del docente): confirmado con `information_schema.VIEWS`
+    que NO existe — sin ella, `CalificacionCoordinacionRepository.listarResumenBimestresCursosPorDocente`
+    fallaría con error SQL al pedirse. No bloquea Centralizador/Nivelación
+    (endpoint aislado). Comando pendiente de correr:
+    `mysql ... < database/03-views/189-vista-calificacion-resumen-bimestre-docente-fila.sql`.
+  - **Seeds confirmados**: `configuracion_evaluacion` tiene las 4 filas
+    esperadas (incluida `ACOMPANAMIENTO_ASISTENCIA` vigente); los 3 permisos
+    `academico.nivelacion.*` y el grupo `aca_nivelaciones` están `activo=1`;
+    checksum `SELECT COUNT(*) FROM permisos` = 118 (igual al valor de
+    referencia documentado). `ADMIN_SISTEMA` NO necesita usuario
+    RECTOR/DIR_ACADEMICO aparte: `AuthRepository.js` le da TODO el catálogo
+    activo cuando `rol_id=1` (confirmado con `vista_catalogo_acciones_permisos_activas`,
+    los 4 códigos de nivelación aparecen ahí) — el único usuario sembrado
+    hoy es `admin`.
+  - **Smoke E2E con navegador real** (Playwright headless, instalado en el
+    scratchpad de la sesión, sin tocar el repo): login como `admin` →
+    Dashboard → Nivelaciones P1 nivel 1 (tabs por carrera, paralelos reales
+    con "Pendientes de nivelación: 0" correcto) → grilla P1 nivel 2 del
+    paralelo PRIMERO A (37 estudiantes, 9 materias reales con sigla+nombre+
+    tooltip, celdas `—` correctas sin datos, botón "Ver en Centralizador") →
+    Centralizador P2 del mismo paralelo (mismos 37 estudiantes, "Libro de
+    registro: LIBRO N° 14 · FOLIO 25-28" y "Nivelación: Sin pendientes de
+    nivelación" — **badges cruzados confirmados en ambos sentidos con datos
+    reales**, folio-tag "FOLIO 25" en la primera fila, botón "Boletín" por
+    estudiante) → Libros de registro (Libro N° 14, 44 folios, 391
+    estudiantes, estado CERRADO). `/academico/seguimiento` dio "Acceso
+    denegado" — **correcto**, ese módulo está deshabilitado a propósito
+    desde 2026-08-03 (decisión anterior del usuario, no relacionada con esta
+    ronda). Cero errores de consola, cero excepciones de página, cero
+    respuestas `/api/` con status ≥ 400 en las 7 pantallas recorridas.
+  - **Con esto, el ciclo completo (Fases A-E) queda verificado end-to-end
+    con datos reales, no solo por código.** Único pendiente operativo:
+    aplicar la vista 189 (comando arriba).

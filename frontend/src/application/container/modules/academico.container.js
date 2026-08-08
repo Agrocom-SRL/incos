@@ -56,6 +56,7 @@ import {
   RegistrarDecisionAdministrativaUseCase,
   ProgramarNivelacionUseCase,
   RegistrarResultadoNivelacionUseCase,
+  ListarMateriasPendientesEstudianteUseCase,
 } from '@useCases/academico/nivelaciones';
 import {
   ListCoordinacionAsistenciaDocentesUseCase,
@@ -309,6 +310,10 @@ export function registerAcademicoModule(factory) {
 
   factory.registrarResultadoNivelacion = () => {
     return new RegistrarResultadoNivelacionUseCase(NivelacionRepository);
+  };
+
+  factory.listarMateriasPendientesEstudiante = () => {
+    return new ListarMateriasPendientesEstudianteUseCase(NivelacionRepository);
   };
 
   return factory;

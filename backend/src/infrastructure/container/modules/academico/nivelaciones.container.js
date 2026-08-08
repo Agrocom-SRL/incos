@@ -17,6 +17,7 @@ import { RegistrarEventoHistorialMatriculaUseCase } from '../../../../applicatio
 import { RegistrarDecisionAdministrativaUseCase } from '../../../../application/use-cases/academico/nivelaciones/RegistrarDecisionAdministrativaUseCase.js';
 import { ProgramarNivelacionUseCase } from '../../../../application/use-cases/academico/nivelaciones/ProgramarNivelacionUseCase.js';
 import { RegistrarResultadoNivelacionUseCase } from '../../../../application/use-cases/academico/nivelaciones/RegistrarResultadoNivelacionUseCase.js';
+import { ListMateriasPendientesEstudianteUseCase } from '../../../../application/use-cases/academico/nivelaciones/ListMateriasPendientesEstudianteUseCase.js';
 import { ListHistorialMatriculaParaleloController } from '../../../../presentation/controllers/academico/nivelaciones/list-historial-matricula-paralelo.controller.js';
 import { ListPendientesNivelacionParaleloController } from '../../../../presentation/controllers/academico/nivelaciones/list-pendientes-nivelacion-paralelo.controller.js';
 import { ListNivelacionesPendientesController } from '../../../../presentation/controllers/academico/nivelaciones/list-nivelaciones-pendientes.controller.js';
@@ -24,6 +25,7 @@ import { RegistrarEventoHistorialMatriculaController } from '../../../../present
 import { RegistrarDecisionAdministrativaController } from '../../../../presentation/controllers/academico/nivelaciones/registrar-decision-administrativa.controller.js';
 import { ProgramarNivelacionController } from '../../../../presentation/controllers/academico/nivelaciones/programar-nivelacion.controller.js';
 import { RegistrarResultadoNivelacionController } from '../../../../presentation/controllers/academico/nivelaciones/registrar-resultado-nivelacion.controller.js';
+import { ListMateriasPendientesEstudianteController } from '../../../../presentation/controllers/academico/nivelaciones/list-materias-pendientes-estudiante.controller.js';
 import { buildNivelacionesRouter } from '../../../../presentation/routes/nivelaciones.routes.js';
 
 export function registerNivelacionesResource(container) {
@@ -110,6 +112,18 @@ export function registerNivelacionesResource(container) {
     (c) =>
       new RegistrarResultadoNivelacionUseCase({
         levelingRepository: c.resolve(REPOSITORIOS_TOKENS.levelingRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      }),
+  );
+
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.listMateriasPendientesEstudianteUseCase,
+    (c) =>
+      new ListMateriasPendientesEstudianteUseCase({
+        nivelacionParaleloViewRepository: c.resolve(
+          REPOSITORIOS_TOKENS.nivelacionParaleloViewRepository,
+        ),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       }),
   );
@@ -206,6 +220,19 @@ export function registerNivelacionesResource(container) {
       }),
   );
 
+  registerComponent(
+    container,
+    ACADEMICO_TOKENS.listMateriasPendientesEstudianteController,
+    (c) =>
+      new ListMateriasPendientesEstudianteController({
+        listMateriasPendientesEstudianteUseCase: c.resolve(
+          ACADEMICO_TOKENS.listMateriasPendientesEstudianteUseCase,
+        ),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      }),
+  );
+
   // ============================================
   // ROUTER
   // ============================================
@@ -230,6 +257,9 @@ export function registerNivelacionesResource(container) {
         programarNivelacionController: c.resolve(ACADEMICO_TOKENS.programarNivelacionController),
         registrarResultadoNivelacionController: c.resolve(
           ACADEMICO_TOKENS.registrarResultadoNivelacionController,
+        ),
+        listMateriasPendientesEstudianteController: c.resolve(
+          ACADEMICO_TOKENS.listMateriasPendientesEstudianteController,
         ),
       },
       middlewares: { validateRequest: c.resolve(SERVICIOS_TOKENS.validateRequest) },

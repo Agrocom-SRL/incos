@@ -492,6 +492,9 @@ export const NIVELACIONES_ENDPOINTS = {
   EXAMENES: `${API_BASE}/nivelaciones/examenes`,
   /** PATCH — cierra el examen con resultado (nota/estado). */
   EXAMEN_RESULTADO: (levelingId) => `${API_BASE}/nivelaciones/examenes/${levelingId}/resultado`,
+  /** GET — materias pendientes/arrastradas de un estudiante (B2, buscador sin contexto). */
+  MATERIAS_PENDIENTES_ESTUDIANTE: (estudianteId) =>
+    `${API_BASE}/nivelaciones/estudiante/${estudianteId}/pendientes`,
 };
 
 // ============================================
