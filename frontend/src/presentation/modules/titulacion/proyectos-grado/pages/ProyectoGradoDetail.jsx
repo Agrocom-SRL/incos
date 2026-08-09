@@ -19,6 +19,7 @@
 
 import { useState } from 'react';
 import { Flex } from 'antd';
+import { allSpacing } from '@theme/tokens';
 import {
   ArrowLeftOutlined,
   AuditOutlined,
@@ -39,6 +40,7 @@ import { usePermiso } from '@application-auth';
 import { useProyectoGradoDetailPage } from '@application-titulacion/proyectos-grado/hooks/state/useProyectoGradoDetailPage';
 import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import ProyectoGradoFichaHeader from '@titulacion/proyectos-grado/components/organisms/ProyectoGradoFichaHeader';
+import ProyectoGradoTimeline from '@titulacion/proyectos-grado/components/organisms/ProyectoGradoTimeline';
 import ProyectoDatosSection from '@titulacion/proyectos-grado/components/organisms/ProyectoDatosSection';
 import ProyectoIntegrantesSection from '@titulacion/proyectos-grado/components/organisms/ProyectoIntegrantesSection';
 import ProyectoBitacoraSection from '@titulacion/proyectos-grado/components/organisms/ProyectoBitacoraSection';
@@ -254,14 +256,15 @@ const ProyectoGradoDetail = () => {
         emptyDescription="No se encontró el proyecto solicitado."
       >
         {proyecto ? (
-          <>
+          <Flex vertical gap={allSpacing.marginLG}>
             <ProyectoGradoFichaHeader
               proyecto={proyecto}
               puedeEditar={puedeEditar}
               onEditar={handleEditar}
             />
+            <ProyectoGradoTimeline proyecto={proyecto} />
             <DetailTabsPanel items={tabItems} activeKey={activeKey} onChange={handleTabChange} />
-          </>
+          </Flex>
         ) : null}
       </DetailPageShell>
 

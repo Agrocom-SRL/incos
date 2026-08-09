@@ -22,9 +22,11 @@ import { PageHeader, DetailTabLabel } from '@molecules';
 import { ActionButton, BackButton } from '@atoms';
 import { DetailPageShell, DetailTabsPanel } from '@organisms';
 import { usePermiso } from '@application-auth';
+import { allSpacing } from '@theme/tokens';
 import { usePasantiaDetailPage } from '@application-titulacion/pasantias/hooks/state/usePasantiaDetailPage';
 import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import PasantiaFichaHeader from '@titulacion/pasantias/components/organisms/PasantiaFichaHeader';
+import PasantiaTimeline from '@titulacion/pasantias/components/organisms/PasantiaTimeline';
 import PasantiaDatosSection from '@titulacion/pasantias/components/organisms/PasantiaDatosSection';
 import PasantiaInformesSection from '@titulacion/pasantias/components/organisms/PasantiaInformesSection';
 import PasantiaSeguimientosSection from '@titulacion/pasantias/components/organisms/PasantiaSeguimientosSection';
@@ -133,14 +135,15 @@ const PasantiaDetail = () => {
         emptyDescription="No se encontró el trámite solicitado."
       >
         {pasantia ? (
-          <>
+          <Flex vertical gap={allSpacing.marginLG}>
             <PasantiaFichaHeader
               pasantia={pasantia}
               puedeEditar={puedeEditar}
               onEditar={handleEditar}
             />
+            <PasantiaTimeline pasantia={pasantia} />
             <DetailTabsPanel items={tabItems} activeKey={activeKey} onChange={setActiveKey} />
-          </>
+          </Flex>
         ) : null}
       </DetailPageShell>
 
@@ -151,6 +154,8 @@ const PasantiaDetail = () => {
         saving={transicionModal.saving}
         transiciones={transicionModal.transiciones}
         estadoActual={pasantia?.estado ?? null}
+        horasCumplidas={pasantia?.horasCumplidas ?? null}
+        horasRequeridas={pasantia?.horasRequeridas ?? null}
       />
       <InformePasantiaDrawer
         open={informes.drawer.open}

@@ -74,6 +74,32 @@ export const TRANSICIONES_PROYECTO = {
   CANCELADO: [],
 };
 
+/**
+ * Explicación de la consecuencia de CADA transición del modal genérico
+ * (`AprobarEtapaModal`), espejo exacto de `AprobarEtapaProyectoUseCase`
+ * (T11, backend): qué campo de fecha fija y si dispara algo automático. Se
+ * muestra en el modal ANTES de confirmar — el usuario reportó que elegir una
+ * opción del `Select` sin saber qué iba a pasar era confuso.
+ */
+const EXPLICACION_TRANSICION_PROYECTO = {
+  APROBADO_PERFIL: 'Se registrará la fecha de aprobación del perfil con la fecha de hoy.',
+  DESARROLLO: 'Se registrará la fecha de inicio del desarrollo con la fecha de hoy.',
+  PREDEFENSA: 'Se registrará la fecha de presentación a predefensa con la fecha de hoy.',
+  APROBADO_PREDEFENSA:
+    'Se registrará la fecha de aprobación de la predefensa con la fecha de hoy.',
+  DEFENSA:
+    'Se registrará la fecha de defensa con la fecha de hoy. El resultado final (aprobado o reprobado) se define después, al registrar el acta de defensa.',
+  CANCELADO:
+    'Esta acción cancela el proyecto de forma definitiva: no admite más transiciones ni puede revertirse desde el sistema.',
+};
+
+/** Texto de consecuencia de una transición del proyecto, o `null` si no aplica. */
+export const formatExplicacionTransicionProyecto = (estado) =>
+  EXPLICACION_TRANSICION_PROYECTO[estado] ?? null;
+
+/** Destinos irreversibles: exigen confirmación adicional antes de registrar (regla A5). */
+export const ESTADOS_TRANSICION_PROYECTO_IRREVERSIBLES = ['CANCELADO'];
+
 /** ENUM del backend (avances_proyecto.estado_revision). */
 export const ESTADOS_REVISION_AVANCE = [
   'PENDIENTE_REVISION',

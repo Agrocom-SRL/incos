@@ -13,10 +13,8 @@
 > reales de divergencia/regresión por código; la verificación POSITIVA
 > corrió en el navegador (Centralizador↔Nivelación↔Libro, badges cruzados,
 > cero errores). Único pendiente: aplicar la vista 189 (KPI docente, ver
-> bitácora). Vistas 130/135/116/119/156/176/185 (modificadas), 187/188(→22)
-> preparadas, sin aplicar en BD real — nada de esto mostrará datos reales
-> hasta que se apliquen + se re-siembre
-> los seeds 54 y 59 (RBAC de Nivelación ya rehabilitado).
+> bitácora) — el resto (130/135/116/119/156/176/185/187/22(ex-188)) ya está
+> aplicado en la BD local (MAMP) junto con los seeds 54 y 59.
 
 ## Contexto
 

@@ -361,24 +361,49 @@ añadir `LEFT JOIN planes_estudios` vía `eda.plan_estudio_id` a la vista 99
   por número de periodo `RenovarOfertaGestionUseCase.buildAsignaturaPlanMap`;
   catálogo por gestion_plan `ListCursosDisponiblesDocenteUseCase`.
 
-## Preguntas abiertas (solo el usuario puede responder)
+## Preguntas abiertas — TODAS RESUELTAS (2026-08-08)
 
-1. **TRASPASO / TRANSITABILIDAD**: ¿también eligen plan en su primera
-   inscripción (como NUEVO) o siempre reciben el vigente? El plan elegido
-   define contra qué `asignaturas_plan` se carga su `historial_previo`.
-2. **1.er año del plan anterior**: durante la transición, ¿se sigue ofertando
-   (repitentes de 1.º continúan en el plan viejo) o los repitentes de 1.º
-   pasan al plan nuevo? Define si la renovación debe excluir los paralelos de
-   1.er año del plan viejo y si el selector del NUEVO puede ofrecer el plan
-   anterior o solo el nuevo.
-3. **¿Selector limitado a 2 planes o N?** El modelo soporta N; se propone
-   mostrar todos los habilitados de la carrera (en la práctica 2).
-4. **Gate de habilitación (C2)**: ¿aprueba permitir habilitar un plan activo
-   no vigente cuando la carrera tiene estudiantes en curso con ese plan, o
-   prefiere que el plan anterior entre a las gestiones únicamente vía
-   renovación?
-5. **Backfill**: si un estudiante tuviera historial en 2 planes (caso raro),
-   ¿vale el criterio «plan del último año cursado»?
+1. **TRASPASO / TRANSITABILIDAD**: ✔ RESUELTO — eligen plan en su primera
+   inscripción, igual que NUEVO. Su `historial_previo` se carga contra el
+   plan elegido.
+2. **1.er año del plan anterior**: ✔ RESUELTO — sigue ofertándose. Los
+   repitentes de 1.º continúan en el plan viejo; la renovación NO excluye
+   sus paralelos; el selector del NUEVO puede ofrecer ambos planes.
+3. **¿Selector limitado a 2 planes o N?**: ✔ RESUELTO — todos los planes
+   habilitados de la carrera (N), sin límite artificial en código.
+4. **Gate de habilitación (C2)**: ✔ RESUELTO — **pospuesto**. No se
+   implementa en esta iteración; el plan anterior entra a una gestión
+   únicamente vía renovación (ya cubre el flujo estándar). Bloque C queda
+   reducido a C1 (resolución por número de periodo) + C3 (sin cambios).
+5. **Backfill (empate de plan)**: ✔ RESUELTO por datos reales — verificado
+   en la BD local (`vista_historial_academico_estudiante_fila`, 2026-08-08):
+   **0 estudiantes con historial en 2 planes distintos**. El criterio "plan
+   del último año cursado" no tiene ningún caso de empate que resolver hoy;
+   el backfill del bloque A2 puede ejecutarse tal cual está redactado, sin
+   necesitar una regla de desempate adicional.
+6. **Cambio de plan de un ANTIGUO (convalidación interna plan viejo→nuevo) —
+   RESUELTO (2026-08-01):** **NO queda fuera de alcance.** El usuario indica
+   que si se produce un cambio de plan de un estudiante ANTIGUO, el sistema
+   debe permitir **convalidar sus notas** contra el plan nuevo («si llega el
+   cambio de plan se debe permitir convalidar notas»). Reconfirma además la
+   premisa base del diseño: solo los estudiantes NUEVOS eligen plan al
+   matricularse; los ANTIGUOS no migran de plan por defecto («no se debe
+   mezclar los planes, los antiguos no eligen plan, solo los nuevos»).
+   **Alcance a definir en una iteración aparte** (no bloquea la Iteración 1
+   de este plan, que solo cubre matrícula de estudiantes NUEVOS): investigar
+   si el flujo de convalidación ya existente (`academico.trazabilidad
+   .traspaso.convalidar` / `transitabilidad.convalidar`, seed 59) es
+   reutilizable para "convalidar contra otro plan de la misma carrera", o si
+   este caso (cambio de plan sin traspaso de carrera) necesita su propio
+   caso de uso. Pendiente de planificar en un documento propio cuando se
+   priorice — no se toca en la Iteración 1 de matrícula.
+
+**Estado:** diseño completo, sin bloqueos de decisión. Sigue pendiente la
+**aprobación explícita del DDL** (bloque A, `ALTER TABLE
+estudiantes_datos_academicos ADD COLUMN plan_estudio_id...`) antes de
+implementar — el usuario pausó esta implementación el 2026-08-08 para
+priorizar una revisión de UX del módulo de Titulación (proyecto de
+grado/pasantías, flujo de cambio de estado). Retomar cuando se priorice.
 6. **Cambio de plan de un ANTIGUO (convalidación interna plan viejo→nuevo) —
    RESUELTO (2026-08-01):** **NO queda fuera de alcance.** El usuario indica
    que si se produce un cambio de plan de un estudiante ANTIGUO, el sistema
