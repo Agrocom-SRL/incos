@@ -8,7 +8,12 @@ import { PLANES_ESTUDIOS_ENDPOINTS } from '@api/endpoints';
 import { handleErrorResponse, handleSuccessResponse } from '@api/responseHandler';
 import { CATALOG_LIST_LIMIT, DEFAULT_LIST_PAGE } from '@application/constants/listPagination';
 
-export function usePlanesEstudiosApi({ carreraId, autoFetch = true } = {}) {
+/**
+ * `incluirInactivos` SOLO debe pasarse desde el catálogo de administración
+ * (tab Planes, con toggle de estado); otros consumidores (ej. selector de
+ * plan al crear paralelo) deben omitirlo y seguir viendo solo activos.
+ */
+export function usePlanesEstudiosApi({ carreraId, incluirInactivos = false, autoFetch = true } = {}) {
   const [planes, setPlanes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -21,6 +26,7 @@ export function usePlanesEstudiosApi({ carreraId, autoFetch = true } = {}) {
         page: DEFAULT_LIST_PAGE,
         limit: CATALOG_LIST_LIMIT,
         ...(carreraId ? { carrera_id: carreraId } : {}),
+        ...(incluirInactivos ? { incluirInactivos: true } : {}),
       };
       const response = await apiClient.get(PLANES_ESTUDIOS_ENDPOINTS.BASE, { params });
       const result = handleSuccessResponse(response);
@@ -38,7 +44,7 @@ export function usePlanesEstudiosApi({ carreraId, autoFetch = true } = {}) {
     } finally {
       setLoading(false);
     }
-  }, [carreraId]);
+  }, [carreraId, incluirInactivos]);
 
   useEffect(() => {
     if (autoFetch) {

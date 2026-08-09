@@ -69,6 +69,7 @@ const AcademicoPage = () => {
     refetch: refetchPlanesCatalog,
     searchText: planesSearchText,
     setSearchText: setPlanesSearchText,
+    toggleEstadoPlan,
   } = usePlanesTabPanel({ enabled: puedePlanes });
 
   const handleNuevoPlan = useCallback(() => {
@@ -98,6 +99,7 @@ const AcademicoPage = () => {
             refetch={refetchPlanesCatalog}
             searchText={planesSearchText}
             setSearchText={setPlanesSearchText}
+            toggleEstadoPlan={toggleEstadoPlan}
           />,
         ),
       });
@@ -141,6 +143,7 @@ const AcademicoPage = () => {
     refetchPlanesCatalog,
     planesSearchText,
     setPlanesSearchText,
+    toggleEstadoPlan,
   ]);
 
   const activeKey = useMemo(() => {

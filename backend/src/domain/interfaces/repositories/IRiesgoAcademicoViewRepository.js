@@ -4,10 +4,13 @@
  * Lecturas de riesgo pedagógico (módulo TUT · acompañamiento) desde las
  * vistas SQL calculadas (el riesgo NO es tabla):
  * - `vista_base_acompanamiento_riesgo_fila` (156): estudiante × materia con
- *   umbral parametrizable (configuracion_evaluacion ACOMPANAMIENTO_PEDAGOGICO)
- *   y flag en_riesgo.
- * - `vista_acompanamiento_riesgo_carrera` (157): agregado por gestión/carrera.
- * - `vista_acompanamiento_reprobacion_materia` (158): agregado por materia.
+ *   DOS dimensiones de umbral parametrizable (configuracion_evaluacion) —
+ *   nota (ACOMPANAMIENTO_PEDAGOGICO, flag en_riesgo) y asistencia
+ *   (ACOMPANAMIENTO_ASISTENCIA, flag en_riesgo_asistencia).
+ * - `vista_acompanamiento_riesgo_carrera` (157): agregado por gestión/carrera
+ *   (solo dimensión de nota).
+ * - `vista_acompanamiento_reprobacion_materia` (158): agregado por materia
+ *   (solo dimensión de nota).
  *
  * NO extiende IRepository: repositorio de SOLO LECTURA (arquetipo B / `views/`).
  */
@@ -18,7 +21,8 @@ export class IRiesgoAcademicoViewRepository {
    * @param {Object} filters
    *   - search: texto sobre nombre_completo/codigo_estudiante/asignatura
    *   - gestionId, carreraId, paraleloGestionId, docenteId (via asignación)
-   *   - soloEnRiesgo: si true, WHERE en_riesgo = 1 (default true en listados)
+   *   - soloEnRiesgo: si true, WHERE (en_riesgo = 1 OR en_riesgo_asistencia = 1)
+   *     (default true en listados)
    * @param {number} page
    * @param {number} limit
    * @returns {Promise<{rows: Array<Object>, total: number}>} Filas crudas snake_case

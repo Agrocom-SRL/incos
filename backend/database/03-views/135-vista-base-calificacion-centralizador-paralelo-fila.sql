@@ -28,6 +28,19 @@
 --   SELECT * FROM vista_base_calificacion_centralizador_paralelo_fila
 --   WHERE paralelo_gestion_id = ?
 --   ORDER BY nombre_completo, asignatura_orden;
+--
+-- 2026-08-06 (aditivo, Fase D frontend): se agregaron asignatura_plan_id
+-- (propagado de la 130) e inscripcion_id (mm.inscripcion_id, ya estaba en el
+-- JOIN) para que la vista 185 (Nivelación) pueda matchear un evento de
+-- historial_matricula anclado a una materia arrastrada (sin matrícula, ancla
+-- inscripcion_id+asignatura_plan_id) contra la columna correcta del pivote.
+--
+-- 2026-08-07 (Fase C, ABANDONO en Centralizador/Boletín): `emc` pasa de la
+-- vista 110 (restringida a INSCRITO/CURSANDO, pensada para el roster vivo de
+-- cuaderno/asistencia) a la 188 (mismo grano, sin filtro de estado) — un
+-- estudiante marcado ABANDONO/RETIRADO (Fase D, RegistrarDecisionAdministrativaUseCase)
+-- ya NO desaparece de esta vista; `mm.estado`/`nota_final` siguen viniendo
+-- del mismo caché de siempre, sin recalcular nada.
 -- ============================================
 
 USE instituto_incos;
@@ -41,6 +54,7 @@ SELECT
   g.anio                     AS gestion_anio,
   g.nombre                   AS gestion_nombre,
   add_.oferta_curso_id       AS oferta_curso_id,
+  add_.asignatura_plan_id    AS asignatura_plan_id,
   add_.id                    AS asignacion_docente_id,
   emc.estudiante_id          AS estudiante_id,
   emc.codigo                 AS codigo_estudiante,
@@ -51,6 +65,7 @@ SELECT
   add_.orden_visualizacion   AS asignatura_orden,
   NULLIF(TRIM(CONCAT_WS(' ', add_.docente_apellido_paterno, add_.docente_apellido_materno, add_.docente_nombres)), '') AS docente_nombre,
   emc.matricula_materia_id   AS matricula_materia_id,
+  mm.inscripcion_id          AS inscripcion_id,
   -- Puntos ACUMULADOS hasta la fecha por bimestre (nota_efectiva = consolidada o,
   -- si el bimestre sigue abierto, la suma del cuaderno teórico+práctico). Son
   -- puntos sobre 100, NO porcentaje: si solo se calificaron 10 pts, sale 10.
@@ -63,10 +78,11 @@ SELECT
   mm.nota_final              AS nota_final,
   mm.estado                  AS estado
 FROM vista_base_asignacion_docente_detalle add_
--- Base = matrícula ACTIVA (estudiante × asignatura), NO las notas: incluye a
--- todos los matriculados (estado INSCRITO/CURSANDO) aunque aún no tengan notas
--- de bimestre; las notas entran por LEFT JOIN (NULL donde no hay).
-INNER JOIN vista_base_calificacion_estudiante_matricula_curso emc
+-- Base = matrícula (estudiante × asignatura), NO las notas: incluye a todos
+-- los matriculados en CUALQUIER estado (INSCRITO/CURSANDO/ABANDONO/RETIRADO,
+-- ver 188) aunque aún no tengan notas de bimestre; las notas entran por LEFT
+-- JOIN (NULL donde no hay).
+INNER JOIN vista_base_calificacion_estudiante_matricula_curso_completa emc
   ON emc.asignacion_docente_id = add_.id
 INNER JOIN matriculas_materia mm
   ON mm.id = emc.matricula_materia_id
@@ -85,8 +101,9 @@ LEFT JOIN gestiones g
 WHERE add_.activo = TRUE
   AND add_.vigente = TRUE
 GROUP BY
-  add_.paralelo_gestion_id, add_.gestion_id, g.anio, g.nombre, add_.oferta_curso_id, add_.id,
+  add_.paralelo_gestion_id, add_.gestion_id, g.anio, g.nombre, add_.oferta_curso_id,
+  add_.asignatura_plan_id, add_.id,
   emc.estudiante_id, emc.codigo, est.ci, emc.nombre,
   add_.materia_sigla, add_.materia_nombre, add_.orden_visualizacion,
   add_.docente_apellido_paterno, add_.docente_apellido_materno, add_.docente_nombres,
-  emc.matricula_materia_id, mm.nota_final, mm.estado;
+  emc.matricula_materia_id, mm.inscripcion_id, mm.nota_final, mm.estado;

@@ -1,6 +1,6 @@
 /**
  * PATCH /api/v1/libros/:id/folios/:folioId/estado — transición de estado del
- * folio (BORRADOR → IMPRESO → FIRMADO / ANULADO) (dataFieldName: `folio`).
+ * folio (BORRADOR → ANULADO) (dataFieldName: `folio`).
  */
 export class CambiarEstadoFolioController {
   constructor({ cambiarEstadoFolioUseCase, logger, responseFormatter }) {

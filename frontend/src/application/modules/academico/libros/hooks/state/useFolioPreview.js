@@ -2,11 +2,11 @@
  * Estado de pantalla — Preview del folio (P3 · FolioPreviewPage).
  *
  * Réplica en pantalla del folio físico del centralizador: carga el detalle
- * (`useFolioDetalleApi`), la edición de fila ESTADO/OBSERVACIONES
- * (`useEditarFolioEstudianteApi`, deshabilitada si el folio está FIRMADO) y las
- * transiciones de estado Imprimir/Firmar/Anular (`useCambiarEstadoFolioApi`,
- * permiso APROBAR — lo gatea la página, no este hook). Toda la orquestación
- * vive aquí; la página solo compone.
+ * (`useFolioDetalleApi`), la edición de la observación de fila
+ * (`useEditarFolioEstudianteApi`, deshabilitada si el folio está ANULADO) y la
+ * anulación (`useCambiarEstadoFolioApi`, permiso APROBAR — lo gatea la
+ * página, no este hook; único estado destino: BORRADOR → ANULADO). Toda la
+ * orquestación vive aquí; la página solo compone.
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -60,22 +60,6 @@ export const useFolioPreview = () => {
     [cambiarEstadoFolio, libroId, folioIdNum, load, notification],
   );
 
-  const handleImprimir = useCallback(async () => {
-    const result = await cambiarEstado({ estado: 'IMPRESO' });
-    if (result.success) {
-      notification.success({ title: 'Folio marcado como impreso' });
-    }
-    return result;
-  }, [cambiarEstado, notification]);
-
-  const handleFirmar = useCallback(async () => {
-    const result = await cambiarEstado({ estado: 'FIRMADO' });
-    if (result.success) {
-      notification.success({ title: 'Folio firmado', description: 'El folio quedó FIRMADO: es inmutable.' });
-    }
-    return result;
-  }, [cambiarEstado, notification]);
-
   const handleAnular = useCallback(
     async (motivo) => {
       const result = await cambiarEstado({ estado: 'ANULADO', motivo });
@@ -125,8 +109,6 @@ export const useFolioPreview = () => {
     handleVolverAlLibro,
     refetch: load,
 
-    handleImprimir,
-    handleFirmar,
     handleAnular,
     cambiandoEstado,
 

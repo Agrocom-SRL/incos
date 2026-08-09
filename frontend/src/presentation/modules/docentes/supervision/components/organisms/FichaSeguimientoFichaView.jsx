@@ -9,12 +9,12 @@
  * duplicar el JSX de lectura). Solo lectura: no recibe `form` ni dispara
  * mutaciones.
  *
- * Degradación por contrato: el wrapper self del portal (`GET /mis-fichas`)
- * reutiliza la vista 174 (listado), que NO trae los 9 TEXT de observaciones
- * ni los 4 SI/NO de documentación (solo viven en la entidad raíz, expuesta
- * por `GET /:id`, DETALLE — sin permiso para DOCENTE). Se detecta por la
- * AUSENCIA de la clave (`undefined`, a diferencia de `null` = capturado vacío
- * en la ficha completa) y esas secciones simplemente no se muestran.
+ * `GET /mis-fichas` (portal del docente) trae la ficha completa, TEXT de
+ * observaciones y SI/NO de documentación incluidos —
+ * `ListMisFichasSeguimientoDocenteUseCase` batchea la entidad raíz por los
+ * ids de sus propias fichas (anti-IDOR resuelto en servidor, sin permiso
+ * DETALLE nuevo). `tieneDetalleCompleto` queda como chequeo defensivo (la
+ * clave está `undefined` solo si llegara una fila sin ese batch).
  */
 
 import { CalendarOutlined, FileTextOutlined, SolutionOutlined, TeamOutlined } from '@ant-design/icons';

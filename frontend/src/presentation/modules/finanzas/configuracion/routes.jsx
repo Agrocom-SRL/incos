@@ -1,25 +1,23 @@
 // src/presentation/modules/finanzas/configuracion/routes.jsx
 /**
- * Finanzas → Config. de pagos (ítem de menú FIN, order 5).
+ * Finanzas → Config. de pagos (ítem de menú FIN, order 4 — el último).
  *
  * Pantalla de configuración de pagos de la gestión vigente: métodos de pago,
- * bancos autorizados, cuentas de pago y becas/descuentos (catálogo maestro),
- * en un sistema de tabs (`?tab=`). Módulo NUEVO e independiente del legacy
- * `@pagos`. El aporte (configuracion_aportes) vive aquí como página hija sin
- * ítem de menú propio (`/finanzas/configuracion/aportes`, permiso
- * `finanzas.aporte`), accesible desde el botón "Configuración de aportes" de
- * `ConfigPagosPage` (mismo patrón `menu: null` + `breadcrumbParent` de
- * `finanzas/reportes/routes.jsx`).
+ * bancos autorizados y cuentas de pago, en un sistema de tabs (`?tab=`).
+ * Módulo NUEVO e independiente del legacy `@pagos`. El aporte
+ * (configuracion_aportes) vive aquí como página hija sin ítem de menú propio
+ * (`/finanzas/configuracion/aportes`, permiso `finanzas.aporte`), accesible
+ * desde el botón "Configuración de aportes" de `ConfigPagosPage` (mismo
+ * patrón `menu: null` + `breadcrumbParent` de `finanzas/reportes/routes.jsx`).
  *
  * Fichas de detalle de bancos/cuentas/métodos (sin ítem de menú propio,
  * mismo permiso `finanzas.configuracion.pago`, acciones DETALLE/EDITAR/
  * ELIMINAR según el botón): reemplazan el toggle activo/inactivo que antes
  * vivía en la tabla.
  *
- * Becas y descuentos (catálogo MAESTRO, permiso propio `finanzas.beca-descuento`):
- * el LISTADO vive EMBEBIDO como 4to tab de `ConfigPagosPage`
- * (`BecasDescuentosTabPanel`, auto-contenido) — NO es una ruta propia. Solo
- * alta/edición/detalle son páginas de navegación completa.
+ * Becas y descuentos (catálogo maestro) YA NO vive aquí — es su propio ítem
+ * de menú "Configuración de becas" (`finanzas/becas/routes.jsx`, permiso
+ * `finanzas.beca-descuento`), separado del concepto de parámetros de pago.
  *
  * Permiso de la ruta de entrada: finanzas.configuracion.pago (LISTAR). El
  * alta (bancos/cuentas) usa CREAR y edición/toggle/eliminar usan EDITAR/
@@ -38,15 +36,6 @@ const BancoFormEditConnector = lazy(() => import('./connectors/BancoFormEditConn
 const CuentaFormCreateConnector = lazy(() => import('./connectors/CuentaFormCreateConnector.jsx'));
 const CuentaFormEditConnector = lazy(() => import('./connectors/CuentaFormEditConnector.jsx'));
 const MetodoFormEditConnector = lazy(() => import('./connectors/MetodoFormEditConnector.jsx'));
-const BecaDescuentoFormCreateConnector = lazy(
-  () => import('./connectors/BecaDescuentoFormCreateConnector.jsx'),
-);
-const BecaDescuentoFormEditConnector = lazy(
-  () => import('./connectors/BecaDescuentoFormEditConnector.jsx'),
-);
-const BecaDescuentoDetailConnector = lazy(
-  () => import('./connectors/BecaDescuentoDetailConnector.jsx'),
-);
 
 export const finanzasConfiguracionRoutes = [
   {
@@ -59,7 +48,7 @@ export const finanzasConfiguracionRoutes = [
       label: 'Config. de pagos',
       module: 'FIN',
       parent: 'FIN',
-      order: 5,
+      order: 4,
     },
   },
   {
@@ -155,39 +144,6 @@ export const finanzasConfiguracionRoutes = [
     key: 'FIN-CFG-METODO-DETALLE',
     breadcrumbLabel: 'Método',
     permiso: 'finanzas.configuracion.pago',
-    accion: 'DETALLE',
-    menu: null,
-    breadcrumbParent: 'FIN-CFG',
-  },
-
-  // Becas y descuentos (catálogo maestro) — alta/edición/detalle; el listado
-  // vive embebido en el tab "Becas y descuentos" de ConfigPagosPage.
-  {
-    path: '/finanzas/configuracion/becas-descuentos/nueva',
-    element: <BecaDescuentoFormCreateConnector />,
-    key: 'FIN-CFG-BECAS-NUEVA',
-    breadcrumbLabel: 'Nueva beca o descuento',
-    permiso: 'finanzas.beca-descuento',
-    accion: 'CREAR',
-    menu: null,
-    breadcrumbParent: 'FIN-CFG',
-  },
-  {
-    path: '/finanzas/configuracion/becas-descuentos/:id/editar',
-    element: <BecaDescuentoFormEditConnector />,
-    key: 'FIN-CFG-BECAS-EDITAR',
-    breadcrumbLabel: 'Editar beca o descuento',
-    permiso: 'finanzas.beca-descuento',
-    accion: 'EDITAR',
-    menu: null,
-    breadcrumbParent: 'FIN-CFG',
-  },
-  {
-    path: '/finanzas/configuracion/becas-descuentos/:id',
-    element: <BecaDescuentoDetailConnector />,
-    key: 'FIN-CFG-BECAS-DETALLE',
-    breadcrumbLabel: 'Detalle de beca o descuento',
-    permiso: 'finanzas.beca-descuento',
     accion: 'DETALLE',
     menu: null,
     breadcrumbParent: 'FIN-CFG',

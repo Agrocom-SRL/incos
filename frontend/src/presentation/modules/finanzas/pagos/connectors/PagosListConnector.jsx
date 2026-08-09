@@ -1,15 +1,15 @@
 /**
- * Conector: listado de pagos de aporte (Finanzas) — provider + página.
+ * Conector: Registro de ingresos (Finanzas) — provider + página.
  * Punto de entrada lazy del ítem de menú FIN-PAG.
  */
 
-import { PagosListProvider } from '@application-finanzas/providers/PagosListProvider';
+import { IngresosListProvider } from '@application-finanzas/providers/IngresosListProvider';
 import PagosList from '@finanzas/pagos/pages/PagosList';
 
 const PagosListConnector = () => (
-  <PagosListProvider>
+  <IngresosListProvider>
     <PagosList />
-  </PagosListProvider>
+  </IngresosListProvider>
 );
 
 export default PagosListConnector;

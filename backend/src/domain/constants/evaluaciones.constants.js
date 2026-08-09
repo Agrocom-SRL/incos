@@ -44,6 +44,35 @@ export const ESTADOS_NIVELACION = {
 
 export const ESTADOS_NIVELACION_VALUES = Object.values(ESTADOS_NIVELACION);
 
+/**
+ * Máquina de estados de una nivelación (schema 16-nivelaciones.sql):
+ * PROGRAMADA → EN_CURSO → APROBADA/REPROBADA/CANCELADA. Se permite saltar
+ * EN_CURSO cuando el resultado se registra en un solo paso (mismo patrón que
+ * TRANSICIONES_FOLIO en libros.constants.js). Estados finales sin salida.
+ */
+export const TRANSICIONES_NIVELACION = {
+  [ESTADOS_NIVELACION.PROGRAMADA]: [
+    ESTADOS_NIVELACION.EN_CURSO,
+    ESTADOS_NIVELACION.APROBADA,
+    ESTADOS_NIVELACION.REPROBADA,
+    ESTADOS_NIVELACION.CANCELADA,
+  ],
+  [ESTADOS_NIVELACION.EN_CURSO]: [
+    ESTADOS_NIVELACION.APROBADA,
+    ESTADOS_NIVELACION.REPROBADA,
+    ESTADOS_NIVELACION.CANCELADA,
+  ],
+  [ESTADOS_NIVELACION.APROBADA]: [],
+  [ESTADOS_NIVELACION.REPROBADA]: [],
+  [ESTADOS_NIVELACION.CANCELADA]: [],
+};
+
+/** Estados finales de una nivelación (requieren nota, salvo CANCELADA). */
+export const ESTADOS_NIVELACION_FINALES = [
+  ESTADOS_NIVELACION.APROBADA,
+  ESTADOS_NIVELACION.REPROBADA,
+];
+
 export const ESTADOS_ASISTENCIA = {
   PRESENTE: 'PRESENTE',
   AUSENTE: 'AUSENTE',
@@ -58,3 +87,23 @@ export const ESTADOS_HISTORIAL_PREVIO = {
 };
 
 export const ESTADOS_HISTORIAL_PREVIO_VALUES = Object.values(ESTADOS_HISTORIAL_PREVIO);
+
+/**
+ * Catálogo fijo del verdicto de "Observación del bimestre" en el Centralizador
+ * (P3, `bimestres_matricula.observaciones`). Mismos literales que ya usan los
+ * exports Excel de Consolidado/Planilla (`ConsolidadoSheetBuilder.js`,
+ * `PlanillaCalificacionesSheetBuilder.js`) y que el documento oficial
+ * "PLANILLA CENTRALIZADORA DE CALIFICACIONES" — no es un catálogo nuevo, es el
+ * mismo verdicto ya usado en otro consumidor. La columna sigue siendo TEXT
+ * libre en BD (sin ENUM): el catálogo se valida en el use case, no en schema.
+ */
+export const VERDICTOS_OBSERVACION_BIMESTRE = {
+  APROBADO: 'APROBADO/A',
+  REPROBADO: 'REPROBADO/A',
+  ABANDONO: 'ABANDONO',
+  NO_SE_PRESENTO: 'NO SE PRESENTO'
+};
+
+export const VERDICTOS_OBSERVACION_BIMESTRE_VALUES = Object.values(
+  VERDICTOS_OBSERVACION_BIMESTRE
+);

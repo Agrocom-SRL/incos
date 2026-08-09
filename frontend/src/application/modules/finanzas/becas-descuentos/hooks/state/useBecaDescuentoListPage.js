@@ -1,9 +1,9 @@
 /**
- * Hook de pantalla: listado del catálogo maestro Becas y descuentos. Se
- * consume desde `BecasDescuentosTabPanel` (Config. de pagos · Finanzas): el
- * listado vive EMBEBIDO como 4to tab (no es una ruta propia). Aplica el mismo
- * filtro de texto en cliente que `useDiscapacidadesList` (catálogo corto) y
- * expone el toggle rápido activo/inactivo de la columna "Estado"
+ * Hook de pantalla: listado del catálogo maestro Becas y descuentos
+ * ("Configuración de becas", ítem de menú propio de Finanzas — antes vivía
+ * embebido como 4to tab de "Config. de pagos"). Aplica el mismo filtro de
+ * texto en cliente que `useDiscapacidadesList` (catálogo corto) y expone el
+ * toggle rápido activo/inactivo de la columna "Estado"
  * (`useToggleEstadoCatalogo`, PATCH /becas-descuentos/:id/estado).
  */
 
@@ -29,6 +29,11 @@ export const useBecaDescuentoListPage = () => {
     refetch,
   });
 
+  const breadcrumbItems = useMemo(
+    () => [{ title: 'Inicio', href: '/' }, { title: 'Finanzas' }, { title: 'Config. de becas' }],
+    [],
+  );
+
   return {
     becasDescuentos: filteredData,
     loading,
@@ -38,6 +43,7 @@ export const useBecaDescuentoListPage = () => {
     searchText,
     setSearchText,
     toggleEstado,
+    breadcrumbItems,
   };
 };
 

@@ -12,6 +12,7 @@ const ParaleloCarreraFormControl = ({ value, onChange, form, ...pickerProps }) =
       onChange?.(next);
       if (form && Number(prev) !== Number(next)) {
         form.setFieldValue('periodo_id', undefined);
+        form.setFieldValue('plan_estudio_id', undefined);
       }
     }}
   />

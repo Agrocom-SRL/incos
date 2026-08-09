@@ -8,19 +8,53 @@
 .navigation-menu {
     border: none;
     background: transparent;
+    /* padding simétrico controla el margen a los costados; antes `width: 94%`
+       dejaba una franja sin estilo a la derecha (el fondo del item/hover no
+       llegaba hasta ahí) mientras la izquierda sí tenía padding — asimétrico
+       y "sin forma" del lado derecho. */
     padding: 0 var(--spacing-sm);
-    width: 94%;
+    width: 100%;
 }
 
-.navigation-menu .ant-menu-item {
+/* control-height-sm (32px) + spacing-xs (4px): con el texto en fontSizeSM
+   (14px, ver más abajo) el alto/margen anterior (control-height 40px +
+   spacing-sm 8px, pensados para 16px) quedaba con demasiado aire. Misma
+   regla para item y título de submódulo (Institucional, Configuración...)
+   para que el ritmo vertical sea uniforme entre items y módulos. */
+.navigation-menu .ant-menu-item,
+.navigation-menu .ant-menu-submenu-title {
     border-radius: var(--border-radius-sm);
-    margin: var(--spacing-sm) 0;
-    height: var(--control-height);
-    line-height: var(--control-height);
+    margin: var(--spacing-xs) 0;
+    /* !important en alto/line-height + padding-block en 0: el CSS-in-JS de
+       AntD trae su propio paddingBlock/height pensado para fontSize 16px y
+       gana la cascada si no se fuerza — quedaba una caja más alta que
+       `--control-height-sm`, con aire de más arriba/abajo del ícono+texto. */
+    height: var(--control-height-sm) !important;
+    line-height: var(--control-height-sm) !important;
+    padding-top: var(--spacing-md) !important;
+    padding-bottom: var(--spacing-md) !important;
+    /* AntD calcula el padding-left/right por JS y lo aplica como estilo
+       INLINE (`style="padding-left: 24px"`, según nivel de anidación) — hay
+       que pisar las propiedades físicas exactas, no `padding-inline`
+       (lógica): mezclar lógica vs física contra un inline no siempre
+       resuelve a favor del !important en todos los navegadores. */
+    padding-left: var(--spacing-sm) !important;
+    padding-right: var(--spacing-sm) !important;
     transition: all var(--transition-base);
     display: flex;
     align-items: center;
     overflow: hidden;
+}
+
+/* Items/módulos de PRIMER NIVEL (hijos directos de la raíz, `.ant-menu-root`
+   — AntD reserva esa clase solo para el `<ul>` raíz, los anidados usan
+   `.ant-menu-sub`): más margen que los anidados porque cada uno es un
+   módulo distinto (Dashboard, Institucional, Configuración...) y necesita
+   diferenciarse del siguiente; dentro de un mismo módulo los items sí se
+   pueden ver más juntos. */
+.navigation-menu .ant-menu-root>.ant-menu-item,
+.navigation-menu .ant-menu-root>.ant-menu-submenu>.ant-menu-submenu-title {
+    margin: var(--spacing-sm) 0;
 }
 
 /* Eliminar borde lateral de Ant Design en item seleccionado */
@@ -91,17 +125,25 @@
     color: var(--color-menu-item-selected-color) !important;
 }
 
-.navigation-menu .ant-menu-item .anticon {
+.navigation-menu .ant-menu-item .anticon,
+.navigation-menu .ant-menu-submenu-title .anticon {
     font-size: var(--font-size-base);
-    margin-right: var(--spacing-sm);
+    margin-right: var(--spacing-xs);
     flex-shrink: 0;
     min-width: var(--font-size-base);
     text-align: center;
 }
 
-.navigation-menu .ant-menu-item span {
+/* fontSizeSM (14px, no el --font-size-base de 16px): el panel (274px) con
+   varios niveles anidados no da suficiente ancho para labels largos al
+   tamaño base — texto más chico en vez de 2 líneas para no romper el alto
+   fijo (--control-height) que comparten todos los items, cortos o largos. */
+.navigation-menu .ant-menu-item span,
+.navigation-menu .ant-menu-submenu-title span {
+    font-size: var(--font-size-sm);
     white-space: nowrap;
     overflow: hidden;
+    text-overflow: ellipsis;
     transition: opacity var(--transition-base), width var(--transition-base);
 }
 
@@ -113,19 +155,19 @@
 
 /* Contenedor ul de submenús de primer nivel (segundo nivel) - desplazar con margin-left */
 .navigation-menu .ant-menu-submenu .ant-menu {
-    margin-left: var(--spacing-base) !important;
-    padding-left: var(--spacing-sm) !important;
+    margin-left: var(--spacing-sm) !important;
+    padding-left: var(--spacing-xs) !important;
 }
 
 /* Items dentro de submenús de primer nivel - padding consistente igual al nivel 1 */
 .navigation-menu .ant-menu-submenu .ant-menu-item {
-    padding-left: var(--spacing-base) !important;
+    padding-left: var(--spacing-sm) !important;
 }
 
 /* Títulos de submenú de segundo nivel - alinear con items del mismo nivel */
 .navigation-menu .ant-menu-submenu .ant-menu-submenu>.ant-menu-submenu-title {
     margin-left: 0 !important;
-    padding-left: var(--spacing-base) !important;
+    padding-left: var(--spacing-sm) !important;
 }
 
 /* ============================================================================

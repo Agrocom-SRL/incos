@@ -68,6 +68,10 @@
   color: var(--bimestre-vigente-text);
 }
 
+.mi-boletin-grid__nota-final--abandono {
+  color: var(--ant-color-warning, #d46b08);
+}
+
 /* Recuento de asignaturas en la cabecera de la tarjeta de calificaciones. */
 .mi-boletin__conteo {
   font-size: var(--font-size-sm);

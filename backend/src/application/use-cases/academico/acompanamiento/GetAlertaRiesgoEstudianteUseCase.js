@@ -38,6 +38,10 @@ export class GetAlertaRiesgoEstudianteUseCase {
     const materias = RiesgoAcademicoMapper.alertaRowsToPresentation(rows);
     const primera = materias[0];
     const materiasEnRiesgo = materias.filter((materia) => materia.enRiesgo);
+    const materiasEnRiesgoAsistencia = materias.filter((materia) => materia.enRiesgoAsistencia);
+    const materiasEnRiesgoTotal = materias.filter(
+      (materia) => materia.enRiesgo || materia.enRiesgoAsistencia
+    );
 
     const alertaEstudiante = {
       estudianteId: primera.estudianteId,
@@ -49,16 +53,19 @@ export class GetAlertaRiesgoEstudianteUseCase {
       carreraColorHex: primera.carreraColorHex,
       gestionId: primera.gestionId,
       umbralRiesgo: primera.umbralRiesgo,
+      umbralAsistencia: primera.umbralAsistencia,
       totalMaterias: materias.length,
       materiasEnRiesgo: materiasEnRiesgo.length,
-      enRiesgo: materiasEnRiesgo.length > 0,
+      materiasEnRiesgoAsistencia: materiasEnRiesgoAsistencia.length,
+      materiasEnRiesgoTotal: materiasEnRiesgoTotal.length,
+      enRiesgo: materiasEnRiesgoTotal.length > 0,
       materias,
     };
 
     this.logger.info('[Acompañamiento] Detalle de riesgo de estudiante obtenido', {
       estudianteId,
       materias: materias.length,
-      enRiesgo: materiasEnRiesgo.length,
+      enRiesgo: materiasEnRiesgoTotal.length,
     });
 
     return { alertaEstudiante };

@@ -43,13 +43,21 @@ import {
   AbrirLibroUseCase,
   ObtenerLibroPorIdUseCase,
   EditarLibroUseCase,
-  ListarParalelosLibroUseCase,
-  GenerarFoliosParaleloUseCase,
   GenerarFoliosGestionUseCase,
   ObtenerFolioPorIdUseCase,
   CambiarEstadoFolioUseCase,
   EditarFolioEstudianteUseCase,
 } from '@useCases/academico/libros';
+import {
+  ListPendientesPorParaleloUseCase,
+  ObtenerNivelacionParaleloUseCase,
+  ListNivelacionesPendientesUseCase,
+  RegistrarEventoHistorialUseCase,
+  RegistrarDecisionAdministrativaUseCase,
+  ProgramarNivelacionUseCase,
+  RegistrarResultadoNivelacionUseCase,
+  ListarMateriasPendientesEstudianteUseCase,
+} from '@useCases/academico/nivelaciones';
 import {
   ListCoordinacionAsistenciaDocentesUseCase,
   ListMisCursosAsistenciaUseCase,
@@ -77,6 +85,7 @@ import AvanceAcademicoRepository from '@infrastructure/repositories/AvanceAcadem
 import DesercionRepository from '@infrastructure/repositories/DesercionRepository';
 import TipoEvaluacionRepository from '@infrastructure/repositories/TipoEvaluacionRepository';
 import LibroRegistroRepository from '@infrastructure/repositories/LibroRegistroRepository';
+import NivelacionRepository from '@infrastructure/repositories/NivelacionRepository';
 
 /**
  * Registra los Use Cases del módulo académico
@@ -258,14 +267,6 @@ export function registerAcademicoModule(factory) {
     return new EditarLibroUseCase(LibroRegistroRepository);
   };
 
-  factory.listarParalelosLibro = () => {
-    return new ListarParalelosLibroUseCase(LibroRegistroRepository);
-  };
-
-  factory.generarFoliosParalelo = () => {
-    return new GenerarFoliosParaleloUseCase(LibroRegistroRepository);
-  };
-
   factory.generarFoliosGestion = () => {
     return new GenerarFoliosGestionUseCase(LibroRegistroRepository);
   };
@@ -280,6 +281,39 @@ export function registerAcademicoModule(factory) {
 
   factory.editarFolioEstudiante = () => {
     return new EditarFolioEstudianteUseCase(LibroRegistroRepository);
+  };
+
+  // Nivelación (ítem ACA-NIV; permisos academico.nivelacion.{ver,inscribir,aprobar})
+  factory.listarNivelacionesPendientesPorParalelo = () => {
+    return new ListPendientesPorParaleloUseCase(NivelacionRepository);
+  };
+
+  factory.obtenerNivelacionParalelo = () => {
+    return new ObtenerNivelacionParaleloUseCase(NivelacionRepository);
+  };
+
+  factory.listarNivelacionesPendientes = () => {
+    return new ListNivelacionesPendientesUseCase(NivelacionRepository);
+  };
+
+  factory.registrarEventoHistorialNivelacion = () => {
+    return new RegistrarEventoHistorialUseCase(NivelacionRepository);
+  };
+
+  factory.registrarDecisionAdministrativaNivelacion = () => {
+    return new RegistrarDecisionAdministrativaUseCase(NivelacionRepository);
+  };
+
+  factory.programarNivelacion = () => {
+    return new ProgramarNivelacionUseCase(NivelacionRepository);
+  };
+
+  factory.registrarResultadoNivelacion = () => {
+    return new RegistrarResultadoNivelacionUseCase(NivelacionRepository);
+  };
+
+  factory.listarMateriasPendientesEstudiante = () => {
+    return new ListarMateriasPendientesEstudianteUseCase(NivelacionRepository);
   };
 
   return factory;

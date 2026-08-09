@@ -5,10 +5,15 @@
  * y la PIVOTA a matriz: columnas = asignaturas (identidad = oferta_curso_id,
  * orden por asignatura_orden), filas = estudiantes (orden por nombre_completo).
  * Cada celda lleva las 4 notas de bimestre, el promedio anual y la nota final
- * tal cual los entrega la vista, MÁS la nota anual ponderada (`notaAnual`),
- * `gestionCompleta` y la `observacion` (APROBADO/REPROBADO) calculadas con los
- * pesos de bimestre de la política — el mismo cálculo que el Registro académico
- * por curso, para que el número coincida en ambas pantallas.
+ * tal cual los entrega la vista, MÁS `notaAnual`/`gestionCompleta`/`observacion`
+ * (APROBADO/REPROBADO). `gestionCompleta` (¿están los 4 bimestres cargados?)
+ * sigue viniendo de `calcularNotaFinalGestion` con los pesos de la política,
+ * pero la nota y el veredicto YA NO se recalculan aquí: `notaAnual` es
+ * `nota_final` (el mismo caché autoritativo de `matriculas_materia` que usa
+ * el folio del Libro de registro) y `observacion` sale de
+ * `calcularVeredictoMateria` (`libros/helpers/folioCeldasHelper.js`) — la
+ * MISMA función que usa el folio, para que ambas pantallas emitan siempre el
+ * mismo veredicto sobre el mismo dato.
  *
  * Integración con Libros de registro (opcional, no rompe si no está inyectada):
  * si `libroRegistroViewRepository` está presente, agrega `libro` (cabecera del
@@ -19,6 +24,8 @@
 
 import { cargarCuotasPoliticaGestion } from '../../utils/obtenerCuotasDesdePolitica.js';
 import { calcularNotaFinalGestion } from '../../utils/cuadernoNotasCalculo.js';
+import { calcularVeredictoMateria } from './libros/helpers/folioCeldasHelper.js';
+import { ESTADOS_ACADEMICOS_FOLIO } from '../../../domain/constants/libros.constants.js';
 
 const toNumberOrNull = (value) => (value == null ? null : Number(value));
 
@@ -118,39 +125,54 @@ export class GetCentralizadorParaleloUseCase {
 
       const estudiante = estudiantesMap.get(estudianteId);
 
-      // Nota ANUAL ponderada por asignatura: Σ(nota_bimestre × peso) / Σ(pesos de
-      // los 4 bimestres). El divisor es siempre el 100 % del año, así un bimestre
-      // aún no cargado NO infla la nota (mismo cálculo que el Consolidado por
-      // curso → el mismo número aparece en ambas pantallas). 'gestionCompleta' es
-      // true solo cuando los 4 bimestres tienen nota; recién entonces hay estado.
+      // 'gestionCompleta' (¿están los 4 bimestres cargados?) sigue viniendo de
+      // calcularNotaFinalGestion con los pesos de la política — eso NO cambia.
+      // La nota y el veredicto YA NO se recalculan aquí: notaAnual es
+      // nota_final (el mismo caché autoritativo que usa el folio del Libro) y
+      // observacion sale de calcularVeredictoMateria (misma función que usa
+      // el folio) — así ambas pantallas emiten siempre el mismo veredicto
+      // sobre el mismo dato.
       const bimes = [
         toNumberOrNull(row.bim1),
         toNumberOrNull(row.bim2),
         toNumberOrNull(row.bim3),
         toNumberOrNull(row.bim4),
       ];
-      const { notaFinal: notaAnual, gestionCompleta } = calcularNotaFinalGestion(
+      const { gestionCompleta } = calcularNotaFinalGestion(
         bimes.map((nota, i) => ({ numero: i + 1, nota })),
         pesosBimestres,
       );
-      let observacion = null;
-      if (gestionCompleta && notaAnual != null) {
-        observacion = notaAnual >= notaMinimaAprobacion ? 'APROBADO' : 'REPROBADO';
-      }
+      const notaFinal = toNumberOrNull(row.nota_final);
 
       // La nota anual solo es un dato real cuando la gestión está completa (4
       // bimestres cargados). Con gestión incompleta se expone null, igual que
       // la observación — mostrar un número aquí induciría a leerlo como
       // definitivo cuando en realidad es un cálculo parcial sobre bimestres
-      // sin cargar (bug reportado: antes solo se gateaba 'observacion').
+      // sin cargar (bug histórico ya corregido: antes solo se gateaba 'observacion').
+      // ABANDONO es la excepción: `calcularVeredictoMateria` lo decide por
+      // `row.estado` (retiro real), no por bimestres cargados — un estudiante
+      // en abandono nunca completa los 4 bimestres, así que gatearlo detrás de
+      // `gestionCompleta` lo escondía siempre (Fase B, hallazgo relacionado).
+      const veredicto = calcularVeredictoMateria(row, notaMinimaAprobacion);
+      let observacion = null;
+      if (veredicto === ESTADOS_ACADEMICOS_FOLIO.ABANDONO) {
+        observacion = veredicto;
+      } else if (
+        gestionCompleta &&
+        (veredicto === ESTADOS_ACADEMICOS_FOLIO.APROBADO ||
+          veredicto === ESTADOS_ACADEMICOS_FOLIO.REPROBADO)
+      ) {
+        observacion = veredicto;
+      }
+
       estudiante.notas[ofertaCursoId] = {
         bim1: bimes[0],
         bim2: bimes[1],
         bim3: bimes[2],
         bim4: bimes[3],
         promedioAnual: toNumberOrNull(row.promedio_anual),
-        notaFinal: toNumberOrNull(row.nota_final),
-        notaAnual: gestionCompleta ? notaAnual : null,
+        notaFinal,
+        notaAnual: gestionCompleta ? notaFinal : null,
         gestionCompleta,
         observacion,
         estado: row.estado ?? null,
@@ -168,21 +190,20 @@ export class GetCentralizadorParaleloUseCase {
     );
 
     // Observaciones del bimestre (bimestres_matricula.observaciones), una por estudiante.
-    if (this.subjectEnrollmentBimesterRepository) {
-      const obsRows =
-        await this.subjectEnrollmentBimesterRepository.listarObservacionesBimestrePorParaleloGestion(
-          pgId,
-        );
+    const bimesterRepo = this.subjectEnrollmentBimesterRepository;
+    if (bimesterRepo) {
+      const obsRows = await bimesterRepo.listarObservacionesBimestrePorParaleloGestion(pgId);
       const obsPorEstudiante = new Map();
       for (const row of obsRows ?? []) {
         const estId = Number(row.estudiante_id);
         const bim = Number(row.bimestre);
-        if (!Number.isFinite(estId) || !Number.isFinite(bim)) continue;
-        if (!obsPorEstudiante.has(estId)) {
-          obsPorEstudiante.set(estId, { 1: null, 2: null, 3: null, 4: null });
+        if (Number.isFinite(estId) && Number.isFinite(bim)) {
+          if (!obsPorEstudiante.has(estId)) {
+            obsPorEstudiante.set(estId, { 1: null, 2: null, 3: null, 4: null });
+          }
+          const texto = row.observacion != null ? String(row.observacion).trim() : '';
+          obsPorEstudiante.get(estId)[bim] = texto || null;
         }
-        const texto = row.observacion != null ? String(row.observacion).trim() : '';
-        obsPorEstudiante.get(estId)[bim] = texto || null;
       }
       for (const est of estudiantes) {
         est.observacionesBimestre = obsPorEstudiante.get(est.estudianteId) ?? {

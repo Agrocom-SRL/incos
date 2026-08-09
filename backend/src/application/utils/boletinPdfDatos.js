@@ -104,6 +104,12 @@ export function construirDatosBoletinEstudiante({
       let estado = '';
       if (d.estado_bimestre === 'CERRADO' && total != null && notaMinimaAprobacion != null) {
         estado = total >= notaMinimaAprobacion ? 'APROBADO' : 'REPROBADO';
+      } else if (!tieneRegistro && est.notas?.[asig.ofertaCursoId]?.observacion === 'ABANDONO') {
+        // Bimestre sin nota real (el retiro ocurrió antes de que el docente
+        // cargara este bimestre): mostrar el veredicto de la matrícula en vez
+        // de dejarlo en blanco. Un bimestre con nota real ya cargada antes
+        // del retiro no entra aquí (tieneRegistro=true) y conserva su nota.
+        estado = 'ABANDONO';
       }
       return {
         codigo: asig.sigla ?? '',

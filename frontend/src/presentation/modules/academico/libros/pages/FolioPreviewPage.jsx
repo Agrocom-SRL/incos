@@ -1,30 +1,32 @@
 /**
  * Preview del folio (P3) — réplica en pantalla del folio físico del
- * centralizador ("LIBRO LLENADO SISTEMAS 11 dic 2025"): cabecera institucional,
- * nómina con nota final por materia y firmas de autoridades. Firmar/Anular
- * gated por APROBAR; edición de fila (ESTADO/OBSERVACIONES) gated por EDITAR y
- * deshabilitada si el folio está FIRMADO (inmutable) o ANULADO (terminal).
+ * centralizador ("LIBRO LLENADO SISTEMAS 11 dic 2025"): cabecera institucional
+ * y nómina con nota final por materia. Anular gated por APROBAR; edición de
+ * la observación de fila gated por EDITAR y deshabilitada si el folio está
+ * ANULADO (terminal).
+ *
+ * Bloque de firmas condicionado al estado del LIBRO (`folio.libroEstado`, no
+ * del folio: el folio no tiene un estado "firmado" propio) — mismo criterio
+ * que el export Excel (`ExportLibroExcelUseCase`): con el libro ABIERTO se
+ * muestra una nota "DOCUMENTO BORRADOR" en vez de las firmas.
  */
 
 import { useState } from 'react';
-import { Alert, Empty, Popconfirm, Spin } from 'antd';
-import {
-  CheckCircleOutlined,
-  EditOutlined,
-  PrinterOutlined,
-  StopOutlined,
-} from '@ant-design/icons';
+import { Alert, Empty, Spin } from 'antd';
+import { EditOutlined, FileTextOutlined, StopOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
-import { ActionButton, BackButton, IconButton, StatusPill } from '@atoms';
+import { ActionButton, IconButton, StatusPill } from '@atoms';
+import DetailProfileCard from '@organisms/DetailProfileCard';
+import DetailPageHeaderActions from '@organisms/DetailPageHeaderActions';
 import { useAuthContext } from '@application-auth';
 import { useFolioPreview } from '@application-academico/libros/hooks';
 import { LIBROS_PERMISOS } from '@application-academico/libros/utils/librosPermisos';
 import { LIBRO_DOC } from '@application-academico/libros/utils/libroDoc';
 import {
-  formatFolioEstado,
+  formatFolioEstadoDisplay,
   formatEstadoAcademico,
-  getFolioEstadoPillClass,
+  getFolioEstadoDisplayPillClass,
   getEstadoAcademicoPillClass,
 } from '@application-academico/libros/utils/librosEstados';
 import EditarFilaFolioModal from '../components/organisms/EditarFilaFolioModal.jsx';
@@ -44,8 +46,6 @@ const FolioPreviewPage = () => {
     breadcrumbItems,
     handleVolverAlLibro,
 
-    handleImprimir,
-    handleFirmar,
     handleAnular,
     cambiandoEstado,
 
@@ -61,7 +61,7 @@ const FolioPreviewPage = () => {
   const puedeAprobar = hasPermiso(LIBROS_PERMISOS.libro, 'APROBAR');
   const puedeEditarFila = hasPermiso(LIBROS_PERMISOS.libro, 'EDITAR');
 
-  const headerActions = <BackButton onClick={handleVolverAlLibro}>Volver al libro</BackButton>;
+  const headerActions = <DetailPageHeaderActions onVolver={handleVolverAlLibro} />;
 
   if (isInvalidId) {
     return (
@@ -71,9 +71,13 @@ const FolioPreviewPage = () => {
     );
   }
 
-  const esFirmado = folio?.estado === 'FIRMADO';
   const esAnulado = folio?.estado === 'ANULADO';
-  const filaEditable = puedeEditarFila && !esFirmado && !esAnulado;
+  const esLibroCerrado = folio?.libroEstado === 'CERRADO';
+  // Las observaciones se cargan mientras el libro está ABIERTO; al cerrarlo
+  // quedan congeladas (igual criterio que las firmas / el bloque ESTADÍSTICAS
+  // del export Excel).
+  const filaEditable = puedeEditarFila && !esAnulado && !esLibroCerrado;
+  const puedeAnular = puedeAprobar && folio?.estado === 'BORRADOR';
 
   const handleAnularConfirmado = async (motivo) => {
     const result = await handleAnular(motivo);
@@ -97,46 +101,19 @@ const FolioPreviewPage = () => {
 
           {!loading && !error && folio ? (
             <>
-              <div className="folio-toolbar">
-                <div className="folio-toolbar__title">
-                  <h1>{folio.folioLabel}</h1>
-                  <StatusPill label={formatFolioEstado(folio.estado)} className={getFolioEstadoPillClass(folio.estado)} />
-                </div>
-                <div className="folio-toolbar__actions">
-                  {puedeAprobar && folio.estado === 'BORRADOR' ? (
-                    <ActionButton
-                      permiso={LIBROS_PERMISOS.libro}
-                      accion="APROBAR"
-                      variant="info"
-                      icon={<PrinterOutlined />}
-                      loading={cambiandoEstado}
-                      onClick={handleImprimir}
-                    >
-                      Marcar impreso
-                    </ActionButton>
-                  ) : null}
-
-                  {puedeAprobar && folio.estado === 'IMPRESO' ? (
-                    <Popconfirm
-                      title="Firmar folio"
-                      description="El folio quedará FIRMADO y ya no podrá editarse ni anularse."
-                      okText="Firmar"
-                      cancelText="Cancelar"
-                      onConfirm={handleFirmar}
-                    >
-                      <ActionButton
-                        permiso={LIBROS_PERMISOS.libro}
-                        accion="APROBAR"
-                        variant="success"
-                        icon={<CheckCircleOutlined />}
-                        loading={cambiandoEstado}
-                      >
-                        Firmar folio
-                      </ActionButton>
-                    </Popconfirm>
-                  ) : null}
-
-                  {puedeAprobar && ['BORRADOR', 'IMPRESO'].includes(folio.estado) ? (
+              <DetailProfileCard
+                avatarInitials={<FileTextOutlined />}
+                active={!esAnulado}
+                title={folio.folioLabel}
+                subtitle={`${folio.cursoLabel} · ${folio.turno || '—'}`}
+                metaExtra={
+                  <StatusPill
+                    label={formatFolioEstadoDisplay(folio.estado, folio.libroEstado)}
+                    className={getFolioEstadoDisplayPillClass(folio.estado, folio.libroEstado)}
+                  />
+                }
+                actions={
+                  puedeAnular ? (
                     <ActionButton
                       permiso={LIBROS_PERMISOS.libro}
                       accion="APROBAR"
@@ -146,9 +123,9 @@ const FolioPreviewPage = () => {
                     >
                       Anular folio
                     </ActionButton>
-                  ) : null}
-                </div>
-              </div>
+                  ) : null
+                }
+              />
 
               <article className="folio-sheet">
                 <div className="folio-sheet__band">{LIBRO_DOC.titulo}</div>
@@ -237,8 +214,9 @@ const FolioPreviewPage = () => {
                             <td className="folio-sheet__acciones">
                               <IconButton
                                 icon={<EditOutlined />}
+                                variant="warning"
                                 size="small"
-                                title="Editar fila"
+                                title="Editar observación"
                                 onClick={() => abrirEdicionFila(fila)}
                               />
                             </td>
@@ -249,14 +227,22 @@ const FolioPreviewPage = () => {
                   </table>
                 </div>
 
-                <div className="folio-sheet__firmas">
-                  {LIBRO_DOC.firmas.map((firma) => (
-                    <div className="folio-sheet__firma" key={firma}>
-                      <div className="folio-sheet__firma-line" />
-                      <span className="folio-sheet__firma-label">{firma}</span>
-                    </div>
-                  ))}
-                </div>
+                {esLibroCerrado ? (
+                  <div className="folio-sheet__firmas">
+                    {LIBRO_DOC.firmas.map((firma) => (
+                      <div className="folio-sheet__firma" key={firma}>
+                        <div className="folio-sheet__firma-line" />
+                        <span className="folio-sheet__firma-label">{firma}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="folio-sheet__borrador-nota">
+                    DOCUMENTO BORRADOR — sin firmas; el libro aún está ABIERTO y la numeración puede reajustarse
+                  </div>
+                )}
+
+                <div className="folio-sheet__leyenda">{LIBRO_DOC.leyendaNotas}</div>
               </article>
             </>
           ) : null}

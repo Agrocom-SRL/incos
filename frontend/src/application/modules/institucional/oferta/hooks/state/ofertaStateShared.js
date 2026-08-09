@@ -12,12 +12,20 @@ export function gestionLabel(gestion) {
   );
 }
 
-/** Etiqueta corta de plan habilitado (tabs, breadcrumbs). */
+/**
+ * Etiqueta corta de plan habilitado (tabs, breadcrumbs). Una carrera puede
+ * tener más de un plan habilitado a la vez (vigente + históricos con
+ * estudiantes en curso, ver `planesCatalogoPendientesHabilitar`): la sola
+ * sigla de carrera no alcanza para diferenciar los tabs entre sí, por eso se
+ * suma la RM (o el nombre del plan si no hay RM) del plan de estudios.
+ */
 export function planTabLabel(plan) {
   if (!plan) return 'Plan';
+  const carrera = plan.carreraCodigo ?? plan.carreraNombre;
+  const detalle = plan.planResolucion ?? plan.planNombre;
+  if (carrera && detalle) return `${carrera} · ${detalle}`;
   return (
-    plan.carreraCodigo ??
-    plan.carreraNombre ??
+    carrera ??
     plan.nombre ??
     (plan.planEstudioId ? `Plan #${plan.planEstudioId}` : `Plan #${plan.id}`)
   );
@@ -132,6 +140,11 @@ export function planCatalogoLabel(plan) {
   return nombre ?? resolucion ?? `Plan #${plan.id}`;
 }
 
+/**
+ * Planes del catálogo (activos; ya no solo el vigente — una carrera puede
+ * tener también históricos activos con estudiantes en curso, ver
+ * `CreateGestionPlanUseCase`) aún no habilitados en la gestión.
+ */
 export function planesCatalogoPendientesHabilitar(planesVigentes, planesHabilitados) {
   const habilitadosIds = new Set(
     (planesHabilitados ?? [])
@@ -139,7 +152,7 @@ export function planesCatalogoPendientesHabilitar(planesVigentes, planesHabilita
       .filter((id) => Number.isFinite(id) && id > 0)
   );
   return (planesVigentes ?? []).filter((p) => {
-    if (p.vigente === false) return false;
+    if (p.activo === false || p.activo === 0) return false;
     const id = Number(p.id);
     return Number.isFinite(id) && id > 0 && !habilitadosIds.has(id);
   });

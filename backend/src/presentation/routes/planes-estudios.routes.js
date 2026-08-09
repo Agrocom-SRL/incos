@@ -7,6 +7,7 @@ import {
   updatePlanEstudiosValidator,
   createPeriodoValidator,
 } from '../validators/configuracion/planes-estudios.validator.js';
+import { setEstadoCatalogoValidator } from '../validators/configuracion/set-estado.validator.js';
 
 export function buildPlanesEstudiosRouter({ controllers, middlewares }) {
   const router = express.Router();
@@ -91,6 +92,18 @@ export function buildPlanesEstudiosRouter({ controllers, middlewares }) {
     idValidator,
     validateRequest,
     (req, res, next) => controllers.clonarPlanEstudiosController.handle(req, res, next)
+  );
+
+  // PATCH /:id/estado - Activar/desactivar plan de estudios (body: { activo: boolean })
+  // Independiente de /marcar-vigente: no toca qué plan es el vigente de la carrera.
+  router.patch(
+    '/:id/estado',
+    authenticate,
+    verificarPermiso(permisoPlan, 'ACTIVAR'),
+    idValidator,
+    setEstadoCatalogoValidator,
+    validateRequest,
+    (req, res, next) => controllers.setEstadoPlanEstudiosController.handle(req, res, next)
   );
 
   // -----------------------------

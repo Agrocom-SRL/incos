@@ -111,6 +111,7 @@ export const REPOSITORIOS_TOKENS = {
 
     // NIVELACIONES
     levelingRepository: 'levelingRepository',
+    nivelacionParaleloViewRepository: 'nivelacionParaleloViewRepository',
 
     // ASISTENCIAS
     attendanceRepository: 'attendanceRepository',

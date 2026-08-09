@@ -1,16 +1,17 @@
 import { ValidationError, NotFoundError } from '../../../../domain/errors/AppError.js';
-import {
-  ESTADOS_FOLIO,
-  ESTADOS_ACADEMICOS_FOLIO_VALUES,
-} from '../../../../domain/constants/libros.constants.js';
+import { ESTADOS_FOLIO } from '../../../../domain/constants/libros.constants.js';
 import { toFolioEstudianteDTO } from '../../../mappers/academico/LibroRegistroPresentationMapper.js';
 
 /**
- * Edita la fila de un estudiante en un folio — columnas ESTADO y OBSERVACIONES
- * del centralizador (PATCH /libros/:id/folios/:folioId/estudiantes/:filaId).
- * Permiso: academico.libro · EDITAR.
+ * Edita la OBSERVACIÓN de la fila de un estudiante en un folio (PATCH
+ * /libros/:id/folios/:folioId/estudiantes/:filaId). Permiso: academico.libro
+ * · EDITAR.
  *
- * Solo si el folio NO está FIRMADO (inmutable) ni ANULADO (terminal).
+ * El ESTADO académico de la fila NO es editable aquí: es siempre el que
+ * deriva del centralizador de calificaciones (vista 135) al generar el
+ * folio — permitir fijarlo a mano contradiría esa fuente de verdad.
+ *
+ * Solo si el folio NO está ANULADO (terminal).
  */
 export class EditarFolioEstudianteUseCase {
   constructor({ libroRegistroRepository, logger }) {
@@ -24,16 +25,13 @@ export class EditarFolioEstudianteUseCase {
    * @param {number} params.id - Libro.
    * @param {number} params.folioId
    * @param {number} params.filaId
-   * @param {Object} params.body - { estadoAcademico?, observaciones? }
+   * @param {Object} params.body - { observaciones? }
    * @returns {Promise<{folioEstudiante: Object}>}
    */
   async execute({ usuarioId, id, folioId, filaId, body = {} }) {
     const folio = await this.libroRegistroRepository.findFolioById(Number(folioId));
     if (!folio || Number(folio.libroId) !== Number(id)) {
       throw new NotFoundError('Folio');
-    }
-    if (folio.estado === ESTADOS_FOLIO.FIRMADO) {
-      throw new ValidationError('Un folio FIRMADO es inmutable');
     }
     if (folio.estado === ESTADOS_FOLIO.ANULADO) {
       throw new ValidationError('Un folio ANULADO no admite ediciones');
@@ -45,15 +43,6 @@ export class EditarFolioEstudianteUseCase {
     }
 
     const cambios = {};
-    if (body.estadoAcademico !== undefined) {
-      if (
-        body.estadoAcademico != null &&
-        !ESTADOS_ACADEMICOS_FOLIO_VALUES.includes(body.estadoAcademico)
-      ) {
-        throw new ValidationError('Estado académico inválido (APROBADO, REPROBADO o ABANDONO)');
-      }
-      cambios.estadoAcademico = body.estadoAcademico ?? null;
-    }
     if (body.observaciones !== undefined) {
       cambios.observaciones =
         body.observaciones != null ? String(body.observaciones).trim() : null;

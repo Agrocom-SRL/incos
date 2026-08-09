@@ -24,6 +24,8 @@ import DashboardPageShell from '@presentation/modules/dashboard/components/organ
 import { useCuentasPorCobrarPage } from '@application-finanzas/hooks/state/useCuentasPorCobrarPage';
 import { useExportCuentasPorCobrarExcel } from '@application-finanzas/hooks/api/useExportCuentasPorCobrarExcel';
 import { FINANZAS_PERMISOS } from '@application-finanzas/utils/finanzasPermisos';
+import { pagoDetallePath } from '@application-finanzas/config/paths';
+import { MENU_SIDEBAR_KEY_MAT_APORTES } from '@navigation-services/routeMapper';
 import { createCuentasPorCobrarColumns, formatBs, formatFecha } from '@finanzas/reportes/config/cuentasPorCobrarColumns';
 import CuentasPorCobrarCarreraSection from '@finanzas/reportes/components/organisms/CuentasPorCobrarCarreraSection';
 import CuentasPorCobrarResumen from '@finanzas/reportes/components/organisms/CuentasPorCobrarResumen';
@@ -112,24 +114,37 @@ const CuentasPorCobrarPage = () => {
     }
   }, [exportar, gestionId, notification]);
 
-  // Ir a saldar la deuda del estudiante en el formulario de registro de pago.
-  // `returnListPath` (ruta actual + tab activa) hace que "Volver" regrese aquí.
+  // Ir a saldar la deuda del estudiante en el formulario de registro de pago
+  // LEGACY de Matrícula (`/pagos/registrar`): Finanzas es de solo lectura y ya
+  // no tiene ruta propia de registro. Mismo patrón de `state` que
+  // `handleRegistrarPago` de `useStudentDetail` (ficha del estudiante).
   const handleRegistrarPago = useCallback(
     (estudianteId) => {
       if (!estudianteId) return;
       navigate('/pagos/registrar', {
         state: {
           studentId: Number(estudianteId),
-          returnListPath: `${location.pathname}${location.search}`,
+          menuSidebarKey: MENU_SIDEBAR_KEY_MAT_APORTES,
         },
+      });
+    },
+    [navigate],
+  );
+
+  // Ir a la ficha de la cabecera de aporte (pago_aporte_id), read-only, sin saldar nada.
+  const handleVerFicha = useCallback(
+    (pagoAporteId) => {
+      if (!pagoAporteId) return;
+      navigate(pagoDetallePath(pagoAporteId), {
+        state: { returnListPath: `${location.pathname}${location.search}` },
       });
     },
     [navigate, location.pathname, location.search],
   );
 
   const columns = useMemo(
-    () => createCuentasPorCobrarColumns(handleRegistrarPago),
-    [handleRegistrarPago],
+    () => createCuentasPorCobrarColumns(handleRegistrarPago, handleVerFicha),
+    [handleRegistrarPago, handleVerFicha],
   );
 
   const carrerasDeudoras = useMemo(() => filtrarDeudores(carreras), [carreras]);

@@ -102,6 +102,16 @@ export const ACADEMICO_TOKENS = {
   cambiarEstadoFolioUseCase: 'academico.cambiarEstadoFolioUseCase',
   editarFolioEstudianteUseCase: 'academico.editarFolioEstudianteUseCase',
   exportLibroExcelUseCase: 'academico.exportLibroExcelUseCase',
+  // Nivelaciones (schema 16 — Fase D)
+  listHistorialMatriculaParaleloUseCase: 'academico.listHistorialMatriculaParaleloUseCase',
+  listPendientesNivelacionParaleloUseCase: 'academico.listPendientesNivelacionParaleloUseCase',
+  listNivelacionesPendientesUseCase: 'academico.listNivelacionesPendientesUseCase',
+  registrarEventoHistorialMatriculaUseCase:
+    'academico.registrarEventoHistorialMatriculaUseCase',
+  registrarDecisionAdministrativaUseCase: 'academico.registrarDecisionAdministrativaUseCase',
+  programarNivelacionUseCase: 'academico.programarNivelacionUseCase',
+  registrarResultadoNivelacionUseCase: 'academico.registrarResultadoNivelacionUseCase',
+  listMateriasPendientesEstudianteUseCase: 'academico.listMateriasPendientesEstudianteUseCase',
   exportCentralizadorAnualParaleloExcelUseCase:
     'academico.exportCentralizadorAnualParaleloExcelUseCase',
 
@@ -220,6 +230,19 @@ export const ACADEMICO_TOKENS = {
   cambiarEstadoFolioController: 'academico.cambiarEstadoFolioController',
   editarFolioEstudianteController: 'academico.editarFolioEstudianteController',
   exportLibroExcelController: 'academico.exportLibroExcelController',
+  // Nivelaciones (schema 16 — Fase D)
+  listHistorialMatriculaParaleloController: 'academico.listHistorialMatriculaParaleloController',
+  listPendientesNivelacionParaleloController:
+    'academico.listPendientesNivelacionParaleloController',
+  listNivelacionesPendientesController: 'academico.listNivelacionesPendientesController',
+  registrarEventoHistorialMatriculaController:
+    'academico.registrarEventoHistorialMatriculaController',
+  registrarDecisionAdministrativaController:
+    'academico.registrarDecisionAdministrativaController',
+  programarNivelacionController: 'academico.programarNivelacionController',
+  registrarResultadoNivelacionController: 'academico.registrarResultadoNivelacionController',
+  listMateriasPendientesEstudianteController:
+    'academico.listMateriasPendientesEstudianteController',
   exportCentralizadorAnualParaleloController:
     'academico.exportCentralizadorAnualParaleloController',
 
@@ -321,5 +344,6 @@ export const ACADEMICO_TOKENS = {
   avanceAcademicoRouter: 'academico.avanceAcademicoRouter',
   desercionRouter: 'academico.desercionRouter',
   librosRouter: 'academico.librosRouter',
+  nivelacionesRouter: 'academico.nivelacionesRouter',
   acompanamientoRouter: 'academico.acompanamientoRouter'
 };

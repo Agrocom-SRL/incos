@@ -50,74 +50,110 @@ export const useParaleloForm = (mode = 'create') => {
   const isHydratingRef = useRef(false);
 
   const carreraId = Form.useWatch('carrera_id', form);
+  const planEstudioId = Form.useWatch('plan_estudio_id', form);
 
   const pageTitle = isEditMode ? 'Editar paralelo' : 'Nuevo paralelo';
   const permisoAccion = isEditMode ? 'EDITAR' : 'CREAR';
   const isInvalidEditId = isEditMode && (!Number.isFinite(paraleloId) || paraleloId < 1);
 
   const planCarreraId = (p) => Number(p.carrera_id ?? p.carreraId);
+  const esPlanActivo = (p) => p.activo !== false && p.activo !== 0;
+  const esPlanVigente = (p) => p.vigente === true || p.vigente === 1;
 
-  const vigentePlanPorCarrera = useMemo(() => {
+  /**
+   * Planes ACTIVOS por carrera (no solo el vigente): una carrera puede tener
+   * más de uno operando a la vez — el vigente (nuevas admisiones) y uno o
+   * más históricos con estudiantes en curso que aún necesitan paralelos
+   * nuevos en los años que les quedan. Ordenados vigente primero, luego más
+   * reciente primero.
+   */
+  const planesActivosPorCarrera = useMemo(() => {
     const map = new Map();
     for (const p of planes) {
-      if (p.vigente !== true && p.vigente !== 1) continue;
+      if (!esPlanActivo(p)) continue;
       const cid = planCarreraId(p);
-      if (Number.isFinite(cid)) map.set(cid, p);
+      if (!Number.isFinite(cid)) continue;
+      const lista = map.get(cid) ?? [];
+      lista.push(p);
+      map.set(cid, lista);
+    }
+    for (const lista of map.values()) {
+      lista.sort((a, b) => {
+        const aVig = esPlanVigente(a);
+        const bVig = esPlanVigente(b);
+        if (aVig !== bVig) return aVig ? -1 : 1;
+        return b.id - a.id;
+      });
     }
     return map;
   }, [planes]);
 
-  const planVigente = useMemo(() => {
-    if (carreraId == null || carreraId === '') return null;
-    return vigentePlanPorCarrera.get(Number(carreraId)) ?? null;
-  }, [carreraId, vigentePlanPorCarrera]);
+  const planesDisponibles = useMemo(() => {
+    if (carreraId == null || carreraId === '') return [];
+    return planesActivosPorCarrera.get(Number(carreraId)) ?? [];
+  }, [carreraId, planesActivosPorCarrera]);
 
-  const loadPeriodos = useCallback(async (planId) => {
-    if (!planId) {
-      setPeriodos([]);
-      return [];
+  /** Plan efectivo: único activo → automático; varios → el elegido en el formulario. */
+  const planSeleccionado = useMemo(() => {
+    if (!planesDisponibles.length) return null;
+    if (planesDisponibles.length === 1) return planesDisponibles[0];
+    return planesDisponibles.find((p) => Number(p.id) === Number(planEstudioId)) ?? null;
+  }, [planesDisponibles, planEstudioId]);
+
+  const fetchPeriodosDePlan = useCallback(async (planId) => {
+    if (!planId) return [];
+    let list = [];
+    const response = await apiClient.get(PLANES_ESTUDIOS_ENDPOINTS.PERIODOS(planId));
+    const result = handleSuccessResponse(response);
+    if (result.success) {
+      const raw = result.data?.periodos ?? result.data ?? [];
+      list = Array.isArray(raw) ? raw : [];
     }
-    setLoadingPeriodos(true);
-    try {
-      let list = [];
-      const response = await apiClient.get(PLANES_ESTUDIOS_ENDPOINTS.PERIODOS(planId));
-      const result = handleSuccessResponse(response);
-      if (result.success) {
-        const raw = result.data?.periodos ?? result.data ?? [];
+    if (!list.length) {
+      const planRes = await apiClient.get(PLANES_ESTUDIOS_ENDPOINTS.BY_ID(planId));
+      const planResult = handleSuccessResponse(planRes);
+      if (planResult.success) {
+        const raw =
+          planResult.data?.periodos ??
+          planResult.data?.plan_estudio?.periodos ??
+          [];
         list = Array.isArray(raw) ? raw : [];
       }
-      if (!list.length) {
-        const planRes = await apiClient.get(PLANES_ESTUDIOS_ENDPOINTS.BY_ID(planId));
-        const planResult = handleSuccessResponse(planRes);
-        if (planResult.success) {
-          const raw =
-            planResult.data?.periodos ??
-            planResult.data?.plan_estudio?.periodos ??
-            [];
-          list = Array.isArray(raw) ? raw : [];
-        }
-      }
-      const mapped = mapPeriodosPlanList(list);
-      setPeriodos(mapped);
-      return mapped;
-    } catch (e) {
-      handleErrorResponse(e, 'Error al cargar periodos');
-      setPeriodos([]);
-      return [];
-    } finally {
-      setLoadingPeriodos(false);
     }
+    return mapPeriodosPlanList(list);
   }, []);
+
+  const loadPeriodos = useCallback(
+    async (planId) => {
+      if (!planId) {
+        setPeriodos([]);
+        return [];
+      }
+      setLoadingPeriodos(true);
+      try {
+        const mapped = await fetchPeriodosDePlan(planId);
+        setPeriodos(mapped);
+        return mapped;
+      } catch (e) {
+        handleErrorResponse(e, 'Error al cargar periodos');
+        setPeriodos([]);
+        return [];
+      } finally {
+        setLoadingPeriodos(false);
+      }
+    },
+    [fetchPeriodosDePlan],
+  );
 
   useEffect(() => {
     if (isHydratingRef.current) return;
-    const planId = planVigente?.id ?? planVigente?.plan_estudio_id;
+    const planId = planSeleccionado?.id ?? planSeleccionado?.plan_estudio_id;
     if (planId) {
       loadPeriodos(Number(planId));
     } else {
       setPeriodos([]);
     }
-  }, [planVigente, loadPeriodos]);
+  }, [planSeleccionado, loadPeriodos]);
 
   useEffect(() => {
     const pendingId = pendingPeriodoIdRef.current;
@@ -154,19 +190,35 @@ export const useParaleloForm = (mode = 'create') => {
       }
       const raw = result.data?.paralelo ?? result.data;
       const values = mapParaleloToFormValues(raw);
+      let planIdHidratado;
 
       if (values.carrera_id) {
         const cid = Number(values.carrera_id);
-        const plan = vigentePlanPorCarrera.get(cid);
-        const planId = plan?.id ?? plan?.plan_estudio_id;
-        if (planId) {
-          await loadPeriodos(Number(planId));
+        const candidatos = planesActivosPorCarrera.get(cid) ?? [];
+        if (candidatos.length <= 1) {
+          const planId = candidatos[0]?.id;
+          if (planId) {
+            await loadPeriodos(Number(planId));
+            planIdHidratado = planId;
+          }
+        } else {
+          // Varios planes activos: resolver a cuál pertenece el periodo ya
+          // asignado probando cada candidato (vigente primero).
+          for (const candidato of candidatos) {
+            const planId = candidato.id;
+            const lista = await fetchPeriodosDePlan(Number(planId));
+            if (lista.some((o) => Number(o.value) === Number(values.periodo_id))) {
+              setPeriodos(lista);
+              planIdHidratado = planId;
+              break;
+            }
+          }
         }
       }
 
       isHydratingRef.current = true;
       pendingPeriodoIdRef.current = values.periodo_id ?? null;
-      form.setFieldsValue({ ...values, periodo_id: undefined });
+      form.setFieldsValue({ ...values, periodo_id: undefined, plan_estudio_id: planIdHidratado });
       isHydratingRef.current = false;
       loadedEditIdRef.current = paraleloId;
     } catch (e) {
@@ -174,7 +226,7 @@ export const useParaleloForm = (mode = 'create') => {
     } finally {
       setLoading(false);
     }
-  }, [form, isInvalidEditId, paraleloId, vigentePlanPorCarrera, loadPeriodos]);
+  }, [form, isInvalidEditId, paraleloId, planesActivosPorCarrera, loadPeriodos, fetchPeriodosDePlan]);
 
   useEffect(() => {
     if (!isEditMode) {
@@ -244,18 +296,28 @@ export const useParaleloForm = (mode = 'create') => {
     [carreras],
   );
 
+  const planOptions = useMemo(
+    () =>
+      planesDisponibles.map((p) => ({
+        value: p.id,
+        label: `${p.nombre_plan || `Plan ${p.id}`}${esPlanVigente(p) ? ' · Vigente' : ' · Activo'}`,
+      })),
+    [planesDisponibles],
+  );
+
   const resolveOptions = useCallback(
     (key) => {
       if (key === 'carreras') return carreraOptions;
       if (key === 'periodos') return periodos;
+      if (key === 'planes') return planOptions;
       return [];
     },
-    [carreraOptions, periodos],
+    [carreraOptions, periodos, planOptions],
   );
 
   const formSections = useMemo(() => createParaleloFormSections(), []);
 
-  const sinPlanVigente = Boolean(carreraId && !planVigente && !planesLoading);
+  const sinPlanActivo = Boolean(carreraId && !planesDisponibles.length && !planesLoading);
 
   return {
     form,
@@ -271,12 +333,13 @@ export const useParaleloForm = (mode = 'create') => {
     handleSubmit,
     isInvalidEditId,
     carreraId,
-    planVigente,
+    planSeleccionado,
+    planesDisponibles,
     carreras,
     carrerasLoading,
     carrerasError,
     periodos,
     periodosLoading: loadingPeriodos,
-    sinPlanVigente,
+    sinPlanActivo,
   };
 };

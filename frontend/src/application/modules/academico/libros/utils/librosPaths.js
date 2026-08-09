@@ -10,5 +10,8 @@ export const LIBROS_LIST_PATH = '/academico/libros';
 /** P2 — ficha del libro (cabecera + tabla de folios). */
 export const libroDetallePath = (id) => `${LIBROS_LIST_PATH}/${id}`;
 
+/** P2.5 — lista plana de folios ANULADOS del libro (todas las carreras). */
+export const libroAnuladosPath = (id) => `${LIBROS_LIST_PATH}/${id}/anulados`;
+
 /** P3 — preview/impresión del folio elegido. */
 export const folioPreviewPath = (id, folioId) => `${LIBROS_LIST_PATH}/${id}/folios/${folioId}`;

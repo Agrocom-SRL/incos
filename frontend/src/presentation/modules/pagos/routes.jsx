@@ -30,7 +30,7 @@ export const pagosRoutes = [
     permiso: 'matricula.pago.aporte.ver',
     accion: 'LISTAR',
     menu: {
-      label: 'Aportes',
+      label: 'Aportes de matrícula',
       module: 'MAT',
       parent: 'MAT',
       order: 4,

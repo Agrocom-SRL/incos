@@ -66,6 +66,14 @@ export class SubjectEnrollmentHistoryRepository extends BaseRepository {
             where.matriculaMateriaId = subjectEnrollmentId;
         }
 
+        // Ancla alterna (materia NO cursada): inscripcionId + asignaturaPlanId juntos.
+        if (filters.enrollmentId !== undefined) {
+            where.inscripcionId = filters.enrollmentId;
+        }
+        if (filters.planSubjectId !== undefined) {
+            where.asignaturaPlanId = filters.planSubjectId;
+        }
+
         if (
             filters.stateTypes &&
             Array.isArray(filters.stateTypes) &&
@@ -219,6 +227,56 @@ export class SubjectEnrollmentHistoryRepository extends BaseRepository {
         const [affectedRows] = await HistorialMatriculaModel.update(updateData, {
             where: {
                 matriculaMateriaId: subjectEnrollmentId,
+                vigente: true,
+                activo: true,
+                deletedAt: null,
+            },
+            transaction: options.transaction,
+        });
+
+        return affectedRows;
+    }
+
+    /**
+     * Obtiene el estado vigente de la ancla alterna (materia NO cursada:
+     * arrastre/choque horario/etc.). Espejo de findCurrentBySubjectEnrollmentId.
+     */
+    async findCurrentByAlternateAnchor(enrollmentId, planSubjectId, options = {}) {
+        const model = await HistorialMatriculaModel.findOne({
+            where: {
+                inscripcionId: enrollmentId,
+                asignaturaPlanId: planSubjectId,
+                vigente: true,
+                activo: true,
+                deletedAt: null,
+            },
+            order: [
+                ['fechaTransicion', 'DESC'],
+                ['id', 'DESC'],
+            ],
+            transaction: options.transaction,
+        });
+
+        return this.toEntity(model);
+    }
+
+    /**
+     * Marca como no vigentes los estados actuales de la ancla alterna.
+     * Espejo de expireCurrentBySubjectEnrollmentId.
+     */
+    async expireCurrentByAlternateAnchor(enrollmentId, planSubjectId, userId = null, options = {}) {
+        const updateData = {
+            vigente: false,
+        };
+
+        if (userId !== null && userId !== undefined) {
+            updateData.updatedBy = userId;
+        }
+
+        const [affectedRows] = await HistorialMatriculaModel.update(updateData, {
+            where: {
+                inscripcionId: enrollmentId,
+                asignaturaPlanId: planSubjectId,
                 vigente: true,
                 activo: true,
                 deletedAt: null,

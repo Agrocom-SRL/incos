@@ -17,13 +17,15 @@
  *   - Días de atraso · numérica.
  *   - Estado · dot de color.
  *   - Observaciones.
+ *   - Acción: Ver ficha (→ cabecera de aporte) + Saldar (→ registrar pago).
  *
  * El nombre completo llega ya formateado por el backend (orden APELLIDOS NOMBRES)
  * y se usa tal cual. Las filas de TOTALES por carrera y los encabezados de
  * paralelo se pintan en el organismo de sección (filas `fin-planilla__row-*`).
  */
 
-import { DollarOutlined } from '@ant-design/icons';
+import { Flex } from 'antd';
+import { DollarOutlined, EyeOutlined } from '@ant-design/icons';
 import { ActionButton } from '@atoms';
 import { FINANZAS_PERMISOS } from '@application-finanzas/utils/finanzasPermisos';
 import CobranzaEstudianteCell from '@finanzas/reportes/components/atoms/CobranzaEstudianteCell';
@@ -33,6 +35,7 @@ import {
   getEstadoDotClass,
   getSaldoBandaClass,
 } from '@application-finanzas/utils/cuentasPorCobrarPills';
+import { allSpacing } from '@theme/tokens';
 
 /**
  * Formatea un monto en bolivianos a ENTEROS: "1.200" (sin decimales ni símbolo;
@@ -69,10 +72,13 @@ export const formatFecha = (value) => {
 /**
  * @param {(estudianteId: number, record: object) => void} [onRegistrarPago] - Callback
  *   para ir a saldar el pago del estudiante en el formulario de registro. Si se
- *   provee, se añade una columna de acción (gated por `finanzas.pago.registrar`).
+ *   provee, se añade el botón "Saldar" (gated por `finanzas.pago.registrar`).
+ * @param {(pagoAporteId: number, record: object) => void} [onVerFicha] - Callback
+ *   para ir a la ficha de la cabecera de aporte (`pago_aporte_id`). Si se
+ *   provee, se añade el botón "Ver ficha" (gated por `finanzas.pago.ver` DETALLE).
  * @returns {Array} Columnas de AntD Table (grano estudiante).
  */
-export const createCuentasPorCobrarColumns = (onRegistrarPago) => [
+export const createCuentasPorCobrarColumns = (onRegistrarPago, onVerFicha) => [
   {
     title: 'Nº',
     key: 'nro',
@@ -168,30 +174,47 @@ export const createCuentasPorCobrarColumns = (onRegistrarPago) => [
       </span>
     ),
   },
-  // Acción: ir a saldar la deuda en el formulario de registro de pago. Al cancelar
-  // el saldo, el backend salda también el compromiso de pago del estudiante.
-  ...(onRegistrarPago
+  // Acción: Ver ficha (cabecera de aporte) + Saldar (ir a registrar pago). Al
+  // cancelar el saldo, el backend salda también el compromiso de pago del estudiante.
+  ...(onRegistrarPago || onVerFicha
     ? [
         {
           title: 'Acción',
           key: 'accion',
-          width: 132,
+          width: 176,
           align: 'center',
-          render: (_, record) =>
-            record.estudianteId ? (
-              <ActionButton
-                permiso={FINANZAS_PERMISOS.pagoRegistrar}
-                accion="CREAR"
-                variant="primary"
-                size="small"
-                icon={<DollarOutlined />}
-                onClick={() => onRegistrarPago(record.estudianteId, record)}
-              >
-                Saldar
-              </ActionButton>
-            ) : (
-              '—'
-            ),
+          render: (_, record) => {
+            const botones = (
+              <Flex gap={allSpacing.marginXS} justify="center" wrap="wrap">
+                {onVerFicha && record.pagoAporteId ? (
+                  <ActionButton
+                    permiso={FINANZAS_PERMISOS.pagoVer}
+                    accion="DETALLE"
+                    variant="info"
+                    size="small"
+                    icon={<EyeOutlined />}
+                    onClick={() => onVerFicha(record.pagoAporteId, record)}
+                  >
+                    Ver ficha
+                  </ActionButton>
+                ) : null}
+                {onRegistrarPago && record.estudianteId ? (
+                  <ActionButton
+                    permiso={FINANZAS_PERMISOS.pagoRegistrar}
+                    accion="CREAR"
+                    variant="primary"
+                    size="small"
+                    icon={<DollarOutlined />}
+                    onClick={() => onRegistrarPago(record.estudianteId, record)}
+                  >
+                    Saldar
+                  </ActionButton>
+                ) : null}
+              </Flex>
+            );
+            const hayBotones = (onVerFicha && record.pagoAporteId) || (onRegistrarPago && record.estudianteId);
+            return hayBotones ? botones : '—';
+          },
         },
       ]
     : []),

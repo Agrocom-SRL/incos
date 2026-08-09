@@ -11,7 +11,10 @@
 import { Typography } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { InfoLinesCell, StatusPill } from '@atoms';
-import { RIESGO_PILL_CLASS, SIN_RIESGO_PILL_CLASS } from '@application-academico/acompanamiento/utils/acompanamientoPills';
+import {
+  formatSituacionRiesgo,
+  getSituacionRiesgoPillClass,
+} from '@application-academico/acompanamiento/utils/acompanamientoPills';
 import NotaRiesgoText from '@academico/acompanamiento/components/atoms/NotaRiesgoText';
 
 const { Text } = Typography;
@@ -52,16 +55,26 @@ export const createAlertaEstudianteMateriasColumns = () => [
     ),
   },
   {
+    title: 'Asist.',
+    key: 'pctAsistenciaUltimoBimestre',
+    width: 70,
+    align: 'center',
+    render: (_, record) => (
+      <NotaRiesgoText
+        nota={record.pctAsistenciaUltimoBimestre}
+        umbral={record.umbralAsistencia}
+        suffix="%"
+      />
+    ),
+  },
+  {
     title: 'Situación',
     key: 'situacion',
-    width: 120,
+    width: 150,
     align: 'center',
-    render: (_, record) =>
-      record.enRiesgo ? (
-        <StatusPill label="En riesgo" className={RIESGO_PILL_CLASS} />
-      ) : (
-        <StatusPill label="Regular" className={SIN_RIESGO_PILL_CLASS} />
-      ),
+    render: (_, record) => (
+      <StatusPill label={formatSituacionRiesgo(record)} className={getSituacionRiesgoPillClass(record)} />
+    ),
   },
 ];
 

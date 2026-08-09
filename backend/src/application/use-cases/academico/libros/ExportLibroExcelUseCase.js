@@ -1,17 +1,28 @@
 import { ValidationError, NotFoundError } from '../../../../domain/errors/AppError.js';
-import { ESTADOS_FOLIO, ordenCarreraLibro } from '../../../../domain/constants/libros.constants.js';
+import {
+  ESTADOS_FOLIO,
+  ESTADOS_LIBRO,
+  ordenCarreraLibro,
+} from '../../../../domain/constants/libros.constants.js';
 import { sanitizarFilePart } from '../../../utils/centralizadorExcelDatos.js';
 import { construirHojaParalelo } from '../../../utils/libroFolioExcelDatos.js';
 import { calcularEstadisticasParalelo } from './helpers/estadisticasParaleloHelper.js';
 
 /**
- * Exporta el libro de registro COMPLETO a Excel (GET /libros/:id/export):
- * una hoja por paralelo con sus folios apilados verticalmente — réplica del
- * libro físico "LIBRO LLENADO SISTEMAS 11 dic 2025". El libro es de la
- * gestión completa (3 carreras): las hojas se ordenan primero por carrera en
- * el orden canónico institucional (`ordenCarreraLibro`), luego periodo, luego
- * paralelo.
+ * Exporta el libro de registro a Excel (GET /libros/:id/export): una hoja
+ * por paralelo con sus folios apilados verticalmente — réplica del libro
+ * físico "LIBRO LLENADO SISTEMAS 11 dic 2025". El libro es de la gestión
+ * completa (3 carreras); sin `carreraId` exporta las 3, con `carreraId`
+ * exporta solo las hojas de esa carrera (ficha del libro, tab por carrera).
+ * Las hojas se ordenan primero por carrera en el orden canónico institucional
+ * (`ordenCarreraLibro`), luego periodo, luego paralelo.
  * Permiso: academico.libro · EXPORTAR.
+ *
+ * Bloque de firmas condicionado al estado del LIBRO (no del folio: el folio
+ * no tiene un estado "firmado"/"cerrado" propio): con el libro ABIERTO el
+ * export es un BORRADOR (cabecera + tabla, sin firmas — la numeración puede
+ * seguir reajustándose); con el libro CERRADO el export es el documento
+ * final, con el bloque de firmas de autoridades y docentes.
  *
  * Los folios ANULADOS no se exportan: su numeración queda como hueco (como en
  * el libro físico, donde el número de una página anulada no se reutiliza).
@@ -34,10 +45,10 @@ export class ExportLibroExcelUseCase {
   }
 
   /**
-   * @param {Object} params - { id }
+   * @param {Object} params - { id, carreraId? }
    * @returns {Promise<{ buffer: Buffer, fileName: string, mimeType: string }>}
    */
-  async execute({ id }) {
+  async execute({ id, carreraId = null }) {
     const libroId = Number(id);
     const libroRow = await this.libroRegistroViewRepository.obtenerLibroPorId(libroId);
     if (!libroRow) {
@@ -45,9 +56,16 @@ export class ExportLibroExcelUseCase {
     }
 
     const foliosRows = await this.libroRegistroViewRepository.listarFoliosPorLibro(libroId);
-    const exportables = foliosRows.filter((f) => f.estado !== ESTADOS_FOLIO.ANULADO);
+    let exportables = foliosRows.filter((f) => f.estado !== ESTADOS_FOLIO.ANULADO);
+    if (carreraId != null) {
+      exportables = exportables.filter((f) => Number(f.carrera_id) === Number(carreraId));
+    }
     if (exportables.length === 0) {
-      throw new ValidationError('El libro aún no tiene folios generados para exportar');
+      throw new ValidationError(
+        carreraId != null
+          ? 'Esta carrera aún no tiene folios generados para exportar'
+          : 'El libro aún no tiene folios generados para exportar',
+      );
     }
 
     // Una hoja por paralelo (orden: carrera canónica, luego curso/periodo,
@@ -99,6 +117,13 @@ export class ExportLibroExcelUseCase {
       );
     }
 
+    // El bloque de firmas solo tiene sentido con el libro CERRADO: mientras
+    // está ABIERTO la numeración puede reajustarse ("Generar todos los
+    // folios"), así que el export es un borrador (cabecera + tabla, sin
+    // firmas) — evita que alguien firme sobre un folio que después cambia
+    // de número.
+    const incluirFirmas = libroRow.estado === ESTADOS_LIBRO.CERRADO;
+
     const buffer = await this.libroRegistroExcelGenerator.generarLibroRegistro({
       libro: {
         numeroLibro: libroRow.numero_libro,
@@ -106,14 +131,19 @@ export class ExportLibroExcelUseCase {
         gestionAnio: libroRow.gestion_anio ?? '',
       },
       hojas,
+      incluirFirmas,
     });
 
+    const sufijoCarrera = carreraId != null ? `_${sanitizarFilePart(String(exportables[0].carrera_codigo ?? ''))}` : '';
+    const sufijoBorrador = incluirFirmas ? '' : '_BORRADOR';
     const fileName = `Libro_${libroRow.numero_libro}_${sanitizarFilePart(
       String(libroRow.gestion_anio ?? ''),
-    )}.xlsx`;
+    )}${sufijoCarrera}${sufijoBorrador}.xlsx`;
 
     this.logger?.info('[Libros] Libro exportado a Excel', {
       libroId,
+      carreraId,
+      incluirFirmas,
       hojas: hojas.length,
       folios: exportables.length,
       estudiantes: totalEstudiantes,

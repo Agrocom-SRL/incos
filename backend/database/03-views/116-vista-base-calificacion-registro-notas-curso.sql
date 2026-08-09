@@ -2,6 +2,12 @@
 -- VISTA BASE: vista_base_calificacion_registro_notas_curso
 -- Estudiantes matriculados × bimestres con componentes (gestión vigente).
 -- Orden de despliegue: 110, 112; después de 103.
+--
+-- 2026-08-07 (Fase C, ABANDONO en Consolidado): `emc` pasa de la vista 110
+-- (restringida a INSCRITO/CURSANDO) a la 188 (mismo grano, sin filtro de
+-- estado) — cierra el gap de la Fase A: `GetRegistroNotasCursoUseCase` ya
+-- sabía calcular el veredicto ABANDONO por `estado_materia`, pero la fila
+-- nunca llegaba a existir aquí mientras `emc` viniera de la 110.
 -- ============================================
 
 USE instituto_incos;
@@ -17,12 +23,13 @@ SELECT
   emc.nombre AS nombre_completo,
   emc.matricula_materia_id,
   mm.nota_final,
+  mm.estado AS estado_materia,
   rb.bimestre,
   rb.nota_teorico,
   rb.nota_practico,
   rb.nota_bimestre,
   rb.estado_bimestre
-FROM vista_base_calificacion_estudiante_matricula_curso emc
+FROM vista_base_calificacion_estudiante_matricula_curso_completa emc
 INNER JOIN matriculas_materia mm
   ON mm.id = emc.matricula_materia_id
   AND mm.deleted_at IS NULL

@@ -1,7 +1,8 @@
 /**
- * Edita ESTADO/OBSERVACIONES de la fila de un estudiante en un folio.
+ * Edita la OBSERVACIÓN de la fila de un estudiante en un folio (el ESTADO
+ * académico no es editable a mano: siempre deriva del centralizador).
  * PATCH /v1/libros/:id/folios/:folioId/estudiantes/:filaId. Deshabilitado si el
- * folio está FIRMADO (inmutable) o ANULADO (terminal) — lo valida el backend.
+ * folio está ANULADO (terminal) — lo valida el backend.
  */
 
 import { useCallback, useState } from 'react';

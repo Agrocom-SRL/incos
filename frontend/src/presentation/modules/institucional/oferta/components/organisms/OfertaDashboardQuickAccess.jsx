@@ -19,8 +19,9 @@ const OfertaDashboardQuickAccess = ({
   planesHabilitados,
   sinPlanesHabilitados,
   habilitandoPlanes,
-  onPlanesVigente,
+  planesPendientesCount = 0,
   onHabilitarTodosPlanes,
+  onHabilitarPlanesVigentes,
   onParalelosPlan,
 }) => (
   <Card title="Acciones" {...cardProps}>
@@ -39,17 +40,29 @@ const OfertaDashboardQuickAccess = ({
           Habilitar planes
         </ActionButton>
       ) : (
-        <ActionButton
-          permiso="institucional.oferta.gestion-plan"
-          accion="LISTAR"
-          variant="primary"
-          className="oferta-dashboard-cta-btn"
-          icon={<BookOutlined />}
-          disabled={!gestionVigente}
-          onClick={onPlanesVigente}
-        >
-          Planes vigentes
-        </ActionButton>
+        // Una carrera puede sumar planes activos (históricos con estudiantes en
+        // curso) luego de habilitar el vigente: este botón habilita cualquier
+        // pendiente y de una vez lleva a "Planes vigentes" (sin acción aparte).
+        <Flex align="center" gap="small" wrap>
+          <ActionButton
+            permiso="institucional.oferta.gestion-plan"
+            accion="CREAR"
+            variant="primary"
+            className="oferta-dashboard-cta-btn"
+            icon={<BookOutlined />}
+            disabled={!gestionVigente}
+            loading={habilitandoPlanes}
+            onClick={onHabilitarPlanesVigentes}
+          >
+            Habilitar planes vigentes
+          </ActionButton>
+          {planesPendientesCount > 0 ? (
+            <Text type="secondary">
+              Todavía {planesPendientesCount === 1 ? 'tiene 1 plan' : `tiene ${planesPendientesCount} planes`} por
+              habilitar.
+            </Text>
+          ) : null}
+        </Flex>
       )}
 
       {planesHabilitados.length > 0 ? (
@@ -81,7 +94,7 @@ const OfertaDashboardQuickAccess = ({
         </>
       ) : sinPlanesHabilitados ? (
         <Text type="secondary">
-          Vincule todos los planes vigentes del catálogo académico a la gestión antes de generar
+          Vincule todos los planes activos del catálogo académico a la gestión antes de generar
           paralelos.
         </Text>
       ) : null}

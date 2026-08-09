@@ -50,4 +50,54 @@ export function computeLibroColumnMap(asignaturas) {
   };
 }
 
+/**
+ * Fracción de columna (unidades de ancla de ExcelJS: entero = columna
+ * 0-based, decimal = fracción DE ESA columna) que corresponde a un ancho
+ * físico acumulado `targetWidth` (mismas unidades que COL_WIDTHS) medido
+ * desde el borde izquierdo de `startCol0` (0-based), recorriendo `widths` en
+ * orden.
+ *
+ * Necesario porque ExcelJS reparte la parte fraccionaria de `col` sobre el
+ * ancho de LA COLUMNA donde cae, no sobre un promedio del rango — con
+ * columnas de ancho muy dispar (p. ej. A=5 vs C=34) una fracción uniforme
+ * (`col + 0.15`) cae casi entera dentro de la primera columna y produce un
+ * recuadro visiblemente descentrado. Ver `exceljs/lib/doc/anchor.js` (`Anchor#col`).
+ *
+ * @param {number} startCol0 - Columna inicial, 0-based.
+ * @param {number[]} widths - Anchos (unidades Excel) de las columnas del rango, en orden.
+ * @param {number} targetWidth - Ancho acumulado objetivo, mismas unidades que `widths`.
+ * @returns {number} Columna fraccionaria para usar como `col` en `tl`/`br` de `addImage`.
+ */
+export function colFractionAtWidth(startCol0, widths, targetWidth) {
+  let remaining = targetWidth;
+  let col = startCol0;
+  for (const width of widths) {
+    if (remaining <= width) return col + remaining / width;
+    remaining -= width;
+    col += 1;
+  }
+  return col;
+}
+
+/**
+ * 3 zonas horizontales [colInicio, colFin] (1-based) para bloques de 3
+ * firmas: JEFE(A) DE CARRERA / DIRECTOR(A) ACADÉMICO(A) / RECTOR(A) en
+ * `_firmasAutoridades` y la grilla de 3 columnas de `_firmasDocentes`.
+ *
+ * Columnas fijas (C:E / G:J / L:Q), con aire entre ellas — no relativas al n°
+ * de materias: se recortan a `lastCol` solo como resguardo para paralelos con
+ * muy pocas materias (fuera del rango real de INCOS).
+ *
+ * @param {ReturnType<typeof computeLibroColumnMap>} layout
+ * @returns {[number, number][]} 3 pares [colInicio, colFin].
+ */
+export function computeTresZonasFirmas(layout) {
+  const clamp = (col) => Math.min(col, layout.lastCol);
+  return [
+    [clamp(3), clamp(5)], // C:E
+    [clamp(7), clamp(10)], // G:J
+    [clamp(12), clamp(17)], // L:Q
+  ];
+}
+
 export default computeLibroColumnMap;

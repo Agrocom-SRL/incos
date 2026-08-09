@@ -12,6 +12,7 @@ export class ExportLibroExcelController {
     try {
       const { buffer, fileName, mimeType } = await this.exportLibroExcelUseCase.execute({
         id: Number(req.params.id),
+        carreraId: req.query.carreraId ? Number(req.query.carreraId) : null,
       });
 
       res.setHeader('Content-Type', mimeType);

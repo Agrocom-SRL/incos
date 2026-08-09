@@ -14,10 +14,7 @@ import { useCallback, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useBecaDescuentoContext } from '@application-finanzas/becas-descuentos/hooks/context/useBecaDescuentoContext';
 import { useDeleteItem } from '@application/utils/useDeleteItem';
-import { CONFIGURACION_PATH, becaDescuentoEditarPath } from '@application-finanzas/config/paths';
-
-/** Tab de origen en "Config. de pagos" (ver `configPagosTabs.js`, TAB_BECAS_DESCUENTOS). */
-const BECAS_TAB_PATH = `${CONFIGURACION_PATH}?tab=becas-descuentos`;
+import { BECAS_LIST_PATH, becaDescuentoEditarPath } from '@application-finanzas/config/paths';
 
 /**
  * Listado de becas asignadas a estudiantes (módulo Matrícula, legacy
@@ -47,13 +44,13 @@ export const useBecaDescuentoDetallePage = () => {
     () => [
       { title: 'Inicio', href: '/' },
       { title: 'Finanzas', href: '/finanzas' },
-      { title: 'Config. de pagos', href: BECAS_TAB_PATH },
+      { title: 'Config. de becas', href: BECAS_LIST_PATH },
       { title: 'Beca o descuento' },
     ],
     [],
   );
 
-  const handleVolver = useCallback(() => navigate(BECAS_TAB_PATH), [navigate]);
+  const handleVolver = useCallback(() => navigate(BECAS_LIST_PATH), [navigate]);
 
   const handleEditar = useCallback(() => {
     if (!beca?.id) return;

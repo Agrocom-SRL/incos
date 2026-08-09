@@ -4,7 +4,7 @@
  * (misma fuente visual que `materiaTipoPill.js`) — sin CSS nuevo.
  */
 
-export const getPlanVigenciaLabel = (vigente) => (vigente ? 'Vigente' : 'Borrador');
+export const getPlanVigenciaLabel = (vigente) => (vigente ? 'Vigente' : 'No vigente');
 
 export const getPlanVigenciaPillClass = (vigente) =>
   vigente ? 'cfg-materia-pill cfg-materia-pill--activa' : 'cfg-materia-pill cfg-materia-pill--default';

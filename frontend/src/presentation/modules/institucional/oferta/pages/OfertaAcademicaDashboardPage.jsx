@@ -95,8 +95,9 @@ const OfertaAcademicaDashboardPage = () => {
                 planesHabilitados={s.planesHabilitados}
                 sinPlanesHabilitados={s.sinPlanesHabilitados}
                 habilitandoPlanes={s.habilitandoPlanes}
-                onPlanesVigente={s.navigatePlanesVigente}
+                planesPendientesCount={s.planesPendientesCount}
                 onHabilitarTodosPlanes={s.onHabilitarTodosPlanes}
+                onHabilitarPlanesVigentes={s.onHabilitarPlanesVigentes}
                 onParalelosPlan={s.navigateParalelosPlan}
               />
             </Flex>

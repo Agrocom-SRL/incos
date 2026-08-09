@@ -72,3 +72,28 @@ export const RIESGO_PILL_CLASS = 'cfg-materia-pill cfg-materia-pill--danger';
 
 /** Pill neutro para estudiantes sin riesgo (drawer de detalle A3). */
 export const SIN_RIESGO_PILL_CLASS = 'cfg-materia-pill cfg-materia-pill--success';
+
+/**
+ * Etiqueta de la columna "Situación" combinando las 2 dimensiones de riesgo
+ * de la vista 156 (nota `enRiesgo` + asistencia `enRiesgoAsistencia`, ambas
+ * 100% informativas — nunca cambian estado por sí solas). Mismo criterio en
+ * el listado de alertas, "Mis alumnos en riesgo", el panel y el drawer de
+ * detalle, para no repetir la combinación 4 veces.
+ * @param {{enRiesgo?: boolean, enRiesgoAsistencia?: boolean, umbralRiesgo?: number|null}} record
+ * @returns {string}
+ */
+export const formatSituacionRiesgo = ({ enRiesgo, enRiesgoAsistencia, umbralRiesgo } = {}) => {
+  if (enRiesgo && enRiesgoAsistencia) return `En riesgo (nota y asistencia < ${umbralRiesgo})`;
+  if (enRiesgo) return `En riesgo (< ${umbralRiesgo})`;
+  if (enRiesgoAsistencia) return 'En riesgo (asistencia)';
+  return 'Regular';
+};
+
+/**
+ * Clase del StatusPill de "Situación": rojo si CUALQUIERA de las 2
+ * dimensiones está en riesgo, verde si ninguna.
+ * @param {{enRiesgo?: boolean, enRiesgoAsistencia?: boolean}} record
+ * @returns {string}
+ */
+export const getSituacionRiesgoPillClass = ({ enRiesgo, enRiesgoAsistencia } = {}) =>
+  enRiesgo || enRiesgoAsistencia ? RIESGO_PILL_CLASS : SIN_RIESGO_PILL_CLASS;

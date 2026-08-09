@@ -407,3 +407,16 @@ Excel) puede mostrar LIBRO/FOLIO reales consultando `folios_libro` por
   - ⛔ Pendiente BD (aprobación del usuario, igual que siempre): recrear
     `libros_registro`/`folios_libro`/`folio_estudiantes` (DROP+CREATE, sin
     datos reales que preservar) y la vista 175 en la BD de desarrollo.
+- **2026-08-07 (verificación, sin cambios de código):** al retomar este
+  documento se confirmó contra el código real que los 2 pendientes que
+  quedaban anotados arriba ya estaban resueltos (la bitácora no se había
+  actualizado):
+  - `centralizadorDoc.js` línea 9 ya no dice "LIBRO N°/FOLIO N° no existen en
+    el sistema" — dice "SÍ existen en el sistema (módulo Libros de
+    registro...)".
+  - `librosMapper.js` ya tiene `formatCursoLibro`/`formatOrdinalPeriodo`/
+    `formatLetraParalelo` implementando el criterio correcto ("TERCERO -
+    PARALELO A"), usado por `mapFolio`/`mapParaleloLibro`.
+  - No queda ningún pendiente de código en este plan. Iteración 2 (frontend)
+    confirmada completa por evidencia de commits (`035ed101` e integración
+    Centralizador↔Libros posteriores) — no se reabre.

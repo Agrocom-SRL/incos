@@ -188,6 +188,7 @@ export const PLANES_ESTUDIOS_ENDPOINTS = {
   VALIDAR: (id) => `${API_BASE}/planes-estudios/${id}/validar`,
   MARCAR_VIGENTE: (id) => `${API_BASE}/planes-estudios/${id}/marcar-vigente`,
   CLONAR: (id) => `${API_BASE}/planes-estudios/${id}/clonar`,
+  ESTADO: (id) => `${API_BASE}/planes-estudios/${id}/estado`,
   PERIODOS: (planId) => `${API_BASE}/planes-estudios/${planId}/periodos`,
   ASIGNATURAS: (planId) => `${API_BASE}/planes-estudios/${planId}/asignaturas`,
 };
@@ -460,13 +461,40 @@ export const LIBROS_ENDPOINTS = {
   FOLIOS: (id) => `${API_BASE}/libros/${id}/folios`,
   /** GET — detalle del folio (nómina + celdas de nota final por materia). */
   FOLIO_BY_ID: (id, folioId) => `${API_BASE}/libros/${id}/folios/${folioId}`,
-  /** PATCH — transición de estado (BORRADOR→IMPRESO→FIRMADO / ANULADO). */
+  /** PATCH — transición de estado (BORRADOR→ANULADO). */
   FOLIO_ESTADO: (id, folioId) => `${API_BASE}/libros/${id}/folios/${folioId}/estado`,
-  /** PATCH — fila de un estudiante del folio (ESTADO/OBSERVACIONES; solo si no FIRMADO). */
+  /** PATCH — observación de fila de un estudiante del folio (solo si no ANULADO). */
   FOLIO_ESTUDIANTE: (id, folioId, filaId) =>
     `${API_BASE}/libros/${id}/folios/${folioId}/estudiantes/${filaId}`,
   /** GET — descarga el libro completo en Excel (binario). */
   EXPORT: (id) => `${API_BASE}/libros/${id}/export`,
+};
+
+/**
+ * Nivelación (Académico · schema 16 · /academico/nivelaciones). Tracking de
+ * materias ARRASTRADAS de gestiones anteriores (`historial_matricula` +
+ * `nivelaciones`). Permisos `academico.nivelacion.{ver,inscribir,aprobar}`
+ * (seed 59, RECTOR/DIR_ACADEMICO — ABANDONO/RETIRADO es SIEMPRE decisión
+ * administrativa, nunca del docente).
+ */
+export const NIVELACIONES_ENDPOINTS = {
+  /** GET — grilla del paralelo (query `paraleloGestionId`) / POST — no aplica. */
+  BASE: `${API_BASE}/nivelaciones`,
+  /** GET — conteo de pendientes por paralelo (selector P1 nivel 1). */
+  PENDIENTES_POR_PARALELO: `${API_BASE}/nivelaciones/pendientes-por-paralelo`,
+  /** GET — bandeja plana PROGRAMADA/EN_CURSO cruzando paralelos (P3). */
+  PENDIENTES: `${API_BASE}/nivelaciones/pendientes`,
+  /** POST — evento genérico de historial_matricula (sin nota). */
+  EVENTOS: `${API_BASE}/nivelaciones/eventos`,
+  /** POST — decisión administrativa ABANDONO/RETIRADO (nota forzada). */
+  DECISIONES_ADMINISTRATIVAS: `${API_BASE}/nivelaciones/decisiones-administrativas`,
+  /** POST — programa un examen de nivelación (crea evento + fila `nivelaciones`). */
+  EXAMENES: `${API_BASE}/nivelaciones/examenes`,
+  /** PATCH — cierra el examen con resultado (nota/estado). */
+  EXAMEN_RESULTADO: (levelingId) => `${API_BASE}/nivelaciones/examenes/${levelingId}/resultado`,
+  /** GET — materias pendientes/arrastradas de un estudiante (B2, buscador sin contexto). */
+  MATERIAS_PENDIENTES_ESTUDIANTE: (estudianteId) =>
+    `${API_BASE}/nivelaciones/estudiante/${estudianteId}/pendientes`,
 };
 
 // ============================================
@@ -556,6 +584,17 @@ export const PAGOS_APORTES_ENDPOINTS = {
   // Compromiso de pago por su id (PUT actualizar / DELETE anular)
   COMPROMISO_BY_ID: (id) =>
     `${API_BASE}/pagos-aportes/compromiso/${encodeURIComponent(String(id))}`,
+};
+
+/**
+ * Registro de ingresos (Finanzas · listado unificado transaccional, vista 184
+ * vista_ingresos_listado): une aportes académicos (pago_cuotas) y pagos de
+ * capacitación (capacitacion_pagos) bajo un mismo contrato. Solo lectura
+ * (GET), gateado por `finanzas.pago.ver` (LISTAR). Independiente de
+ * `PAGOS_APORTES_ENDPOINTS` (cabeceras agregadas por estudiante).
+ */
+export const INGRESOS_ENDPOINTS = {
+  BASE: `${API_BASE}/ingresos`,
 };
 
 // ============================================

@@ -92,6 +92,29 @@ export const TRANSICIONES_PASANTIA = {
   },
 };
 
+/**
+ * Explicación de la consecuencia de CADA transición del modal genérico
+ * (`TransicionPasantiaModal`), espejo exacto de `TransicionarPasantiaUseCase`
+ * (P6, backend). Se muestra en el modal ANTES de confirmar.
+ */
+const EXPLICACION_TRANSICION_PASANTIA = {
+  EN_CURSO:
+    'El trámite pasa a estar en curso; el estudiante puede comenzar a registrar horas de la práctica laboral.',
+  FINALIZADA:
+    'Esta acción cierra la pasantía. Solo se puede finalizar cuando las horas cumplidas alcanzan las horas requeridas.',
+  CONVALIDADA:
+    'Esta acción convalida el trámite: se considera cumplida la práctica laboral por convalidación.',
+  RECHAZADA: 'Esta acción rechaza la solicitud de forma definitiva: no admite más transiciones.',
+  CANCELADA: 'Esta acción cancela el trámite de forma definitiva: no admite más transiciones.',
+};
+
+/** Texto de consecuencia de una transición del trámite, o `null` si no aplica. */
+export const formatExplicacionTransicionPasantia = (estado) =>
+  EXPLICACION_TRANSICION_PASANTIA[estado] ?? null;
+
+/** Destinos irreversibles: exigen confirmación adicional antes de registrar (regla A5). */
+export const ESTADOS_TRANSICION_PASANTIA_IRREVERSIBLES = ['RECHAZADA', 'CANCELADA'];
+
 /** Horas laborales requeridas según R.M. 487/2023 (validación del formulario). */
 export const HORAS_PASANTIA_MIN = 300;
 export const HORAS_PASANTIA_MAX = 360;

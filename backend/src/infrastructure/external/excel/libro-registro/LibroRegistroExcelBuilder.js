@@ -55,7 +55,7 @@ export class LibroRegistroExcelBuilder extends ILibroRegistroExcelGenerator {
    * @param {Object} params - Ver ILibroRegistroExcelGenerator.
    * @returns {Promise<Buffer>}
    */
-  async generarLibroRegistro({ libro, hojas } = {}) {
+  async generarLibroRegistro({ libro, hojas, incluirFirmas = false } = {}) {
     const workbook = new ExcelJS.Workbook();
     workbook.creator = 'INCOS Santa Cruz';
     workbook.created = new Date();
@@ -79,6 +79,7 @@ export class LibroRegistroExcelBuilder extends ILibroRegistroExcelGenerator {
         hoja,
         doc: LIBRO_REGISTRO_DOC,
         logoId,
+        incluirFirmas,
       });
     }
 

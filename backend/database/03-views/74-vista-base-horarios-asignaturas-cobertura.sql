@@ -27,7 +27,6 @@ INNER JOIN periodos per
     AND per.activo = TRUE
 INNER JOIN planes_estudios pe
     ON pe.id = ap.plan_estudio_id
-    AND pe.vigente = TRUE
     AND pe.deleted_at IS NULL
     AND pe.activo = TRUE
 INNER JOIN carreras car

@@ -186,7 +186,7 @@ export const academicoConfigRoutes = [
     permisoAny: CFG_ACADEMICO_PERMISOS,
     accion: 'LISTAR',
     menu: {
-      label: 'Académico',
+      label: 'Malla curricular',
       module: 'CFG',
       parent: 'CFG',
       order: 1,

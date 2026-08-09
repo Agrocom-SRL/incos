@@ -2,6 +2,15 @@
 -- VISTA BASE: vista_base_calificacion_resumen_curso_bimestre_fila
 -- Resumen por matrícula × bimestre para Mis cursos: cuaderno (abierto) + habilitación (cerrado).
 -- Orden de despliegue: 111, 109; después de 109.
+--
+-- 2026-08-07 (Fase C, ABANDONO en Consolidado/Boletín): se agrega
+-- `estado_matricula` (mm.estado) y se amplía el filtro a ABANDONO/RETIRADO
+-- — sin esto, un estudiante marcado ABANDONO en un bimestre 3 perdía TAMBIÉN
+-- la nota real ya cargada en los bimestres 1-2 (el filtro usa el estado
+-- ACTUAL de la matrícula, no el histórico). Consumidor
+-- `CalificacionCoordinacionRepository.listarResumenBimestresCursosPorDocente`
+-- (KPI "Mis cursos" del docente) excluye ABANDONO/RETIRADO explícitamente en
+-- su propia consulta para no distorsionar sus totales — ver esa consulta.
 -- ============================================
 
 USE instituto_incos;
@@ -19,6 +28,7 @@ SELECT
   bm.nota_practico,
   bm.nota_bimestre,
   bm.estado AS estado_bimestre,
+  mm.estado AS estado_matricula,
   COALESCE(cuad.suma_teorico, 0) AS cuaderno_teorico,
   COALESCE(cuad.suma_practico, 0) AS cuaderno_practico,
   COALESCE(cuad.tiene_nota_celda, 0) AS tiene_nota_cuaderno,
@@ -74,5 +84,5 @@ LEFT JOIN (
 ) cuad ON cuad.bimestre_matricula_id = bm.id
 WHERE mm.deleted_at IS NULL
   AND mm.activo = TRUE
-  AND mm.estado IN ('INSCRITO', 'CURSANDO')
+  AND mm.estado IN ('INSCRITO', 'CURSANDO', 'ABANDONO', 'RETIRADO')
   AND bm.bimestre BETWEEN 1 AND 4;

@@ -24,10 +24,14 @@ import {
   COL_WIDTHS,
   ROW_HEIGHTS,
   FILA,
-  LOGO_EXT,
+  LOGO_ASPECT_RATIO,
   ESTADO_COLOR,
 } from './sheet/libroRegistroSheetConfig.js';
-import { computeLibroColumnMap } from './sheet/libroRegistroSheetLayout.js';
+import {
+  computeLibroColumnMap,
+  colFractionAtWidth,
+  computeTresZonasFirmas,
+} from './sheet/libroRegistroSheetLayout.js';
 import { formatNotaFolio, esNotaNP } from './sheet/libroRegistroSheetFormatters.js';
 
 /** Columnas de la grilla de FIRMAS DE DOCENTES (3 firmas por fila, como el papel real). */
@@ -41,8 +45,11 @@ export class LibroRegistroSheetBuilder {
    * @param {Object} params.doc - Metadatos institucionales (LIBRO_REGISTRO_DOC).
    * @param {number|null} [params.logoId] - Id de imagen del logo MINEDU en el
    *        workbook (null si el asset no está disponible; se omite sin fallar).
+   * @param {boolean} [params.incluirFirmas] - false → BORRADOR: se omiten las
+   *        firmas de autoridades (por folio) y la página de firmas de
+   *        docentes (por paralelo). Ver `ExportLibroExcelUseCase`.
    */
-  static build({ composer: c, hoja, doc, logoId = null }) {
+  static build({ composer: c, hoja, doc, logoId = null, incluirFirmas = false }) {
     const folios = Array.isArray(hoja?.folios) ? hoja.folios : [];
     if (folios.length === 0) return;
 
@@ -58,25 +65,31 @@ export class LibroRegistroSheetBuilder {
       this._cabeceraTabla(c, ctx);
       this._filasEstudiantes(c, ctx);
       this._leyendaNotas(c, ctx);
-      this._firmasAutoridades(c, ctx);
+      if (incluirFirmas) {
+        this._firmasAutoridades(c, ctx);
+      } else {
+        this._notaBorrador(c, ctx);
+      }
       // Cada folio imprime en su propia página del libro.
       c.ws.getRow(base + FILAS_POR_FOLIO).addPageBreak();
     });
 
     const baseFirmas = folios.length * FILAS_POR_FOLIO;
-    const filasFirmasDocentes = this._firmasDocentes(c, {
-      base: baseFirmas,
-      folio: folios[0],
-      layout,
-      doc,
-    });
+    const filasFirmasDocentes = incluirFirmas
+      ? this._firmasDocentes(c, { base: baseFirmas, folio: folios[0], layout, doc })
+      : 0;
 
-    this._estadisticasParalelo(c, {
-      base: baseFirmas + filasFirmasDocentes + 2,
-      layout,
-      doc,
-      estadisticas: hoja.estadisticas ?? null,
-    });
+    // Bloque de ESTADÍSTICAS solo con el libro CERRADO (mismo gate que las
+    // firmas): en BORRADOR las notas todavía pueden cambiar y el conteo
+    // aprobados/reprobados/abandono no es definitivo.
+    if (incluirFirmas) {
+      this._estadisticasParalelo(c, {
+        base: baseFirmas + filasFirmasDocentes + 2,
+        layout,
+        doc,
+        estadisticas: hoja.estadisticas ?? null,
+      });
+    }
   }
 
   /** Anchos de columna: identificación + una col por materia + estado/obs. */
@@ -101,25 +114,54 @@ export class LibroRegistroSheetBuilder {
   /** Código de registro, escudo/logo, banda de título y LIBRO/FOLIO N°. */
   static _cabeceraFolio(c, { base, folio, layout, doc, logoId }) {
     const cab = folio.cabecera ?? {};
-    const { lastCol, tituloStartCol, tituloEndCol, libroLabelStart, libroLabelEnd, libroValueCol } =
-      layout;
+    const {
+      lastCol,
+      tituloStartCol,
+      tituloEndCol,
+      libroLabelStart,
+      libroLabelEnd,
+      libroValueCol,
+      COL_OBS_START,
+      COL_OBS_END,
+    } = layout;
 
-    // Fila 1 del bloque: Código de Registro (esquina superior derecha).
+    // Fila 3 del bloque: Código de Registro, sobre la columna de OBSERVACIONES (P:S).
     c.merge(
-      `${L(libroLabelStart - 1)}${base + FILA.codigoRegistro}:${L(lastCol)}${base + FILA.codigoRegistro}`,
+      `${L(COL_OBS_START)}${base + FILA.codigoRegistro}:${L(COL_OBS_END)}${base + FILA.codigoRegistro}`,
       `Código de Registro: ${cab.codigoRegistro ?? ''}`,
       { size: EXCEL_FONT_SIZE.small, bold: true, align: 'right', border: false },
     );
 
-    // Caja del escudo (A2:C6 del bloque) + logo del Ministerio si está cargado.
+    // Caja del escudo (A2:C6 del bloque) + logo del Ministerio si está cargado,
+    // al 100% del alto de la caja (sin recorte vertical) y con el ancho
+    // DERIVADO de su relación de aspecto real (no se fuerza un ancho
+    // independiente: el logo es más ancho que alto y forzarlo lo deformaba).
     c.mergeBox(base + FILA.logoInicio, layout.COL_NRO, base + FILA.logoFin, layout.COL_NOMBRE_END, '', {
       border: true,
     });
     if (logoId != null) {
+      const cajaRowInicio = base + FILA.logoInicio - 1;
+      const cajaRowFin = base + FILA.logoFin;
+
+      // Conversión aproximada punto->px / unidad de ancho Excel->px, solo
+      // para estimar cuánto ancho ocupa el logo al 100% del alto y poder
+      // centrarlo — no afecta el alto real, que usa bordes de fila exactos.
+      const PX_POR_PUNTO = 96 / 72;
+      const PX_POR_UNIDAD_EXCEL = 7;
+      const altoCajaPx = (cajaRowFin - cajaRowInicio) * ROW_HEIGHTS.cabecera * PX_POR_PUNTO;
+      const anchoLogoUnidades = (altoCajaPx * LOGO_ASPECT_RATIO) / PX_POR_UNIDAD_EXCEL;
+
+      const anchoColumnas = [COL_WIDTHS.nro, COL_WIDTHS.nombreIzq, COL_WIDTHS.nombreDer];
+      const anchoTotal = anchoColumnas.reduce((sum, w) => sum + w, 0);
+      const margenAncho = Math.max(0, (anchoTotal - anchoLogoUnidades) / 2);
+      const cajaColInicio = layout.COL_NRO - 1;
+
       c.ws.addImage(logoId, {
-        tl: { col: 0.35, row: base + FILA.logoInicio - 0.8 },
-        ext: LOGO_EXT,
-        editAs: 'oneCell',
+        tl: { col: colFractionAtWidth(cajaColInicio, anchoColumnas, margenAncho), row: cajaRowInicio },
+        br: {
+          col: colFractionAtWidth(cajaColInicio, anchoColumnas, anchoTotal - margenAncho),
+          row: cajaRowFin,
+        },
       });
     }
 
@@ -366,17 +408,34 @@ export class LibroRegistroSheetBuilder {
     });
   }
 
+  /**
+   * Nota "DOCUMENTO BORRADOR" al pie del folio, en el mismo renglón que
+   * ocuparían las firmas de autoridades — reemplaza ese bloque mientras el
+   * libro está ABIERTO (la numeración todavía puede reajustarse).
+   */
+  static _notaBorrador(c, { base, layout }) {
+    const row = base + FILA.firmasAutoridades;
+    c.mergeBox(
+      row,
+      2,
+      row,
+      layout.lastCol,
+      'DOCUMENTO BORRADOR — sin firmas; el libro aún está ABIERTO y la numeración puede reajustarse',
+      {
+        size: EXCEL_FONT_SIZE.small,
+        bold: true,
+        align: 'center',
+        border: false,
+        fontColor: EXCEL_COLOR.danger,
+      },
+    );
+  }
+
   /** Firmas de autoridades al pie del folio (JEFE DE CARRERA / DIRECTOR / RECTOR). */
   static _firmasAutoridades(c, { base, layout, doc }) {
     const row = base + FILA.firmasAutoridades;
     const firmas = doc.firmas ?? [];
-    // Tres zonas equiespaciadas (cols 2..lastCol) con un col de aire entre
-    // ellas — sin solapes de merge con cualquier número de materias.
-    const zona = Math.floor((layout.lastCol - 1) / 3);
-    const anchors = firmas.map((_, i) => {
-      const start = 2 + i * zona;
-      return [start, Math.max(start, start + zona - 2)];
-    });
+    const anchors = computeTresZonasFirmas(layout);
     firmas.forEach((firma, i) => {
       const [start, end] = anchors[i];
       c.mergeBox(row, start, row, end, firma, {
@@ -428,13 +487,10 @@ export class LibroRegistroSheetBuilder {
       { size: small, fontColor: EXCEL_COLOR.inkSoft, border: false },
     );
 
-    // Grilla de 3 columnas equiespaciadas (con aire entre ellas, igual criterio
-    // que _firmasAutoridades) — sin cabecera de tabla, cada celda es autoexplicativa.
-    const zona = Math.floor((lastCol - 1) / COLUMNAS_FIRMAS_DOCENTES);
-    const anchors = Array.from({ length: COLUMNAS_FIRMAS_DOCENTES }, (_, i) => {
-      const start = 2 + i * zona;
-      return [start, Math.max(start, start + zona - 2)];
-    });
+    // Grilla de 3 columnas (mismas zonas que _firmasAutoridades: primer
+    // bloque C:E, último ..:Q) — sin cabecera de tabla, cada celda es
+    // autoexplicativa.
+    const anchors = computeTresZonasFirmas(layout);
 
     const grillaInicio = base + 6;
     asignaturas.forEach((asig, i) => {
@@ -492,9 +548,11 @@ export class LibroRegistroSheetBuilder {
     const { small } = EXCEL_FONT_SIZE;
 
     // Tabla angosta, alineada a la izquierda (independiente del número de
-    // materias): DETALLE (6 columnas) + CANTIDAD (1) + % (1).
-    const colDetalleStart = layout.COL_NRO;
-    const colDetalleEnd = layout.COL_CI + 2;
+    // materias): arranca en C (no en A) para alinear con el resto de bloques
+    // del pie de hoja (firmas de autoridades/docentes) — DETALLE (6 columnas)
+    // + CANTIDAD (1) + % (1).
+    const colDetalleStart = layout.COL_NOMBRE_END;
+    const colDetalleEnd = layout.COL_CI + 1;
     const colCantidad = colDetalleEnd + 1;
     const colPorcentaje = colCantidad + 1;
 

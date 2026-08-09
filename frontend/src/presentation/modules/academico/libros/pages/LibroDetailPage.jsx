@@ -3,14 +3,15 @@
  * Página "dumb": solo compone template + organismos y consume `useLibroDetail`.
  */
 
-import { Alert, Popconfirm } from 'antd';
+import { Alert } from 'antd';
 import {
   FileAddOutlined,
-  FileExcelOutlined,
   LockOutlined,
   ProfileOutlined,
+  StopOutlined,
   UnlockOutlined,
 } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { ActionButton, StatusPill } from '@atoms';
@@ -21,12 +22,13 @@ import { useAuthContext } from '@application-auth';
 import { useLibroDetail } from '@application-academico/libros/hooks';
 import { LIBROS_PERMISOS } from '@application-academico/libros/utils/librosPermisos';
 import { formatLibroEstado, getLibroEstadoPillClass } from '@application-academico/libros/utils/librosEstados';
+import { libroAnuladosPath } from '@application-academico/libros/utils/librosPaths';
 import LibroFoliosSection from '../components/organisms/LibroFoliosSection.jsx';
-import GenerarFoliosModal from '../components/organisms/GenerarFoliosModal.jsx';
 import '@presentation/styles/pages/detail-page.css';
 
 const LibroDetailPage = () => {
   const { hasPermiso } = useAuthContext();
+  const navigate = useNavigate();
   const {
     libro,
     loading,
@@ -37,16 +39,8 @@ const LibroDetailPage = () => {
     handleVolver,
     refetch,
 
-    modalGenerarOpen,
-    abrirModalGenerar,
-    cerrarModalGenerar,
-    paralelos,
-    loadingParalelos,
-    handleGenerarFolios,
-    generando,
-    handleGenerarTodos,
-    generandoTodos,
-    resumenTodos,
+    handleGenerarTodosFolios,
+    generandoTodosFolios,
 
     handleCerrarLibro,
     handleReabrirLibro,
@@ -57,7 +51,6 @@ const LibroDetailPage = () => {
   } = useLibroDetail();
 
   const puedeGenerar = hasPermiso(LIBROS_PERMISOS.libro, 'CREAR');
-  const puedeExportar = hasPermiso(LIBROS_PERMISOS.libro, 'EXPORTAR');
   const puedeEditar = hasPermiso(LIBROS_PERMISOS.libro, 'EDITAR');
 
   const headerActions = <DetailPageHeaderActions onVolver={handleVolver} />;
@@ -78,59 +71,52 @@ const LibroDetailPage = () => {
         <ActionButton
           permiso={LIBROS_PERMISOS.libro}
           accion="CREAR"
-          variant="primary"
+          variant="alternative"
           icon={<FileAddOutlined />}
-          onClick={abrirModalGenerar}
-          disabled={!estaAbierto}
+          loading={generandoTodosFolios}
+          onClick={handleGenerarTodosFolios}
+          disabled={!estaAbierto || generandoTodosFolios}
           title={!estaAbierto ? 'El libro está cerrado: no admite nuevos folios' : undefined}
         >
-          Generar folios de paralelo
-        </ActionButton>
-      ) : null}
-
-      {puedeExportar ? (
-        <ActionButton
-          permiso={LIBROS_PERMISOS.libro}
-          accion="EXPORTAR"
-          variant="info"
-          icon={<FileExcelOutlined />}
-          loading={exportando}
-          onClick={handleExportar}
-        >
-          Exportar libro
+          Generar todos los folios
         </ActionButton>
       ) : null}
 
       {puedeEditar && estaAbierto ? (
-        <Popconfirm
-          title="Cerrar libro de registro"
-          description="El libro dejará de admitir nuevos folios. Puede reabrirlo después si es necesario."
-          okText="Cerrar libro"
-          cancelText="Cancelar"
-          onConfirm={handleCerrarLibro}
+        <ActionButton
+          permiso={LIBROS_PERMISOS.libro}
+          accion="EDITAR"
+          variant="success"
+          icon={<LockOutlined />}
+          loading={actualizando}
+          onClick={handleCerrarLibro}
         >
-          <ActionButton
-            permiso={LIBROS_PERMISOS.libro}
-            accion="EDITAR"
-            variant="warning"
-            icon={<LockOutlined />}
-            loading={actualizando}
-          >
-            Cerrar libro
-          </ActionButton>
-        </Popconfirm>
+          Cerrar libro
+        </ActionButton>
       ) : null}
 
       {puedeEditar && !estaAbierto ? (
         <ActionButton
           permiso={LIBROS_PERMISOS.libro}
           accion="EDITAR"
-          variant="alternative"
+          variant="warning"
           icon={<UnlockOutlined />}
           loading={actualizando}
           onClick={handleReabrirLibro}
         >
           Reabrir libro
+        </ActionButton>
+      ) : null}
+
+      {(libro.foliosAnulados ?? 0) > 0 ? (
+        <ActionButton
+          permiso={LIBROS_PERMISOS.libro}
+          accion="DETALLE"
+          variant="danger"
+          icon={<StopOutlined />}
+          onClick={() => navigate(libroAnuladosPath(libro.id))}
+        >
+          Folios anulados
         </ActionButton>
       ) : null}
     </>
@@ -163,29 +149,21 @@ const LibroDetailPage = () => {
               }
               stats={[
                 { label: 'Folios', value: libro.totalFolios ?? 0, primary: true },
-                { label: 'Firmados', value: libro.foliosFirmados ?? 0 },
                 { label: 'Anulados', value: libro.foliosAnulados ?? 0 },
                 { label: 'Estudiantes', value: libro.totalEstudiantes ?? 0 },
               ]}
               actions={acciones}
             />
 
-            <LibroFoliosSection folios={libro.folios ?? []} columns={tableColumns} />
+            <LibroFoliosSection
+              folios={libro.folios ?? []}
+              columns={tableColumns}
+              onExportar={handleExportar}
+              exportando={exportando}
+            />
           </>
         ) : null}
       </DetailPageShell>
-
-      <GenerarFoliosModal
-        open={modalGenerarOpen}
-        paralelos={paralelos}
-        loading={loadingParalelos}
-        generando={generando}
-        onGenerar={handleGenerarFolios}
-        onGenerarTodos={handleGenerarTodos}
-        generandoTodos={generandoTodos}
-        resumenTodos={resumenTodos}
-        onCancelar={cerrarModalGenerar}
-      />
     </PageTemplate>
   );
 };

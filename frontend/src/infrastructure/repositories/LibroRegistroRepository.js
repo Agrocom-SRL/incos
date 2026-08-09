@@ -165,7 +165,7 @@ class LibroRegistroRepository {
   }
 
   /**
-   * PATCH /v1/libros/:id/folios/:folioId/estado — BORRADOR→IMPRESO→FIRMADO / ANULADO.
+   * PATCH /v1/libros/:id/folios/:folioId/estado — BORRADOR→ANULADO.
    * @param {number} id
    * @param {number} folioId
    * @param {{ estado: string, motivo?: string }} payload
@@ -203,16 +203,20 @@ class LibroRegistroRepository {
   }
 
   /**
-   * GET /v1/libros/:id/export — descarga el libro completo en Excel (.xlsx).
-   * Mecánica idéntica a `CalificacionRepository.descargarCentralizadorExcel`
-   * (blob + filename del header `Content-Disposition`).
+   * GET /v1/libros/:id/export — descarga el libro en Excel (.xlsx). Sin
+   * `carreraId` descarga las 3 carreras; con `carreraId` filtra las hojas de
+   * esa carrera (tab por carrera en la ficha). Mecánica idéntica a
+   * `CalificacionRepository.descargarCentralizadorExcel` (blob + filename del
+   * header `Content-Disposition`).
    * @param {number} id
+   * @param {number} [carreraId]
    * @returns {Promise<{success:boolean,blob?:Blob,fileName?:string,error?:string}>}
    */
-  async exportar(id) {
+  async exportar(id, carreraId = null) {
     try {
       const response = await apiClient.get(LIBROS_ENDPOINTS.EXPORT(id), {
         responseType: 'blob',
+        params: carreraId != null ? { carreraId } : undefined,
       });
 
       const disposition = response.headers['content-disposition'] || '';

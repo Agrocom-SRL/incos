@@ -30,6 +30,9 @@ const resolverEstado = (estado) => {
   const value = String(estado || '').toUpperCase();
   if (value.includes('REPROB')) return { tag: 'error', mod: 'reprobado' };
   if (value.includes('APROB')) return { tag: 'success', mod: 'aprobado' };
+  if (value.includes('ABANDON') || value.includes('RETIRAD')) {
+    return { tag: 'warning', mod: 'abandono' };
+  }
   if (value.includes('CURS') || value.includes('PEND')) {
     return { tag: 'processing', mod: 'cursando' };
   }

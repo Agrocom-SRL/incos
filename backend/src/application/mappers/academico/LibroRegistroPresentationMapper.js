@@ -41,7 +41,6 @@ export function toLibroDTO(row) {
     observaciones: row.observaciones ?? null,
     activo: row.activo != null ? Boolean(row.activo) : null,
     totalFolios: Number(row.total_folios ?? 0),
-    foliosFirmados: Number(row.folios_firmados ?? 0),
     foliosAnulados: Number(row.folios_anulados ?? 0),
     maxNumeroFolio: row.max_numero_folio ?? null,
     paralelosConFolio: Number(row.paralelos_con_folio ?? 0),
@@ -62,6 +61,7 @@ export function toFolioDTO(row) {
     libroId: row.libro_id ?? null,
     numeroLibro: row.numero_libro ?? null,
     codigoRegistro: row.codigo_registro ?? null,
+    libroEstado: row.libro_estado ?? null,
     numeroFolio: row.numero_folio ?? null,
     paraleloGestionId: row.paralelo_gestion_id ?? null,
     ordenEnParalelo: row.orden_en_paralelo ?? null,
@@ -84,6 +84,7 @@ export function toFolioDTO(row) {
     totalAprobados: Number(row.total_aprobados ?? 0),
     totalReprobados: Number(row.total_reprobados ?? 0),
     totalAbandonos: Number(row.total_abandonos ?? 0),
+    totalCursando: Number(row.total_cursando ?? 0),
   };
 }
 

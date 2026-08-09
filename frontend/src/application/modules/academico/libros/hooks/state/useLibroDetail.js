@@ -1,21 +1,21 @@
 /**
  * Estado de pantalla — Ficha del libro de registro (P2 · LibroDetailPage).
  *
- * Carga la cabecera + folios (`useLibroDetalleApi`), orquesta el modal
- * "Generar folios de paralelo" (`useParalelosLibroApi` + `useGenerarFolios`), el
- * cierre/reapertura del libro (`useEditarLibroApi`) y la exportación a Excel
- * (`useExportLibroExcel`). Toda la orquestación vive aquí; la página solo compone.
+ * Carga la cabecera + folios (`useLibroDetalleApi`), la generación de todos
+ * los folios de la gestión del libro (`useGenerarFoliosGestion`, disparada
+ * directo desde el botón, sin modal de confirmación), el cierre/reapertura
+ * del libro (`useEditarLibroApi`) y la exportación a Excel
+ * (`useExportLibroExcel`). Toda la orquestación vive aquí; la página solo
+ * compone.
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { App } from 'antd';
 import { LIBROS_LIST_PATH, folioPreviewPath } from '../../utils/librosPaths';
 import { createLibrosBreadcrumbItems } from '../../utils/librosBreadcrumbs';
 import { createFoliosTableColumns } from '@academico/libros/config/foliosTableColumns';
 import { useLibroDetalleApi } from '../api/useLibroDetalleApi';
-import { useParalelosLibroApi } from '../api/useParalelosLibroApi';
-import { useGenerarFolios } from '../api/useGenerarFolios';
 import { useGenerarFoliosGestion } from '../api/useGenerarFoliosGestion';
 import { useEditarLibroApi } from '../api/useEditarLibroApi';
 import { useExportLibroExcel } from '../api/useExportLibroExcel';
@@ -28,18 +28,9 @@ export const useLibroDetail = () => {
   const { notification } = App.useApp();
 
   const { libro, loading, error, fetch: fetchLibro } = useLibroDetalleApi();
-  const {
-    paralelos,
-    loading: loadingParalelos,
-    fetch: fetchParalelos,
-  } = useParalelosLibroApi();
-  const { generarFolios, loading: generando } = useGenerarFolios();
-  const { generarFoliosGestion, loading: generandoTodos } = useGenerarFoliosGestion();
+  const { generarFoliosGestion, loading: generandoTodosFolios } = useGenerarFoliosGestion();
   const { editarLibro, loading: actualizando } = useEditarLibroApi();
   const { exportar, loading: exportando } = useExportLibroExcel();
-
-  const [modalGenerarOpen, setModalGenerarOpen] = useState(false);
-  const [resumenTodos, setResumenTodos] = useState(null);
 
   const load = useCallback(async () => {
     if (isInvalidId) return;
@@ -52,47 +43,24 @@ export const useLibroDetail = () => {
 
   const handleVolver = useCallback(() => navigate(LIBROS_LIST_PATH), [navigate]);
 
-  const abrirModalGenerar = useCallback(async () => {
-    setResumenTodos(null);
-    setModalGenerarOpen(true);
-    await fetchParalelos(libroId);
-  }, [fetchParalelos, libroId]);
-
-  const cerrarModalGenerar = useCallback(() => {
-    setModalGenerarOpen(false);
-    setResumenTodos(null);
-  }, []);
-
-  const handleGenerarFolios = useCallback(
-    async (paraleloGestionId) => {
-      const result = await generarFolios(libroId, { paraleloGestionId });
-      if (result.success) {
-        notification.success({
-          title: 'Folios generados',
-          description: `Se generaron ${result.data?.length ?? 0} folio(s) para el paralelo elegido.`,
-        });
-        await Promise.all([load(), fetchParalelos(libroId)]);
-      } else {
-        notification.error({
-          title: 'No se pudieron generar los folios',
-          description: result.error,
-        });
-      }
-      return result;
-    },
-    [generarFolios, libroId, notification, load, fetchParalelos],
-  );
-
-  const handleGenerarTodos = useCallback(async () => {
+  const handleGenerarTodosFolios = useCallback(async () => {
     if (!libro?.gestionId) return { success: false };
     const result = await generarFoliosGestion(libro.gestionId);
     if (result.success) {
-      setResumenTodos(result.data);
-      notification.success({
-        title: 'Folios de la gestión generados',
-        description: `Se crearon ${result.data?.foliosCreados ?? 0} folio(s) en ${result.data?.paralelosGenerados ?? 0} paralelo(s).`,
-      });
-      await Promise.all([load(), fetchParalelos(libroId)]);
+      const anulados = result.data?.foliosAnulados ?? 0;
+      const omitidos = result.data?.omitidos?.length ?? 0;
+      const detalle = [
+        anulados > 0
+          ? `Se reajustó la numeración: ${anulados} folio(s) anterior(es) se anularon.`
+          : null,
+        `Se generaron ${result.data?.foliosCreados ?? 0} folio(s) en ${result.data?.paralelosGenerados ?? 0} paralelo(s).`,
+        omitidos > 0 ? `${omitidos} paralelo(s) sin estudiantes matriculados se omitieron.` : null,
+      ]
+        .filter(Boolean)
+        .join(' ');
+
+      notification.success({ title: 'Folios de la gestión generados', description: detalle });
+      await load();
     } else {
       notification.error({
         title: 'No se pudieron generar los folios de la gestión',
@@ -100,7 +68,7 @@ export const useLibroDetail = () => {
       });
     }
     return result;
-  }, [generarFoliosGestion, libro, libroId, notification, load, fetchParalelos]);
+  }, [generarFoliosGestion, libro, notification, load]);
 
   const handleCerrarLibro = useCallback(async () => {
     const result = await editarLibro(libroId, { estado: 'CERRADO' });
@@ -124,25 +92,29 @@ export const useLibroDetail = () => {
     return result;
   }, [editarLibro, libroId, notification, load]);
 
-  const handleExportar = useCallback(async () => {
-    const result = await exportar(libroId);
-    if (result.success) {
-      notification.success({
-        title: 'Libro exportado',
-        description: 'La descarga del libro en Excel se inició correctamente.',
-      });
-    } else {
-      notification.error({ title: 'No se pudo exportar el libro', description: result.error });
-    }
-    return result;
-  }, [exportar, libroId, notification]);
+  const handleExportar = useCallback(
+    async (carreraId = null) => {
+      const result = await exportar(libroId, carreraId);
+      if (result.success) {
+        notification.success({
+          title: 'Libro exportado',
+          description: 'La descarga del libro en Excel se inició correctamente.',
+        });
+      } else {
+        notification.error({ title: 'No se pudo exportar el libro', description: result.error });
+      }
+      return result;
+    },
+    [exportar, libroId, notification],
+  );
 
   const tableColumns = useMemo(
     () =>
       createFoliosTableColumns({
         onView: (record) => navigate(folioPreviewPath(libroId, record.id)),
+        libroEstado: libro?.estado,
       }),
-    [navigate, libroId],
+    [navigate, libroId, libro?.estado],
   );
 
   const breadcrumbItems = useMemo(
@@ -163,16 +135,8 @@ export const useLibroDetail = () => {
     handleVolver,
     refetch: load,
 
-    modalGenerarOpen,
-    abrirModalGenerar,
-    cerrarModalGenerar,
-    paralelos,
-    loadingParalelos,
-    handleGenerarFolios,
-    generando,
-    handleGenerarTodos,
-    generandoTodos,
-    resumenTodos,
+    handleGenerarTodosFolios,
+    generandoTodosFolios,
 
     handleCerrarLibro,
     handleReabrirLibro,

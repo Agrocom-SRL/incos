@@ -31,7 +31,8 @@ const ParaleloFormPage = ({ mode = 'create' }) => {
     carreras,
     carrerasLoading,
     carrerasError,
-    sinPlanVigente,
+    sinPlanActivo,
+    planesDisponibles,
   } = useParaleloForm(mode);
 
   const saveButton = (
@@ -97,7 +98,8 @@ const ParaleloFormPage = ({ mode = 'create' }) => {
                   carrerasLoading={carrerasLoading}
                   carrerasError={carrerasError}
                   carreraId={carreraId}
-                  sinPlanVigente={sinPlanVigente}
+                  sinPlanActivo={sinPlanActivo}
+                  planesDisponibles={planesDisponibles}
                   fieldsDisabled={loading || submitLoading}
                 />
               </Form>

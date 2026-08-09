@@ -36,14 +36,11 @@ import {
     CheckCircleOutlined,
     GiftOutlined,
     SyncOutlined,
-    TransactionOutlined,
-    ReloadOutlined,
     HistoryOutlined,
     LineChartOutlined,
     FileTextOutlined,
     BankOutlined,
     CreditCardOutlined,
-    FileAddOutlined,
     CalendarOutlined,
     BookOutlined,
     FileDoneOutlined,
@@ -92,8 +89,6 @@ export const menuIconMap = {
     'ACA-CENTRALIZADOR': TableOutlined,
     'ACA-LIBROS': ProfileOutlined,
     'ACA-NIV': SyncOutlined,
-    'ACA-TRASPASOS': TransactionOutlined,
-    'ACA-TRANSIT': ReloadOutlined,
     'ACA-HIS': HistoryOutlined,
     'ACA-SEGUIMIENTO': LineChartOutlined,
 
@@ -104,8 +99,8 @@ export const menuIconMap = {
 
     // Finanzas (FIN)
     'FIN-PAG': CreditCardOutlined,
-    'FIN-ADI': FileAddOutlined,
     'FIN-REP': BarChartOutlined,
+    'FIN-BECAS': GiftOutlined,
     'FIN-CFG': SettingOutlined,
 
     // Institucional (INST)

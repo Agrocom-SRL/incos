@@ -125,7 +125,7 @@ export const asistenciaRoutes = [
     permiso: ASISTENCIA_PERMISOS.registroVer,
     accion: 'LISTAR',
     menu: {
-      label: 'Asistencia',
+      label: 'Control de asistencia',
       module: 'ACA',
       parent: 'ACA',
       order: 1,

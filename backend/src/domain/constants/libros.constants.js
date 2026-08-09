@@ -24,32 +24,41 @@ export const ESTADOS_LIBRO = {
 };
 export const ESTADOS_LIBRO_VALUES = Object.values(ESTADOS_LIBRO);
 
-/** Estados del folio (folios_libro.estado). */
+/**
+ * Estados del folio (folios_libro.estado). Sin IMPRESO/FIRMADO: el sistema no
+ * tiene forma de verificar que una página se imprimió o firmó físicamente, así
+ * que solo trackea lo que SÍ controla — el folio existe (BORRADOR) o quedó sin
+ * efecto (ANULADO). El "cierre" oficial del documento se controla por
+ * `libros_registro.estado` (CERRADO) — ver `ExportLibroExcelUseCase` (bloque de
+ * firmas solo en el export del libro CERRADO; mientras está ABIERTO se exporta
+ * en borrador, sin firmas).
+ */
 export const ESTADOS_FOLIO = {
   BORRADOR: 'BORRADOR',
-  IMPRESO: 'IMPRESO',
-  FIRMADO: 'FIRMADO',
   ANULADO: 'ANULADO',
 };
 export const ESTADOS_FOLIO_VALUES = Object.values(ESTADOS_FOLIO);
 
 /**
- * Máquina de estados del folio: BORRADOR → IMPRESO → FIRMADO / ANULADO.
- * FIRMADO es inmutable (página con firmas de autoridades); ANULADO es terminal
- * y exige motivo. Un folio NO se elimina: se anula.
+ * Máquina de estados del folio: BORRADOR → ANULADO. ANULADO es terminal y
+ * exige motivo. Un folio NO se elimina: se anula.
  */
 export const TRANSICIONES_FOLIO = {
-  [ESTADOS_FOLIO.BORRADOR]: [ESTADOS_FOLIO.IMPRESO, ESTADOS_FOLIO.ANULADO],
-  [ESTADOS_FOLIO.IMPRESO]: [ESTADOS_FOLIO.FIRMADO, ESTADOS_FOLIO.ANULADO],
-  [ESTADOS_FOLIO.FIRMADO]: [],
+  [ESTADOS_FOLIO.BORRADOR]: [ESTADOS_FOLIO.ANULADO],
   [ESTADOS_FOLIO.ANULADO]: [],
 };
 
-/** Columna ESTADO de la nómina del folio (folio_estudiantes.estado_academico). */
+/**
+ * Columna ESTADO de la nómina del folio (folio_estudiantes.estado_academico).
+ * CURSANDO: la gestión sigue abierta y al estudiante aún le faltan notas —
+ * distinto de ABANDONO (retiro real registrado en matriculas_materia). Ver
+ * `derivarEstadoAcademico` (folioCeldasHelper.js).
+ */
 export const ESTADOS_ACADEMICOS_FOLIO = {
   APROBADO: 'APROBADO',
   REPROBADO: 'REPROBADO',
   ABANDONO: 'ABANDONO',
+  CURSANDO: 'CURSANDO',
 };
 export const ESTADOS_ACADEMICOS_FOLIO_VALUES = Object.values(ESTADOS_ACADEMICOS_FOLIO);
 
@@ -68,7 +77,7 @@ export const LIBRO_REGISTRO_DOC = {
   resolucionMinisterial: '0426/2016',
   firmas: ['JEFE(A) DE CARRERA', 'DIRECTOR(A) ACADÉMICO(A)', 'RECTOR(A)'],
   /** Leyenda de abreviaturas bajo la nómina de cada folio (documento oficial). */
-  leyendaNotas: 'NP = No se Presentó / AP = Aprobado / PRE = Prerrequisito',
+  leyendaNotas: 'NP = No se Presentó',
   /** Bloque "ESTADÍSTICAS" al pie de la hoja del paralelo (junto a firmas de docentes). */
   estadisticas: {
     titulo: 'ESTADÍSTICAS',

@@ -2,14 +2,16 @@
 
 export const FINANZAS_BASE = '/finanzas';
 
-/** Pagos */
+/** Pagos (solo lectura: Finanzas no registra pagos, ver `finanzasPagosRoutes`) */
 export const PAGOS_LIST_PATH = `${FINANZAS_BASE}/pagos`;
-export const pagoRegistrarPath = `${FINANZAS_BASE}/pagos/registrar`;
 export const pagoCompromisoPath = `${FINANZAS_BASE}/pagos/compromiso`;
 export const pagoDetallePath = (id) => `${FINANZAS_BASE}/pagos/${id}`;
 
-/** Pagos adicionales */
-export const PAGOS_ADICIONALES_PATH = `${FINANZAS_BASE}/adicional`;
+/** Configuración de becas (catálogo maestro) */
+export const BECAS_LIST_PATH = `${FINANZAS_BASE}/becas`;
+export const becaDescuentoNuevaPath = `${BECAS_LIST_PATH}/nueva`;
+export const becaDescuentoDetallePath = (id) => `${BECAS_LIST_PATH}/${id}`;
+export const becaDescuentoEditarPath = (id) => `${BECAS_LIST_PATH}/${id}/editar`;
 
 /** Reportes de pagos */
 export const REPORTES_BASE = `${FINANZAS_BASE}/reportes`;
@@ -33,9 +35,3 @@ export const bancoEditarPath = (id) => `${CONFIGURACION_PATH}/bancos/${id}/edita
 export const cuentaNuevoPath = `${CONFIGURACION_PATH}/cuentas/nueva`;
 export const cuentaEditarPath = (id) => `${CONFIGURACION_PATH}/cuentas/${id}/editar`;
 export const metodoEditarPath = (id) => `${CONFIGURACION_PATH}/metodos/${id}/editar`;
-
-/** Catálogo maestro de becas y descuentos (embebido como tab de Config. de pagos). */
-export const BECA_DESCUENTO_BASE = `${CONFIGURACION_PATH}/becas-descuentos`;
-export const becaDescuentoNuevaPath = `${BECA_DESCUENTO_BASE}/nueva`;
-export const becaDescuentoDetallePath = (id) => `${BECA_DESCUENTO_BASE}/${id}`;
-export const becaDescuentoEditarPath = (id) => `${BECA_DESCUENTO_BASE}/${id}/editar`;

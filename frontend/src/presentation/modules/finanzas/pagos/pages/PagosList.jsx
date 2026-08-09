@@ -1,26 +1,28 @@
 /**
- * Listado de pagos de aporte (Finanzas · FIN-PAG · LISTAR).
+ * Registro de ingresos (Finanzas · FIN-PAG · LISTAR).
  *
  * Lenguaje visual de LicenciasListPage / CarrerasList: shell
  * Flex.page-container → PageHeaderArea(PageHeader) → DashboardPageShell → MainContent
  * → section.cfg-academico-workspace (ListPanelHeader + lede) → TableListView embedded.
- * El ESTADO del pago vive bajo el nombre del estudiante (PagoEstudianteCell), no en
- * columna propia.
  *
- * Página "dumb": solo compone template + organismos y consume el hook de pantalla.
- * No hace fetch ni orquesta (eso vive en provider + hooks/state).
+ * Listado UNIFICADO de transacciones de ingreso (GET /api/v1/ingresos): une
+ * aportes académicos y pagos de capacitación en un solo registro cronológico
+ * (reemplaza al listado histórico de cabeceras agregadas por estudiante, que
+ * ahora vive como reporte de solo lectura en Reportes → Cuentas por cobrar).
+ * El ORIGEN de cada fila (Aporte/Capacitación) vive bajo el nombre de la
+ * persona (IngresoPersonaCell), no en columna propia.
+ *
+ * Página "dumb": solo compone template + organismos y consume el hook de
+ * pantalla. No hace fetch ni orquesta (eso vive en provider + hooks/state).
  */
 
 import { Flex, Typography } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
 import { TableListView } from '@organisms';
-import { ActionButton } from '@atoms';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
-import { usePagosListPage } from '@application-finanzas/hooks/state/usePagosListPage';
-import { FINANZAS_PERMISOS } from '@application-finanzas/utils/finanzasPermisos';
+import { useIngresosListPage } from '@application-finanzas/hooks/state/useIngresosListPage';
 import { allSpacing } from '@theme/tokens';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
@@ -30,33 +32,20 @@ const { Paragraph } = Typography;
 
 const PagosList = () => {
   const {
-    pagos,
+    ingresos,
     loading,
     error,
     searchText,
     tableColumns,
     breadcrumbItems,
-    handleRegistrar,
     handleSearchChange,
     tablePagination,
-  } = usePagosListPage();
-
-  const registrarAction = (
-    <ActionButton
-      permiso={FINANZAS_PERMISOS.pagoRegistrar}
-      accion="CREAR"
-      variant="primary"
-      icon={<PlusOutlined />}
-      onClick={handleRegistrar}
-    >
-      Registrar pago
-    </ActionButton>
-  );
+  } = useIngresosListPage();
 
   return (
     <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
       <PageHeaderArea>
-        <PageHeader title="Pagos de aporte" breadcrumbItems={breadcrumbItems} />
+        <PageHeader title="Registro de ingresos" breadcrumbItems={breadcrumbItems} />
       </PageHeaderArea>
 
       <DashboardPageShell>
@@ -64,29 +53,29 @@ const PagosList = () => {
           <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
             <section className="cfg-academico-workspace">
               <header className="cfg-academico-workspace__header">
-                <ListPanelHeader title="Listado de pagos" actions={registrarAction} />
+                <ListPanelHeader title="Ingresos registrados" />
                 <Paragraph type="secondary" className="cfg-academico-workspace__desc">
-                  Aportes académicos por estudiante y gestión: monto obligatorio, descuentos por
-                  beca, total pagado y saldo pendiente. El estado del aporte aparece bajo el nombre
-                  del estudiante.
+                  Transacciones de ingreso del instituto: aportes académicos y pagos de
+                  capacitación en un mismo registro cronológico, con fecha, monto, método de
+                  pago y N° de recibo. El origen de cada ingreso aparece bajo el nombre de la
+                  persona.
                 </Paragraph>
               </header>
               <div className="cfg-academico-tab-panel">
                 <TableListView
                   embedded
-                  tableClassName="fin-planilla"
-                  data={pagos}
+                  data={ingresos}
                   loading={loading}
                   error={error}
                   searchText={searchText}
                   onSearchChange={handleSearchChange}
-                  searchPlaceholder="Buscar por estudiante, código o gestión…"
+                  searchPlaceholder="Buscar por persona, código/CI o N° de recibo…"
                   columns={tableColumns}
                   rowKey={(record) => record.id}
                   searchColSpan={10}
                   searchStyle={{ maxWidth: 520 }}
                   pagination={tablePagination}
-                  loadingTip="Cargando pagos…"
+                  loadingTip="Cargando registro de ingresos…"
                 />
               </div>
             </section>

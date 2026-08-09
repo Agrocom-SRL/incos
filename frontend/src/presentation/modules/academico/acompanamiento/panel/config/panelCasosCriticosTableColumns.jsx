@@ -10,7 +10,10 @@
 
 import { BookOutlined, UserOutlined } from '@ant-design/icons';
 import { CarreraDotCell, IdentidadCelda, InfoLinesCell, StatusPill } from '@atoms';
-import { RIESGO_PILL_CLASS } from '@application-academico/acompanamiento/utils/acompanamientoPills';
+import {
+  formatSituacionRiesgo,
+  getSituacionRiesgoPillClass,
+} from '@application-academico/acompanamiento/utils/acompanamientoPills';
 import NotaRiesgoText from '@academico/acompanamiento/components/atoms/NotaRiesgoText';
 
 export const createPanelCasosCriticosColumns = () => [
@@ -72,12 +75,25 @@ export const createPanelCasosCriticosColumns = () => [
     ),
   },
   {
-    title: 'Situación',
-    key: 'situacion',
-    width: 130,
+    title: 'Asistencia',
+    key: 'pctAsistenciaUltimoBimestre',
+    width: 100,
     align: 'center',
     render: (_, record) => (
-      <StatusPill label={`En riesgo (< ${record.umbralRiesgo})`} className={RIESGO_PILL_CLASS} />
+      <NotaRiesgoText
+        nota={record.pctAsistenciaUltimoBimestre}
+        umbral={record.umbralAsistencia}
+        suffix="%"
+      />
+    ),
+  },
+  {
+    title: 'Situación',
+    key: 'situacion',
+    width: 170,
+    align: 'center',
+    render: (_, record) => (
+      <StatusPill label={formatSituacionRiesgo(record)} className={getSituacionRiesgoPillClass(record)} />
     ),
   },
 ];

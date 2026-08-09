@@ -84,7 +84,7 @@ export const finanzasReportesRoutes = [
       label: 'Reportes de pagos',
       module: 'FIN',
       parent: 'FIN',
-      order: 3,
+      order: 2,
     },
   },
 ];

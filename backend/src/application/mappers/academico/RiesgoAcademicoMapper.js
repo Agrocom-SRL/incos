@@ -43,6 +43,9 @@ export function alertaRowToPresentation(row) {
     notaUltimoBimestre: toNumberOrNull(row.nota_ultimo_bimestre),
     umbralRiesgo: toNumberOrNull(row.umbral_riesgo),
     enRiesgo: Number(row.en_riesgo ?? 0) === 1,
+    pctAsistenciaUltimoBimestre: toNumberOrNull(row.pct_asistencia_ultimo_bimestre),
+    umbralAsistencia: toNumberOrNull(row.umbral_asistencia),
+    enRiesgoAsistencia: Number(row.en_riesgo_asistencia ?? 0) === 1,
   };
 }
 

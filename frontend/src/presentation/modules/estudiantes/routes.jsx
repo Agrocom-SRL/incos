@@ -24,7 +24,7 @@ export const estudiantesRoutes = [
     permiso: 'matricula.admision.ver',
     accion: 'LISTAR',
     menu: {
-      label: 'Admisión',
+      label: 'Proceso de admisión',
       module: 'MAT',
       parent: 'MAT',
       order: 2,
@@ -54,7 +54,7 @@ export const estudiantesRoutes = [
     permiso: 'matricula.beca.ver',
     accion: 'LISTAR',
     menu: {
-      label: 'Becas',
+      label: 'Becas y descuentos',
       module: 'MAT',
       parent: 'MAT',
       order: 5,

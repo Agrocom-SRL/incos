@@ -46,3 +46,4 @@ export { AULAS_HORARIOS_TOKENS } from './aulas-horarios.tokens.js';
 export { CAPACITACION_TOKENS } from './capacitacion.tokens.js';
 export { TITULACION_TOKENS } from './titulacion.tokens.js';
 export { PASANTIAS_TOKENS } from './pasantias.tokens.js';
+export { INGRESOS_TOKENS } from './ingresos.tokens.js';

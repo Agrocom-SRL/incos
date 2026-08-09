@@ -12,7 +12,10 @@ import { BookOutlined, CalendarOutlined, TeamOutlined } from '@ant-design/icons'
 import { IdentidadCelda, InfoLinesCell, StatusPill } from '@atoms';
 import { TableActions } from '@molecules';
 import { ACOMPANAMIENTO_PERMISOS } from '@application-academico/acompanamiento/utils/acompanamientoPermisos';
-import { RIESGO_PILL_CLASS, SIN_RIESGO_PILL_CLASS } from '@application-academico/acompanamiento/utils/acompanamientoPills';
+import {
+  formatSituacionRiesgo,
+  getSituacionRiesgoPillClass,
+} from '@application-academico/acompanamiento/utils/acompanamientoPills';
 import NotaRiesgoText from '@academico/acompanamiento/components/atoms/NotaRiesgoText';
 
 /** Etiqueta del curso: año + paralelo (grano anual del instituto). */
@@ -84,18 +87,32 @@ export const createMisAlumnosEnRiesgoTableColumns = ({ onProgramarSesion }) => [
     sortCompare: (a, b) => (a.promedioAnual ?? -1) - (b.promedioAnual ?? -1),
   },
   {
+    title: 'Asistencia',
+    key: 'pctAsistenciaUltimoBimestre',
+    width: 110,
+    align: 'center',
+    render: (_, record) => (
+      <NotaRiesgoText
+        nota={record.pctAsistenciaUltimoBimestre}
+        umbral={record.umbralAsistencia}
+        suffix="%"
+      />
+    ),
+    sorter: true,
+    sortCompare: (a, b) =>
+      (a.pctAsistenciaUltimoBimestre ?? -1) - (b.pctAsistenciaUltimoBimestre ?? -1),
+  },
+  {
     title: 'Situación',
     key: 'situacion',
-    width: 140,
+    width: 170,
     align: 'center',
-    render: (_, record) =>
-      record.enRiesgo ? (
-        <StatusPill label={`En riesgo (< ${record.umbralRiesgo})`} className={RIESGO_PILL_CLASS} />
-      ) : (
-        <StatusPill label="Regular" className={SIN_RIESGO_PILL_CLASS} />
-      ),
+    render: (_, record) => (
+      <StatusPill label={formatSituacionRiesgo(record)} className={getSituacionRiesgoPillClass(record)} />
+    ),
     sorter: true,
-    sortCompare: (a, b) => Number(a.enRiesgo) - Number(b.enRiesgo),
+    sortCompare: (a, b) =>
+      Number(a.enRiesgo || a.enRiesgoAsistencia) - Number(b.enRiesgo || b.enRiesgoAsistencia),
   },
   {
     title: 'Acciones',

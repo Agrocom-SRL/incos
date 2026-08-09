@@ -1,13 +1,16 @@
 /**
- * Columnas de la tabla de folios de un libro (ficha — `LibroDetailPage`).
+ * Columnas de la tabla de folios de un libro (ficha `LibroDetailPage` y
+ * página de anulados `LibroAnuladosPage`).
  *
- * Fila = 1 folio (página del centralizador de un paralelo). Como un mismo
- * libro es compartido por las 3 carreras, los folios llegan entremezclados
- * por número de folio: la columna "Carrera" (dato del paralelo del folio,
- * `CarreraDotCell` — mismo patrón que `EstudiantesList`) es indispensable
- * para la legibilidad. Ver navega al preview del folio (`ACA-LIBROS-FOLIO`,
- * permiso DETALLE); Firmar/Anular viven en el preview, no en esta fila
- * (TableActions fail-closed: sin permiso explícito, la acción no se pinta).
+ * En la ficha (tabs por carrera, `LibroFoliosSection`) NO se repite la
+ * columna "Carrera": es redundante, toda la pestaña es de una sola carrera.
+ * En la página de anulados (lista plana, sin tabs) SÍ hace falta —
+ * `showCarrera`— y además se agrega el motivo de anulación —`showMotivo`—
+ * (queda guardado en `observaciones` al anular).
+ *
+ * Ver navega al preview del folio (`ACA-LIBROS-FOLIO`, permiso DETALLE);
+ * Anular vive en el preview, no en esta fila (TableActions fail-closed: sin
+ * permiso explícito, la acción no se pinta).
  */
 
 import { CarreraDotCell, IdentidadCelda, StatusPill } from '@atoms';
@@ -15,15 +18,24 @@ import { TableActions, TableCell } from '@molecules';
 import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
 import { LIBROS_PERMISOS } from '@application-academico/libros/utils/librosPermisos';
 import {
-  formatFolioEstado,
-  getFolioEstadoPillClass,
+  formatFolioEstadoDisplay,
+  getFolioEstadoDisplayPillClass,
 } from '@application-academico/libros/utils/librosEstados';
 
 /**
  * @param {Object} params
  * @param {(record: Object) => void} params.onView
+ * @param {boolean} [params.showCarrera] - Columna "Carrera" (lista plana sin tabs).
+ * @param {boolean} [params.showMotivo] - Columna "Motivo" (observaciones del folio anulado).
+ * @param {string} [params.libroEstado] - Estado del LIBRO (ABIERTO/CERRADO), para
+ *        reconciliar la columna "Estado" — ver `formatFolioEstadoDisplay`.
  */
-export const createFoliosTableColumns = ({ onView }) => [
+export const createFoliosTableColumns = ({
+  onView,
+  showCarrera = false,
+  showMotivo = false,
+  libroEstado = null,
+}) => [
   {
     title: '#',
     key: 'nro',
@@ -43,18 +55,22 @@ export const createFoliosTableColumns = ({ onView }) => [
     ),
     sorter: (a, b) => (Number(a.numeroFolio) || 0) - (Number(b.numeroFolio) || 0),
   },
-  {
-    title: 'Carrera',
-    key: 'carrera',
-    width: 200,
-    render: (_, record) => (
-      <CarreraDotCell
-        nombre={record.carreraCodigo || record.carreraNombre}
-        colorHex={sanitizeDocenteColorHex(record.carreraColorHex)}
-      />
-    ),
-    sorter: (a, b) => (a.carreraNombre || '').localeCompare(b.carreraNombre || ''),
-  },
+  ...(showCarrera
+    ? [
+        {
+          title: 'Carrera',
+          key: 'carrera',
+          width: 200,
+          render: (_, record) => (
+            <CarreraDotCell
+              nombre={record.carreraCodigo || record.carreraNombre}
+              colorHex={sanitizeDocenteColorHex(record.carreraColorHex)}
+            />
+          ),
+          sorter: (a, b) => (a.carreraNombre || '').localeCompare(b.carreraNombre || ''),
+        },
+      ]
+    : []),
   {
     title: 'Turno',
     dataIndex: 'turno',
@@ -78,9 +94,21 @@ export const createFoliosTableColumns = ({ onView }) => [
     dataIndex: 'estado',
     width: 140,
     render: (estado) => (
-      <StatusPill label={formatFolioEstado(estado)} className={getFolioEstadoPillClass(estado)} />
+      <StatusPill
+        label={formatFolioEstadoDisplay(estado, libroEstado)}
+        className={getFolioEstadoDisplayPillClass(estado, libroEstado)}
+      />
     ),
   },
+  ...(showMotivo
+    ? [
+        {
+          title: 'Motivo',
+          dataIndex: 'observaciones',
+          render: (motivo) => <TableCell>{motivo || '—'}</TableCell>,
+        },
+      ]
+    : []),
   {
     title: 'Acciones',
     key: 'acciones',

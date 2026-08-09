@@ -1,10 +1,11 @@
 import { ValidationError } from '../../../domain/errors/AppError.js';
-
-const MAX_OBSERVACION = 2000;
+import { VERDICTOS_OBSERVACION_BIMESTRE_VALUES } from '../../../domain/constants/evaluaciones.constants.js';
 
 /**
  * Persiste la observación del bimestre en bimestres_matricula.observaciones
- * (todas las matrículas del estudiante en el paralelo).
+ * (todas las matrículas del estudiante en el paralelo). Verdicto de catálogo
+ * fijo (ver `VERDICTOS_OBSERVACION_BIMESTRE`), no texto libre — la columna
+ * sigue siendo TEXT en BD, la restricción vive acá (Fase B1).
  */
 export class SaveObservacionCentralizadorBimestreUseCase {
   constructor({ subjectEnrollmentBimesterRepository, logger }) {
@@ -29,16 +30,14 @@ export class SaveObservacionCentralizadorBimestreUseCase {
     const bim = this._parseBimestre(bimestre);
     const texto = this._normalizeObservacion(observacion);
 
-    const actualizadas =
-      await this.subjectEnrollmentBimesterRepository.actualizarObservacionBimestreParaleloEstudiante(
-        {
-          paraleloGestionId: pgId,
-          estudianteId: estId,
-          bimestre: bim,
-          observacion: texto,
-          usuarioId: usuarioId ?? null,
-        },
-      );
+    const repo = this.subjectEnrollmentBimesterRepository;
+    const actualizadas = await repo.actualizarObservacionBimestreParaleloEstudiante({
+      paraleloGestionId: pgId,
+      estudianteId: estId,
+      bimestre: bim,
+      observacion: texto,
+      usuarioId: usuarioId ?? null,
+    });
 
     this.logger?.info?.('[Calificaciones] Observación centralizador guardada', {
       paraleloGestionId: pgId,
@@ -76,8 +75,10 @@ export class SaveObservacionCentralizadorBimestreUseCase {
     if (value == null) return null;
     const texto = String(value).trim();
     if (!texto) return null;
-    if (texto.length > MAX_OBSERVACION) {
-      throw new ValidationError(`La observación no puede superar ${MAX_OBSERVACION} caracteres`);
+    if (!VERDICTOS_OBSERVACION_BIMESTRE_VALUES.includes(texto)) {
+      throw new ValidationError(
+        `observacion debe ser uno de: ${VERDICTOS_OBSERVACION_BIMESTRE_VALUES.join(', ')}`,
+      );
     }
     return texto;
   }

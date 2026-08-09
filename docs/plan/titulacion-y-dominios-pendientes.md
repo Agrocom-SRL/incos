@@ -283,6 +283,45 @@ documental, solo FKs firmes). Recién entonces: seed 66 ampliado
 proyecto APROBADO + pasantía APROBADA + folio → emisión de título.
 Depende de Fases 2 y 4.
 
+### UX de transición de estados — Proyecto de grado y Pasantías (2026-08-08)
+
+No es una fase nueva: mejora de UX sobre Fase 2 (Pasantías) y el módulo TIT ya
+existente (Proyecto de grado), a pedido del usuario ("entrar a un modal sin
+saber qué hace al cambiar la etapa es confuso"). Cambios:
+
+- **Explicación previa a confirmar:** el modal de transición (`AprobarEtapaModal`
+  para T11, `TransicionPasantiaModal` para P6) ahora muestra, bajo el `Select`
+  de estado destino, qué va a pasar exactamente al confirmar esa opción
+  (`formatExplicacionTransicionProyecto`/`formatExplicacionTransicionPasantia`
+  en `titulacionPills.js`/`pasantiasPills.js`).
+- **Confirmación adicional para estados irreversibles** (regla A5): `CANCELADO`
+  (proyecto), `RECHAZADA`/`CANCELADA` (pasantía) exigen `Modal.confirm` con
+  botón `danger` antes de registrar — no se puede cancelar por accidente.
+- **Línea de tiempo coloreada en la ficha** (siempre visible, no solo en el
+  modal): `ProyectoGradoTimeline` (`Steps orientation="vertical"`, 6 etapas
+  con fecha real desde los campos `fecha_*` ya existentes en
+  `proyectos_grado` — sin migración de BD) y `PasantiaTimeline` (`Steps
+  orientation="horizontal"`, stepper simple sin fechas ni tabla de historial
+  nueva — decisión explícita del usuario: "stepper simple, sin tabla nueva").
+  Ambas derivan los pasos de la máquina de estados (T11/P6) en
+  `application/modules/titulacion/{proyectos-grado,pasantias}/utils/*Timeline.js`,
+  con un paso de resultado final que usa el mismo `StatusPill`/color de la
+  cabecera de la ficha (nunca un tag genérico azul para un desenlace ya
+  cerrado).
+- **Verificado en vivo (Playwright + BD local):** Pasantías con el registro de
+  prueba real ya existente (id=1, EN_CURSO → hint de horas insuficientes al
+  intentar Finalizada → gate de confirmación en Cancelada, todo correcto).
+  Proyecto de grado no tenía ningún registro en BD ni estudiantes de 3er año
+  reales para crear uno por el flujo normal (guard de negocio
+  `assertEstudianteEsTercerAnio`): se insertó un registro sintético temporal
+  directo por SQL (dato de prueba, no cambio de esquema) para verificar
+  PERFIL → APROBADO_PERFIL → DESARROLLO → intento de CANCELADO, y se eliminó
+  al terminar. Sin datos de prueba permanentes añadidos a la BD.
+- **Pendiente, deferido por el usuario:** "los documentos muestran otras cosas
+  en sus contenidos" (cambios al contenido de los PDF emitidos en cada etapa)
+  — el usuario pidió discutir el diseño antes de tocar los generadores PDF;
+  no implementado todavía.
+
 ### Fuera de este plan (decisiones aparte, ya registradas en la auditoría)
 
 Acta de defensa de grado (satélite del 23, hay foto real), tabla

@@ -93,6 +93,15 @@ export class ParallelManagementRepository extends BaseRepository {
 
   /**
    * Contexto para generar oferta: plan, periodo del paralelo maestro.
+   *
+   * El paralelo maestro es reutilizable por carrera (un solo `periodo_id`
+   * fijo), pero una carrera puede tener más de un plan de estudios activo a
+   * la vez, cada uno con SUS PROPIOS periodos (mismo "1er/2do/3er año", ids
+   * distintos). Por eso el periodo no se toma tal cual del maestro: se
+   * resuelve el periodo del PLAN de esta gestión-plan que tenga el mismo
+   * número de año — así "PRIMERO B" sigue siendo un solo maestro reutilizado
+   * entre RM 2025 y RM 2027 sin duplicarlo. Si el maestro ya pertenece al
+   * mismo plan de la gestión, resuelve al mismo periodo de siempre (no-op).
    */
   async findGenerationContext(parallelManagementId) {
     const rows = await sequelize.query(
@@ -102,10 +111,16 @@ export class ParallelManagementRepository extends BaseRepository {
         pg.gestion_plan_id AS managementPlanId,
         gp.plan_estudio_id AS studyPlanId,
         pg.paralelo_id AS parallelId,
-        p.periodo_id AS periodId
+        per_destino.id AS periodId
       FROM paralelos_gestion pg
       INNER JOIN gestiones_planes gp ON gp.id = pg.gestion_plan_id AND gp.deleted_at IS NULL
       INNER JOIN paralelos p ON p.id = pg.paralelo_id AND p.deleted_at IS NULL
+      INNER JOIN periodos per_origen ON per_origen.id = p.periodo_id AND per_origen.deleted_at IS NULL
+      LEFT JOIN periodos per_destino
+        ON per_destino.plan_estudio_id = gp.plan_estudio_id
+        AND per_destino.numero = per_origen.numero
+        AND per_destino.deleted_at IS NULL
+        AND per_destino.activo = TRUE
       WHERE pg.id = :parallelManagementId AND pg.deleted_at IS NULL
       LIMIT 1
       `,
