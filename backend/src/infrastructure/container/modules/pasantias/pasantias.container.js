@@ -24,9 +24,11 @@ import { UpdatePasantiaUseCase } from '../../../../application/use-cases/pasanti
 import { DeletePasantiaUseCase } from '../../../../application/use-cases/pasantias/DeletePasantiaUseCase.js';
 import { TransicionarPasantiaUseCase } from '../../../../application/use-cases/pasantias/TransicionarPasantiaUseCase.js';
 import { ListPasantiasEmpresasUseCase } from '../../../../application/use-cases/pasantias/ListPasantiasEmpresasUseCase.js';
+import { GetPasantiaEmpresaUseCase } from '../../../../application/use-cases/pasantias/GetPasantiaEmpresaUseCase.js';
 import { CreatePasantiaEmpresaUseCase } from '../../../../application/use-cases/pasantias/CreatePasantiaEmpresaUseCase.js';
 import { UpdatePasantiaEmpresaUseCase } from '../../../../application/use-cases/pasantias/UpdatePasantiaEmpresaUseCase.js';
 import { SetEstadoPasantiaEmpresaUseCase } from '../../../../application/use-cases/pasantias/SetEstadoPasantiaEmpresaUseCase.js';
+import { DeletePasantiaEmpresaUseCase } from '../../../../application/use-cases/pasantias/DeletePasantiaEmpresaUseCase.js';
 import { ListMisPasantiasSupervisadasUseCase } from '../../../../application/use-cases/pasantias/ListMisPasantiasSupervisadasUseCase.js';
 import { GetMiPasantiaUseCase } from '../../../../application/use-cases/pasantias/GetMiPasantiaUseCase.js';
 import { ListInformesPasantiaUseCase } from '../../../../application/use-cases/pasantias/ListInformesPasantiaUseCase.js';
@@ -44,9 +46,11 @@ import {
   DeletePasantiaController,
   TransicionarPasantiaController,
   ListPasantiasEmpresasController,
+  GetPasantiaEmpresaController,
   CreatePasantiaEmpresaController,
   UpdatePasantiaEmpresaController,
   SetEstadoPasantiaEmpresaController,
+  DeletePasantiaEmpresaController,
   ListMisPasantiasSupervisadasController,
   GetMiPasantiaController,
   ListInformesPasantiaController,
@@ -156,9 +160,29 @@ export function registerPasantiasResource(container) {
 
   registerComponent(
     container,
+    PASANTIAS_TOKENS.getPasantiaEmpresaUseCase,
+    (c) =>
+      new GetPasantiaEmpresaUseCase({
+        pasantiaEmpresaRepository: c.resolve(PASANTIAS_TOKENS.pasantiaEmpresaRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      })
+  );
+
+  registerComponent(
+    container,
     PASANTIAS_TOKENS.setEstadoPasantiaEmpresaUseCase,
     (c) =>
       new SetEstadoPasantiaEmpresaUseCase({
+        pasantiaEmpresaRepository: c.resolve(PASANTIAS_TOKENS.pasantiaEmpresaRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      })
+  );
+
+  registerComponent(
+    container,
+    PASANTIAS_TOKENS.deletePasantiaEmpresaUseCase,
+    (c) =>
+      new DeletePasantiaEmpresaUseCase({
         pasantiaEmpresaRepository: c.resolve(PASANTIAS_TOKENS.pasantiaEmpresaRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       })
@@ -359,12 +383,30 @@ export function registerPasantiasResource(container) {
         }),
     ],
     [
+      PASANTIAS_TOKENS.getPasantiaEmpresaController,
+      (c) =>
+        new GetPasantiaEmpresaController({
+          getPasantiaEmpresaUseCase: c.resolve(PASANTIAS_TOKENS.getPasantiaEmpresaUseCase),
+          logger: c.resolve(SERVICIOS_TOKENS.logger),
+          responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+        }),
+    ],
+    [
       PASANTIAS_TOKENS.setEstadoPasantiaEmpresaController,
       (c) =>
         new SetEstadoPasantiaEmpresaController({
           setEstadoPasantiaEmpresaUseCase: c.resolve(
             PASANTIAS_TOKENS.setEstadoPasantiaEmpresaUseCase
           ),
+          logger: c.resolve(SERVICIOS_TOKENS.logger),
+          responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+        }),
+    ],
+    [
+      PASANTIAS_TOKENS.deletePasantiaEmpresaController,
+      (c) =>
+        new DeletePasantiaEmpresaController({
+          deletePasantiaEmpresaUseCase: c.resolve(PASANTIAS_TOKENS.deletePasantiaEmpresaUseCase),
           logger: c.resolve(SERVICIOS_TOKENS.logger),
           responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
         }),
@@ -477,11 +519,13 @@ export function registerPasantiasResource(container) {
       deletePasantiaController: c.resolve(PASANTIAS_TOKENS.deletePasantiaController),
       transicionarPasantiaController: c.resolve(PASANTIAS_TOKENS.transicionarPasantiaController),
       listPasantiasEmpresasController: c.resolve(PASANTIAS_TOKENS.listPasantiasEmpresasController),
+      getPasantiaEmpresaController: c.resolve(PASANTIAS_TOKENS.getPasantiaEmpresaController),
       createPasantiaEmpresaController: c.resolve(PASANTIAS_TOKENS.createPasantiaEmpresaController),
       updatePasantiaEmpresaController: c.resolve(PASANTIAS_TOKENS.updatePasantiaEmpresaController),
       setEstadoPasantiaEmpresaController: c.resolve(
         PASANTIAS_TOKENS.setEstadoPasantiaEmpresaController
       ),
+      deletePasantiaEmpresaController: c.resolve(PASANTIAS_TOKENS.deletePasantiaEmpresaController),
       listMisPasantiasSupervisadasController: c.resolve(
         PASANTIAS_TOKENS.listMisPasantiasSupervisadasController
       ),

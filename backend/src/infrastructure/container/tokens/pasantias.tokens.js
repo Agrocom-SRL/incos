@@ -27,9 +27,11 @@ export const PASANTIAS_TOKENS = {
 
   // Use Cases — catálogo de empresas
   listPasantiasEmpresasUseCase: 'pasantias.listPasantiasEmpresasUseCase',
+  getPasantiaEmpresaUseCase: 'pasantias.getPasantiaEmpresaUseCase',
   createPasantiaEmpresaUseCase: 'pasantias.createPasantiaEmpresaUseCase',
   updatePasantiaEmpresaUseCase: 'pasantias.updatePasantiaEmpresaUseCase',
   setEstadoPasantiaEmpresaUseCase: 'pasantias.setEstadoPasantiaEmpresaUseCase',
+  deletePasantiaEmpresaUseCase: 'pasantias.deletePasantiaEmpresaUseCase',
 
   // Use Cases — portal por rol
   listMisPasantiasSupervisadasUseCase: 'pasantias.listMisPasantiasSupervisadasUseCase',
@@ -54,9 +56,11 @@ export const PASANTIAS_TOKENS = {
 
   // Controllers — catálogo de empresas
   listPasantiasEmpresasController: 'pasantias.listPasantiasEmpresasController',
+  getPasantiaEmpresaController: 'pasantias.getPasantiaEmpresaController',
   createPasantiaEmpresaController: 'pasantias.createPasantiaEmpresaController',
   updatePasantiaEmpresaController: 'pasantias.updatePasantiaEmpresaController',
   setEstadoPasantiaEmpresaController: 'pasantias.setEstadoPasantiaEmpresaController',
+  deletePasantiaEmpresaController: 'pasantias.deletePasantiaEmpresaController',
 
   // Controllers — portal por rol
   listMisPasantiasSupervisadasController: 'pasantias.listMisPasantiasSupervisadasController',

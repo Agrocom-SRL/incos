@@ -4,8 +4,10 @@
  * Patrón catálogos de Configuración: IdentidadCelda + InfoLinesCell +
  * columna "Estado" con toggle rápido (`createCatalogoEstadoColumn`,
  * `PATCH /empresas/:empresaId/estado` — empresa·ACTIVAR; inactiva = gris,
- * nunca rojo) + TableActions solo con editar (el permiso empresa no tiene
- * DETALLE ni ELIMINAR en el seed — fail-closed).
+ * nunca rojo) + TableActions con ver/editar/eliminar (empresa·DETALLE/
+ * EDITAR/ELIMINAR, seed 65). Eliminar es soft-delete real (irreversible desde
+ * la UI): `TableActions` resuelve la confirmación vía `useDeleteItem`
+ * (`deleteFn` + `itemName`, `modal.confirm` interno).
  */
 
 import { EnvironmentOutlined, PhoneOutlined } from '@ant-design/icons';
@@ -15,7 +17,13 @@ import { createCatalogoEstadoColumn } from '@presentation/utils/tableColumns/cre
 import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import { formatTipoSocietario } from '@application-titulacion/utils/pasantiasPills';
 
-export const createPasantiasEmpresasTableColumns = ({ onEditar, onToggleEstado }) => {
+export const createPasantiasEmpresasTableColumns = ({
+  onEditar,
+  onToggleEstado,
+  onVer,
+  eliminarEmpresa,
+  refetch,
+}) => {
   return [
     {
       title: '#',
@@ -94,15 +102,21 @@ export const createPasantiasEmpresasTableColumns = ({ onEditar, onToggleEstado }
     {
       title: 'Acciones',
       key: 'acciones',
-      width: 90,
+      width: 130,
       align: 'right',
       render: (_, record) => (
         <TableActions
           record={record}
+          onView={() => onVer(record)}
           onEdit={() => onEditar(record)}
           editTitle="Editar empresa"
+          deleteFn={eliminarEmpresa}
+          itemName={record.nombreComercial || record.nombre || `la empresa #${record.id}`}
+          refetch={refetch}
           permisos={{
+            ver: { codigo: TITULACION_PERMISOS.pasantiaEmpresa, accion: 'DETALLE' },
             editar: { codigo: TITULACION_PERMISOS.pasantiaEmpresa, accion: 'EDITAR' },
+            eliminar: { codigo: TITULACION_PERMISOS.pasantiaEmpresa, accion: 'ELIMINAR' },
           }}
         />
       ),

@@ -23,9 +23,11 @@ export const pasantiaRegistrarPath = `${TITULACION_BASE}/pasantias/registrar`;
 export const pasantiaDetallePath = (id) => `${TITULACION_BASE}/pasantias/${id}`;
 export const pasantiaEditarPath = (id) => `${TITULACION_BASE}/pasantias/${id}/editar`;
 
-/** Pasantías — catálogo de empresas (ABM propio, empresa·LISTAR/CREAR/EDITAR/ACTIVAR) */
+/** Pasantías — catálogo de empresas (ABM propio, empresa·LISTAR/CREAR/DETALLE/EDITAR/ACTIVAR/ELIMINAR) */
 export const PASANTIAS_EMPRESAS_PATH = `${TITULACION_BASE}/pasantias/empresas`;
 export const pasantiaEmpresaRegistrarPath = `${TITULACION_BASE}/pasantias/empresas/registrar`;
+export const pasantiaEmpresaDetallePath = (empresaId) =>
+  `${TITULACION_BASE}/pasantias/empresas/${empresaId}`;
 export const pasantiaEmpresaEditarPath = (empresaId) =>
   `${TITULACION_BASE}/pasantias/empresas/${empresaId}/editar`;
 

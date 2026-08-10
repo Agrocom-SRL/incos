@@ -855,7 +855,7 @@ export const PASANTIAS_ENDPOINTS = {
   ...createCRUDEndpoints('/pasantias'),
   /** GET/POST — catálogo de empresas (P7 `pasantiasEmpresas` / P8 `pasantiaEmpresa`) */
   EMPRESAS: `${API_BASE}/pasantias/empresas`,
-  /** PUT — edición de una empresa (P9, `pasantiaEmpresa`) */
+  /** GET/PUT/DELETE — ficha (P20), edición (P9) y eliminación (P21) de una empresa */
   EMPRESA: (empresaId) => `${API_BASE}/pasantias/empresas/${empresaId}`,
   /** PATCH — activar/desactivar empresa, body { activo } (P10, empresa·ACTIVAR) */
   EMPRESA_ESTADO: (empresaId) => `${API_BASE}/pasantias/empresas/${empresaId}/estado`,

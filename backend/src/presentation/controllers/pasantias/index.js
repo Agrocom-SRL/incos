@@ -12,9 +12,11 @@ export { TransicionarPasantiaController } from './transicionar-pasantia.controll
 
 // Catálogo de empresas
 export { ListPasantiasEmpresasController } from './list-pasantias-empresas.controller.js';
+export { GetPasantiaEmpresaController } from './get-pasantia-empresa.controller.js';
 export { CreatePasantiaEmpresaController } from './create-pasantia-empresa.controller.js';
 export { UpdatePasantiaEmpresaController } from './update-pasantia-empresa.controller.js';
 export { SetEstadoPasantiaEmpresaController } from './set-estado-pasantia-empresa.controller.js';
+export { DeletePasantiaEmpresaController } from './delete-pasantia-empresa.controller.js';
 
 // Portal por rol (anti-IDOR: ids resueltos en servidor)
 export { ListMisPasantiasSupervisadasController } from './list-mis-pasantias-supervisadas.controller.js';
