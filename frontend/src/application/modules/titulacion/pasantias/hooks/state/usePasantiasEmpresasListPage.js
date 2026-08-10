@@ -41,6 +41,7 @@ export const usePasantiasEmpresasListPage = () => {
     return empresas.filter(
       (e) =>
         (e.nombre || '').toLowerCase().includes(q) ||
+        (e.nombreComercial || '').toLowerCase().includes(q) ||
         (e.nit || '').toLowerCase().includes(q) ||
         (e.sectorActividad || '').toLowerCase().includes(q),
     );

@@ -36,7 +36,15 @@ const EMPRESA_FORM_SECTIONS = {
         required: true,
         span: 12,
         maxLength: 255,
-        placeholder: 'Ej. Comercial Andina S.R.L.',
+        placeholder: 'Ej. Embotelladora Boliviana S.A.',
+      },
+      {
+        name: 'nombreComercial',
+        label: 'Nombre comercial (opcional)',
+        type: 'input',
+        span: 12,
+        maxLength: 200,
+        placeholder: 'Ej. Embol',
       },
       {
         name: 'tipoSocietario',

@@ -18,6 +18,12 @@ export const PasantiaEmpresa = sequelize.define(
       allowNull: false,
       comment: 'Nombre de la empresa/institución (informe de verificación)',
     },
+    nombreComercial: {
+      type: DataTypes.STRING(200),
+      field: 'nombre_comercial',
+      allowNull: true,
+      comment: 'Nombre comercial o de fantasía, si difiere de la razón social',
+    },
     tipoSocietario: {
       type: DataTypes.ENUM(...TIPOS_SOCIETARIO_EMPRESA_VALUES),
       field: 'tipo_societario',

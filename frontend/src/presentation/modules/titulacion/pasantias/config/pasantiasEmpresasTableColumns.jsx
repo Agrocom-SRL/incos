@@ -28,14 +28,20 @@ export const createPasantiasEmpresasTableColumns = ({ onEditar, onToggleEstado }
       title: 'Empresa',
       key: 'empresa',
       width: 300,
-      render: (_, record) => (
-        <div className="cfg-identidad-clamp2" title={record.nombre || undefined}>
-          <IdentidadCelda
-            codigo={record.nit ? `NIT ${record.nit}` : undefined}
-            nombre={(record.nombre || 'Sin nombre').toUpperCase()}
-          />
-        </div>
-      ),
+      render: (_, record) => {
+        const codigoLines = [
+          record.nombreComercial ? record.nombre : null,
+          record.nit ? `NIT ${record.nit}` : null,
+        ].filter(Boolean);
+        return (
+          <div className="cfg-identidad-clamp2" title={record.nombre || undefined}>
+            <IdentidadCelda
+              codigo={codigoLines.length ? codigoLines.join(' · ') : undefined}
+              nombre={(record.nombreComercial || record.nombre || 'Sin nombre').toUpperCase()}
+            />
+          </div>
+        );
+      },
       sorter: true,
       sortCompare: (a, b) =>
         (a.nombre || '').localeCompare(b.nombre || '', 'es', { sensitivity: 'base' }),

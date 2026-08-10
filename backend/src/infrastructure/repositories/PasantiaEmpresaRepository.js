@@ -22,6 +22,7 @@ export class PasantiaEmpresaRepository extends BaseRepository {
     return {
       id: v.id,
       nombre: v.nombre ?? null,
+      nombreComercial: v.nombreComercial ?? null,
       tipoSocietario: v.tipoSocietario ?? null,
       nit: v.nit ?? null,
       enFuncionamiento: v.enFuncionamiento ?? null,
@@ -43,7 +44,7 @@ export class PasantiaEmpresaRepository extends BaseRepository {
   }
 
   getSearchFields() {
-    return ['nombre', 'nit', 'sectorActividad'];
+    return ['nombre', 'nombreComercial', 'nit', 'sectorActividad'];
   }
 
   getDefaultSort() {
@@ -53,6 +54,7 @@ export class PasantiaEmpresaRepository extends BaseRepository {
   mapDataToModel(data) {
     const model = {};
     if ('nombre' in data) model.nombre = data.nombre;
+    if ('nombreComercial' in data) model.nombreComercial = data.nombreComercial ?? null;
     if ('tipoSocietario' in data) model.tipoSocietario = data.tipoSocietario ?? null;
     if ('nit' in data) model.nit = data.nit ?? null;
     if ('enFuncionamiento' in data) model.enFuncionamiento = data.enFuncionamiento ?? null;

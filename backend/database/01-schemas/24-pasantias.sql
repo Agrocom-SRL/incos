@@ -40,6 +40,7 @@ CREATE TABLE pasantias_empresas (
 
     -- Identificación legal (sección "verificación" del informe del docente)
     nombre VARCHAR(200) NOT NULL COMMENT 'Nombre de la empresa/institución (campo "nombre de la empresa" del informe de verificación)',
+    nombre_comercial VARCHAR(200) NULL COMMENT 'Nombre comercial o de fantasía, si difiere de la razón social (ej. razón social "Embotelladora Boliviana S.A.", nombre comercial "Embol")',
     tipo_societario ENUM('UNIPERSONAL', 'SRL', 'SA', 'PUBLICA', 'OTRO') NULL
         COMMENT 'Tipo societario: checkboxes Unipersonal / S.R.L. / S.A. del informe de verificación. PUBLICA/OTRO para instituciones no societarias',
     nit VARCHAR(20) NULL COMMENT 'NIT (campo NIT del informe de verificación)',
@@ -61,6 +62,7 @@ CREATE TABLE pasantias_empresas (
     deleted_by INT NULL COMMENT 'Usuario que eliminó',
 
     INDEX idx_nombre (nombre) COMMENT 'Búsqueda por nombre de empresa',
+    INDEX idx_nombre_comercial (nombre_comercial) COMMENT 'Búsqueda por nombre comercial',
     INDEX idx_nit (nit) COMMENT 'Búsqueda por NIT',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete'

@@ -134,6 +134,7 @@ export const mapEmpresa = (raw) => {
   return {
     id: raw.id,
     nombre: cleanText(raw.nombre) || `Empresa ${raw.id}`,
+    nombreComercial: cleanText(raw.nombreComercial),
     tipoSocietario: raw.tipoSocietario ?? null,
     nit: cleanText(raw.nit),
     enFuncionamiento: raw.enFuncionamiento == null
@@ -263,6 +264,7 @@ export const mapPasantiaToFormValues = (pasantia) => ({
 /** Valores del formulario de empresa → payload del backend (P8/P9). */
 export const mapFormValuesToEmpresaPayload = (values = {}) => ({
   nombre: (values.nombre || '').trim(),
+  nombreComercial: cleanText(values.nombreComercial),
   tipoSocietario: values.tipoSocietario ?? null,
   nit: cleanText(values.nit),
   enFuncionamiento: values.enFuncionamiento === true,
@@ -275,6 +277,7 @@ export const mapFormValuesToEmpresaPayload = (values = {}) => ({
 /** Empresa → valores iniciales del formulario (alta y edición). */
 export const mapEmpresaToFormValues = (empresa) => ({
   nombre: empresa?.nombre ?? '',
+  nombreComercial: empresa?.nombreComercial ?? '',
   tipoSocietario: empresa?.tipoSocietario ?? undefined,
   nit: empresa?.nit ?? '',
   enFuncionamiento: empresa?.enFuncionamiento ?? true,
