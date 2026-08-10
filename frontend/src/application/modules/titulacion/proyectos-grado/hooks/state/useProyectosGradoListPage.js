@@ -19,7 +19,7 @@ import { createProyectosGradoTableColumns } from '@titulacion/proyectos-grado/co
 import { ESTADOS_PROYECTO_GRADO, formatEstadoProyecto } from '@application-titulacion/utils/titulacionPills';
 import {
   PROYECTOS_GRADO_LIST_PATH,
-  PLANILLA_AVANCE_TERCER_ANIO_PATH,
+  SEGUIMIENTO_TUTORIA_DOCENTES_PATH,
   TIT_PROYECTOS_MENU_KEY,
   proyectoGradoRegistrarPath,
 } from '@application-titulacion/config/paths';
@@ -130,9 +130,9 @@ export const useProyectosGradoListPage = () => {
     }
   }, [exportarAvanceCarrera, message]);
 
-  /** Reporte "10 en 10" (Requisito 3) — sin ítem de menú propio. */
-  const handleIrPlanillaTercerAnio = useCallback(() => {
-    navigate(PLANILLA_AVANCE_TERCER_ANIO_PATH, { state: listNavState });
+  /** Seguimiento de tutorías a docentes (extensión 2026-08-10) — sin ítem de menú propio. */
+  const handleIrSeguimientoTutoriaDocentes = useCallback(() => {
+    navigate(SEGUIMIENTO_TUTORIA_DOCENTES_PATH, { state: listNavState });
   }, [navigate, listNavState]);
 
   const handleSearchChange = useCallback(
@@ -158,7 +158,7 @@ export const useProyectosGradoListPage = () => {
     handleRegistrar,
     handleExportarAvanceCarrera,
     exportandoAvanceCarrera,
-    handleIrPlanillaTercerAnio,
+    handleIrSeguimientoTutoriaDocentes,
     handleSearchChange,
     tablePagination,
   };

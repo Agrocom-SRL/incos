@@ -763,9 +763,9 @@ export const PROYECTOS_GRADO_ENDPOINTS = {
     `${API_BASE}/proyectos-grado/${id}/dictamenes/${dictamenId}/archivo`,
 
   // ==========================================================
-  // Extensión 2026-07-31 — Requisitos 1-3 (formulario de modalidad de
-  // graduación, reporte de avance por carrera, planilla "10 en 10").
-  // Rutas estáticas ANTES de `/:id` en el backend (proyectos-grado.routes.js).
+  // Extensión 2026-07-31 — Requisitos 1-2 (formulario de modalidad de
+  // graduación, reporte de avance por carrera). Rutas estáticas ANTES de
+  // `/:id` en el backend (proyectos-grado.routes.js).
   // ==========================================================
 
   /**
@@ -784,20 +784,22 @@ export const PROYECTOS_GRADO_ENDPOINTS = {
     const qs = q.toString();
     return `${API_BASE}/proyectos-grado/reportes/avance-carrera/pdf${qs ? `?${qs}` : ''}`;
   },
+  // ==========================================================
+  // Extensión 2026-08-10 — Seguimiento de tutorías a docentes: reemplaza la
+  // planilla de avance "10 en 10" de 3er año (Requisito 3 retirado: dependía
+  // de Matrícula/periodo_numero=3, sin datos en desarrollo, sin documento
+  // físico real). Rutas estáticas ANTES de `/:id` en el backend.
+  // ==========================================================
+
   /**
-   * GET — planilla de avance de tutorías "10 en 10" bimestral, 3er año
-   * (Requisito 3, dataFieldName `planillaAvanceTercerAnio`). Query vía `params`.
+   * GET — seguimiento de tutorías a docentes: roster de tutoriados ACTIVOS
+   * por docente-tutor con el agregado mensual de bitácora (dataFieldName
+   * `seguimientoTutoriaDocentes`). Query (`docenteId`/`carreraId`/`anio`/
+   * `mes`, todos OPCIONALES) vía `params`, no en la URL.
    */
-  REPORTE_PLANILLA_AVANCE_TERCER_ANIO: `${API_BASE}/proyectos-grado/reportes/planilla-avance-tercer-anio`,
-  /** GET — Excel de la planilla de avance de tutorías (Requisito 3, res.download) */
-  REPORTE_PLANILLA_AVANCE_TERCER_ANIO_EXPORT: (params = {}) => {
-    const q = new URLSearchParams();
-    if (params.carreraId != null) q.set('carreraId', String(params.carreraId));
-    if (params.gestionId != null) q.set('gestionId', String(params.gestionId));
-    if (params.bimestre != null) q.set('bimestre', String(params.bimestre));
-    const qs = q.toString();
-    return `${API_BASE}/proyectos-grado/reportes/planilla-avance-tercer-anio/export${qs ? `?${qs}` : ''}`;
-  },
+  REPORTE_SEGUIMIENTO_TUTORIA_DOCENTES: `${API_BASE}/proyectos-grado/reportes/seguimiento-tutoria-docentes`,
+  /** GET — Excel del seguimiento de tutorías a docentes (una hoja por docente, res.download) */
+  REPORTE_SEGUIMIENTO_TUTORIA_DOCENTES_EXPORT: `${API_BASE}/proyectos-grado/reportes/seguimiento-tutoria-docentes/export`,
 
   // ==========================================================
   // Extensión 2026-08-01 — Acta de defensa de grado (P1-P8 del plan

@@ -334,8 +334,8 @@ export class ProyectoGradoRepository extends IProyectoGradoRepository {
   }
 
   // ==========================================================
-  // Extensión 2026-07-31 — Requisitos 1-3 (formulario de modalidad de
-  // graduación, reporte de avance por carrera, planilla "10 en 10").
+  // Extensión 2026-07-31 — Requisitos 1-2 (formulario de modalidad de
+  // graduación, reporte de avance por carrera).
   // ==========================================================
 
   /**
@@ -397,42 +397,50 @@ export class ProyectoGradoRepository extends IProyectoGradoRepository {
     }
   }
 
+  // ==========================================================
+  // Extensión 2026-08-10 — Seguimiento de tutorías a docentes: reemplaza la
+  // planilla de avance "10 en 10" de 3er año (dependía de
+  // Matrícula/periodo_numero=3, sin datos en desarrollo, sin documento
+  // físico real).
+  // ==========================================================
+
   /**
-   * Planilla de avance de tutorías "10 en 10" (bimestral, 3er año) — preview
-   * en pantalla (Requisito 3, `planillaAvanceTercerAnio`). `carreraId` y
-   * `bimestre` son requeridos por el backend.
-   * GET /v1/proyectos-grado/reportes/planilla-avance-tercer-anio?carreraId=&gestionId=&bimestre=
+   * Seguimiento de tutorías a docentes — preview en pantalla
+   * (`seguimientoTutoriaDocentes`). `docenteId`/`carreraId`/`anio`/`mes` son
+   * OPCIONALES; sin `anio`/`mes` el backend usa el mes/año actual del
+   * servidor.
+   * GET /v1/proyectos-grado/reportes/seguimiento-tutoria-docentes?docenteId=&carreraId=&anio=&mes=
    */
-  async obtenerPlanillaAvanceTercerAnio(params = {}) {
+  async obtenerSeguimientoTutoriaDocentes(params = {}) {
     try {
       const response = await apiClient.get(
-        PROYECTOS_GRADO_ENDPOINTS.REPORTE_PLANILLA_AVANCE_TERCER_ANIO,
+        PROYECTOS_GRADO_ENDPOINTS.REPORTE_SEGUIMIENTO_TUTORIA_DOCENTES,
         { params },
       );
       return handleSuccessResponse(response);
     } catch (error) {
-      return handleErrorResponse(error, 'Error al obtener la planilla de avance de tutorías');
+      return handleErrorResponse(error, 'Error al obtener el seguimiento de tutorías a docentes');
     }
   }
 
   /**
-   * Descarga el Excel de la planilla de avance de tutorías (Requisito 3,
-   * proyecto·EXPORTAR; blob autenticado).
-   * GET /v1/proyectos-grado/reportes/planilla-avance-tercer-anio/export?carreraId=&gestionId=&bimestre=
+   * Descarga el Excel del seguimiento de tutorías a docentes (una hoja por
+   * docente, proyecto·EXPORTAR; blob autenticado).
+   * GET /v1/proyectos-grado/reportes/seguimiento-tutoria-docentes/export?docenteId=&carreraId=&anio=&mes=
    */
-  async exportarPlanillaAvanceTercerAnioExcel(params = {}) {
+  async exportarSeguimientoTutoriaDocentesExcel(params = {}) {
     try {
       const response = await apiClient.get(
-        PROYECTOS_GRADO_ENDPOINTS.REPORTE_PLANILLA_AVANCE_TERCER_ANIO_EXPORT(params),
-        { responseType: 'blob' },
+        PROYECTOS_GRADO_ENDPOINTS.REPORTE_SEGUIMIENTO_TUTORIA_DOCENTES_EXPORT,
+        { params, responseType: 'blob' },
       );
       return {
         success: true,
         blob: response.data,
-        fileName: parseFileName(response, 'planilla_avance_tutoria.xlsx'),
+        fileName: parseFileName(response, 'seguimiento_tutoria_docentes.xlsx'),
       };
     } catch (error) {
-      return parseBlobError(error, 'Error al exportar la planilla de avance de tutorías');
+      return parseBlobError(error, 'Error al exportar el seguimiento de tutorías a docentes');
     }
   }
 

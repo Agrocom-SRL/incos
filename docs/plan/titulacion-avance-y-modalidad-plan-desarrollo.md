@@ -21,6 +21,25 @@
 > 23-tutorias-acompanamiento.sql, `application/use-cases/titulacion/`) es la
 > única fuente de verdad.
 
+> **SUPERSEDIDO (2026-08-10): Requisito 3.** La "Planilla de avance de
+> tutorías 10-en-10" descrita en los bloques H/I/J/M-Q de abajo dependía de
+> Matrícula (`periodo_numero = 3`, vista 178) — dato que no existe en la BD
+> de desarrollo y, al revisar los documentos fuente del instituto en
+> `/Users/miguel/Documents/incos/pasantia/`, se confirmó que NO corresponde a
+> ningún documento físico real. Se reemplazó por completo por **"Seguimiento
+> de tutorías a docentes"** (réplica digital de `PLANILLA DE SEGUIMIENTO DE
+> TUTORIA 2026.xlsx`, reporte administrativo A LOS DOCENTES, roster-driven
+> desde `proyectos_grado`/`integrantes_proyecto`, filtro mes+año en vez de
+> bimestre, sin `resultado_tutoria` ni folios de 10). Vistas 180/181
+> reescritas en el mismo número (`vista_base_tutoria_bitacora_mes_fila`,
+> `vista_tutoria_seguimiento_docentes`); endpoints
+> `GET /proyectos-grado/reportes/seguimiento-tutoria-docentes[/export]`
+> (`dataFieldName: seguimientoTutoriaDocentes`), mismo RBAC
+> (`titulacion.proyecto` LISTAR/EXPORTAR, sin seeds nuevos). El contenido de
+> abajo sobre Requisito 3 queda como registro histórico del diseño
+> descartado — no implementarlo. Requisitos 1 y 2 (formulario de modalidad,
+> reporte de avance por carrera) NO cambiaron.
+
 ## 0. Hallazgos de la investigación (leer antes de implementar)
 
 ### 0.1 Cómo se determina el "año" académico de un estudiante

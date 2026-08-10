@@ -23,7 +23,7 @@ import {
   createAvanceValidator,
   listEstudiantesElegiblesValidator,
   avanceTutoriaCarreraValidator,
-  planillaAvanceTercerAnioValidator,
+  seguimientoTutoriaDocentesValidator,
   registrarActaDefensaValidator,
   anularActaDefensaValidator,
 } from '../validators/titulacion/index.js';
@@ -148,27 +148,31 @@ export function buildProyectosGradoRouter({ controllers, middlewares }) {
   );
 
   // ============================================
-  // Extensión 2026-07-31 — Requisito 3: planilla de avance de tutorías
-  // "10 en 10" (bimestral, 3er año) (vista 181)
+  // Extensión 2026-08-10 — Seguimiento de tutorías a docentes (vistas
+  // 180/181). Reemplaza la planilla de avance "10 en 10" de 3er año, que
+  // dependía de Matrícula (periodo_numero = 3, sin datos en desarrollo) y no
+  // correspondía a ningún documento físico real. Reporte ADMINISTRATIVO de
+  // seguimiento A LOS DOCENTES (no a los estudiantes), réplica digital de
+  // "PLANILLA DE SEGUIMIENTO DE TUTORIA 2026.xlsx".
   // ============================================
 
-  // GET /reportes/planilla-avance-tercer-anio?carreraId=&gestionId=&bimestre=
+  // GET /reportes/seguimiento-tutoria-docentes?docenteId=&carreraId=&anio=&mes=
   router.get(
-    '/reportes/planilla-avance-tercer-anio',
+    '/reportes/seguimiento-tutoria-docentes',
     ...proyectoListar,
-    planillaAvanceTercerAnioValidator,
+    seguimientoTutoriaDocentesValidator,
     validateRequest,
-    (req, res, next) => controllers.getPlanillaAvanceTercerAnioController.handle(req, res, next)
+    (req, res, next) => controllers.getSeguimientoTutoriaDocentesController.handle(req, res, next)
   );
 
-  // GET /reportes/planilla-avance-tercer-anio/export?carreraId=&gestionId=&bimestre=
+  // GET /reportes/seguimiento-tutoria-docentes/export?docenteId=&carreraId=&anio=&mes=
   router.get(
-    '/reportes/planilla-avance-tercer-anio/export',
+    '/reportes/seguimiento-tutoria-docentes/export',
     ...proyectoExportar,
-    planillaAvanceTercerAnioValidator,
+    seguimientoTutoriaDocentesValidator,
     validateRequest,
     (req, res, next) =>
-      controllers.exportPlanillaAvanceTercerAnioExcelController.handle(req, res, next)
+      controllers.exportSeguimientoTutoriaDocentesExcelController.handle(req, res, next)
   );
 
   // T7 POST / - Crear proyecto (+ TITULAR e integrantes si PSP)

@@ -2,15 +2,18 @@ import { sequelize } from '../../database/sequelize.js';
 import { ITutoriaAvanceViewRepository } from '../../../domain/interfaces/repositories/ITutoriaAvanceViewRepository.js';
 
 /**
- * Lecturas de las 3 extensiones del módulo TIT · titulación (2026-07-31):
- * formulario de elección de modalidad de graduación (Requisito 1), reporte
- * de avance de tutorías por carrera (Requisito 2) y planilla de avance
- * "10 en 10" de 3er año (Requisito 3).
+ * Lecturas de las extensiones del módulo TIT · titulación: formulario de
+ * elección de modalidad de graduación (Requisito 1), reporte de avance de
+ * tutorías por carrera (Requisito 2) y seguimiento de tutorías a docentes
+ * (2026-08-10, reemplaza la planilla de avance "10 en 10" de 3er año).
  *
  * Consume las vistas SQL:
  * - `vista_base_tutoria_estudiante_tercer_anio` (178): roster de 3er año.
  * - `vista_tutoria_avance_carrera` (179): resumen agregado por carrera.
- * - `vista_tutoria_planilla_avance_tercer_anio` (181): roster por bimestre.
+ * - `vista_tutoria_seguimiento_docentes` (181): roster de tutoriados
+ *   ACTIVOS por docente-tutor.
+ * - `vista_base_tutoria_bitacora_mes_fila` (180): bitácora por año/mes,
+ *   agregada aquí (LEFT JOIN) para el seguimiento a docentes.
  *
  * Repositorio de SOLO LECTURA (arquetipo B / `views/`), aislado de
  * `ProyectoGradoListadoViewRepository` (SRP).
@@ -103,35 +106,69 @@ export class TutoriaAvanceViewRepository extends ITutoriaAvanceViewRepository {
   }
 
   /**
-   * Roster de 3er año con proyecto por bimestre (vista 181), ordenado en
-   * orden institucional (apellido paterno, apellido materno, nombres).
+   * Roster de tutoriados ACTIVOS por docente-tutor (vista 181), con el
+   * agregado mensual de bitácora (vista 180) resuelto aquí mediante LEFT
+   * JOIN filtrado por año/mes: el roster (vista 181) NO tiene dimensión
+   * temporal, así que el filtro año/mes vive en el subquery sobre la 180,
+   * garantizando que un tutoriado sin bitácora en el mes consultado siga
+   * apareciendo con 0/NULL (hallazgo de incumplimiento relevante para
+   * Dirección Académica), en vez de desaparecer del reporte.
    *
-   * @param {Object} filters - { carreraId, gestionId, bimestre }
+   * Texto (actividad/observaciones) resuelto con subconsulta correlacionada
+   * (no GROUP_CONCAT, para evitar truncado de `group_concat_max_len`); el
+   * conteo/porcentaje numérico sí usa agregación simple.
+   *
+   * @param {Object} filters - { docenteId, carreraId, anio, mes }
    * @returns {Promise<Array<Object>>}
    */
-  async findPlanillaAvanceTercerAnio({ carreraId, gestionId, bimestre } = {}) {
+  async findSeguimientoTutoriaDocentes({ docenteId, carreraId, anio, mes } = {}) {
     const whereConditions = [];
-    const replacements = [];
+    const replacements = { anio, mes };
 
+    if (docenteId) {
+      whereConditions.push('roster.tutor_id = :docenteId');
+      replacements.docenteId = docenteId;
+    }
     if (carreraId) {
-      whereConditions.push('carrera_id = ?');
-      replacements.push(carreraId);
-    }
-    if (gestionId) {
-      whereConditions.push('gestion_id = ?');
-      replacements.push(gestionId);
-    }
-    if (bimestre) {
-      whereConditions.push('bimestre = ?');
-      replacements.push(bimestre);
+      whereConditions.push('roster.carrera_id = :carreraId');
+      replacements.carreraId = carreraId;
     }
 
     const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+
     return sequelize.query(
-      `SELECT *
-       FROM vista_tutoria_planilla_avance_tercer_anio
+      `SELECT
+         roster.*,
+         COALESCE(mensual.tutorias_ejecutadas_mes, 0) AS tutorias_ejecutadas_mes,
+         mensual.ultimo_porcentaje_avance AS porcentaje_avance,
+         (
+           SELECT bb2.actividad
+           FROM vista_base_tutoria_bitacora_mes_fila bb2
+           WHERE bb2.proyecto_grado_id = roster.proyecto_grado_id
+             AND bb2.anio = :anio AND bb2.mes = :mes
+           ORDER BY bb2.fecha DESC, bb2.bitacora_id DESC
+           LIMIT 1
+         ) AS ultima_actividad,
+         (
+           SELECT bb3.observaciones
+           FROM vista_base_tutoria_bitacora_mes_fila bb3
+           WHERE bb3.proyecto_grado_id = roster.proyecto_grado_id
+             AND bb3.anio = :anio AND bb3.mes = :mes
+           ORDER BY bb3.fecha DESC, bb3.bitacora_id DESC
+           LIMIT 1
+         ) AS ultima_observacion
+       FROM vista_tutoria_seguimiento_docentes roster
+       LEFT JOIN (
+         SELECT
+           bb.proyecto_grado_id AS proyecto_grado_id,
+           SUM(CASE WHEN bb.tipo = 'REUNION' THEN 1 ELSE 0 END) AS tutorias_ejecutadas_mes,
+           SUBSTRING_INDEX(GROUP_CONCAT(bb.porcentaje_avance ORDER BY bb.fecha DESC, bb.bitacora_id DESC), ',', 1) AS ultimo_porcentaje_avance
+         FROM vista_base_tutoria_bitacora_mes_fila bb
+         WHERE bb.anio = :anio AND bb.mes = :mes
+         GROUP BY bb.proyecto_grado_id
+       ) mensual ON mensual.proyecto_grado_id = roster.proyecto_grado_id
        ${whereClause}
-       ORDER BY apellido_paterno, apellido_materno, nombres`,
+       ORDER BY roster.tutor_nombre, roster.apellido_paterno, roster.apellido_materno, roster.nombres`,
       {
         replacements,
         type: sequelize.QueryTypes.SELECT,

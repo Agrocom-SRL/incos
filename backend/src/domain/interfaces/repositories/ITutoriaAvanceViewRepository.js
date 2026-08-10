@@ -1,19 +1,22 @@
 /**
  * Interfaz de Repositorio (solo lectura): ITutoriaAvanceViewRepository
  *
- * Lecturas de las 3 extensiones del módulo TIT · titulación (2026-07-31):
+ * Lecturas de las extensiones del módulo TIT · titulación:
  * - Requisito 1 (formulario de modalidad de graduación): estudiantes
  *   elegibles de 3er año, vista `vista_base_tutoria_estudiante_tercer_anio` (178).
  * - Requisito 2 (reporte de avance por carrera): resumen agregado,
  *   vista `vista_tutoria_avance_carrera` (179).
- * - Requisito 3 (planilla de avance "10 en 10"): roster por bimestre,
- *   vista `vista_tutoria_planilla_avance_tercer_anio` (181).
+ * - Seguimiento de tutorías a docentes (2026-08-10, reemplaza la planilla de
+ *   avance "10 en 10" de 3er año): roster de tutoriados ACTIVOS por
+ *   docente-tutor, vista `vista_tutoria_seguimiento_docentes` (181) + agregado
+ *   mensual de `vista_base_tutoria_bitacora_mes_fila` (180).
  *
  * Aislado de `IProyectoGradoListadoViewRepository` (SRP: ese repo cubre el
- * listado/ficha de proyectos ya existente; este cubre las 3 lecturas nuevas
- * sobre el roster de 3er año). El detalle por proyecto de los reportes se
- * sigue leyendo con `proyectoGradoListadoViewRepository.findListado`
- * (vista 160), no se duplica aquí.
+ * listado/ficha de proyectos ya existente; este cubre las lecturas nuevas
+ * sobre el roster de 3er año / seguimiento a docentes). El detalle por
+ * proyecto de los reportes se sigue leyendo con
+ * `proyectoGradoListadoViewRepository.findListado` (vista 160), no se
+ * duplica aquí.
  *
  * NO extiende IRepository: repositorio de SOLO LECTURA (arquetipo B / `views/`).
  */
@@ -42,13 +45,15 @@ export class ITutoriaAvanceViewRepository {
   }
 
   /**
-   * Roster de 3er año con proyecto por bimestre (vista 181), para la
-   * planilla de seguimiento "10 en 10".
+   * Roster de tutoriados ACTIVOS por docente-tutor (vista 181), con el
+   * agregado mensual de bitácora (vista 180) filtrado por año/mes vía
+   * LEFT JOIN en el propio repositorio — ningún tutoriado se pierde cuando
+   * su proyecto no tuvo bitácora en el mes consultado (queda con 0/NULL).
    *
-   * @param {Object} filters - { carreraId, gestionId, bimestre }
+   * @param {Object} filters - { docenteId, carreraId, anio, mes }
    * @returns {Promise<Array<Object>>} Filas crudas snake_case
    */
-  async findPlanillaAvanceTercerAnio(_filters = {}) {
-    throw new Error('Method findPlanillaAvanceTercerAnio() must be implemented');
+  async findSeguimientoTutoriaDocentes(_filters = {}) {
+    throw new Error('Method findSeguimientoTutoriaDocentes() must be implemented');
   }
 }

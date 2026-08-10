@@ -301,21 +301,16 @@ export const avanceTutoriaCarreraValidator = [
 ];
 
 /**
- * GET /reportes/planilla-avance-tercer-anio[/export]?carreraId=&gestionId=&bimestre=
- * (Requisito 3). carreraId y bimestre son requeridos.
+ * GET /reportes/seguimiento-tutoria-docentes[/export]?docenteId=&carreraId=&anio=&mes=
+ * (extensión 2026-08-10, reemplaza la planilla de avance "10 en 10" de 3er
+ * año). Todos los filtros son opcionales y nunca bloqueantes: anio/mes
+ * default al mes/año actual del servidor, resuelto en el use case.
  */
-export const planillaAvanceTercerAnioValidator = [
-  query('carreraId')
-    .notEmpty()
-    .withMessage('carreraId es requerido')
-    .isInt({ min: 1 })
-    .withMessage('carreraId debe ser un entero positivo'),
-  query('gestionId').optional().isInt({ min: 1 }).withMessage('gestionId debe ser un entero positivo'),
-  query('bimestre')
-    .notEmpty()
-    .withMessage('bimestre es requerido')
-    .isInt({ min: 1, max: 4 })
-    .withMessage('bimestre debe ser un entero entre 1 y 4'),
+export const seguimientoTutoriaDocentesValidator = [
+  query('docenteId').optional().isInt({ min: 1 }).withMessage('docenteId debe ser un entero positivo'),
+  query('carreraId').optional().isInt({ min: 1 }).withMessage('carreraId debe ser un entero positivo'),
+  query('anio').optional().isInt({ min: 2000, max: 2100 }).withMessage('anio debe ser un entero válido'),
+  query('mes').optional().isInt({ min: 1, max: 12 }).withMessage('mes debe ser un entero entre 1 y 12'),
 ];
 
 // ============================================

@@ -38,10 +38,14 @@ export { ExportActaDefensaPdfController } from './export-acta-defensa-pdf.contro
 export { AnularActaDefensaController } from './anular-acta-defensa.controller.js';
 
 // Extensión 2026-07-31 (formulario de modalidad de graduación, reporte de
-// avance por carrera, planilla de avance "10 en 10")
+// avance por carrera)
 export { ListEstudiantesElegiblesModalidadGradoController } from './list-estudiantes-elegibles-modalidad-grado.controller.js';
 export { ExportFormularioModalidadGradoPdfController } from './export-formulario-modalidad-grado-pdf.controller.js';
 export { GetAvanceTutoriaCarreraController } from './get-avance-tutoria-carrera.controller.js';
 export { ExportAvanceTutoriaCarreraPdfController } from './export-avance-tutoria-carrera-pdf.controller.js';
-export { GetPlanillaAvanceTercerAnioController } from './get-planilla-avance-tercer-anio.controller.js';
-export { ExportPlanillaAvanceTercerAnioExcelController } from './export-planilla-avance-tercer-anio-excel.controller.js';
+
+// Extensión 2026-08-10: Seguimiento de tutorías a docentes (reemplaza la
+// planilla de avance "10 en 10" de 3er año, que dependía de Matrícula sin
+// datos en desarrollo y sin documento físico real)
+export { GetSeguimientoTutoriaDocentesController } from './get-seguimiento-tutoria-docentes.controller.js';
+export { ExportSeguimientoTutoriaDocentesExcelController } from './export-seguimiento-tutoria-docentes-excel.controller.js';
