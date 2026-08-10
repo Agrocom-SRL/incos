@@ -21,7 +21,12 @@
  */
 
 import { IncosPDFLibBase } from '../IncosPDFLibBase.js';
-import { TIPOS_INFORME_PASANTIA, RESULTADOS_INFORME_PASANTIA } from '../../../../domain/constants/pasantias.constants.js';
+import {
+  TIPOS_INFORME_PASANTIA,
+  RESULTADOS_INFORME_PASANTIA,
+  AUTORIDAD_RECTOR_INCOS,
+  AUTORIDAD_DIRECTORA_ACADEMICA_INCOS,
+} from '../../../../domain/constants/pasantias.constants.js';
 
 const TITULOS = {
   [TIPOS_INFORME_PASANTIA.VERIFICACION_EMPRESA]:
@@ -86,7 +91,9 @@ export class PasantiaInformePdfGenerator extends IncosPDFLibBase {
   }
 
   /**
-   * Bloque A / VIA / DE / REF / FECHA del formato real.
+   * Bloque A / VIA / DE / REF / FECHA del formato real. "A" y "VIA" son
+   * cargos institucionales fijos (Rector / Dirección Académica), no datos
+   * del trámite — nunca se piden en el formulario.
    * @private
    */
   async _buildEncabezadoMemo(options) {
@@ -94,8 +101,14 @@ export class PasantiaInformePdfGenerator extends IncosPDFLibBase {
     const docenteNombre =
       options.docenteNombre || options.pasantia?.docenteSupervisorNombre || '';
 
-    await this._addLabelValue('A:', informe.destinatario || 'Rectorado, vía Dirección Académica');
-    await this._addLabelValue('VIA:', 'Dirección Académica — Instituto Técnico INCOS Santa Cruz');
+    await this._addLabelValue(
+      'A:',
+      `${AUTORIDAD_RECTOR_INCOS.nombre} — ${AUTORIDAD_RECTOR_INCOS.cargo}`
+    );
+    await this._addLabelValue(
+      'VIA:',
+      `${AUTORIDAD_DIRECTORA_ACADEMICA_INCOS.nombre} — ${AUTORIDAD_DIRECTORA_ACADEMICA_INCOS.cargo}`
+    );
     await this._addLabelValue('DE:', `${docenteNombre} — Docente Instituto Técnico INCOS Santa Cruz`);
     await this._addLabelValue('REF.:', REFERENCIAS[options.tipo] ?? '');
     if (informe.fechaEmision) {
@@ -223,10 +236,10 @@ export class PasantiaInformePdfGenerator extends IncosPDFLibBase {
 
     await this._addSection('CONCLUSIONES');
 
-    if (informe.areaRelacionada) {
+    if (pasantia.areaDepartamento) {
       await this._addLabelValue(
         'Área relacionada con la carrera:',
-        informe.areaRelacionada
+        pasantia.areaDepartamento
       );
     }
     if (pasantia.cargoPuesto) {

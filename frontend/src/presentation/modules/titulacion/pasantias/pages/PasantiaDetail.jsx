@@ -4,15 +4,20 @@
  *
  * Patrón ficha-hub de `ProyectoGradoDetail` (DetailPageShell +
  * DetailProfileCard + DetailTabsPanel). Acción de cabecera gated por permiso
- * (ActionButton fail-closed): transición de estado (pasantia·APROBAR, P6).
+ * (ActionButton fail-closed): informe de verificación/convalidación — primer
+ * paso legal del trámite (emitir si no existe, descargar si ya fue emitido).
  * Página "dumb": la orquestación vive en `usePasantiaDetailPage`.
+ *
+ * NOTA (2026-08-09): se retiró el botón/modal de transición de estado manual
+ * (P6, `TransicionPasantiaModal`) — la máquina de estados se gobernará de
+ * otra forma (por definir); `PasantiaTimeline` (solo lectura) se mantiene.
  */
 
 import { useState } from 'react';
 import { Flex } from 'antd';
 import {
   ArrowLeftOutlined,
-  CheckCircleOutlined,
+  FileAddOutlined,
   FilePdfOutlined,
   ScheduleOutlined,
   SolutionOutlined,
@@ -30,7 +35,6 @@ import PasantiaTimeline from '@titulacion/pasantias/components/organisms/Pasanti
 import PasantiaDatosSection from '@titulacion/pasantias/components/organisms/PasantiaDatosSection';
 import PasantiaInformesSection from '@titulacion/pasantias/components/organisms/PasantiaInformesSection';
 import PasantiaSeguimientosSection from '@titulacion/pasantias/components/organisms/PasantiaSeguimientosSection';
-import TransicionPasantiaModal from '@titulacion/pasantias/components/modals/TransicionPasantiaModal';
 import InformePasantiaDrawer from '@titulacion/pasantias/components/modals/InformePasantiaDrawer';
 import SeguimientoPasantiaDrawer from '@titulacion/pasantias/components/modals/SeguimientoPasantiaDrawer';
 import '@presentation/styles/pages/detail-page.css';
@@ -44,7 +48,7 @@ const PasantiaDetail = () => {
     breadcrumbItems,
     handleVolver,
     handleEditar,
-    transicionModal,
+    informeVerificacion,
     informes,
     seguimientos,
   } = usePasantiaDetailPage();
@@ -52,18 +56,33 @@ const PasantiaDetail = () => {
 
   const [activeKey, setActiveKey] = useState('datos');
 
+  const nombreInforme =
+    pasantia?.tipo === 'CONVALIDACION' ? 'informe de convalidación' : 'informe de verificación';
+
   const headerActions = (
     <Flex gap="small" wrap>
-      <ActionButton
-        permiso={TITULACION_PERMISOS.pasantia}
-        accion="APROBAR"
-        variant="success"
-        icon={<CheckCircleOutlined />}
-        disabled={transicionModal.transiciones.length === 0}
-        onClick={transicionModal.abrir}
-      >
-        Transición de estado
-      </ActionButton>
+      {informeVerificacion.informe ? (
+        <ActionButton
+          permiso={TITULACION_PERMISOS.pasantia}
+          accion="EXPORTAR"
+          variant="primary"
+          icon={<FilePdfOutlined />}
+          loading={informeVerificacion.descargando}
+          onClick={informeVerificacion.onDescargar}
+        >
+          Descargar {nombreInforme}
+        </ActionButton>
+      ) : (
+        <ActionButton
+          permiso={TITULACION_PERMISOS.pasantiaInforme}
+          accion="CREAR"
+          variant="primary"
+          icon={<FileAddOutlined />}
+          onClick={informeVerificacion.onEmitir}
+        >
+          Emitir {nombreInforme}
+        </ActionButton>
+      )}
       <BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver}>
         Volver
       </BackButton>
@@ -147,21 +166,12 @@ const PasantiaDetail = () => {
         ) : null}
       </DetailPageShell>
 
-      <TransicionPasantiaModal
-        open={transicionModal.open}
-        onCancel={transicionModal.cerrar}
-        onSubmit={transicionModal.submit}
-        saving={transicionModal.saving}
-        transiciones={transicionModal.transiciones}
-        estadoActual={pasantia?.estado ?? null}
-        horasCumplidas={pasantia?.horasCumplidas ?? null}
-        horasRequeridas={pasantia?.horasRequeridas ?? null}
-      />
       <InformePasantiaDrawer
         open={informes.drawer.open}
         informe={informes.drawer.informe}
         tipoPasantia={pasantia?.tipo ?? 'PASANTIA'}
         estudianteNombre={pasantia?.estudianteNombre}
+        areaDepartamento={pasantia?.areaDepartamento}
         onClose={informes.cerrarDrawer}
         onSubmit={informes.guardar}
         saving={informes.guardando}

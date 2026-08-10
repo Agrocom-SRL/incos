@@ -20,7 +20,8 @@ export class IPasantiaInformePdfGenerator {
    *   empresaDireccion, empresaSectorActividad, cargoPuesto, funciones, fechaInicio,
    *   tipoContrato, areaDepartamento, docenteSupervisorNombre
    * @param {Object} options.informe - { numeroMemo, fechaVerificacion, fechaEmision,
-   *   destinatario, areaRelacionada, evaluacionCualitativa, resultado, contenido }
+   *   evaluacionCualitativa, resultado, contenido }. "A"/"VIA" del encabezado y el
+   *   área relacionada salen de constantes/pasantia.areaDepartamento, no de aquí.
    * @param {string} [options.docenteNombre] - Docente que eleva el informe
    *   (por defecto el supervisor del trámite)
    * @returns {Promise<Buffer>}

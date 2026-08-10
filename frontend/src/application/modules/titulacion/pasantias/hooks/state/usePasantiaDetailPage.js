@@ -3,18 +3,26 @@
  *
  * Orquesta la ficha sobre el contexto del provider (breadcrumbs, volver,
  * editar) y las acciones de las pestañas:
- *  - cabecera: transición de estado por camino (P6) — gated por APROBAR
+ *  - cabecera: informe de verificación/convalidación — primer paso legal del
+ *    trámite (emitir si no existe, descargar si ya fue emitido; P12/P14)
  *  - informes: emitir / editar (P12/P13, drawer) y descargar PDF (P14,
  *    pasantia·EXPORTAR)
  *  - seguimientos: registrar / editar (P16/P17, drawer)
  * La página es "dumb"; los modales/drawers reciben estas props.
+ *
+ * NOTA (2026-08-09): se retiró la transición de estado manual (P6, modal +
+ * botón "Transición de estado") de esta ficha — la máquina de estados se
+ * gobernará de otra forma (por definir). El endpoint y `mutations.
+ * transicionarEstado` siguen intactos en el backend/mutations por si el
+ * nuevo mecanismo los reutiliza; `PasantiaTimeline` (línea de tiempo,
+ * solo lectura) tampoco se toca.
  */
 
 import { useCallback, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { App } from 'antd';
 import { usePasantiaDetailContext } from '@application-titulacion/pasantias/hooks/context/usePasantiaDetailContext';
-import { TRANSICIONES_PASANTIA } from '@application-titulacion/utils/pasantiasPills';
+import { TIPO_INFORME_POR_TIPO_PASANTIA } from '@application-titulacion/utils/pasantiasPills';
 import {
   PASANTIAS_LIST_PATH,
   TIT_PASANTIAS_MENU_KEY,
@@ -32,7 +40,6 @@ export const usePasantiaDetailPage = () => {
     loading,
     error,
     refetch,
-    mutations,
     informes,
     seguimientos,
   } = usePasantiaDetailContext();
@@ -60,42 +67,6 @@ export const usePasantiaDetailPage = () => {
       state: { returnListPath, menuSidebarKey },
     });
   }, [navigate, pasantiaId, returnListPath, menuSidebarKey]);
-
-  // ————— Transición de estado (P6) —————
-  const [transicionModalOpen, setTransicionModalOpen] = useState(false);
-  const [transicionando, setTransicionando] = useState(false);
-
-  /** Estados destino válidos desde el estado actual, POR CAMINO (el backend valida igual). */
-  const transicionesDisponibles = useMemo(
-    () => TRANSICIONES_PASANTIA[pasantia?.tipo]?.[pasantia?.estado] ?? [],
-    [pasantia?.tipo, pasantia?.estado],
-  );
-
-  const handleTransicionar = useCallback(
-    async ({ estado, observaciones }) => {
-      if (!pasantiaId || !estado) return;
-      setTransicionando(true);
-      try {
-        const result = await mutations.transicionarEstado(pasantiaId, { estado, observaciones });
-        if (result?.success) {
-          notification.success({
-            title: 'Transición registrada',
-            description: 'El trámite cambió de estado.',
-          });
-          setTransicionModalOpen(false);
-          await refetch();
-        } else {
-          notification.error({
-            title: 'No se pudo registrar la transición',
-            description: result?.error || 'Intente nuevamente en unos instantes.',
-          });
-        }
-      } finally {
-        setTransicionando(false);
-      }
-    },
-    [pasantiaId, mutations, notification, refetch],
-  );
 
   // ————— Informes (P12/P13 drawer + P14 descarga) —————
   /** { open, informe (edición) } */
@@ -148,6 +119,20 @@ export const usePasantiaDetailPage = () => {
     },
     [pasantiaId, informes, notification],
   );
+
+  /** Tipo de informe "primer paso legal" según el camino del trámite. */
+  const tipoInformeEsperado =
+    TIPO_INFORME_POR_TIPO_PASANTIA[pasantia?.tipo] ?? 'VERIFICACION_EMPRESA';
+
+  /** Ya emitido para este trámite, si existe (cabecera: emitir vs. descargar). */
+  const informeVerificacion = useMemo(
+    () => informes.informes.find((i) => i.tipo === tipoInformeEsperado) ?? null,
+    [informes.informes, tipoInformeEsperado],
+  );
+
+  const handleDescargarInformeVerificacion = useCallback(() => {
+    if (informeVerificacion) handleDescargarInforme(informeVerificacion);
+  }, [informeVerificacion, handleDescargarInforme]);
 
   // ————— Seguimientos (P16/P17 drawer) —————
   /** { open, seguimiento (edición) } */
@@ -210,14 +195,12 @@ export const usePasantiaDetailPage = () => {
     breadcrumbItems,
     handleVolver,
     handleEditar,
-    // Cabecera (APROBAR)
-    transicionModal: {
-      open: transicionModalOpen,
-      abrir: () => setTransicionModalOpen(true),
-      cerrar: () => setTransicionModalOpen(false),
-      submit: handleTransicionar,
-      saving: transicionando,
-      transiciones: transicionesDisponibles,
+    // Cabecera: informe de verificación/convalidación (primer paso legal)
+    informeVerificacion: {
+      informe: informeVerificacion,
+      descargando: informeVerificacion ? informes.descargandoId === informeVerificacion.id : false,
+      onEmitir: abrirNuevoInforme,
+      onDescargar: handleDescargarInformeVerificacion,
     },
     // Informes
     informes: {
