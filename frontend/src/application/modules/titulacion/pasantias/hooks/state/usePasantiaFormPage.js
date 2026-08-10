@@ -38,9 +38,6 @@ const createPasantiaFormSections = ({
   esConvalidacion,
   empresaOptions,
   loadingEmpresas,
-  carreras,
-  carrerasDisponible,
-  loadingCarreras,
   docentes,
   docentesDisponible,
   loadingDocentes,
@@ -61,19 +58,6 @@ const createPasantiaFormSections = ({
         options: TIPO_PASANTIA_OPTIONS,
       },
       {
-        name: 'carreraId',
-        label: 'Carrera',
-        type: 'select',
-        span: 12,
-        options: carreras,
-        allowClear: true,
-        loading: loadingCarreras,
-        disabled: !carrerasDisponible,
-        placeholder: carrerasDisponible
-          ? 'Seleccione la carrera'
-          : 'Catálogo de carreras no disponible para su rol',
-      },
-      {
         name: 'empresaId',
         label: 'Empresa',
         type: 'select',
@@ -89,7 +73,7 @@ const createPasantiaFormSections = ({
         name: 'docenteSupervisorId',
         label: 'Docente supervisor (opcional)',
         type: 'select',
-        span: 12,
+        span: 24,
         options: docentes,
         allowClear: true,
         loading: loadingDocentes,
@@ -109,14 +93,6 @@ const createPasantiaFormSections = ({
         min: HORAS_PASANTIA_MIN,
         max: HORAS_PASANTIA_MAX,
         placeholder: `${HORAS_PASANTIA_MIN}–${HORAS_PASANTIA_MAX}`,
-      },
-      {
-        name: 'horasCumplidas',
-        label: 'Horas cumplidas',
-        type: 'number',
-        span: 8,
-        min: 0,
-        placeholder: '0',
       },
       { name: 'fechaInicio', label: 'Fecha de inicio', type: 'date', span: 8 },
       { name: 'fechaFinalizacion', label: 'Fecha de finalización', type: 'date', span: 8 },
@@ -239,9 +215,6 @@ export const usePasantiaFormPage = (mode = 'create') => {
     guardarPasantia,
     empresaOptions,
     loadingEmpresas,
-    carreras,
-    loadingCarreras,
-    carrerasDisponible,
     docentes,
     loadingDocentes,
     docentesDisponible,
@@ -291,6 +264,30 @@ export const usePasantiaFormPage = (mode = 'create') => {
     }
     return Array.from(porId.values());
   }, [busquedaEstudiantes.estudiantes, pasantia?.estudianteId, pasantia?.estudianteNombre]);
+
+  /** Carrera de cada estudiante encontrado en la búsqueda (para autocompletar carreraId). */
+  const carreraPorEstudianteId = useMemo(() => {
+    const map = new Map();
+    for (const e of busquedaEstudiantes.estudiantes) {
+      map.set(e.id, e.carreraId ?? null);
+    }
+    return map;
+  }, [busquedaEstudiantes.estudiantes]);
+
+  /**
+   * Al elegir estudiante se resuelve su carrera automáticamente (ya no se
+   * elige a mano): la trae vista_estudiante_datos_academicos vía el mismo
+   * enriquecimiento de /estudiantes/search que usa Historial académico.
+   */
+  const handleEstudianteChange = useCallback(
+    (estudianteId) => {
+      form.setFieldValue(
+        'carreraId',
+        estudianteId != null ? carreraPorEstudianteId.get(estudianteId) ?? null : null,
+      );
+    },
+    [form, carreraPorEstudianteId],
+  );
 
   // Precarga: alta → defaults; edición → ficha.
   useEffect(() => {
@@ -359,24 +356,11 @@ export const usePasantiaFormPage = (mode = 'create') => {
         esConvalidacion,
         empresaOptions,
         loadingEmpresas,
-        carreras,
-        carrerasDisponible,
-        loadingCarreras,
         docentes,
         docentesDisponible,
         loadingDocentes,
       }),
-    [
-      esConvalidacion,
-      empresaOptions,
-      loadingEmpresas,
-      carreras,
-      carrerasDisponible,
-      loadingCarreras,
-      docentes,
-      docentesDisponible,
-      loadingDocentes,
-    ],
+    [esConvalidacion, empresaOptions, loadingEmpresas, docentes, docentesDisponible, loadingDocentes],
   );
 
   return {
@@ -393,6 +377,7 @@ export const usePasantiaFormPage = (mode = 'create') => {
     estudianteOptions,
     buscandoEstudiantes: busquedaEstudiantes.loading,
     onBuscarEstudiantes: busquedaEstudiantes.buscar,
+    onEstudianteChange: handleEstudianteChange,
     handleVolver,
     handleSubmit,
     isInvalidEditId,

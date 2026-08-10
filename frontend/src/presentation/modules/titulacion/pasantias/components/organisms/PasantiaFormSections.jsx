@@ -7,7 +7,9 @@
  * La sección de estudiante usa un select con BÚSQUEDA EN SERVIDOR (debounce
  * en `useBuscarEstudiantesTit`, orquestada por el hook de pantalla) — el
  * `FormField` genérico no cubre `onSearch`, por eso el `Form.Item` vive aquí
- * como JSX del organismo (mismo criterio que titulación). Las secciones de
+ * como JSX del organismo (mismo criterio que titulación). Al elegir
+ * estudiante se dispara `onEstudianteChange`, que autocompleta la carrera
+ * (campo `carreraId` oculto, ya no se elige a mano). Las secciones de
  * puesto/contrato/responsable llegan declarativas desde el hook (el camino
  * CONVALIDACION agrega la de contrato).
  */
@@ -31,6 +33,7 @@ const PasantiaFormSections = ({
   estudianteOptions = [],
   buscandoEstudiantes = false,
   onBuscarEstudiantes,
+  onEstudianteChange,
   footer = null,
 }) => {
   const { datosTramite, puesto, contrato, responsable } = formSections ?? {};
@@ -65,12 +68,17 @@ const PasantiaFormSections = ({
                     showSearch
                     filterOption={false}
                     onSearch={onBuscarEstudiantes}
+                    onChange={onEstudianteChange}
                     loading={buscandoEstudiantes}
                     notFoundContent={buildNotFoundContent(buscandoEstudiantes)}
                     options={estudianteOptions}
                     allowClear
                     placeholder="Busque por nombre o C.I."
                   />
+                </Form.Item>
+                {/* Carrera del estudiante: se resuelve sola, no se elige a mano. */}
+                <Form.Item name="carreraId" hidden>
+                  <input type="hidden" />
                 </Form.Item>
               </Col>
             </Row>

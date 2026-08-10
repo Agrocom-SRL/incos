@@ -33,6 +33,7 @@ const PasantiaFormPage = ({ mode = 'create' }) => {
     estudianteOptions,
     buscandoEstudiantes,
     onBuscarEstudiantes,
+    onEstudianteChange,
     handleVolver,
     handleSubmit,
     isInvalidEditId,
@@ -99,6 +100,7 @@ const PasantiaFormPage = ({ mode = 'create' }) => {
                   estudianteOptions={estudianteOptions}
                   buscandoEstudiantes={buscandoEstudiantes}
                   onBuscarEstudiantes={onBuscarEstudiantes}
+                  onEstudianteChange={onEstudianteChange}
                   footer={saveButton}
                 />
               </Form>

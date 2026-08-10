@@ -32,6 +32,8 @@ const mapEstudianteOption = (row) => {
       row.apellidoMaterno,
       row.nombreCompleto || 'Sin nombre',
     ),
+    carreraId: row.carreraId ?? null,
+    carreraNombre: row.carreraNombre ?? null,
   };
 };
 

@@ -229,7 +229,8 @@ export const mapFormValuesToPasantiaPayload = (values = {}) => {
     fechaInicio: toIsoDate(values.fechaInicio),
     fechaFinalizacion: toIsoDate(values.fechaFinalizacion),
     horasRequeridas: values.horasRequeridas != null ? Number(values.horasRequeridas) : null,
-    horasCumplidas: values.horasCumplidas != null ? Number(values.horasCumplidas) : null,
+    // horasCumplidas NO se llena en este formulario: alta usa el default de
+    // la tabla (0) y edición no la toca (se actualiza desde seguimiento).
     tipoContrato: esConvalidacion ? (values.tipoContrato ?? null) : null,
     tipoContratoDetalle: esConvalidacion ? cleanText(values.tipoContratoDetalle) : null,
     responsableEmpresa: cleanText(values.responsableEmpresa),
@@ -252,7 +253,6 @@ export const mapPasantiaToFormValues = (pasantia) => ({
   fechaInicio: pasantia?.fechaInicio ? dayjs(pasantia.fechaInicio) : undefined,
   fechaFinalizacion: pasantia?.fechaFinalizacion ? dayjs(pasantia.fechaFinalizacion) : undefined,
   horasRequeridas: pasantia?.horasRequeridas ?? HORAS_PASANTIA_MIN,
-  horasCumplidas: pasantia?.horasCumplidas ?? undefined,
   tipoContrato: pasantia?.tipoContrato ?? undefined,
   tipoContratoDetalle: pasantia?.tipoContratoDetalle ?? '',
   responsableEmpresa: pasantia?.responsableEmpresa ?? '',
