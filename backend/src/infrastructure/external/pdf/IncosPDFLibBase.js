@@ -511,9 +511,11 @@ export class IncosPDFLibBase {
      * @protected
      * @param {string} text - Texto del título de sección
      * @param {boolean} [compactSpacing=false] - Si true, solo se resta LAYOUT.spacing.line en Y (no sectionFontSize). Si false, se resta sectionFontSize + spacing.
+     * @param {Object} [options]
+     * @param {number} [options.marginLeft] - Override del margen izquierdo (por defecto LAYOUT.margins.left)
      * @returns {Promise<void>} Actualiza el estado interno _currentY
      */
-    async _addSection(text, compactSpacing = false) {
+    async _addSection(text, compactSpacing = false, options = {}) {
         if (!this._pdfDoc || !this._currentPage) {
             throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
         }
@@ -524,8 +526,8 @@ export class IncosPDFLibBase {
         const sectionFontSize = IncosPDFBase.FONTS.section.size;
         const sectionRgb = this._hexToRgb(IncosPDFBase.COLORS.primary);
 
-        // Siempre alineado a la izquierda
-        const x = IncosPDFBase.LAYOUT.margins.left;
+        // Siempre alineado a la izquierda (override opcional de margen)
+        const x = options.marginLeft ?? IncosPDFBase.LAYOUT.margins.left;
 
         this._currentPage.drawText(text, {
             x,
@@ -1689,6 +1691,7 @@ export class IncosPDFLibBase {
      * @protected
      * @param {Object} opts - Opciones
      * @param {string[]} opts.lines - Líneas de texto centradas bajo la línea (orden: primera más cerca de la línea)
+     * @param {number} [opts.fontSize] - Tamaño de fuente (por defecto FONTS.normal.size)
      * @returns {Promise<void>}
      */
     async _addSignatureBlock(opts = {}) {
@@ -1709,7 +1712,7 @@ export class IncosPDFLibBase {
 
         const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
         const font = await this._pdfDoc.embedFont(normalFontName);
-        const fontSize = IncosPDFBase.FONTS.normal.size;
+        const fontSize = opts.fontSize ?? IncosPDFBase.FONTS.normal.size;
         const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
 
         const centerX = pageWidth / 2;
@@ -1742,6 +1745,132 @@ export class IncosPDFLibBase {
             }
             textY -= fontSize + (i < lines.length - 1 ? spaceBetweenLines : 0);
         }
+    }
+
+    /**
+     * Agrega un párrafo con estilos MIXTOS por palabra (negrita y/o subrayado),
+     * con word-wrap continuo a través de TODO el párrafo (no por segmento).
+     * Pensado para textos tipo formulario legal: una oración corrida donde
+     * algunos datos variables van subrayados (como si se hubiesen escrito a
+     * máquina sobre un espacio en blanco) y alguna frase fija va en negrita.
+     *
+     * @protected
+     * @param {Array<{text: string, bold?: boolean, underline?: boolean}>} runs -
+     *   Segmentos en orden; cada uno hereda su estilo a todas sus palabras.
+     * @param {Object} [options]
+     * @param {number} [options.fontSize] - Tamaño de fuente (por defecto FONTS.normal.size)
+     * @param {number} [options.lineSpacing] - Espacio entre líneas (por defecto LAYOUT.spacing.line)
+     * @param {number} [options.paragraphSpacing] - Espacio después del párrafo (por defecto LAYOUT.spacing.paragraph)
+     * @param {number} [options.underlineOffset] - Distancia del subrayado bajo la línea base (por defecto 2)
+     * @param {number} [options.marginLeft] - Override del margen izquierdo (por defecto LAYOUT.margins.left)
+     * @param {number} [options.marginRight] - Override del margen derecho (por defecto LAYOUT.margins.right)
+     * @returns {Promise<void>} Actualiza el estado interno _currentY
+     */
+    async _addRichParagraph(runs, options = {}) {
+        if (!this._pdfDoc || !this._currentPage) {
+            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
+        }
+        if (!Array.isArray(runs) || runs.length === 0) return;
+
+        const { width: pageWidth } = this._currentPage.getSize();
+        const fontSize = options.fontSize ?? IncosPDFBase.FONTS.normal.size;
+        const lineSpacing = options.lineSpacing ?? IncosPDFBase.LAYOUT.spacing.line;
+        const paragraphSpacing = options.paragraphSpacing ?? IncosPDFBase.LAYOUT.spacing.paragraph;
+        const underlineOffset = options.underlineOffset ?? 2;
+
+        const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
+        const boldFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
+        const normalFont = await this._pdfDoc.embedFont(normalFontName);
+        const boldFont = await this._pdfDoc.embedFont(boldFontName);
+        const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
+
+        const { margins } = IncosPDFBase.LAYOUT;
+        const marginLeft = options.marginLeft ?? margins.left;
+        const marginRight = options.marginRight ?? margins.right;
+        const maxWidth = pageWidth - marginLeft - marginRight;
+        const x0 = marginLeft;
+
+        // Tokenizar por palabra, preservando el estilo del segmento de origen.
+        const tokens = [];
+        for (const run of runs) {
+            const words = String(run?.text ?? '').split(' ').filter((w) => w !== '');
+            for (const word of words) {
+                tokens.push({ word, bold: !!run.bold, underline: !!run.underline });
+            }
+        }
+        if (tokens.length === 0) return;
+
+        const spaceWidth = normalFont.widthOfTextAtSize(' ', fontSize);
+
+        // Empaquetar tokens en líneas respetando maxWidth (wrap continuo).
+        const lines = [];
+        let currentLine = [];
+        let currentWidth = 0;
+        for (const token of tokens) {
+            const font = token.bold ? boldFont : normalFont;
+            const wordWidth = font.widthOfTextAtSize(token.word, fontSize);
+            const extra = currentLine.length > 0 ? spaceWidth : 0;
+            if (currentWidth + extra + wordWidth > maxWidth && currentLine.length > 0) {
+                lines.push(currentLine);
+                currentLine = [token];
+                currentWidth = wordWidth;
+            } else {
+                currentLine.push(token);
+                currentWidth += extra + wordWidth;
+            }
+        }
+        if (currentLine.length > 0) lines.push(currentLine);
+
+        // _drawUnderlineSegment vive FUERA del loop de líneas (no-loop-func):
+        // recibe start/end/y explícitos en vez de cerrar sobre variables
+        // mutables del loop.
+        const drawUnderlineSegment = (startX, endX, y) => {
+            this._currentPage.drawLine({
+                start: { x: startX, y: y - underlineOffset },
+                end: { x: endX, y: y - underlineOffset },
+                thickness: 0.75,
+                color: textRgb,
+            });
+        };
+
+        // Dibujar línea por línea; agrupa palabras subrayadas consecutivas en
+        // un solo trazo continuo (no un subrayado cortado por cada palabra).
+        let currentY = this._currentY;
+        for (const line of lines) {
+            let x = x0;
+            let underlineStart = null;
+            let underlineEnd = null;
+
+            for (const token of line) {
+                const font = token.bold ? boldFont : normalFont;
+                const wordWidth = font.widthOfTextAtSize(token.word, fontSize);
+                this._currentPage.drawText(token.word, {
+                    x,
+                    y: currentY,
+                    size: fontSize,
+                    font,
+                    color: textRgb,
+                });
+
+                if (token.underline) {
+                    if (underlineStart === null) underlineStart = x;
+                    underlineEnd = x + wordWidth;
+                } else if (underlineStart !== null) {
+                    drawUnderlineSegment(underlineStart, underlineEnd, currentY);
+                    underlineStart = null;
+                    underlineEnd = null;
+                }
+
+                x += wordWidth + spaceWidth;
+            }
+            if (underlineStart !== null) {
+                drawUnderlineSegment(underlineStart, underlineEnd, currentY);
+            }
+
+            currentY -= fontSize + lineSpacing;
+        }
+
+        this._currentY = currentY - paragraphSpacing;
     }
 
     // ============================================

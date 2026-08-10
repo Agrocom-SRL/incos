@@ -1,7 +1,8 @@
 /**
  * GET /api/v1/pasantias/:id/informes/:informeId/pdf (P14)
- * Descarga autenticada del PDF del informe (res.download).
- * Permiso: titulacion.pasantia EXPORTAR.
+ * Descarga autenticada del PDF del informe — se regenera en el momento
+ * (buffer en memoria, no un archivo de disco). Permiso: titulacion.pasantia
+ * EXPORTAR.
  */
 export class ExportInformePasantiaPdfController {
   constructor({ exportInformePasantiaPdfUseCase, logger }) {
@@ -24,12 +25,14 @@ export class ExportInformePasantiaPdfController {
         informeId,
       });
 
-      const { absolutePath, fileName } = await this.exportInformePasantiaPdfUseCase.execute({
+      const { buffer, fileName, mimeType } = await this.exportInformePasantiaPdfUseCase.execute({
         pasantiaId,
         informeId,
       });
 
-      return res.download(absolutePath, fileName);
+      res.setHeader('Content-Type', mimeType);
+      res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+      return res.send(buffer);
     } catch (error) {
       this.logger.error('[Pasantías] Error al descargar informe', {
         error: error.message,

@@ -260,6 +260,8 @@ export function registerPasantiasResource(container) {
       new ExportInformePasantiaPdfUseCase({
         pasantiaRepository: c.resolve(PASANTIAS_TOKENS.pasantiaRepository),
         pasantiaInformeRepository: c.resolve(PASANTIAS_TOKENS.pasantiaInformeRepository),
+        pasantiaViewRepository: c.resolve(PASANTIAS_TOKENS.pasantiaViewRepository),
+        pasantiaInformePdfGenerator: c.resolve(PASANTIAS_TOKENS.pasantiaInformePdfGenerator),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       })
   );
