@@ -3,9 +3,10 @@
  * `proyecto·LISTAR`/`EXPORTAR`, Requisito 3 — extensión 2026-07-31).
  *
  * Filtros carrera (requerido) / gestión (opcional, vigente por defecto) /
- * bimestre (requerido) arriba, vista previa del folio abajo (mismo shell que
- * `ReporteAvanceTutoriaCarreraPage`), botón "Exportar Excel" en el toolbar.
- * Página "dumb": la orquestación vive en `usePlanillaAvanceTercerAnioPage`.
+ * bimestre (requerido) arriba, vista previa del folio abajo (mismo shell de
+ * sección `cfg-academico-workspace` del módulo), botón "Exportar Excel" en
+ * el toolbar. Página "dumb": la orquestación vive en
+ * `usePlanillaAvanceTercerAnioPage`.
  */
 
 import { Alert, Empty, Flex, Select, Spin, Typography } from 'antd';

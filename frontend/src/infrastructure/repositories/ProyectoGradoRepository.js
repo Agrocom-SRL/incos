@@ -377,21 +377,6 @@ export class ProyectoGradoRepository extends IProyectoGradoRepository {
   }
 
   /**
-   * Reporte de avance de tutorías por carrera (Requisito 2, `avanceTutoriaCarrera`).
-   * GET /v1/proyectos-grado/reportes/avance-carrera?gestionId=&carreraId=
-   */
-  async obtenerAvanceTutoriaCarrera(params = {}) {
-    try {
-      const response = await apiClient.get(PROYECTOS_GRADO_ENDPOINTS.REPORTE_AVANCE_CARRERA, {
-        params,
-      });
-      return handleSuccessResponse(response);
-    } catch (error) {
-      return handleErrorResponse(error, 'Error al obtener el reporte de avance de tutorías por carrera');
-    }
-  }
-
-  /**
    * Descarga el PDF del reporte de avance de tutorías por carrera
    * (Requisito 2, proyecto·EXPORTAR; blob autenticado).
    * GET /v1/proyectos-grado/reportes/avance-carrera/pdf?gestionId=&carreraId=

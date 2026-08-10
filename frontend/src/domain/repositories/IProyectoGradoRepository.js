@@ -204,16 +204,6 @@ export class IProyectoGradoRepository extends IBaseRepository {
   }
 
   /**
-   * Reporte de avance de tutorías por carrera: resumen agregado + detalle
-   * por proyecto (Requisito 2, proyecto·LISTAR, `avanceTutoriaCarrera`).
-   * @param {{gestionId?: number, carreraId?: number}} [_params]
-   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
-   */
-  async obtenerAvanceTutoriaCarrera(_params) {
-    throw new Error('Método obtenerAvanceTutoriaCarrera debe ser implementado');
-  }
-
-  /**
    * Descarga el PDF del reporte de avance de tutorías por carrera
    * (Requisito 2, proyecto·EXPORTAR, blob).
    * @param {{gestionId?: number, carreraId?: number}} [_params]

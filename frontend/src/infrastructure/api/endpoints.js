@@ -776,11 +776,6 @@ export const PROYECTOS_GRADO_ENDPOINTS = {
   ESTUDIANTES_ELEGIBLES: `${API_BASE}/proyectos-grado/estudiantes-elegibles`,
   /** GET — PDF del formulario de modalidad de graduación FMDG-1 (Requisito 1, res.download) */
   FORMULARIO_MODALIDAD_PDF: (id) => `${API_BASE}/proyectos-grado/${id}/formulario-modalidad/pdf`,
-  /**
-   * GET — reporte de avance de tutorías por carrera (Requisito 2,
-   * dataFieldName `avanceTutoriaCarrera`). Query vía `params`.
-   */
-  REPORTE_AVANCE_CARRERA: `${API_BASE}/proyectos-grado/reportes/avance-carrera`,
   /** GET — PDF del reporte de avance de tutorías por carrera (Requisito 2, res.download) */
   REPORTE_AVANCE_CARRERA_PDF: (params = {}) => {
     const q = new URLSearchParams();

@@ -35,11 +35,12 @@ export const pasantiaEmpresaEditarPath = (empresaId) =>
 export const MI_PASANTIA_PATH = `${TITULACION_BASE}/mi-pasantia`;
 
 /**
- * Reportes de avance de tutoría (Requisitos 2 y 3 — extensión 2026-07-31).
- * Sin ítem de menú propio: se llega por los botones de cabecera de
- * ProyectosGradoList (breadcrumbParent TIT-PROYECTOS).
+ * Reporte de avance de tutoría "10 en 10" (Requisito 3 — extensión
+ * 2026-07-31). Sin ítem de menú propio: se llega por el botón de cabecera de
+ * ProyectosGradoList (breadcrumbParent TIT-PROYECTOS). El avance por carrera
+ * (Requisito 2) ya no es página: es exportación PDF directa desde el
+ * listado (`useExportAvanceTutoriaCarreraPdf`), sin ruta propia.
  */
-export const REPORTE_AVANCE_CARRERA_PATH = `${TITULACION_BASE}/proyectos-grado/reportes/avance-carrera`;
 export const PLANILLA_AVANCE_TERCER_ANIO_PATH = `${TITULACION_BASE}/proyectos-grado/reportes/planilla-tercer-anio`;
 
 /** Keys de menú (sidebar) — deben coincidir con los routes.jsx de cada submódulo. */

@@ -3,20 +3,18 @@
  * 2026-07-31).
  *
  * Espejo del mapper de aplicación del backend
- * (`application/mappers/titulacion/TutoriaAvanceMapper.js`): normaliza los 3
- * contratos nuevos, compartidos por los 3 requisitos:
+ * (`application/mappers/titulacion/TutoriaAvanceMapper.js`): normaliza los
+ * contratos compartidos por los Requisitos 1 y 3 (el Requisito 2 — reporte de
+ * avance por carrera — ya no se consume como JSON en pantalla; solo exporta
+ * PDF directo desde el listado, sin mapper de presentación):
  * - Requisito 1 (formulario de modalidad de graduación): estudiantes
  *   elegibles de 3er año (`estudiantesElegibles`, vista 178).
- * - Requisito 2 (reporte de avance por carrera): resumen agregado + detalle
- *   por proyecto (`avanceTutoriaCarrera`, vistas 179/160).
  * - Requisito 3 (planilla "10 en 10"): roster por bimestre
  *   (`planillaAvanceTercerAnio`, vista 181).
  *
  * Los nombres de personas ya llegan en orden institucional (APELLIDO_PATERNO
  * APELLIDO_MATERNO NOMBRES) desde el backend — no se reordenan aquí.
  */
-
-import { mapProyectosGradoList } from './proyectoGradoMapper';
 
 const cleanText = (value) => {
   if (value == null) return null;
@@ -49,35 +47,6 @@ export const mapEstudianteElegible = (raw) => {
 /** Lista de estudiantes elegibles (dataKey `estudiantesElegibles`). */
 export const mapEstudiantesElegiblesList = (rawList) =>
   Array.isArray(rawList) ? rawList.map(mapEstudianteElegible).filter(Boolean) : [];
-
-/** Fila de resumen por carrera (vista 179, Requisito 2) → DTO de UI. */
-export const mapAvanceCarreraResumenItem = (raw) => {
-  if (!raw) return null;
-  return {
-    gestionId: raw.gestionId ?? null,
-    carreraId: raw.carreraId ?? null,
-    carreraCodigo: cleanText(raw.carreraCodigo),
-    carreraNombre: cleanText(raw.carreraNombre) || 'Sin carrera',
-    totalProyectos: toNumber(raw.totalProyectos, 0),
-    promedioAvance: raw.promedioAvance != null ? toNumber(raw.promedioAvance) : null,
-    proyectosConObservacionesPendientes: toNumber(raw.proyectosConObservacionesPendientes, 0),
-  };
-};
-
-/** Lista de resumen por carrera. */
-export const mapAvanceCarreraResumenList = (rawList) =>
-  Array.isArray(rawList) ? rawList.map(mapAvanceCarreraResumenItem).filter(Boolean) : [];
-
-/** Reporte completo de avance de tutorías por carrera (dataKey `avanceTutoriaCarrera`). */
-export const mapAvanceTutoriaCarrera = (raw) => {
-  if (!raw) return null;
-  return {
-    gestionId: raw.gestionId ?? null,
-    carreraId: raw.carreraId ?? null,
-    resumenPorCarrera: mapAvanceCarreraResumenList(raw.resumenPorCarrera),
-    detalle: mapProyectosGradoList(raw.detalle),
-  };
-};
 
 /** Fila de la planilla de 3er año (vista 181, Requisito 3) → DTO de UI. */
 export const mapPlanillaFila = (raw) => {

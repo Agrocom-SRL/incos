@@ -11,7 +11,7 @@
  */
 
 import { Flex, Select, Typography } from 'antd';
-import { BarChartOutlined, PlusOutlined, TableOutlined } from '@ant-design/icons';
+import { FilePdfOutlined, PlusOutlined, TableOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
@@ -41,7 +41,8 @@ const ProyectosGradoList = () => {
     tableColumns,
     breadcrumbItems,
     handleRegistrar,
-    handleIrAvanceCarrera,
+    handleExportarAvanceCarrera,
+    exportandoAvanceCarrera,
     handleIrPlanillaTercerAnio,
     handleSearchChange,
     tablePagination,
@@ -51,16 +52,20 @@ const ProyectosGradoList = () => {
    * Reportes de avance (Requisitos 2/3): acciones de cabecera, sin ítem de
    * menú propio — los docentes-tutores no llegan a esta página (el connector
    * los desvía a "Mis tutorados"), así que no ven reportes institucionales.
+   * El avance por carrera exporta PDF directo (sin página intermedia): el
+   * detalle en pantalla duplicaba columnas de esta misma tabla.
    */
   const headerActions = (
     <Flex wrap gap="small" justify="flex-end" align="center">
       <ActionButton
+        variant="alternative"
         permiso={TITULACION_PERMISOS.proyecto}
-        accion="LISTAR"
-        icon={<BarChartOutlined />}
-        onClick={handleIrAvanceCarrera}
+        accion="EXPORTAR"
+        icon={<FilePdfOutlined />}
+        loading={exportandoAvanceCarrera}
+        onClick={handleExportarAvanceCarrera}
       >
-        Avance por carrera
+        Exportar avance por carrera
       </ActionButton>
       <ActionButton
         permiso={TITULACION_PERMISOS.proyecto}

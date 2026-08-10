@@ -1,10 +1,14 @@
 // src/presentation/modules/titulacion/proyectos-grado/routes.jsx
 /**
- * Titulación → Proyectos de grado (ítem de menú TIT, order 1) + reportes de
- * avance de tutoría (Requisitos 2/3, extensión 2026-07-31, sin ítem de menú:
- * se accede por botones de cabecera de ProyectosGradoList — plan Bloque N/O).
+ * Titulación → Proyectos de grado (ítem de menú TIT, order 1) + reporte de
+ * avance de tutoría "10 en 10" (Requisito 3, extensión 2026-07-31, sin ítem
+ * de menú: se accede por botón de cabecera de ProyectosGradoList — plan
+ * Bloque O). El avance por carrera (Requisito 2) ya NO es página propia: es
+ * el botón "Exportar avance por carrera" (PDF directo) de ProyectosGradoList
+ * — el detalle en pantalla duplicaba columnas del listado sin aportar valor
+ * nuevo salvo el PDF, así que se retiró la página/ruta/provider dedicados.
  * Sin ítem propio, los docentes-tutores (que comparten proyecto·LISTAR para
- * "Mis tutorados") no ven estos reportes institucionales en su sidebar.
+ * "Mis tutorados") no ven este reporte institucional en su sidebar.
  *
  * Permisos del seed 65 (`titulacion.proyecto`), acciones LISTAR (datos en
  * pantalla) / EXPORTAR (descarga) — mismo permiso que el resto del recurso
@@ -18,10 +22,7 @@
  */
 
 import { lazy } from 'react';
-import {
-  REPORTE_AVANCE_CARRERA_PATH,
-  PLANILLA_AVANCE_TERCER_ANIO_PATH,
-} from '@application-titulacion/config/paths';
+import { PLANILLA_AVANCE_TERCER_ANIO_PATH } from '@application-titulacion/config/paths';
 
 const ProyectosGradoListConnector = lazy(
   () => import('./connectors/ProyectosGradoListConnector.jsx'),
@@ -36,9 +37,6 @@ const ProyectoGradoFormEditConnector = lazy(
   () => import('./connectors/ProyectoGradoFormEditConnector.jsx'),
 );
 const MiProyectoGradoConnector = lazy(() => import('./connectors/MiProyectoGradoConnector.jsx'));
-const ReporteAvanceTutoriaCarreraConnector = lazy(
-  () => import('./connectors/ReporteAvanceTutoriaCarreraConnector.jsx'),
-);
 const PlanillaAvanceTercerAnioConnector = lazy(
   () => import('./connectors/PlanillaAvanceTercerAnioConnector.jsx'),
 );
@@ -62,17 +60,6 @@ export const proyectosGradoRoutes = [
     breadcrumbLabel: 'Nuevo proyecto',
     permiso: 'titulacion.proyecto',
     accion: 'CREAR',
-    menu: null,
-    breadcrumbParent: 'TIT-PROYECTOS',
-  },
-  {
-    /** Requisito 2 (extensión 2026-07-31): reporte de avance por carrera. Ruta ESTÁTICA. */
-    path: REPORTE_AVANCE_CARRERA_PATH,
-    element: <ReporteAvanceTutoriaCarreraConnector />,
-    key: 'TIT-PROYECTOS-AVANCE-CARRERA',
-    breadcrumbLabel: 'Avance de tutorías por carrera',
-    permiso: 'titulacion.proyecto',
-    accion: 'LISTAR',
     menu: null,
     breadcrumbParent: 'TIT-PROYECTOS',
   },
