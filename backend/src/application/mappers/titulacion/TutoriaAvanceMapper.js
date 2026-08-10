@@ -100,6 +100,7 @@ export function seguimientoDocenteRowToPresentation(row) {
     carreraNombre: row.carrera_nombre ?? null,
     docenteId: row.tutor_id ?? null,
     docenteNombre: row.tutor_nombre ?? null,
+    totalTutoriasMes: Number(row.total_tutorias_mes ?? 0),
     tutoriasEjecutadasMes: Number(row.tutorias_ejecutadas_mes ?? 0),
     porcentajeAvance: row.porcentaje_avance != null ? Number(row.porcentaje_avance) : null,
     ultimaActividad: row.ultima_actividad ?? null,

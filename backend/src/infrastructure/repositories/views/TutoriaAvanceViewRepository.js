@@ -13,7 +13,9 @@ import { ITutoriaAvanceViewRepository } from '../../../domain/interfaces/reposit
  * - `vista_tutoria_seguimiento_docentes` (181): roster de tutoriados
  *   ACTIVOS por docente-tutor.
  * - `vista_base_tutoria_bitacora_mes_fila` (180): bitácora por año/mes,
- *   agregada aquí (LEFT JOIN) para el seguimiento a docentes.
+ *   agregada aquí (LEFT JOIN, colapsada a un mes puntual) para el
+ *   seguimiento a docentes — misma fuente para el tablero en pantalla y
+ *   para la exportación Excel (agrupada por carrera en el use case).
  *
  * Repositorio de SOLO LECTURA (arquetipo B / `views/`), aislado de
  * `ProyectoGradoListadoViewRepository` (SRP).
@@ -116,7 +118,11 @@ export class TutoriaAvanceViewRepository extends ITutoriaAvanceViewRepository {
    *
    * Texto (actividad/observaciones) resuelto con subconsulta correlacionada
    * (no GROUP_CONCAT, para evitar truncado de `group_concat_max_len`); el
-   * conteo/porcentaje numérico sí usa agregación simple.
+   * conteo/porcentaje numérico sí usa agregación simple. Trae DOS conteos
+   * del mes: `total_tutorias_mes` (toda entrada de bitácora, REUNION +
+   * REVISION_AVANCE — "Nro TUTORIAS EN EL MES" de la planilla física) y
+   * `tutorias_ejecutadas_mes` (solo REUNION, sesiones de tutoría realmente
+   * realizadas — "Nro. TUTORÍAS DESARROLLADAS EN EL MES").
    *
    * @param {Object} filters - { docenteId, carreraId, anio, mes }
    * @returns {Promise<Array<Object>>}
@@ -139,6 +145,7 @@ export class TutoriaAvanceViewRepository extends ITutoriaAvanceViewRepository {
     return sequelize.query(
       `SELECT
          roster.*,
+         COALESCE(mensual.total_tutorias_mes, 0) AS total_tutorias_mes,
          COALESCE(mensual.tutorias_ejecutadas_mes, 0) AS tutorias_ejecutadas_mes,
          mensual.ultimo_porcentaje_avance AS porcentaje_avance,
          (
@@ -161,6 +168,7 @@ export class TutoriaAvanceViewRepository extends ITutoriaAvanceViewRepository {
        LEFT JOIN (
          SELECT
            bb.proyecto_grado_id AS proyecto_grado_id,
+           COUNT(*) AS total_tutorias_mes,
            SUM(CASE WHEN bb.tipo = 'REUNION' THEN 1 ELSE 0 END) AS tutorias_ejecutadas_mes,
            SUBSTRING_INDEX(GROUP_CONCAT(bb.porcentaje_avance ORDER BY bb.fecha DESC, bb.bitacora_id DESC), ',', 1) AS ultimo_porcentaje_avance
          FROM vista_base_tutoria_bitacora_mes_fila bb
@@ -168,7 +176,7 @@ export class TutoriaAvanceViewRepository extends ITutoriaAvanceViewRepository {
          GROUP BY bb.proyecto_grado_id
        ) mensual ON mensual.proyecto_grado_id = roster.proyecto_grado_id
        ${whereClause}
-       ORDER BY roster.tutor_nombre, roster.apellido_paterno, roster.apellido_materno, roster.nombres`,
+       ORDER BY roster.carrera_nombre, roster.tutor_nombre, roster.apellido_paterno, roster.apellido_materno, roster.nombres`,
       {
         replacements,
         type: sequelize.QueryTypes.SELECT,

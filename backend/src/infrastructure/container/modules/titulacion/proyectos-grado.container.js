@@ -49,6 +49,7 @@ import { ExportFormularioModalidadGradoPdfUseCase } from '../../../../applicatio
 import { GetAvanceTutoriaCarreraUseCase } from '../../../../application/use-cases/titulacion/GetAvanceTutoriaCarreraUseCase.js';
 import { ExportAvanceTutoriaCarreraPdfUseCase } from '../../../../application/use-cases/titulacion/ExportAvanceTutoriaCarreraPdfUseCase.js';
 import { GetSeguimientoTutoriaDocentesUseCase } from '../../../../application/use-cases/titulacion/GetSeguimientoTutoriaDocentesUseCase.js';
+import { GetSeguimientoTutoriaDocentesPorCarreraUseCase } from '../../../../application/use-cases/titulacion/GetSeguimientoTutoriaDocentesPorCarreraUseCase.js';
 import { ExportSeguimientoTutoriaDocentesExcelUseCase } from '../../../../application/use-cases/titulacion/ExportSeguimientoTutoriaDocentesExcelUseCase.js';
 import {
   ListProyectosGradoController,
@@ -527,11 +528,21 @@ export function registerProyectosGradoResource(container) {
 
   registerComponent(
     container,
+    TITULACION_TOKENS.getSeguimientoTutoriaDocentesPorCarreraUseCase,
+    (c) =>
+      new GetSeguimientoTutoriaDocentesPorCarreraUseCase({
+        tutoriaAvanceViewRepository: c.resolve(TITULACION_TOKENS.tutoriaAvanceViewRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      })
+  );
+
+  registerComponent(
+    container,
     TITULACION_TOKENS.exportSeguimientoTutoriaDocentesExcelUseCase,
     (c) =>
       new ExportSeguimientoTutoriaDocentesExcelUseCase({
-        getSeguimientoTutoriaDocentesUseCase: c.resolve(
-          TITULACION_TOKENS.getSeguimientoTutoriaDocentesUseCase
+        getSeguimientoTutoriaDocentesPorCarreraUseCase: c.resolve(
+          TITULACION_TOKENS.getSeguimientoTutoriaDocentesPorCarreraUseCase
         ),
         seguimientoTutoriaDocentesExcelGenerator: c.resolve(
           SERVICIOS_TOKENS.seguimientoTutoriaDocentesExcelGenerator

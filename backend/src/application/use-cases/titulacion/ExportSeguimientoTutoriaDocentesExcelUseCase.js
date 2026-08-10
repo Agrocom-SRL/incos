@@ -3,23 +3,25 @@
  * Módulo: Titulación (TIT) — extensión 2026-08-10
  *
  * Excel del reporte de seguimiento de tutorías a docentes: reutiliza
- * `GetSeguimientoTutoriaDocentesUseCase.execute` (no relee la BD dos veces)
- * y delega el pintado al builder (una hoja POR DOCENTE, mismo criterio del
- * documento físico real).
+ * `GetSeguimientoTutoriaDocentesPorCarreraUseCase.execute` (no relee la BD
+ * dos veces) y delega el pintado al builder — resumen de UN MES (como el
+ * tablero en pantalla), una hoja POR CARRERA con sus docentes-tutores en
+ * tabla plana (mismo criterio del documento físico real, título en plural
+ * "...A DOCENTES").
  */
 export class ExportSeguimientoTutoriaDocentesExcelUseCase {
   /**
    * @param {Object} params
-   * @param {Object} params.getSeguimientoTutoriaDocentesUseCase
+   * @param {Object} params.getSeguimientoTutoriaDocentesPorCarreraUseCase
    * @param {Object} params.seguimientoTutoriaDocentesExcelGenerator
    * @param {ILogger} params.logger
    */
   constructor({
-    getSeguimientoTutoriaDocentesUseCase,
+    getSeguimientoTutoriaDocentesPorCarreraUseCase,
     seguimientoTutoriaDocentesExcelGenerator,
     logger,
   }) {
-    this.getSeguimientoTutoriaDocentesUseCase = getSeguimientoTutoriaDocentesUseCase;
+    this.getSeguimientoTutoriaDocentesPorCarreraUseCase = getSeguimientoTutoriaDocentesPorCarreraUseCase;
     this.seguimientoTutoriaDocentesExcelGenerator = seguimientoTutoriaDocentesExcelGenerator;
     this.logger = logger;
   }
@@ -29,21 +31,20 @@ export class ExportSeguimientoTutoriaDocentesExcelUseCase {
    * @returns {Promise<{buffer: Buffer, fileName: string, mimeType: string}>}
    */
   async execute(queryParams = {}) {
-    const { seguimientoTutoriaDocentes } = await this.getSeguimientoTutoriaDocentesUseCase.execute(
-      queryParams
-    );
+    const { seguimientoTutoriaDocentesPorCarrera } =
+      await this.getSeguimientoTutoriaDocentesPorCarreraUseCase.execute(queryParams);
 
     const buffer =
       await this.seguimientoTutoriaDocentesExcelGenerator.generarSeguimientoTutoriaDocentes(
-        seguimientoTutoriaDocentes
+        seguimientoTutoriaDocentesPorCarrera
       );
 
-    const { anio, mes } = seguimientoTutoriaDocentes;
+    const { anio, mes, carreras } = seguimientoTutoriaDocentesPorCarrera;
 
     this.logger.info('[Titulación] Seguimiento de tutorías a docentes exportado (Excel)', {
       anio,
       mes,
-      docentes: seguimientoTutoriaDocentes.docentes.length,
+      carreras: carreras.length,
     });
 
     return {

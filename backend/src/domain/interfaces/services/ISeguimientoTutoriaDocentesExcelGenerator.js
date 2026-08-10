@@ -10,20 +10,22 @@
  * ADMINISTRATIVO de Dirección Académica sobre el cumplimiento de cada
  * docente-tutor (no un reporte al estudiante), con espacio para su firma.
  *
- * Libro de UNA hoja POR DOCENTE (mismo criterio 1-hoja-por-docente del
- * documento físico real), mismo criterio que
- * `IPlanillaAvanceTutoriaExcelGenerator` (1 hoja por carrera/bimestre).
+ * Libro de UNA hoja POR CARRERA (resumen de UN MES, tabla plana con todos
+ * los docentes-tutores de la carrera — columna DOCENTE por fila, sin
+ * sub-cabeceras): un docente-tutor puede tutorar en más de una carrera a la
+ * vez, así que aparece repetido en cada hoja de esas carreras, solo con los
+ * tutoriados de esa carrera (partición limpia a nivel de tutoriado, no de
+ * docente).
  */
 export class ISeguimientoTutoriaDocentesExcelGenerator {
   /**
    * @param {Object} datos
    * @param {number} datos.anio
    * @param {number} datos.mes
-   * @param {Array<Object>} datos.docentes - [{ docenteId, docenteNombre,
-   *   carreras: [{carreraId, carreraNombre}], tutoriasEjecutadasMes,
-   *   tutoriados: [{ estudianteId, nombreCompleto, ci, proyectoGradoId,
-   *   proyectoTitulo, carreraNombre, tutoriasEjecutadasMes,
-   *   porcentajeAvance, ultimaActividad, ultimaObservacion }] }]
+   * @param {Array<Object>} datos.carreras - [{ carreraId, carreraNombre,
+   *   tutoriados: [{ docenteId, docenteNombre, estudianteId, nombreCompleto,
+   *   totalTutoriasMes, tutoriasEjecutadasMes, porcentajeAvance,
+   *   ultimaActividad, ultimaObservacion }] }] — un renglón por tutoriado.
    * @returns {Promise<Buffer>}
    */
   async generarSeguimientoTutoriaDocentes(_datos) {

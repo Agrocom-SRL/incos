@@ -24,6 +24,38 @@ export const colLetter = (col) => {
   return s;
 };
 
+/**
+ * Fracción de columna (unidades de ancla de ExcelJS: entero = columna
+ * 0-based, decimal = fracción DE ESA columna) que corresponde a un ancho
+ * físico acumulado `targetWidth` (mismas unidades que los anchos de columna)
+ * medido desde el borde izquierdo de `startCol0` (0-based), recorriendo
+ * `widths` en orden.
+ *
+ * Necesario porque ExcelJS reparte la parte fraccionaria de `col` sobre el
+ * ancho de LA COLUMNA donde cae, no sobre un promedio del rango — con
+ * columnas de ancho muy dispar (p. ej. una columna N° angosta junto a una
+ * columna de texto ancha) una fracción uniforme (`col + 0.15`) cae casi
+ * entera dentro de la primera columna y produce una imagen visiblemente
+ * descentrada. Ver `exceljs/lib/doc/anchor.js` (`Anchor#col`). Compartido
+ * entre generadores que centran un logo/imagen dentro de un bloque de
+ * columnas (p. ej. `libro-registro`, `titulacion-seguimiento-docentes`).
+ *
+ * @param {number} startCol0 - Columna inicial, 0-based.
+ * @param {number[]} widths - Anchos (unidades Excel) de las columnas del rango, en orden.
+ * @param {number} targetWidth - Ancho acumulado objetivo, mismas unidades que `widths`.
+ * @returns {number} Columna fraccionaria para usar como `col` en `tl`/`br` de `addImage`.
+ */
+export const colFractionAtWidth = (startCol0, widths, targetWidth) => {
+  let remaining = targetWidth;
+  let col = startCol0;
+  for (const width of widths) {
+    if (remaining <= width) return col + remaining / width;
+    remaining -= width;
+    col += 1;
+  }
+  return col;
+};
+
 const borderAll = (style) => ({ top: style, left: style, bottom: style, right: style });
 
 export class ExcelSheetComposer {

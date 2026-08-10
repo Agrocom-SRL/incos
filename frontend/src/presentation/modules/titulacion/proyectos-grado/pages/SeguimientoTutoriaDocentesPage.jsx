@@ -47,7 +47,6 @@ const SeguimientoTutoriaDocentesPage = () => {
     loadingCarreras,
     docentes,
     loadingDocentes,
-    docentesDisponible,
     docenteId,
     setDocenteId,
     carreraId,
@@ -98,10 +97,9 @@ const SeguimientoTutoriaDocentesPage = () => {
                 optionFilterProp="label"
                 options={docentes}
                 loading={loadingDocentes}
-                disabled={!docentesDisponible}
                 value={docenteId}
                 onChange={setDocenteId}
-                placeholder={docentesDisponible ? 'Seleccione el docente' : 'Docentes no disponibles'}
+                placeholder="Seleccione el docente"
                 style={{ minWidth: 240 }}
                 aria-label="Filtrar por docente"
               />

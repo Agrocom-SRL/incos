@@ -2,7 +2,8 @@
  * GET /api/v1/proyectos-grado/reportes/seguimiento-tutoria-docentes/export?docenteId=&carreraId=&anio=&mes=
  * Extensión 2026-08-10 (reemplaza la planilla de avance "10 en 10" de 3er
  * año). Excel del reporte ADMINISTRATIVO de seguimiento de tutorías a
- * docentes (una hoja por docente).
+ * docentes: resumen de UN MES (igual que el preview en pantalla), una hoja
+ * POR CARRERA con sus docentes-tutores en tabla plana.
  * Permiso: titulacion.proyecto EXPORTAR. Respuesta binaria (.xlsx).
  */
 export class ExportSeguimientoTutoriaDocentesExcelController {

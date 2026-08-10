@@ -69,8 +69,12 @@ export const TITULACION_TOKENS = {
   exportAvanceTutoriaCarreraPdfUseCase: 'titulacion.exportAvanceTutoriaCarreraPdfUseCase',
 
   // Use Cases — extensión 2026-08-10: Seguimiento de tutorías a docentes
-  // (reemplaza la planilla de avance "10 en 10" de 3er año)
+  // (reemplaza la planilla de avance "10 en 10" de 3er año). El use case
+  // por docente alimenta el tablero en pantalla; el de por carrera (mismo
+  // mes, agrupado por carrera en vez de por docente) es exclusivo del Excel.
   getSeguimientoTutoriaDocentesUseCase: 'titulacion.getSeguimientoTutoriaDocentesUseCase',
+  getSeguimientoTutoriaDocentesPorCarreraUseCase:
+    'titulacion.getSeguimientoTutoriaDocentesPorCarreraUseCase',
   exportSeguimientoTutoriaDocentesExcelUseCase:
     'titulacion.exportSeguimientoTutoriaDocentesExcelUseCase',
 

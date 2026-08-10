@@ -5,4 +5,4 @@
  */
 
 export { EXCEL_FONT, EXCEL_FONT_SIZE, EXCEL_COLOR, EXCEL_BORDER } from './ExcelTheme.js';
-export { ExcelSheetComposer, colLetter } from './ExcelSheetComposer.js';
+export { ExcelSheetComposer, colLetter, colFractionAtWidth } from './ExcelSheetComposer.js';

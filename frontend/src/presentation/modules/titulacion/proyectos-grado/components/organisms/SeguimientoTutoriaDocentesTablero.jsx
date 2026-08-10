@@ -9,10 +9,17 @@
  * anterior (banda de color, meta-row, tabla, línea de firma): el lenguaje
  * visual encaja igual para este dominio.
  *
+ * "Tutorías del mes" con `StatusPill` (mismo criterio que "Obs. pendientes"
+ * de `ProyectosGradoList`): hace visible de un vistazo que el filtro de mes
+ * SÍ está aplicando — el roster no desaparece entre meses (es roster-driven
+ * a propósito), pero la pill sí cambia de "sin tutoría este mes" a la cuenta
+ * real, en vez de perderse como un simple "0" entre el resto de columnas.
+ *
  * Recibe `docentes` ya resuelto y no vacío — el estado vacío/carga/error lo
  * decide la página (mismo criterio que el organismo retirado).
  */
 
+import { StatusPill } from '@atoms';
 import '../../styles/planilla-avance.css';
 
 const formatCi = (ci) => ci || '—';
@@ -67,7 +74,19 @@ const SeguimientoTutoriaDocentesTablero = ({ docentes = [] }) => (
                   <td className="tit-planilla-sheet__observaciones">
                     {tutoriado.proyectoTitulo || '—'}
                   </td>
-                  <td>{tutoriado.tutoriasEjecutadasMes}</td>
+                  <td>
+                    {tutoriado.tutoriasEjecutadasMes > 0 ? (
+                      <StatusPill
+                        label={`${tutoriado.tutoriasEjecutadasMes} tutoría${tutoriado.tutoriasEjecutadasMes === 1 ? '' : 's'}`}
+                        className="cfg-materia-pill cfg-materia-pill--success"
+                      />
+                    ) : (
+                      <StatusPill
+                        label="Sin tutoría este mes"
+                        className="cfg-materia-pill cfg-materia-pill--warning"
+                      />
+                    )}
+                  </td>
                   <td>
                     {tutoriado.porcentajeAvance != null ? `${tutoriado.porcentajeAvance}%` : '—'}
                   </td>
