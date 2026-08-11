@@ -13,6 +13,9 @@ export const PROYECTOS_GRADO_LIST_PATH = `${TITULACION_BASE}/proyectos-grado`;
 export const proyectoGradoRegistrarPath = `${TITULACION_BASE}/proyectos-grado/registrar`;
 export const proyectoGradoDetallePath = (id) => `${TITULACION_BASE}/proyectos-grado/${id}`;
 export const proyectoGradoEditarPath = (id) => `${TITULACION_BASE}/proyectos-grado/${id}/editar`;
+/** Registrar acta de defensa (extensión 2026-08-11: antes modal, ahora página propia — muchos datos). */
+export const proyectoGradoActaDefensaPath = (id) =>
+  `${TITULACION_BASE}/proyectos-grado/${id}/acta-defensa`;
 
 /** Portal del estudiante: su propio proyecto (wrapper TIT-MI-PROYECTO, patrón ACA-MI-BOLETIN). */
 export const MI_PROYECTO_GRADO_PATH = `${TITULACION_BASE}/mi-proyecto`;

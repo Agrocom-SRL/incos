@@ -29,6 +29,7 @@ import {
   PROYECTOS_GRADO_LIST_PATH,
   TIT_PROYECTOS_MENU_KEY,
   proyectoGradoEditarPath,
+  proyectoGradoActaDefensaPath,
 } from '@application-titulacion/config/paths';
 
 /** Estado del proyecto en el que se habilita el registro del acta (C6/D2). */
@@ -52,7 +53,6 @@ export const useProyectoGradoDetailPage = () => {
     docentesCatalogo,
     formularioModalidad,
     actaDefensa,
-    registrarActaDefensa,
     exportActaDefensaPdf,
     anularActaDefensa,
   } = useProyectoGradoDetailContext();
@@ -375,35 +375,25 @@ export const useProyectoGradoDetailPage = () => {
   const puedeRegistrarActa =
     proyecto?.estado === ESTADO_PROYECTO_DEFENSA && puedeAprobarProyecto;
 
-  const [actaModalOpen, setActaModalOpen] = useState(false);
-
   /** Carga LAZY: la dispara la tab al abrirse por primera vez, no el montaje de la ficha. */
   const handleAbrirTabActaDefensa = useCallback(() => {
     if (!proyectoId || actaDefensa.cargado || actaDefensa.loading) return;
     actaDefensa.cargar(proyectoId);
   }, [proyectoId, actaDefensa]);
 
-  const handleRegistrarActaDefensa = useCallback(
-    async (payload) => {
-      if (!proyectoId) return;
-      const result = await registrarActaDefensa.registrar(proyectoId, payload);
-      if (result?.success) {
-        notification.success({
-          title: 'Acta de defensa registrada',
-          description:
-            'Se registró el acta de defensa y el proyecto quedó actualizado con el resultado del tribunal.',
-        });
-        setActaModalOpen(false);
-        await Promise.all([refetch(), actaDefensa.cargar(proyectoId)]);
-      } else {
-        notification.error({
-          title: 'No se pudo registrar el acta de defensa',
-          description: result?.error || 'Intente nuevamente en unos instantes.',
-        });
-      }
-    },
-    [proyectoId, registrarActaDefensa, notification, refetch, actaDefensa],
-  );
+  /**
+   * Registrar acta = página propia (extensión 2026-08-11, pedido explícito
+   * del usuario: eran muchos datos para un modal), no un modal más de la
+   * ficha. Lleva `returnListPath`/`menuSidebarKey` para que, al volver desde
+   * esa página, el flujo regrese a la lista de origen (mismo criterio que
+   * "Editar proyecto").
+   */
+  const handleIrARegistrarActa = useCallback(() => {
+    if (!proyectoId) return;
+    navigate(proyectoGradoActaDefensaPath(proyectoId), {
+      state: { returnListPath, menuSidebarKey },
+    });
+  }, [navigate, proyectoId, returnListPath, menuSidebarKey]);
 
   const handleExportarActaPdf = useCallback(
     async (acta) => {
@@ -545,16 +535,8 @@ export const useProyectoGradoDetailPage = () => {
       descargandoId: exportActaDefensaPdf.descargandoId,
       exportarPdf: handleExportarActaPdf,
       anular: abrirAnularActaModal,
-      modal: {
-        open: actaModalOpen,
-        abrir: () => setActaModalOpen(true),
-        cerrar: () => setActaModalOpen(false),
-        submit: handleRegistrarActaDefensa,
-        saving: registrarActaDefensa.saving,
-        docentes: docentesCatalogo.docentes,
-        loadingDocentes: docentesCatalogo.loading,
-        docentesDisponible: docentesCatalogo.disponible,
-      },
+      // Registrar acta = página propia (extensión 2026-08-11), no modal.
+      irARegistrar: handleIrARegistrarActa,
       anularModal: {
         open: Boolean(actaAAnular),
         acta: actaAAnular,

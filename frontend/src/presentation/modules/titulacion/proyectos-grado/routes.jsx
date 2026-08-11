@@ -38,6 +38,9 @@ const ProyectoGradoFormCreateConnector = lazy(
 const ProyectoGradoFormEditConnector = lazy(
   () => import('./connectors/ProyectoGradoFormEditConnector.jsx'),
 );
+const RegistrarActaDefensaConnector = lazy(
+  () => import('./connectors/RegistrarActaDefensaConnector.jsx'),
+);
 const MiProyectoGradoConnector = lazy(() => import('./connectors/MiProyectoGradoConnector.jsx'));
 const SeguimientoTutoriaDocentesConnector = lazy(
   () => import('./connectors/SeguimientoTutoriaDocentesConnector.jsx'),
@@ -83,6 +86,17 @@ export const proyectosGradoRoutes = [
     breadcrumbLabel: 'Editar proyecto',
     permiso: 'titulacion.proyecto',
     accion: 'EDITAR',
+    menu: null,
+    breadcrumbParent: 'TIT-PROYECTOS',
+  },
+  {
+    /** Registrar acta de defensa (extensión 2026-08-11): antes modal, ahora página propia. */
+    path: '/titulacion/proyectos-grado/:id/acta-defensa',
+    element: <RegistrarActaDefensaConnector />,
+    key: 'TIT-PROYECTOS-ACTA-DEFENSA',
+    breadcrumbLabel: 'Registrar acta de defensa',
+    permiso: 'titulacion.proyecto',
+    accion: 'APROBAR',
     menu: null,
     breadcrumbParent: 'TIT-PROYECTOS',
   },

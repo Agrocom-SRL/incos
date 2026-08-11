@@ -25,7 +25,6 @@ import { useDictamenesProyectoApi } from '@application-titulacion/proyectos-grad
 import { useDocentesCatalogoTitApi } from '@application-titulacion/proyectos-grado/hooks/api/useDocentesCatalogoTitApi';
 import { useExportFormularioModalidadPdf } from '@application-titulacion/proyectos-grado/hooks/api/useExportFormularioModalidadPdf';
 import { useActaDefensaApi } from '@application-titulacion/proyectos-grado/hooks/api/useActaDefensaApi';
-import { useRegistrarActaDefensa } from '@application-titulacion/proyectos-grado/hooks/api/useRegistrarActaDefensa';
 import { useExportActaDefensaPdf } from '@application-titulacion/proyectos-grado/hooks/api/useExportActaDefensaPdf';
 import { useAnularActaDefensa } from '@application-titulacion/proyectos-grado/hooks/api/useAnularActaDefensa';
 import { ProyectoGradoDetailContext } from '@application-titulacion/proyectos-grado/context/ProyectoGradoDetailContext';
@@ -39,7 +38,6 @@ export const ProyectoGradoDetailProvider = ({ children, proyectoId }) => {
   const docentesCatalogo = useDocentesCatalogoTitApi();
   const formularioModalidad = useExportFormularioModalidadPdf();
   const actaDefensa = useActaDefensaApi();
-  const registrarActaDefensa = useRegistrarActaDefensa();
   const exportActaDefensaPdf = useExportActaDefensaPdf();
   const anularActaDefensa = useAnularActaDefensa();
 
@@ -84,7 +82,6 @@ export const ProyectoGradoDetailProvider = ({ children, proyectoId }) => {
       docentesCatalogo,
       formularioModalidad,
       actaDefensa,
-      registrarActaDefensa,
       exportActaDefensaPdf,
       anularActaDefensa,
     }),
@@ -102,7 +99,6 @@ export const ProyectoGradoDetailProvider = ({ children, proyectoId }) => {
       docentesCatalogo,
       formularioModalidad,
       actaDefensa,
-      registrarActaDefensa,
       exportActaDefensaPdf,
       anularActaDefensa,
     ],

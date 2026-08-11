@@ -14,7 +14,8 @@
  * `estudianteId`, contrato C12): se cruzan aquí contra `proyecto.integrantes`
  * (ya cargados por la ficha), igual que hace `ProyectoIntegrantesSection`.
  *
- * El acta la registra `RegistrarActaDefensaModal` (proyecto·APROBAR) desde la
+ * El acta la registra `RegistrarActaDefensaPage` (proyecto·APROBAR, página
+ * propia — extensión 2026-08-11, antes modal), a la que se navega desde la
  * cabecera de la ficha o desde el estado vacío de esta tab. Un acta `EMITIDA`
  * admite anulación (`AnularActaDefensaModal`, mismo permiso APROBAR); un acta
  * `ANULADA` es terminal: se muestra con pill gris (`--inactiva`, nunca rojo)

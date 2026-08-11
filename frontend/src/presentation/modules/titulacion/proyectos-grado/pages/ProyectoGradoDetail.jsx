@@ -22,7 +22,8 @@
  * mismo permiso APROBAR) sin revertir esa transición.
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Flex } from 'antd';
 import { allSpacing } from '@theme/tokens';
 import {
@@ -60,7 +61,6 @@ import CancelarProyectoModal from '@titulacion/proyectos-grado/components/modals
 import AgregarIntegranteModal from '@titulacion/proyectos-grado/components/modals/AgregarIntegranteModal';
 import BitacoraEntradaDrawer from '@titulacion/proyectos-grado/components/modals/BitacoraEntradaDrawer';
 import SubirAvanceModal from '@titulacion/proyectos-grado/components/modals/SubirAvanceModal';
-import RegistrarActaDefensaModal from '@titulacion/proyectos-grado/components/modals/RegistrarActaDefensaModal';
 import AnularActaDefensaModal from '@titulacion/proyectos-grado/components/modals/AnularActaDefensaModal';
 import '@presentation/styles/pages/detail-page.css';
 
@@ -89,8 +89,14 @@ const ProyectoGradoDetail = () => {
     actaDefensa,
   } = useProyectoGradoDetailPage();
   const puedeEditar = usePermiso(TITULACION_PERMISOS.proyecto, 'EDITAR');
+  const location = useLocation();
 
-  const [activeKey, setActiveKey] = useState('datos');
+  /**
+   * Al volver de "Registrar acta de defensa" (página propia, extensión
+   * 2026-08-11) la ficha aterriza directo en esa tab (`state.activeTab`), no
+   * en "Datos" por defecto.
+   */
+  const [activeKey, setActiveKey] = useState(location.state?.activeTab ?? 'datos');
 
   const handleTabChange = (key) => {
     setActiveKey(key);
@@ -98,6 +104,15 @@ const ProyectoGradoDetail = () => {
       actaDefensa.abrirTab();
     }
   };
+
+  // Si se aterriza directo en "Acta de defensa" (no por click), dispara la misma carga lazy.
+  useEffect(() => {
+    if (activeKey === 'acta-defensa') {
+      actaDefensa.abrirTab();
+    }
+    // Solo al montar: el cambio de tab ya lo cubre handleTabChange.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /** En DEFENSA, el CTA principal guía a registrar el acta en vez de la transición genérica (D3). */
   const enDefensa = proyecto?.estado === ESTADO_PROYECTO_DEFENSA;
@@ -158,7 +173,7 @@ const ProyectoGradoDetail = () => {
       variant="success"
       icon={<FileDoneOutlined />}
       block
-      onClick={actaDefensa.modal.abrir}
+      onClick={actaDefensa.irARegistrar}
     >
       Registrar acta de defensa
     </ActionButton>
@@ -296,7 +311,7 @@ const ProyectoGradoDetail = () => {
               error={actaDefensa.error}
               puedeRegistrar={!estaCancelado && actaDefensa.puedeRegistrar}
               descargandoId={actaDefensa.descargandoId}
-              onRegistrar={estaCancelado ? null : actaDefensa.modal.abrir}
+              onRegistrar={estaCancelado ? null : actaDefensa.irARegistrar}
               onExportarPdf={estaCancelado ? null : actaDefensa.exportarPdf}
               onAnular={estaCancelado ? null : actaDefensa.anular}
             />
@@ -384,16 +399,6 @@ const ProyectoGradoDetail = () => {
         onClose={bitacora.cerrarDrawer}
         onSubmit={bitacora.guardar}
         saving={bitacora.guardando}
-      />
-      <RegistrarActaDefensaModal
-        open={actaDefensa.modal.open}
-        onCancel={actaDefensa.modal.cerrar}
-        onSubmit={actaDefensa.modal.submit}
-        saving={actaDefensa.modal.saving}
-        integrantes={proyecto?.integrantes ?? []}
-        docentes={actaDefensa.modal.docentes}
-        loadingDocentes={actaDefensa.modal.loadingDocentes}
-        docentesDisponible={actaDefensa.modal.docentesDisponible}
       />
       <AnularActaDefensaModal
         open={actaDefensa.anularModal.open}
