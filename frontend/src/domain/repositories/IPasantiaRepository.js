@@ -159,4 +159,14 @@ export class IPasantiaRepository extends IBaseRepository {
   async actualizarSeguimiento(_id, _seguimientoId, _data) {
     throw new Error('Método actualizarSeguimiento debe ser implementado');
   }
+
+  /**
+   * Descarga la hoja de seguimiento por endpoint autenticado (pasantia·EXPORTAR).
+   * @param {string|number} _id
+   * @param {string|number} _seguimientoId
+   * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
+   */
+  async descargarSeguimientoPdf(_id, _seguimientoId) {
+    throw new Error('Método descargarSeguimientoPdf debe ser implementado');
+  }
 }

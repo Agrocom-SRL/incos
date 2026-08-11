@@ -19,12 +19,16 @@ const PasantiaSeguimientosSection = ({
   seguimientos,
   loading,
   error,
+  descargandoId,
   onNuevoSeguimiento,
   onEditarSeguimiento,
+  onDescargar,
   readOnly = false,
 }) => {
   const columns = createSeguimientosPasantiaTableColumns({
     onEditar: onEditarSeguimiento,
+    onDescargar,
+    descargandoId,
     readOnly,
   });
 

@@ -872,6 +872,9 @@ export const PASANTIAS_ENDPOINTS = {
   SEGUIMIENTOS: (id) => `${API_BASE}/pasantias/${id}/seguimientos`,
   /** PUT — editar seguimiento (P17, `seguimiento`) */
   SEGUIMIENTO: (id, seguimientoId) => `${API_BASE}/pasantias/${id}/seguimientos/${seguimientoId}`,
+  /** GET — descarga de la hoja de seguimiento (pasantia·EXPORTAR; blob autenticado) */
+  SEGUIMIENTO_PDF: (id, seguimientoId) =>
+    `${API_BASE}/pasantias/${id}/seguimientos/${seguimientoId}/pdf`,
 };
 
 /**

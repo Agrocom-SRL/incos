@@ -289,6 +289,27 @@ export class PasantiaRepository extends IPasantiaRepository {
       return handleErrorResponse(error, 'Error al actualizar el seguimiento');
     }
   }
+
+  /**
+   * Descarga la hoja de seguimiento por endpoint autenticado (extensión
+   * 2026-08-11, res.download). NUNCA por URL estática /uploads.
+   * GET /v1/pasantias/:id/seguimientos/:seguimientoId/pdf
+   */
+  async descargarSeguimientoPdf(id, seguimientoId) {
+    try {
+      const response = await apiClient.get(
+        PASANTIAS_ENDPOINTS.SEGUIMIENTO_PDF(id, seguimientoId),
+        { responseType: 'blob' },
+      );
+      return {
+        success: true,
+        blob: response.data,
+        fileName: parseFileName(response, 'seguimiento_pasantia.pdf'),
+      };
+    } catch (error) {
+      return parseBlobError(error, 'Error al descargar la hoja de seguimiento');
+    }
+  }
 }
 
 export default new PasantiaRepository();

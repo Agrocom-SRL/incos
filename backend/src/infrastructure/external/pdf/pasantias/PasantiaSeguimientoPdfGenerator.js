@@ -83,21 +83,34 @@ export class PasantiaSeguimientoPdfGenerator extends IncosPDFLibBase {
     }
   }
 
-  /** RESPONSABLE DEL SEGUIMIENTO + DATOS DEL PASANTE. @private */
+  /**
+   * RESPONSABLE DEL SEGUIMIENTO + DATOS DEL PASANTE. `_addSpace()` explícito
+   * entre cada campo/sección: el gap final de `_addBoxedField`/
+   * `_addBoxedFieldGrid` (`LAYOUT.spacing.line`, 4pt) no deja margen para el
+   * ascendente de la fuente del siguiente elemento y el borde del recuadro
+   * anterior queda tachando el texto (bug verificado por renderizado; no se
+   * toca `IncosPDFLibBase` compartida por otros documentos institucionales).
+   * @private
+   */
   async _buildDatosPasante(options) {
     const pasantia = options.pasantia || {};
     const seguimiento = options.seguimiento || {};
 
     await this._addBoxedField('RESPONSABLE DEL SEGUIMIENTO', pasantia.docenteSupervisorNombre || BLANCO);
+    this._addSpace();
     await this._addBoxedField('FECHA DEL SEGUIMIENTO', formatFechaLegible(seguimiento.fecha) || BLANCO);
+    this._addSpace();
 
     await this._addSection('DATOS DEL PASANTE');
     await this._addBoxedField('NOMBRE COMPLETO', pasantia.estudianteNombre || BLANCO);
+    this._addSpace();
     await this._addBoxedFieldGrid(
       [{ label: 'C.I.', value: pasantia.estudianteCi || BLANCO }],
       [{ label: 'TELÉFONO', value: pasantia.estudianteCelular || BLANCO }]
     );
+    this._addSpace();
     await this._addBoxedField('CARRERA / ÁREA DE ESTUDIOS', pasantia.carreraNombre || BLANCO);
+    this._addSpace();
   }
 
   /** DETALLES DE LA PASANTÍA: empresa, dirección, área, responsable, fechas. @private */
@@ -106,18 +119,22 @@ export class PasantiaSeguimientoPdfGenerator extends IncosPDFLibBase {
 
     await this._addSection('DETALLES DE LA PASANTÍA');
     await this._addBoxedField('EMPRESA / ORGANIZACIÓN', pasantia.empresaNombre || BLANCO);
+    this._addSpace();
     await this._addBoxedFieldGrid(
       [{ label: 'DIRECCIÓN', value: pasantia.empresaDireccion || BLANCO }],
       [{ label: 'TELÉFONO', value: pasantia.empresaTelefono || BLANCO }]
     );
+    this._addSpace();
     await this._addBoxedFieldGrid(
       [{ label: 'ÁREA O DEPARTAMENTO ASIGNADO', value: pasantia.areaDepartamento || BLANCO }],
       [{ label: 'RESPONSABLE A CARGO DEL PASANTE', value: pasantia.responsableEmpresa || BLANCO }]
     );
+    this._addSpace();
     await this._addBoxedFieldGrid(
       [{ label: 'FECHA DE INICIO', value: formatFechaLegible(pasantia.fechaInicio) || BLANCO }],
       [{ label: 'FECHA DE FINALIZACIÓN', value: formatFechaLegible(pasantia.fechaFinalizacion) || 'A la fecha' }]
     );
+    this._addSpace();
   }
 
   /** DESCRIPCIÓN DEL TRABAJO REALIZADO + PRINCIPALES ACTIVIDADES. @private */

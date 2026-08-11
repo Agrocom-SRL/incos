@@ -251,6 +251,19 @@ export const usePasantiaDetailPage = () => {
     ],
   );
 
+  const handleDescargarSeguimiento = useCallback(
+    async (seguimiento) => {
+      const result = await seguimientos.descargarPdf(pasantiaId, seguimiento);
+      if (!result?.success) {
+        notification.error({
+          title: 'No se pudo descargar el PDF',
+          description: result?.error || 'Intente nuevamente en unos instantes.',
+        });
+      }
+    },
+    [pasantiaId, seguimientos, notification],
+  );
+
   return {
     pasantiaId,
     pasantia,
@@ -296,12 +309,14 @@ export const usePasantiaDetailPage = () => {
       items: seguimientos.seguimientos,
       loading: seguimientos.loading,
       error: seguimientos.error,
+      descargandoId: seguimientos.descargandoId,
       drawer: seguimientoDrawer,
       abrirNuevo: abrirNuevoSeguimiento,
       abrirEditar: abrirEditarSeguimiento,
       cerrarDrawer: cerrarSeguimientoDrawer,
       guardar: handleGuardarSeguimiento,
       guardando: guardandoSeguimiento,
+      descargar: handleDescargarSeguimiento,
     },
   };
 };

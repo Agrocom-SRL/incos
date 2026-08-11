@@ -157,8 +157,10 @@ const PasantiaDetail = () => {
               seguimientos={seguimientos.items}
               loading={seguimientos.loading}
               error={seguimientos.error}
+              descargandoId={seguimientos.descargandoId}
               onNuevoSeguimiento={seguimientos.abrirNuevo}
               onEditarSeguimiento={seguimientos.abrirEditar}
+              onDescargar={seguimientos.descargar}
             />
           ),
         },
