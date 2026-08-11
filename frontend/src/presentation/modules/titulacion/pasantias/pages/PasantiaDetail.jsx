@@ -1,8 +1,9 @@
 /**
  * Ficha-hub de trámite de pasantía (Titulación · TIT · DETALLE) — cabecera de
  * perfil + tabs datos / informes / seguimientos, con la línea de tiempo del
- * trámite en la barra lateral (`PageTemplate` sidebar → `InfoSidebar`,
- * extensión 2026-08-11, mismo movimiento que `ProyectoGradoDetail`).
+ * trámite y la transición de estado en la barra lateral (`PageTemplate`
+ * sidebar → `InfoSidebar`, extensión 2026-08-11, mismo movimiento que
+ * `ProyectoGradoDetail`).
  *
  * Patrón ficha-hub de `ProyectoGradoDetail` (DetailPageShell +
  * DetailProfileCard + DetailTabsPanel). Acción de cabecera gated por permiso
@@ -10,16 +11,20 @@
  * paso legal del trámite (emitir si no existe, descargar si ya fue emitido).
  * Página "dumb": la orquestación vive en `usePasantiaDetailPage`.
  *
- * NOTA (2026-08-09): se retiró el botón/modal de transición de estado manual
- * (P6, `TransicionPasantiaModal`) — la máquina de estados se gobernará de
- * otra forma (por definir); `PasantiaTimeline` (solo lectura) se mantiene,
- * ahora en el sidebar en vez de bajo la cabecera de la ficha.
+ * Transición de estado (P6, reincorporado 2026-08-11 — pedido explícito del
+ * usuario, estaba retirado desde 2026-08-09 en espera de definir el
+ * mecanismo): botón "Transición de estado" en la tarjeta de línea de tiempo
+ * del sidebar (`PasantiaTimeline` slot `action`, mismo patrón que
+ * `ProyectoGradoTimeline`). Autorizar a EN_CURSO/CONVALIDADA exige el informe
+ * de verificación/convalidación con resultado VIABLE (R.M. 487/2023) — el
+ * modal ya recibe los destinos filtrados por el hook.
  */
 
 import { useState } from 'react';
 import { Flex } from 'antd';
 import {
   ArrowLeftOutlined,
+  CheckCircleOutlined,
   FileAddOutlined,
   FilePdfOutlined,
   ScheduleOutlined,
@@ -42,6 +47,7 @@ import PasantiaInformesSection from '@titulacion/pasantias/components/organisms/
 import PasantiaSeguimientosSection from '@titulacion/pasantias/components/organisms/PasantiaSeguimientosSection';
 import InformePasantiaDrawer from '@titulacion/pasantias/components/modals/InformePasantiaDrawer';
 import SeguimientoPasantiaDrawer from '@titulacion/pasantias/components/modals/SeguimientoPasantiaDrawer';
+import TransicionPasantiaModal from '@titulacion/pasantias/components/modals/TransicionPasantiaModal';
 import '@presentation/styles/pages/detail-page.css';
 
 const PasantiaDetail = () => {
@@ -54,6 +60,7 @@ const PasantiaDetail = () => {
     handleVolver,
     handleEditar,
     informeVerificacion,
+    transicionModal,
     informes,
     seguimientos,
   } = usePasantiaDetailPage();
@@ -92,6 +99,20 @@ const PasantiaDetail = () => {
         Volver
       </BackButton>
     </Flex>
+  );
+
+  const sidebarAction = (
+    <ActionButton
+      permiso={TITULACION_PERMISOS.pasantia}
+      accion="APROBAR"
+      variant="success"
+      icon={<CheckCircleOutlined />}
+      block
+      disabled={transicionModal.transiciones.length === 0}
+      onClick={transicionModal.abrir}
+    >
+      Transición de estado
+    </ActionButton>
   );
 
   const tabItems = pasantia
@@ -153,7 +174,7 @@ const PasantiaDetail = () => {
           actions={headerActions}
         />
       }
-      sidebar={pasantia ? <PasantiaTimeline pasantia={pasantia} /> : null}
+      sidebar={pasantia ? <PasantiaTimeline pasantia={pasantia} action={sidebarAction} /> : null}
     >
       <DetailPageShell
         loading={loading}
@@ -192,6 +213,17 @@ const PasantiaDetail = () => {
         onClose={seguimientos.cerrarDrawer}
         onSubmit={seguimientos.guardar}
         saving={seguimientos.guardando}
+      />
+      <TransicionPasantiaModal
+        open={transicionModal.open}
+        onCancel={transicionModal.cerrar}
+        onSubmit={transicionModal.submit}
+        saving={transicionModal.saving}
+        transiciones={transicionModal.transiciones}
+        estadoActual={pasantia?.estado ?? null}
+        horasCumplidas={pasantia?.horasCumplidas ?? null}
+        horasRequeridas={pasantia?.horasRequeridas ?? null}
+        avisoInforme={transicionModal.avisoInforme}
       />
     </PageTemplate>
   );

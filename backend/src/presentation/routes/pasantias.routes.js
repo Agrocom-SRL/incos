@@ -252,5 +252,15 @@ export function buildPasantiasRouter({ controllers, middlewares }) {
     (req, res, next) => controllers.updateSeguimientoPasantiaController.handle(req, res, next)
   );
 
+  // GET /:id/seguimientos/:seguimientoId/pdf - Descarga de la hoja de seguimiento (extensión 2026-08-11)
+  router.get(
+    '/:id/seguimientos/:seguimientoId/pdf',
+    ...pasantiaExportar,
+    idValidator,
+    seguimientoIdValidator,
+    validateRequest,
+    (req, res, next) => controllers.exportSeguimientoPasantiaPdfController.handle(req, res, next)
+  );
+
   return router;
 }

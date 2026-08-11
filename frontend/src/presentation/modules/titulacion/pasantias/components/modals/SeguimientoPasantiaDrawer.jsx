@@ -7,12 +7,16 @@
  *
  * Réplica digital del FORMULARIO DE SEGUIMIENTO DE PASANTÍA (fecha · trabajo
  * desempeñado · principales actividades · nivel ALTO/MEDIO/BAJO · fortalezas
- * · áreas a mejorar · sugerencias · firmas).
+ * · áreas a mejorar · sugerencias). Las firmas ("Sello y firma del docente" /
+ * "Sello y firma de la empresa") NO son un dato a capturar aquí — van
+ * impresas como líneas en blanco del PDF exportado (extensión 2026-08-11,
+ * pedido explícito del usuario: se firma el documento físico, no se marca un
+ * switch en el formulario digital).
  */
 
 import { useEffect } from 'react';
 import dayjs from 'dayjs';
-import { Button, DatePicker, Drawer, Flex, Form, Input, Select, Switch, Typography } from 'antd';
+import { Button, DatePicker, Drawer, Flex, Form, Input, Select, Typography } from 'antd';
 import { SaveOutlined } from '@ant-design/icons';
 import { NIVEL_DESEMPENO_OPTIONS } from '@application-titulacion/utils/pasantiasPills';
 

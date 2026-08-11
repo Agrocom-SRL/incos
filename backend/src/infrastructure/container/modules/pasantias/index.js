@@ -20,6 +20,7 @@ import { PasantiaInformeRepository } from '../../../repositories/PasantiaInforme
 import { PasantiaSeguimientoRepository } from '../../../repositories/PasantiaSeguimientoRepository.js';
 import { PasantiaViewRepository } from '../../../repositories/views/PasantiaViewRepository.js';
 import { PasantiaInformePdfGenerator } from '../../../external/pdf/pasantias/PasantiaInformePdfGenerator.js';
+import { PasantiaSeguimientoPdfGenerator } from '../../../external/pdf/pasantias/PasantiaSeguimientoPdfGenerator.js';
 import { registerPasantiasResource } from './pasantias.container.js';
 
 export function registerPasantiasModule(container) {
@@ -51,6 +52,11 @@ export function registerPasantiasModule(container) {
     container,
     PASANTIAS_TOKENS.pasantiaInformePdfGenerator,
     (c) => new PasantiaInformePdfGenerator({ logger: c.resolve(SERVICIOS_TOKENS.logger) })
+  );
+  registerService(
+    container,
+    PASANTIAS_TOKENS.pasantiaSeguimientoPdfGenerator,
+    (c) => new PasantiaSeguimientoPdfGenerator({ logger: c.resolve(SERVICIOS_TOKENS.logger) })
   );
 
   // ============================================

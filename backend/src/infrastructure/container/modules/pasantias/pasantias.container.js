@@ -38,6 +38,7 @@ import { ExportInformePasantiaPdfUseCase } from '../../../../application/use-cas
 import { ListSeguimientosPasantiaUseCase } from '../../../../application/use-cases/pasantias/ListSeguimientosPasantiaUseCase.js';
 import { CreateSeguimientoPasantiaUseCase } from '../../../../application/use-cases/pasantias/CreateSeguimientoPasantiaUseCase.js';
 import { UpdateSeguimientoPasantiaUseCase } from '../../../../application/use-cases/pasantias/UpdateSeguimientoPasantiaUseCase.js';
+import { ExportSeguimientoPasantiaPdfUseCase } from '../../../../application/use-cases/pasantias/ExportSeguimientoPasantiaPdfUseCase.js';
 import {
   ListPasantiasController,
   GetPasantiaByIdController,
@@ -60,6 +61,7 @@ import {
   ListSeguimientosPasantiaController,
   CreateSeguimientoPasantiaController,
   UpdateSeguimientoPasantiaController,
+  ExportSeguimientoPasantiaPdfController,
 } from '../../../../presentation/controllers/pasantias/index.js';
 import { buildPasantiasRouter } from '../../../../presentation/routes/pasantias.routes.js';
 
@@ -124,6 +126,7 @@ export function registerPasantiasResource(container) {
     (c) =>
       new TransicionarPasantiaUseCase({
         pasantiaRepository: c.resolve(PASANTIAS_TOKENS.pasantiaRepository),
+        pasantiaInformeRepository: c.resolve(PASANTIAS_TOKENS.pasantiaInformeRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       })
   );
@@ -295,6 +298,21 @@ export function registerPasantiasResource(container) {
       new UpdateSeguimientoPasantiaUseCase({
         pasantiaRepository: c.resolve(PASANTIAS_TOKENS.pasantiaRepository),
         pasantiaSeguimientoRepository: c.resolve(PASANTIAS_TOKENS.pasantiaSeguimientoRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      })
+  );
+
+  registerComponent(
+    container,
+    PASANTIAS_TOKENS.exportSeguimientoPasantiaPdfUseCase,
+    (c) =>
+      new ExportSeguimientoPasantiaPdfUseCase({
+        pasantiaRepository: c.resolve(PASANTIAS_TOKENS.pasantiaRepository),
+        pasantiaSeguimientoRepository: c.resolve(PASANTIAS_TOKENS.pasantiaSeguimientoRepository),
+        pasantiaViewRepository: c.resolve(PASANTIAS_TOKENS.pasantiaViewRepository),
+        pasantiaSeguimientoPdfGenerator: c.resolve(
+          PASANTIAS_TOKENS.pasantiaSeguimientoPdfGenerator
+        ),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       })
   );
@@ -503,6 +521,16 @@ export function registerPasantiasResource(container) {
           responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
         }),
     ],
+    [
+      PASANTIAS_TOKENS.exportSeguimientoPasantiaPdfController,
+      (c) =>
+        new ExportSeguimientoPasantiaPdfController({
+          exportSeguimientoPasantiaPdfUseCase: c.resolve(
+            PASANTIAS_TOKENS.exportSeguimientoPasantiaPdfUseCase
+          ),
+          logger: c.resolve(SERVICIOS_TOKENS.logger),
+        }),
+    ],
   ];
 
   for (const [token, factory] of controllerFactories) {
@@ -546,6 +574,9 @@ export function registerPasantiasResource(container) {
       ),
       updateSeguimientoPasantiaController: c.resolve(
         PASANTIAS_TOKENS.updateSeguimientoPasantiaController
+      ),
+      exportSeguimientoPasantiaPdfController: c.resolve(
+        PASANTIAS_TOKENS.exportSeguimientoPasantiaPdfController
       ),
     };
 

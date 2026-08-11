@@ -3,31 +3,41 @@
  *
  * Orquesta la ficha sobre el contexto del provider (breadcrumbs, volver,
  * editar) y las acciones de las pestañas:
+ *  - sidebar (línea de tiempo): transición de estado por camino (P6,
+ *    pasantia·APROBAR) — reincorporado 2026-08-11
  *  - cabecera: informe de verificación/convalidación — primer paso legal del
  *    trámite (emitir si no existe, descargar si ya fue emitido; P12/P14)
- *  - informes: emitir / editar (P12/P13, drawer) y descargar PDF (P14,
- *    pasantia·EXPORTAR)
+ *  - informes: editar (P13, drawer) y descargar PDF (P14, pasantia·EXPORTAR)
  *  - seguimientos: registrar / editar (P16/P17, drawer)
  * La página es "dumb"; los modales/drawers reciben estas props.
  *
- * NOTA (2026-08-09): se retiró la transición de estado manual (P6, modal +
- * botón "Transición de estado") de esta ficha — la máquina de estados se
- * gobernará de otra forma (por definir). El endpoint y `mutations.
- * transicionarEstado` siguen intactos en el backend/mutations por si el
- * nuevo mecanismo los reutiliza; `PasantiaTimeline` (línea de tiempo,
- * solo lectura) tampoco se toca.
+ * Transición SOLICITADA → EN_CURSO/CONVALIDADA (2026-08-11, pedido explícito
+ * del usuario): exige que el informe "primer paso legal" ya exista con
+ * resultado VIABLE — `transicionModal.transiciones` llega YA FILTRADA sin ese
+ * destino mientras falta el informe (mismo gate en `TransicionarPasantiaUseCase`,
+ * backend, defensa en profundidad), y `avisoInforme` explica el porqué.
  */
 
 import { useCallback, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { App } from 'antd';
 import { usePasantiaDetailContext } from '@application-titulacion/pasantias/hooks/context/usePasantiaDetailContext';
-import { TIPO_INFORME_POR_TIPO_PASANTIA } from '@application-titulacion/utils/pasantiasPills';
+import {
+  TIPO_INFORME_POR_TIPO_PASANTIA,
+  TRANSICIONES_PASANTIA,
+  formatEstadoPasantia,
+} from '@application-titulacion/utils/pasantiasPills';
 import {
   PASANTIAS_LIST_PATH,
   TIT_PASANTIAS_MENU_KEY,
   pasantiaEditarPath,
 } from '@application-titulacion/config/paths';
+
+/** Destino "positivo" (autoriza) de la transición desde SOLICITADA, por camino. */
+const ESTADO_POSITIVO_POR_TIPO = {
+  PASANTIA: 'EN_CURSO',
+  CONVALIDACION: 'CONVALIDADA',
+};
 
 export const usePasantiaDetailPage = () => {
   const navigate = useNavigate();
@@ -40,6 +50,7 @@ export const usePasantiaDetailPage = () => {
     loading,
     error,
     refetch,
+    mutations,
     informes,
     seguimientos,
   } = usePasantiaDetailContext();
@@ -134,6 +145,60 @@ export const usePasantiaDetailPage = () => {
     if (informeVerificacion) handleDescargarInforme(informeVerificacion);
   }, [informeVerificacion, handleDescargarInforme]);
 
+  // ————— Transición de estado (P6, reincorporado 2026-08-11) —————
+  const [transicionModalOpen, setTransicionModalOpen] = useState(false);
+  const [transicionando, setTransicionando] = useState(false);
+
+  const estadoPositivo = ESTADO_POSITIVO_POR_TIPO[pasantia?.tipo];
+  const informeEsViable = informeVerificacion?.resultado === 'VIABLE';
+
+  /** Estados destino válidos desde el estado actual, POR CAMINO, sin el destino
+   * "positivo" mientras no exista el informe VIABLE (el backend valida igual). */
+  const transicionesDisponibles = useMemo(() => {
+    const todas = TRANSICIONES_PASANTIA[pasantia?.tipo]?.[pasantia?.estado] ?? [];
+    if (informeEsViable || !estadoPositivo) return todas;
+    return todas.filter((estado) => estado !== estadoPositivo);
+  }, [pasantia?.tipo, pasantia?.estado, informeEsViable, estadoPositivo]);
+
+  /** Explica por qué falta el destino "positivo" mientras no hay informe VIABLE. */
+  const avisoInformePendiente = useMemo(() => {
+    if (informeEsViable || !estadoPositivo) return null;
+    const todas = TRANSICIONES_PASANTIA[pasantia?.tipo]?.[pasantia?.estado] ?? [];
+    if (!todas.includes(estadoPositivo)) return null;
+    const nombreInforme =
+      pasantia?.tipo === 'CONVALIDACION' ? 'informe de convalidación' : 'informe de verificación';
+    return `Para autorizar el trámite a «${formatEstadoPasantia(estadoPositivo)}» primero debe emitir el ${nombreInforme} con resultado «Viable».`;
+  }, [informeEsViable, estadoPositivo, pasantia?.tipo, pasantia?.estado]);
+
+  const abrirTransicionModal = useCallback(() => setTransicionModalOpen(true), []);
+  const cerrarTransicionModal = useCallback(() => setTransicionModalOpen(false), []);
+
+  const handleTransicionar = useCallback(
+    async ({ estado, observaciones }) => {
+      if (!pasantiaId || !estado) return;
+      setTransicionando(true);
+      try {
+        const result = await mutations.transicionarEstado(pasantiaId, { estado, observaciones });
+        if (result?.success) {
+          notification.success({
+            title: 'Transición registrada',
+            description: 'El trámite cambió de estado.',
+          });
+          setTransicionModalOpen(false);
+          await refetch();
+        } else {
+          notification.error({
+            title: 'No se pudo registrar la transición',
+            description: result?.error || 'Intente nuevamente en unos instantes.',
+          });
+        }
+      } finally {
+        setTransicionando(false);
+      }
+    },
+    [pasantiaId, mutations, notification, refetch],
+  );
+
   // ————— Seguimientos (P16/P17 drawer) —————
   /** { open, seguimiento (edición) } */
   const [seguimientoDrawer, setSeguimientoDrawer] = useState({ open: false, seguimiento: null });
@@ -201,6 +266,16 @@ export const usePasantiaDetailPage = () => {
       descargando: informeVerificacion ? informes.descargandoId === informeVerificacion.id : false,
       onEmitir: abrirNuevoInforme,
       onDescargar: handleDescargarInformeVerificacion,
+    },
+    // Sidebar (línea de tiempo): transición de estado por camino (P6)
+    transicionModal: {
+      open: transicionModalOpen,
+      abrir: abrirTransicionModal,
+      cerrar: cerrarTransicionModal,
+      submit: handleTransicionar,
+      saving: transicionando,
+      transiciones: transicionesDisponibles,
+      avisoInforme: avisoInformePendiente,
     },
     // Informes
     informes: {

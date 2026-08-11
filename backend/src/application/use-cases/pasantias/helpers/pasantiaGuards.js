@@ -112,3 +112,41 @@ export async function assertEstudianteSinPasantiaVigente({
     }
   }
 }
+
+/** Destino "positivo" (autoriza) de la transición desde SOLICITADA, por camino. */
+const ESTADO_POSITIVO_POR_TIPO_PASANTIA = {
+  PASANTIA: 'EN_CURSO',
+  CONVALIDACION: 'CONVALIDADA',
+};
+
+/**
+ * Exige un informe VIABLE del tipo esperado antes de autorizar la transición
+ * SOLICITADA → EN_CURSO/CONVALIDADA (R.M. 487/2023: la práctica laboral
+ * requiere informe de supervisión previo). Las demás transiciones
+ * (RECHAZADA, CANCELADA, FINALIZADA) no dependen del informe.
+ *
+ * @param {Object} params
+ * @param {Object} params.pasantiaInformeRepository
+ * @param {Object} params.pasantia - Entidad del trámite (id, tipo)
+ * @param {string} params.estadoDestino
+ * @returns {Promise<void>}
+ */
+export async function assertInformeViablePreviaAutorizacion({
+  pasantiaInformeRepository,
+  pasantia,
+  estadoDestino,
+}) {
+  if (ESTADO_POSITIVO_POR_TIPO_PASANTIA[pasantia.tipo] !== estadoDestino) return;
+
+  const tipoInformeEsperado = TIPO_INFORME_POR_TIPO_PASANTIA[pasantia.tipo];
+  const informes = await pasantiaInformeRepository.findByPasantiaId(pasantia.id);
+  const informeViable = informes.some(
+    (informe) => informe.tipo === tipoInformeEsperado && informe.resultado === 'VIABLE'
+  );
+
+  if (!informeViable) {
+    throw new ValidationError(
+      `No se puede autorizar el trámite a ${estadoDestino} sin un informe ${tipoInformeEsperado} con resultado VIABLE.`
+    );
+  }
+}

@@ -28,7 +28,8 @@ export { CreateInformePasantiaController } from './create-informe-pasantia.contr
 export { UpdateInformePasantiaController } from './update-informe-pasantia.controller.js';
 export { ExportInformePasantiaPdfController } from './export-informe-pasantia-pdf.controller.js';
 
-// Seguimientos
+// Seguimientos (con PDF de la hoja, generado al vuelo)
 export { ListSeguimientosPasantiaController } from './list-seguimientos-pasantia.controller.js';
 export { CreateSeguimientoPasantiaController } from './create-seguimiento-pasantia.controller.js';
 export { UpdateSeguimientoPasantiaController } from './update-seguimiento-pasantia.controller.js';
+export { ExportSeguimientoPasantiaPdfController } from './export-seguimiento-pasantia-pdf.controller.js';
