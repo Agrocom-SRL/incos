@@ -129,6 +129,16 @@ export class PasantiaRepository extends IPasantiaRepository {
     }
   }
 
+  /** Ficha de empresa (P20, `pasantiaEmpresa`). GET /v1/pasantias/empresas/:empresaId */
+  async obtenerEmpresaPorId(empresaId) {
+    try {
+      const response = await apiClient.get(PASANTIAS_ENDPOINTS.EMPRESA(empresaId));
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener la empresa de pasantía');
+    }
+  }
+
   /** Alta de empresa (P8, `pasantiaEmpresa`). POST /v1/pasantias/empresas */
   async crearEmpresa(data) {
     try {
@@ -161,6 +171,16 @@ export class PasantiaRepository extends IPasantiaRepository {
       return handleSuccessResponse(response);
     } catch (error) {
       return handleErrorResponse(error, 'Error al cambiar el estado de la empresa');
+    }
+  }
+
+  /** Elimina (soft) una empresa del catálogo (P21). DELETE /v1/pasantias/empresas/:empresaId */
+  async eliminarEmpresa(empresaId) {
+    try {
+      const response = await apiClient.delete(PASANTIAS_ENDPOINTS.EMPRESA(empresaId));
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al eliminar la empresa');
     }
   }
 
@@ -267,6 +287,27 @@ export class PasantiaRepository extends IPasantiaRepository {
       return handleSuccessResponse(response);
     } catch (error) {
       return handleErrorResponse(error, 'Error al actualizar el seguimiento');
+    }
+  }
+
+  /**
+   * Descarga la hoja de seguimiento por endpoint autenticado (extensión
+   * 2026-08-11, res.download). NUNCA por URL estática /uploads.
+   * GET /v1/pasantias/:id/seguimientos/:seguimientoId/pdf
+   */
+  async descargarSeguimientoPdf(id, seguimientoId) {
+    try {
+      const response = await apiClient.get(
+        PASANTIAS_ENDPOINTS.SEGUIMIENTO_PDF(id, seguimientoId),
+        { responseType: 'blob' },
+      );
+      return {
+        success: true,
+        blob: response.data,
+        fileName: parseFileName(response, 'seguimiento_pasantia.pdf'),
+      };
+    } catch (error) {
+      return parseBlobError(error, 'Error al descargar la hoja de seguimiento');
     }
   }
 }

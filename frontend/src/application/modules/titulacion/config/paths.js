@@ -13,6 +13,9 @@ export const PROYECTOS_GRADO_LIST_PATH = `${TITULACION_BASE}/proyectos-grado`;
 export const proyectoGradoRegistrarPath = `${TITULACION_BASE}/proyectos-grado/registrar`;
 export const proyectoGradoDetallePath = (id) => `${TITULACION_BASE}/proyectos-grado/${id}`;
 export const proyectoGradoEditarPath = (id) => `${TITULACION_BASE}/proyectos-grado/${id}/editar`;
+/** Registrar acta de defensa (extensión 2026-08-11: antes modal, ahora página propia — muchos datos). */
+export const proyectoGradoActaDefensaPath = (id) =>
+  `${TITULACION_BASE}/proyectos-grado/${id}/acta-defensa`;
 
 /** Portal del estudiante: su propio proyecto (wrapper TIT-MI-PROYECTO, patrón ACA-MI-BOLETIN). */
 export const MI_PROYECTO_GRADO_PATH = `${TITULACION_BASE}/mi-proyecto`;
@@ -23,9 +26,11 @@ export const pasantiaRegistrarPath = `${TITULACION_BASE}/pasantias/registrar`;
 export const pasantiaDetallePath = (id) => `${TITULACION_BASE}/pasantias/${id}`;
 export const pasantiaEditarPath = (id) => `${TITULACION_BASE}/pasantias/${id}/editar`;
 
-/** Pasantías — catálogo de empresas (ABM propio, empresa·LISTAR/CREAR/EDITAR/ACTIVAR) */
+/** Pasantías — catálogo de empresas (ABM propio, empresa·LISTAR/CREAR/DETALLE/EDITAR/ACTIVAR/ELIMINAR) */
 export const PASANTIAS_EMPRESAS_PATH = `${TITULACION_BASE}/pasantias/empresas`;
 export const pasantiaEmpresaRegistrarPath = `${TITULACION_BASE}/pasantias/empresas/registrar`;
+export const pasantiaEmpresaDetallePath = (empresaId) =>
+  `${TITULACION_BASE}/pasantias/empresas/${empresaId}`;
 export const pasantiaEmpresaEditarPath = (empresaId) =>
   `${TITULACION_BASE}/pasantias/empresas/${empresaId}/editar`;
 
@@ -33,12 +38,15 @@ export const pasantiaEmpresaEditarPath = (empresaId) =>
 export const MI_PASANTIA_PATH = `${TITULACION_BASE}/mi-pasantia`;
 
 /**
- * Reportes de avance de tutoría (Requisitos 2 y 3 — extensión 2026-07-31).
- * Sin ítem de menú propio: se llega por los botones de cabecera de
- * ProyectosGradoList (breadcrumbParent TIT-PROYECTOS).
+ * Reporte de seguimiento de tutorías a docentes (extensión 2026-08-10 —
+ * reemplaza la "planilla de avance 10 en 10" de 3er año, que dependía de
+ * Matrícula/periodo_numero=3, sin datos en desarrollo, sin documento físico
+ * real). Sin ítem de menú propio: se llega por el botón de cabecera de
+ * ProyectosGradoList (breadcrumbParent TIT-PROYECTOS). El avance por carrera
+ * (Requisito 2) sigue sin ser página: es exportación PDF directa desde el
+ * listado (`useExportAvanceTutoriaCarreraPdf`), sin ruta propia.
  */
-export const REPORTE_AVANCE_CARRERA_PATH = `${TITULACION_BASE}/proyectos-grado/reportes/avance-carrera`;
-export const PLANILLA_AVANCE_TERCER_ANIO_PATH = `${TITULACION_BASE}/proyectos-grado/reportes/planilla-tercer-anio`;
+export const SEGUIMIENTO_TUTORIA_DOCENTES_PATH = `${TITULACION_BASE}/proyectos-grado/reportes/seguimiento-tutoria-docentes`;
 
 /** Keys de menú (sidebar) — deben coincidir con los routes.jsx de cada submódulo. */
 export const TIT_PROYECTOS_MENU_KEY = 'TIT-PROYECTOS';

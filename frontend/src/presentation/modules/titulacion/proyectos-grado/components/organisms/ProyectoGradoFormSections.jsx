@@ -1,41 +1,32 @@
 /**
  * Formulario ABM de proyecto de grado — workspace alineado a CFG Académico.
  * Gemelo de `CursoCapacitacionFormSections` (CAP): UNA tarjeta
- * (`CfgFormWorkspace`, prop `sections`) con "Datos del proyecto" como primer
- * nivel y "Estudiantes del proyecto" como sección interna.
+ * (`CfgFormWorkspace`, prop `sections`) con "Estudiantes del proyecto" como
+ * PRIMERA sección (2026-08-10: al elegir al titular se resuelve la carrera,
+ * así que va antes que "Datos del proyecto") y "Datos del proyecto" como
+ * segunda.
  *
- * Extensión 2026-07-31 (Requisito 1): la sección de estudiantes YA NO busca
- * en un catálogo genérico — el titular y los integrantes se eligen del
- * catálogo de estudiantes ELEGIBLES de 3er año para la carrera seleccionada
- * (`useEstudiantesElegiblesModalidadApi`, `GET /estudiantes-elegibles`), que
- * el backend ya filtra (3er año, sin proyecto vigente); por eso el select usa
- * filtro EN CLIENTE (`showSearch` + `optionFilterProp`) sobre ese catálogo
- * acotado, sin `onSearch` server-side. El `FormField` genérico no cubre este
- * comportamiento, por eso los `Form.Item` viven aquí como JSX del organismo
- * (mismo criterio que el `tagRender` de CAP). Solo la modalidad PSP (grupal)
- * muestra el multi-select de integrantes.
+ * 2026-08-10: la sección de estudiantes busca entre TODOS los estudiantes
+ * (`useBuscarEstudiantesTit`, `GET /estudiantes/search`, mismo buscador que
+ * `AgregarIntegranteModal`/Pasantías) — ya no se restringe a elegibles de
+ * 3er año. Búsqueda EN SERVIDOR (`onSearch` + `filterOption={false}`,
+ * debounced en el hook), no filtro en cliente. El `FormField` genérico no
+ * cubre este comportamiento, por eso los `Form.Item` viven aquí como JSX del
+ * organismo (mismo criterio que el `tagRender` de CAP). Solo la modalidad
+ * PSP (grupal) muestra el multi-select de integrantes.
  */
 
-import { Alert, Col, Empty, Form, Row, Select, Typography } from 'antd';
+import { Alert, Col, Form, Row, Select, Spin, Typography } from 'antd';
 import { CfgFormWorkspace } from '@organisms';
 
 const { Text } = Typography;
 
-/** Contenido del dropdown: sin carrera elegida, cargando, o sin elegibles. */
-const buildNotFoundContent = ({ carreraSeleccionada, cargando }) => {
-  if (!carreraSeleccionada) {
-    return <Text type="secondary">Seleccione primero la carrera del proyecto.</Text>;
-  }
-  if (cargando) {
-    return <Text type="secondary">Buscando estudiantes de 3er año elegibles…</Text>;
-  }
-  return (
-    <Empty
-      image={Empty.PRESENTED_IMAGE_SIMPLE}
-      description="No hay estudiantes de 3er año disponibles para elegir modalidad de graduación en esta gestión."
-    />
+const notFoundContent = (cargando) =>
+  cargando ? (
+    <Spin size="small" />
+  ) : (
+    <Text type="secondary">Escriba al menos 2 caracteres para buscar por nombre o C.I.</Text>
   );
-};
 
 const ProyectoGradoFormSections = ({
   form,
@@ -43,7 +34,8 @@ const ProyectoGradoFormSections = ({
   modalidadGrupal = false,
   estudianteOptions = [],
   buscandoEstudiantes = false,
-  carreraSeleccionada = false,
+  buscarEstudiantes,
+  onEstudianteChange,
   footer = null,
 }) => {
   const { datosProyecto } = formSections ?? {};
@@ -56,32 +48,27 @@ const ProyectoGradoFormSections = ({
     return null;
   }
 
-  const commonElegiblesProps = {
+  const commonBusquedaProps = {
     showSearch: true,
-    optionFilterProp: 'label',
-    disabled: !carreraSeleccionada,
+    filterOption: false,
+    onSearch: buscarEstudiantes,
     loading: buscandoEstudiantes,
-    notFoundContent: buildNotFoundContent({ carreraSeleccionada, cargando: buscandoEstudiantes }),
+    notFoundContent: notFoundContent(buscandoEstudiantes),
     options: estudianteOptions,
   };
 
   return (
     <CfgFormWorkspace
-      title={datosProyecto.title}
-      description={datosProyecto.description}
+      title="Proyecto de grado"
       form={form}
       footer={footer}
       sections={[
         {
-          key: 'datosProyecto',
-          fields: datosProyecto.fields,
-        },
-        {
           key: 'estudiantes',
           title: 'Estudiantes del proyecto',
           description: modalidadGrupal
-            ? 'Modalidad grupal (PSP): registre al titular responsable y agregue a los demás integrantes del grupo, ambos de entre los estudiantes de 3er año elegibles.'
-            : 'Registre al estudiante titular del proyecto, de entre los estudiantes de 3er año elegibles para la carrera seleccionada.',
+            ? 'Modalidad grupal (PSP): registre al titular responsable y agregue a los demás integrantes del grupo. Al elegir al titular, la carrera se autocompleta con su carrera vigente.'
+            : 'Registre al estudiante titular del proyecto. Al elegirlo, la carrera se autocompleta con su carrera vigente.',
           fields: [],
           children: (
             <>
@@ -101,13 +88,10 @@ const ProyectoGradoFormSections = ({
                     rules={[{ required: true, message: 'Seleccione al estudiante titular' }]}
                   >
                     <Select
-                      {...commonElegiblesProps}
+                      {...commonBusquedaProps}
                       allowClear
-                      placeholder={
-                        carreraSeleccionada
-                          ? 'Seleccione un estudiante de 3er año elegible'
-                          : 'Seleccione primero la carrera'
-                      }
+                      onChange={onEstudianteChange}
+                      placeholder="Busque por nombre o C.I."
                     />
                   </Form.Item>
                 </Col>
@@ -119,14 +103,10 @@ const ProyectoGradoFormSections = ({
                       tooltip="Cada estudiante seleccionado se agrega a la lista del proyecto"
                     >
                       <Select
-                        {...commonElegiblesProps}
+                        {...commonBusquedaProps}
                         mode="multiple"
                         options={integranteOptions}
-                        placeholder={
-                          carreraSeleccionada
-                            ? 'Seleccione a los demás integrantes elegibles'
-                            : 'Seleccione primero la carrera'
-                        }
+                        placeholder="Busque por nombre o C.I."
                       />
                     </Form.Item>
                   </Col>
@@ -134,6 +114,12 @@ const ProyectoGradoFormSections = ({
               </Row>
             </>
           ),
+        },
+        {
+          key: 'datosProyecto',
+          title: datosProyecto.title,
+          description: datosProyecto.description,
+          fields: datosProyecto.fields,
         },
       ]}
     />

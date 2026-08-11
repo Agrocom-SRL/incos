@@ -251,6 +251,12 @@ export const createPasantiaEmpresaValidator = [
     .trim()
     .isLength({ min: 2, max: 255 })
     .withMessage('nombre debe tener entre 2 y 255 caracteres'),
+  body('nombreComercial')
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage('nombreComercial no debe superar los 200 caracteres'),
   body('tipoSocietario')
     .optional({ nullable: true })
     .isIn(TIPOS_SOCIETARIO_EMPRESA_VALUES)
@@ -293,6 +299,12 @@ export const updatePasantiaEmpresaValidator = [
     .trim()
     .isLength({ min: 2, max: 255 })
     .withMessage('nombre debe tener entre 2 y 255 caracteres'),
+  body('nombreComercial')
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage('nombreComercial no debe superar los 200 caracteres'),
   body('tipoSocietario')
     .optional({ nullable: true })
     .isIn(TIPOS_SOCIETARIO_EMPRESA_VALUES)

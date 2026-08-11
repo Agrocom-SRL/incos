@@ -131,3 +131,22 @@ export const NIVELES_DESEMPENO_PASANTIA = {
 };
 
 export const NIVELES_DESEMPENO_PASANTIA_VALUES = Object.values(NIVELES_DESEMPENO_PASANTIA);
+
+// ============================================
+// AUTORIDADES INSTITUCIONALES (encabezado A/VIA de los informes)
+// ============================================
+
+/**
+ * Destinatarios fijos del informe (A: Rector, VIA: Dirección Académica) —
+ * NO se piden en el formulario: son cargos institucionales, no datos del
+ * trámite. Cambian solo si cambia la autoridad; en ese caso se edita aquí.
+ */
+export const AUTORIDAD_RECTOR_INCOS = {
+  nombre: 'Lic. Víctor Hugo Bejarano Rendón',
+  cargo: 'RECTOR - INSTITUTO TÉCNICO INCOS SANTA CRUZ',
+};
+
+export const AUTORIDAD_DIRECTORA_ACADEMICA_INCOS = {
+  nombre: 'Lic. Lidia Ordoñez Cuenca',
+  cargo: 'DIRECTORA ACADÉMICA INSTITUTO TÉCNICO INCOS SANTA CRUZ',
+};

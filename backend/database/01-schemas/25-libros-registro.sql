@@ -44,7 +44,6 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS folio_estudiantes;
 DROP TABLE IF EXISTS folios_libro;
-DROP TABLE IF EXISTS folios_estudiantes;
 DROP TABLE IF EXISTS fichas_supervision;
 DROP TABLE IF EXISTS supervisiones_programadas;
 DROP TABLE IF EXISTS libros_registro;

@@ -76,6 +76,11 @@ FROM (
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.admision.ver', 'LISTAR'
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.admision.ver', 'DETALLE'
   UNION ALL SELECT 'DIR_ACADEMICO', 'matricula.admision.ver', 'EXPORTAR'
+  -- SEC_ACADEMICA (2026-08-10): LISTAR habilita GET /estudiantes/search
+  -- (admisionListar), que reutiliza el selector "Nuevo proyecto de grado"
+  -- (TIT) para buscar entre TODOS los estudiantes, no solo elegibles de 3er
+  -- año — SEC_ACADEMICA ya tiene titulacion.proyecto CREAR/EDITAR.
+  UNION ALL SELECT 'SEC_ACADEMICA', 'matricula.admision.ver', 'LISTAR'
   UNION ALL SELECT 'DIR_ADMIN', 'matricula.admision.ver', 'LISTAR'
   UNION ALL SELECT 'DIR_ADMIN', 'matricula.admision.ver', 'DETALLE'
   UNION ALL SELECT 'DIR_ADMIN', 'matricula.admision.ver', 'EXPORTAR'

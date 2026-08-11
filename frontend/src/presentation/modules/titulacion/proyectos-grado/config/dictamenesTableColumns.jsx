@@ -4,19 +4,20 @@
  * Los dictámenes los GENERA el backend (designación de tutor T10 y
  * transiciones T11); aquí solo lectura + descarga del PDF por endpoint
  * autenticado (proyecto·EXPORTAR, T23).
+ *
+ * Extensión 2026-08-11 (pedido explícito del usuario): sin columna
+ * "Resultado" — decidir el resultado de un dictamen (documentación oficial
+ * que firman todas las partes) está fuera del alcance del sistema; mostrarlo
+ * como si el sistema lo asignara era engañoso.
  */
 
 import { CalendarOutlined, DownloadOutlined, FilePdfOutlined } from '@ant-design/icons';
-import { StatusPill, IdentidadCelda, InfoLinesCell } from '@atoms';
+import { IdentidadCelda, InfoLinesCell } from '@atoms';
 import { TableActions } from '@molecules';
 import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
-import {
-  formatResultadoDictamen,
-  formatTipoDictamen,
-  getResultadoDictamenPillClass,
-} from '@application-titulacion/utils/titulacionPills';
+import { formatTipoDictamen } from '@application-titulacion/utils/titulacionPills';
 
-export const createDictamenesTableColumns = ({ onDescargar, descargandoId = null } = {}) => {
+export const createDictamenesTableColumns = ({ onDescargar = null, descargandoId = null } = {}) => {
   return [
     {
       title: '#',
@@ -53,21 +54,6 @@ export const createDictamenesTableColumns = ({ onDescargar, descargandoId = null
       ),
     },
     {
-      title: 'Resultado',
-      key: 'resultado',
-      width: 130,
-      align: 'center',
-      render: (_, record) =>
-        record.resultado ? (
-          <StatusPill
-            label={formatResultadoDictamen(record.resultado)}
-            className={getResultadoDictamenPillClass(record.resultado)}
-          />
-        ) : (
-          '—'
-        ),
-    },
-    {
       title: 'Archivo',
       key: 'archivo',
       width: 200,
@@ -81,30 +67,35 @@ export const createDictamenesTableColumns = ({ onDescargar, descargandoId = null
         />
       ),
     },
-    {
-      title: 'Acciones',
-      key: 'acciones',
-      width: 90,
-      align: 'right',
-      render: (_, record) => (
-        <TableActions
-          record={record}
-          extraActions={[
-            {
-              key: 'descargar',
-              icon: <DownloadOutlined />,
-              variant: 'info',
-              tooltip: record.tieneArchivo
-                ? 'Descargar dictamen (PDF)'
-                : 'El dictamen no tiene archivo generado',
-              permiso: TITULACION_PERMISOS.proyecto,
-              accion: 'EXPORTAR',
-              disabled: !record.tieneArchivo || descargandoId === record.id,
-              onClick: () => onDescargar(record),
-            },
-          ]}
-        />
-      ),
-    },
+    // La columna de acciones solo existe si hay handler (oculta en proyectos CANCELADOS).
+    ...(onDescargar
+      ? [
+          {
+            title: 'Acciones',
+            key: 'acciones',
+            width: 90,
+            align: 'right',
+            render: (_, record) => (
+              <TableActions
+                record={record}
+                extraActions={[
+                  {
+                    key: 'descargar',
+                    icon: <DownloadOutlined />,
+                    variant: 'info',
+                    tooltip: record.tieneArchivo
+                      ? 'Descargar dictamen (PDF)'
+                      : 'El dictamen no tiene archivo generado',
+                    permiso: TITULACION_PERMISOS.proyecto,
+                    accion: 'EXPORTAR',
+                    disabled: !record.tieneArchivo || descargandoId === record.id,
+                    onClick: () => onDescargar(record),
+                  },
+                ]}
+              />
+            ),
+          },
+        ]
+      : []),
   ];
 };

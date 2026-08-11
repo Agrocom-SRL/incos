@@ -28,7 +28,8 @@ export const useProyectoGradoMutations = () => {
   const eliminarProyecto = useCallback((id) => proyectoGradoRepository.eliminar(id), []);
 
   const asignarTutor = useCallback(
-    (id, tutorId) => proyectoGradoRepository.asignarTutor(id, { tutorId }),
+    (id, { tutorId, observaciones } = {}) =>
+      proyectoGradoRepository.asignarTutor(id, { tutorId, observaciones }),
     [],
   );
 

@@ -1,10 +1,16 @@
 // src/presentation/modules/titulacion/proyectos-grado/routes.jsx
 /**
- * Titulación → Proyectos de grado (ítem de menú TIT, order 1) + reportes de
- * avance de tutoría (Requisitos 2/3, extensión 2026-07-31, sin ítem de menú:
- * se accede por botones de cabecera de ProyectosGradoList — plan Bloque N/O).
+ * Titulación → Proyectos de grado (ítem de menú TIT, order 1) + reporte de
+ * seguimiento de tutorías a docentes (extensión 2026-08-10, sin ítem de
+ * menú: se accede por botón de cabecera de ProyectosGradoList). Reemplaza la
+ * "planilla de avance 10 en 10" de 3er año (Requisito 3 retirado: dependía de
+ * Matrícula/periodo_numero=3, sin datos en desarrollo, sin documento físico
+ * real). El avance por carrera (Requisito 2) sigue sin ser página propia: es
+ * el botón "Exportar avance por carrera" (PDF directo) de ProyectosGradoList
+ * — el detalle en pantalla duplicaba columnas del listado sin aportar valor
+ * nuevo salvo el PDF, así que se retiró la página/ruta/provider dedicados.
  * Sin ítem propio, los docentes-tutores (que comparten proyecto·LISTAR para
- * "Mis tutorados") no ven estos reportes institucionales en su sidebar.
+ * "Mis tutorados") no ven este reporte institucional en su sidebar.
  *
  * Permisos del seed 65 (`titulacion.proyecto`), acciones LISTAR (datos en
  * pantalla) / EXPORTAR (descarga) — mismo permiso que el resto del recurso
@@ -18,10 +24,7 @@
  */
 
 import { lazy } from 'react';
-import {
-  REPORTE_AVANCE_CARRERA_PATH,
-  PLANILLA_AVANCE_TERCER_ANIO_PATH,
-} from '@application-titulacion/config/paths';
+import { SEGUIMIENTO_TUTORIA_DOCENTES_PATH } from '@application-titulacion/config/paths';
 
 const ProyectosGradoListConnector = lazy(
   () => import('./connectors/ProyectosGradoListConnector.jsx'),
@@ -35,12 +38,12 @@ const ProyectoGradoFormCreateConnector = lazy(
 const ProyectoGradoFormEditConnector = lazy(
   () => import('./connectors/ProyectoGradoFormEditConnector.jsx'),
 );
-const MiProyectoGradoConnector = lazy(() => import('./connectors/MiProyectoGradoConnector.jsx'));
-const ReporteAvanceTutoriaCarreraConnector = lazy(
-  () => import('./connectors/ReporteAvanceTutoriaCarreraConnector.jsx'),
+const RegistrarActaDefensaConnector = lazy(
+  () => import('./connectors/RegistrarActaDefensaConnector.jsx'),
 );
-const PlanillaAvanceTercerAnioConnector = lazy(
-  () => import('./connectors/PlanillaAvanceTercerAnioConnector.jsx'),
+const MiProyectoGradoConnector = lazy(() => import('./connectors/MiProyectoGradoConnector.jsx'));
+const SeguimientoTutoriaDocentesConnector = lazy(
+  () => import('./connectors/SeguimientoTutoriaDocentesConnector.jsx'),
 );
 
 export const proyectosGradoRoutes = [
@@ -66,22 +69,11 @@ export const proyectosGradoRoutes = [
     breadcrumbParent: 'TIT-PROYECTOS',
   },
   {
-    /** Requisito 2 (extensión 2026-07-31): reporte de avance por carrera. Ruta ESTÁTICA. */
-    path: REPORTE_AVANCE_CARRERA_PATH,
-    element: <ReporteAvanceTutoriaCarreraConnector />,
-    key: 'TIT-PROYECTOS-AVANCE-CARRERA',
-    breadcrumbLabel: 'Avance de tutorías por carrera',
-    permiso: 'titulacion.proyecto',
-    accion: 'LISTAR',
-    menu: null,
-    breadcrumbParent: 'TIT-PROYECTOS',
-  },
-  {
-    /** Requisito 3 (extensión 2026-07-31): planilla "10 en 10" bimestral. Ruta ESTÁTICA. */
-    path: PLANILLA_AVANCE_TERCER_ANIO_PATH,
-    element: <PlanillaAvanceTercerAnioConnector />,
-    key: 'TIT-PROYECTOS-PLANILLA-TERCER-ANIO',
-    breadcrumbLabel: 'Planilla de avance (3er año)',
+    /** Seguimiento de tutorías a docentes (extensión 2026-08-10). Ruta ESTÁTICA. */
+    path: SEGUIMIENTO_TUTORIA_DOCENTES_PATH,
+    element: <SeguimientoTutoriaDocentesConnector />,
+    key: 'TIT-PROYECTOS-SEGUIMIENTO-TUTORIA-DOCENTES',
+    breadcrumbLabel: 'Seguimiento de tutorías a docentes',
     permiso: 'titulacion.proyecto',
     accion: 'LISTAR',
     menu: null,
@@ -94,6 +86,17 @@ export const proyectosGradoRoutes = [
     breadcrumbLabel: 'Editar proyecto',
     permiso: 'titulacion.proyecto',
     accion: 'EDITAR',
+    menu: null,
+    breadcrumbParent: 'TIT-PROYECTOS',
+  },
+  {
+    /** Registrar acta de defensa (extensión 2026-08-11): antes modal, ahora página propia. */
+    path: '/titulacion/proyectos-grado/:id/acta-defensa',
+    element: <RegistrarActaDefensaConnector />,
+    key: 'TIT-PROYECTOS-ACTA-DEFENSA',
+    breadcrumbLabel: 'Registrar acta de defensa',
+    permiso: 'titulacion.proyecto',
+    accion: 'APROBAR',
     menu: null,
     breadcrumbParent: 'TIT-PROYECTOS',
   },

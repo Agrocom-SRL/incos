@@ -73,9 +73,9 @@ export const ESTADO_PASANTIA_OPTIONS = ESTADOS_PASANTIA.map((estado) => ({
 
 /**
  * Transiciones válidas de la máquina de estados, POR CAMINO (P6). El backend
- * es la autoridad; esta tabla solo puebla el select del modal de transición.
- * Una CONVALIDACION nunca pasa a EN_CURSO/FINALIZADA y una PASANTIA nunca a
- * CONVALIDADA.
+ * es la autoridad; esta tabla alimenta `PasantiaTimeline` (línea de tiempo de
+ * solo lectura de la ficha). Una CONVALIDACION nunca pasa a EN_CURSO/
+ * FINALIZADA y una PASANTIA nunca a CONVALIDADA.
  */
 export const TRANSICIONES_PASANTIA = {
   PASANTIA: {

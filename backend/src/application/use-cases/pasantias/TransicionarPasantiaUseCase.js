@@ -3,7 +3,7 @@ import {
   ESTADOS_PASANTIA,
   TRANSICIONES_PASANTIA,
 } from '../../../domain/constants/pasantias.constants.js';
-import { getPasantiaOrFail } from './helpers/pasantiaGuards.js';
+import { getPasantiaOrFail, assertInformeViablePreviaAutorizacion } from './helpers/pasantiaGuards.js';
 
 /**
  * Use Case: TransicionarPasantiaUseCase (P6)
@@ -12,16 +12,20 @@ import { getPasantiaOrFail } from './helpers/pasantiaGuards.js';
  * Máquina de estados POR CAMINO (TRANSICIONES_PASANTIA):
  * - PASANTIA: SOLICITADA → [EN_CURSO, RECHAZADA]; EN_CURSO → [FINALIZADA, CANCELADA].
  * - CONVALIDACION: SOLICITADA → [CONVALIDADA, RECHAZADA].
- * FINALIZADA exige horasCumplidas >= horasRequeridas (R.M. 487/2023).
+ * FINALIZADA exige horasCumplidas >= horasRequeridas (R.M. 487/2023). Autorizar
+ * a EN_CURSO/CONVALIDADA exige un informe VIABLE previo del tipo esperado
+ * (extensión 2026-08-11, `assertInformeViablePreviaAutorizacion`).
  */
 export class TransicionarPasantiaUseCase {
   /**
    * @param {Object} params
    * @param {Object} params.pasantiaRepository - Raíz pasantias
+   * @param {Object} params.pasantiaInformeRepository - CRUD pasantias_informes (gate de autorización)
    * @param {ILogger} params.logger
    */
-  constructor({ pasantiaRepository, logger }) {
+  constructor({ pasantiaRepository, pasantiaInformeRepository, logger }) {
     this.pasantiaRepository = pasantiaRepository;
+    this.pasantiaInformeRepository = pasantiaInformeRepository;
     this.logger = logger;
   }
 
@@ -41,6 +45,12 @@ export class TransicionarPasantiaUseCase {
         `No se puede cambiar una pasantía ${current.tipo} de ${current.estado} a ${estadoDestino}`
       );
     }
+
+    await assertInformeViablePreviaAutorizacion({
+      pasantiaInformeRepository: this.pasantiaInformeRepository,
+      pasantia: current,
+      estadoDestino,
+    });
 
     if (
       estadoDestino === ESTADOS_PASANTIA.FINALIZADA &&

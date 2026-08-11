@@ -11,10 +11,17 @@
  * las requeridas (el backend rechaza la transición si no — P6). Los
  * destinos `RECHAZADA`/`CANCELADA` son irreversibles y exigen confirmación
  * adicional (regla A5).
+ *
+ * Reincorporado 2026-08-11 (estaba retirado desde 2026-08-09 en espera de
+ * definir el mecanismo): la transición SOLICITADA → EN_CURSO/CONVALIDADA
+ * ahora exige un informe VIABLE previo (R.M. 487/2023) — `transiciones` ya
+ * llega filtrada sin ese destino cuando falta el informe, y `avisoInforme`
+ * explica el porqué con un `Alert` (mismo gate en `TransicionarPasantiaUseCase`,
+ * backend, defensa en profundidad).
  */
 
 import { useEffect, useMemo } from 'react';
-import { App, Empty, Form, Input, Modal, Select, Typography } from 'antd';
+import { Alert, App, Empty, Form, Input, Modal, Select, Typography } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import {
   formatEstadoPasantia,
@@ -33,6 +40,7 @@ const TransicionPasantiaModal = ({
   estadoActual = null,
   horasCumplidas = null,
   horasRequeridas = null,
+  avisoInforme = null,
 }) => {
   const { modal } = App.useApp();
   const [form] = Form.useForm();
@@ -95,6 +103,9 @@ const TransicionPasantiaModal = ({
       okButtonProps={{ disabled: sinTransiciones || horasInsuficientes, danger: esIrreversible }}
       destroyOnHidden
     >
+      {avisoInforme ? (
+        <Alert type="warning" showIcon title={avisoInforme} style={{ marginBottom: 16 }} />
+      ) : null}
       {sinTransiciones ? (
         <Empty
           image={Empty.PRESENTED_IMAGE_SIMPLE}

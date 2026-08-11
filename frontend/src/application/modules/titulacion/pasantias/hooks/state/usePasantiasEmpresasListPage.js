@@ -16,6 +16,7 @@ import {
   PASANTIAS_EMPRESAS_PATH,
   PASANTIAS_LIST_PATH,
   TIT_PASANTIAS_MENU_KEY,
+  pasantiaEmpresaDetallePath,
   pasantiaEmpresaEditarPath,
   pasantiaEmpresaRegistrarPath,
 } from '@application-titulacion/config/paths';
@@ -31,6 +32,7 @@ export const usePasantiasEmpresasListPage = () => {
     error = null,
     refetch,
     cambiarEstadoEmpresa,
+    eliminarEmpresa,
   } = usePasantiasEmpresasListContext();
 
   const [searchText, setSearchText] = useState('');
@@ -41,6 +43,7 @@ export const usePasantiasEmpresasListPage = () => {
     return empresas.filter(
       (e) =>
         (e.nombre || '').toLowerCase().includes(q) ||
+        (e.nombreComercial || '').toLowerCase().includes(q) ||
         (e.nit || '').toLowerCase().includes(q) ||
         (e.sectorActividad || '').toLowerCase().includes(q),
     );
@@ -73,10 +76,13 @@ export const usePasantiasEmpresasListPage = () => {
   const tableColumns = useMemo(
     () =>
       createPasantiasEmpresasTableColumns({
+        onVer: (record) => navigate(pasantiaEmpresaDetallePath(record.id), { state: listNavState }),
         onEditar: (record) => navigate(pasantiaEmpresaEditarPath(record.id), { state: listNavState }),
         onToggleEstado: handleToggleEstado,
+        eliminarEmpresa,
+        refetch,
       }),
-    [navigate, listNavState, handleToggleEstado],
+    [navigate, listNavState, handleToggleEstado, eliminarEmpresa, refetch],
   );
 
   const breadcrumbItems = useMemo(

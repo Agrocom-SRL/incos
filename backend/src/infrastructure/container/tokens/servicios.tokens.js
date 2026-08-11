@@ -35,10 +35,12 @@ export const SERVICIOS_TOKENS = {
     panelAcompanamientoPdfGenerator: 'panelAcompanamientoPdfGenerator', // IPanelAcompanamientoPdfGenerator (.pdf, módulo ACA · acompañamiento)
     fichaSeguimientoClasePdfGenerator: 'fichaSeguimientoClasePdfGenerator', // IFichaSeguimientoClasePdfGenerator (.pdf, módulo DOC · supervisión)
     // Extensión 2026-07-31 (módulo TIT · titulación): formulario de modalidad
-    // de graduación, reporte de avance por carrera y planilla "10 en 10".
+    // de graduación, reporte de avance por carrera.
     formularioModalidadGradoPdfGenerator: 'formularioModalidadGradoPdfGenerator', // IFormularioModalidadGradoPdfGenerator (.pdf, módulo TIT)
     avanceTutoriaCarreraPdfGenerator: 'avanceTutoriaCarreraPdfGenerator', // IAvanceTutoriaCarreraPdfGenerator (.pdf, módulo TIT)
-    planillaAvanceTutoriaExcelGenerator: 'planillaAvanceTutoriaExcelGenerator', // IPlanillaAvanceTutoriaExcelGenerator (.xlsx, módulo TIT)
+    // Extensión 2026-08-10 (módulo TIT · titulación): Seguimiento de
+    // tutorías a docentes (reemplaza planillaAvanceTutoriaExcelGenerator).
+    seguimientoTutoriaDocentesExcelGenerator: 'seguimientoTutoriaDocentesExcelGenerator', // ISeguimientoTutoriaDocentesExcelGenerator (.xlsx, módulo TIT)
     // Extensión 2026-08-01 (módulo TIT · titulación): acta de defensa de grado.
     actaDefensaPdfGenerator: 'actaDefensaPdfGenerator', // IActaDefensaPdfGenerator (.pdf, módulo TIT)
 };

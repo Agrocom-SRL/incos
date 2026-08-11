@@ -59,6 +59,12 @@ export class IncosPDFLibBase {
         this._currentPage = null;
         this._currentY = null;
         this._pdfDoc = null;
+        // Nombre de la plantilla con la que se inicializó el documento (recordado
+        // por _loadTemplate) y una copia prístina lazy para páginas adicionales
+        // (_addTemplatePage) — la página 0 del documento de trabajo ya tiene
+        // contenido dibujado, así que no sirve como plantilla en blanco.
+        this._templateFileName = null;
+        this._templatePageSource = null;
     }
 
     // ============================================
@@ -95,7 +101,50 @@ export class IncosPDFLibBase {
         // Registrar fontkit para poder usar fuentes personalizadas TTF/OTF
         pdfDoc.registerFontkit(fontkit);
 
+        // Recordar el nombre para páginas adicionales (ver _addTemplatePage)
+        this._templateFileName = templateFileName;
+
         return pdfDoc;
+    }
+
+    /**
+     * Agrega una página nueva al documento de trabajo, reutilizando la misma
+     * plantilla con la que se inicializó (mismo archivo que cargó _loadTemplate:
+     * encabezado con logos + pie verde) y reinicia el cursor bajo su encabezado.
+     * Sin plantilla registrada (documento en blanco), agrega una página del
+     * mismo tamaño que la actual y reinicia el cursor bajo el margen superior.
+     *
+     * Pensado para tablas/contenido que exceden una página (ver `_addTable`
+     * con `options.paginate`); mismo patrón que
+     * `HistorialAcademicoPdfGenerator._nuevaPagina`, generalizado aquí para
+     * cualquier generador.
+     *
+     * @protected
+     * @returns {Promise<PDFPage>} La nueva página, ya activa como _currentPage
+     */
+    async _addTemplatePage() {
+        if (!this._pdfDoc || !this._currentPage) {
+            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
+        }
+
+        if (!this._templateFileName) {
+            const { width, height } = this._currentPage.getSize();
+            const page = this._pdfDoc.addPage([width, height]);
+            this._currentPage = page;
+            this._currentY = height - IncosPDFBase.LAYOUT.margins.top;
+            return page;
+        }
+
+        if (!this._templatePageSource) {
+            // Fuente prístina separada del documento de trabajo (que ya tiene
+            // contenido dibujado en su página 0, así que no sirve para copiar).
+            this._templatePageSource = await this._loadTemplate(this._templateFileName);
+        }
+        const [page] = await this._pdfDoc.copyPages(this._templatePageSource, [0]);
+        this._pdfDoc.addPage(page);
+        this._currentPage = page;
+        this._currentY = this._calculateInitialY(page);
+        return page;
     }
 
     /**
@@ -435,7 +484,7 @@ export class IncosPDFLibBase {
      * @param {boolean} [usePrimaryColor=true] - Si true usa color primario (verde); si false usa negro (COLORS.text)
      * @returns {Promise<void>} Actualiza el estado interno _currentY
      */
-    async _addDocumentTitle(titleText, usePrimaryColor = true) {
+    async _addDocumentTitle(titleText, usePrimaryColor = true, options = {}) {
         if (!this._pdfDoc || !this._currentPage) {
             throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
         }
@@ -444,7 +493,7 @@ export class IncosPDFLibBase {
 
         // Siempre usar fuente personalizada por defecto desde configuración
         const titleFont = await this._loadCustomFont(this._pdfDoc, IncosPDFBase.FONTS.defaultTitleFont);
-        const titleFontSize = IncosPDFBase.FONTS.title.size;
+        const titleFontSize = options.fontSize ?? IncosPDFBase.FONTS.title.size;
         const titleRgb = this._hexToRgb(usePrimaryColor ? IncosPDFBase.COLORS.primary : IncosPDFBase.COLORS.text);
 
         // Siempre centrado
@@ -474,7 +523,7 @@ export class IncosPDFLibBase {
      * @param {string} text - Texto del subtítulo
      * @returns {Promise<void>} Actualiza el estado interno _currentY
      */
-    async _addSubtitle(text) {
+    async _addSubtitle(text, options = {}) {
         if (!this._pdfDoc || !this._currentPage) {
             throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
         }
@@ -483,7 +532,7 @@ export class IncosPDFLibBase {
 
         // Usar la misma fuente, color y tamaño que el título
         const subtitleFont = await this._loadCustomFont(this._pdfDoc, IncosPDFBase.FONTS.defaultTitleFont);
-        const subtitleFontSize = IncosPDFBase.FONTS.subtitle.size;
+        const subtitleFontSize = options.fontSize ?? IncosPDFBase.FONTS.subtitle.size;
         const subtitleRgb = this._hexToRgb(IncosPDFBase.COLORS.primary);
 
         // Siempre centrado
@@ -511,9 +560,12 @@ export class IncosPDFLibBase {
      * @protected
      * @param {string} text - Texto del título de sección
      * @param {boolean} [compactSpacing=false] - Si true, solo se resta LAYOUT.spacing.line en Y (no sectionFontSize). Si false, se resta sectionFontSize + spacing.
+     * @param {Object} [options]
+     * @param {number} [options.marginLeft] - Override del margen izquierdo (por defecto LAYOUT.margins.left)
+     * @param {number} [options.fontSize] - Override del tamaño de fuente (por defecto FONTS.section.size)
      * @returns {Promise<void>} Actualiza el estado interno _currentY
      */
-    async _addSection(text, compactSpacing = false) {
+    async _addSection(text, compactSpacing = false, options = {}) {
         if (!this._pdfDoc || !this._currentPage) {
             throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
         }
@@ -521,11 +573,11 @@ export class IncosPDFLibBase {
         // Usar fuente Helvetica-Bold desde configuración
         const sectionFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.section.font);
         const sectionFont = await this._pdfDoc.embedFont(sectionFontName);
-        const sectionFontSize = IncosPDFBase.FONTS.section.size;
+        const sectionFontSize = options.fontSize ?? IncosPDFBase.FONTS.section.size;
         const sectionRgb = this._hexToRgb(IncosPDFBase.COLORS.primary);
 
-        // Siempre alineado a la izquierda
-        const x = IncosPDFBase.LAYOUT.margins.left;
+        // Siempre alineado a la izquierda (override opcional de margen)
+        const x = options.marginLeft ?? IncosPDFBase.LAYOUT.margins.left;
 
         this._currentPage.drawText(text, {
             x,
@@ -551,9 +603,11 @@ export class IncosPDFLibBase {
      * 
      * @protected
      * @param {string} text - Texto del párrafo
+     * @param {Object} [options]
+     * @param {number} [options.fontSize] - Override del tamaño de fuente (por defecto FONTS.normal.size)
      * @returns {Promise<void>} Actualiza el estado interno _currentY
      */
-    async _addParagraph(text) {
+    async _addParagraph(text, options = {}) {
         if (!this._pdfDoc || !this._currentPage) {
             throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
         }
@@ -563,7 +617,7 @@ export class IncosPDFLibBase {
         // Usar fuente normal desde configuración
         const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
         const font = await this._pdfDoc.embedFont(normalFontName);
-        const fontSize = IncosPDFBase.FONTS.normal.size;
+        const fontSize = options.fontSize ?? IncosPDFBase.FONTS.normal.size;
         const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
 
         const maxWidth = pageWidth - IncosPDFBase.LAYOUT.margins.left - IncosPDFBase.LAYOUT.margins.right;
@@ -934,9 +988,18 @@ export class IncosPDFLibBase {
      * @param {number} [tableWidth] - Ancho total de la tabla. Si no se proporciona, usa el ancho disponible menos márgenes
      * @param {string[]} [alignments] - Alineación de cada columna ('left', 'center', 'right'). Por defecto todas 'left'
      * @param {number} [tableX] - Posición X de la tabla. Si no se proporciona, se centra si tableWidth está definido, o usa margins.left
+     * @param {Object} [options]
+     * @param {number} [options.fontSize] - Override del tamaño de fuente del contenido (por defecto FONTS.small.size)
+     * @param {number} [options.headerFontSize] - Override del tamaño de fuente del encabezado (por defecto FONTS.normal.size)
+     * @param {boolean} [options.paginate=false] - Si true, cuando una fila no entra sobre el pie de
+     *   página (`options.footerHeight`) cierra la tabla en la página actual, agrega una página nueva
+     *   con `_addTemplatePage()` y repite el encabezado antes de seguir. Default false: comportamiento
+     *   idéntico al de siempre (sin este flag NINGÚN otro llamador de `_addTable` cambia).
+     * @param {number} [options.footerHeight] - Alto del pie visual de la plantilla a NO invadir (por
+     *   defecto `LAYOUT.signatureTemplateFooterHeight` cuando `paginate` es true, 0 si no)
      * @returns {Promise<void>}
      */
-    async _addTable(headers, columnWidths, rows, tableWidth = null, alignments = [], tableX = null) {
+    async _addTable(headers, columnWidths, rows, tableWidth = null, alignments = [], tableX = null, options = {}) {
         if (!this._pdfDoc || !this._currentPage) {
             throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
         }
@@ -953,13 +1016,20 @@ export class IncosPDFLibBase {
         const boldFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
         const font = await this._pdfDoc.embedFont(normalFontName);
         const headerFont = await this._pdfDoc.embedFont(boldFontName);
-        const fontSize = IncosPDFBase.FONTS.small.size; // Contenido usa small.size
-        const headerFontSize = IncosPDFBase.FONTS.normal.size; // Header usa normal.size
+        // Contenido usa small.size / header usa normal.size, salvo override explícito (options.fontSize/headerFontSize)
+        const fontSize = options.fontSize ?? IncosPDFBase.FONTS.small.size;
+        const headerFontSize = options.headerFontSize ?? IncosPDFBase.FONTS.normal.size;
 
         const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
         const borderRgb = this._hexToRgb(IncosPDFBase.COLORS.border);
         const headerBgRgb = this._hexToRgb(IncosPDFBase.COLORS.primary);
         const whiteRgb = rgb(1, 1, 1);
+
+        // Salto de página (opt-in): sin options.paginate, comportamiento idéntico al de siempre.
+        const paginate = Boolean(options.paginate);
+        const footerHeight = options.footerHeight
+            ?? (paginate ? (IncosPDFBase.LAYOUT.signatureTemplateFooterHeight ?? 0) : 0);
+        const floorY = margins.bottom + footerHeight;
 
         // Calcular ancho de la tabla
         const availableWidth = tableWidth ?? (pageWidth - margins.left - margins.right);
@@ -1071,74 +1141,102 @@ export class IncosPDFLibBase {
             maxHeaderLines = Math.max(maxHeaderLines, lines.length);
         }
         const actualHeaderHeight = Math.max(headerHeight, maxHeaderLines * headerLineHeight + (cellPadding * 2));
-        const headerY = currentY - actualHeaderHeight;
 
-        // Fondo del encabezado
-        this._currentPage.drawRectangle({
-            x: finalTableX,
-            y: headerY,
-            width: availableWidth,
-            height: actualHeaderHeight,
-            color: headerBgRgb,
-        });
+        // Dibuja el encabezado en la posición Y dada (se repite en cada página cuando paginate=true).
+        const drawHeader = (topY) => {
+            const hY = topY - actualHeaderHeight;
 
-        // Bordes del encabezado
-        this._currentPage.drawRectangle({
-            x: finalTableX,
-            y: headerY,
-            width: availableWidth,
-            height: actualHeaderHeight,
-            borderColor: borderRgb,
-            borderWidth,
-        });
+            this._currentPage.drawRectangle({
+                x: finalTableX,
+                y: hY,
+                width: availableWidth,
+                height: actualHeaderHeight,
+                color: headerBgRgb,
+            });
 
-        // Texto del encabezado (varias líneas por celda)
-        let currentX = finalTableX;
-        for (let col = 0; col < numCols; col++) {
-            const colWidth = actualWidths[col];
-            const lines = headerLinesByCol[col] || [''];
-            const alignment = normalizedAlignments[col];
-            const numLines = lines.length;
+            this._currentPage.drawRectangle({
+                x: finalTableX,
+                y: hY,
+                width: availableWidth,
+                height: actualHeaderHeight,
+                borderColor: borderRgb,
+                borderWidth,
+            });
 
-            for (let lineIdx = 0; lineIdx < numLines; lineIdx++) {
-                const lineText = lines[lineIdx];
-                if (lineText) {
-                    const textWidth = headerFont.widthOfTextAtSize(lineText, headerFontSize);
-                    let textX;
-                    if (alignment === 'center') {
-                        textX = currentX + (colWidth - textWidth) / 2;
-                    } else if (alignment === 'right') {
-                        textX = currentX + colWidth - textWidth - cellPadding;
-                    } else {
-                        textX = currentX + cellPadding;
+            let hX = finalTableX;
+            for (let col = 0; col < numCols; col++) {
+                const colWidth = actualWidths[col];
+                const lines = headerLinesByCol[col] || [''];
+                const alignment = normalizedAlignments[col];
+                const numLines = lines.length;
+
+                for (let lineIdx = 0; lineIdx < numLines; lineIdx++) {
+                    const lineText = lines[lineIdx];
+                    if (lineText) {
+                        const textWidth = headerFont.widthOfTextAtSize(lineText, headerFontSize);
+                        let textX;
+                        if (alignment === 'center') {
+                            textX = hX + (colWidth - textWidth) / 2;
+                        } else if (alignment === 'right') {
+                            textX = hX + colWidth - textWidth - cellPadding;
+                        } else {
+                            textX = hX + cellPadding;
+                        }
+                        const totalTextHeight = numLines * headerLineHeight;
+                        const startTextY = hY + (actualHeaderHeight - totalTextHeight) / 2 + headerFontSize * 0.3;
+                        const textY = startTextY + (numLines - 1 - lineIdx) * headerLineHeight;
+                        this._currentPage.drawText(lineText, {
+                            x: textX,
+                            y: textY,
+                            size: headerFontSize,
+                            font: headerFont,
+                            color: whiteRgb,
+                        });
                     }
-                    const totalTextHeight = numLines * headerLineHeight;
-                    const startTextY = headerY + (actualHeaderHeight - totalTextHeight) / 2 + headerFontSize * 0.3;
-                    const textY = startTextY + (numLines - 1 - lineIdx) * headerLineHeight;
-                    this._currentPage.drawText(lineText, {
-                        x: textX,
-                        y: textY,
-                        size: headerFontSize,
-                        font: headerFont,
-                        color: whiteRgb,
+                }
+
+                if (col < numCols - 1) {
+                    this._currentPage.drawLine({
+                        start: { x: hX + colWidth, y: hY },
+                        end: { x: hX + colWidth, y: hY + actualHeaderHeight },
+                        thickness: borderWidth,
+                        color: borderRgb,
                     });
                 }
+                hX += colWidth;
             }
 
-            if (col < numCols - 1) {
-                this._currentPage.drawLine({
-                    start: { x: currentX + colWidth, y: headerY },
-                    end: { x: currentX + colWidth, y: headerY + actualHeaderHeight },
-                    thickness: borderWidth,
-                    color: borderRgb,
-                });
-            }
-            currentX += colWidth;
-        }
+            return hY;
+        };
+
+        // Cierra los bordes (izquierdo/derecho/inferior) del segmento de tabla dibujado
+        // en la página actual — se usa antes de saltar de página y al final de la tabla.
+        const closeTableBorders = (segmentTopY, segmentBottomY) => {
+            this._currentPage.drawLine({
+                start: { x: finalTableX, y: segmentBottomY },
+                end: { x: finalTableX + availableWidth, y: segmentBottomY },
+                thickness: borderWidth,
+                color: borderRgb,
+            });
+            this._currentPage.drawLine({
+                start: { x: finalTableX, y: segmentTopY },
+                end: { x: finalTableX, y: segmentBottomY },
+                thickness: borderWidth,
+                color: borderRgb,
+            });
+            const rightX = finalTableX + availableWidth;
+            this._currentPage.drawLine({
+                start: { x: rightX, y: segmentTopY },
+                end: { x: rightX, y: segmentBottomY },
+                thickness: borderWidth,
+                color: borderRgb,
+            });
+        };
 
         // Dibujar filas de datos
+        let headerY = drawHeader(currentY);
         currentY = headerY;
-        const tableTopY = headerY + actualHeaderHeight;
+        let tableTopY = headerY + actualHeaderHeight;
         let tableBottomY = headerY;
 
         for (let rowIdx = 0; rowIdx < rows.length; rowIdx++) {
@@ -1160,8 +1258,19 @@ export class IncosPDFLibBase {
             const lineHeight = fontSize * 1.2; // Espacio entre líneas
             const calculatedRowHeight = Math.max(rowHeight, (maxLines * lineHeight) + (cellPadding * 2));
 
+            // Salto de página: esta fila no entra sobre el pie de la plantilla.
+            if (paginate && (currentY - calculatedRowHeight) < floorY) {
+                closeTableBorders(tableTopY, currentY);
+                // eslint-disable-next-line no-await-in-loop
+                await this._addTemplatePage();
+                currentY = this._currentY;
+                headerY = drawHeader(currentY);
+                currentY = headerY;
+                tableTopY = headerY + actualHeaderHeight;
+            }
+
             currentY -= calculatedRowHeight;
-            currentX = finalTableX;
+            let currentX = finalTableX;
             tableBottomY = currentY; // Actualizar la parte inferior de la tabla
 
             // Borde superior de la fila
@@ -1222,31 +1331,8 @@ export class IncosPDFLibBase {
             }
         }
 
-        // Borde inferior de la tabla
-        this._currentPage.drawLine({
-            start: { x: finalTableX, y: currentY },
-            end: { x: finalTableX + availableWidth, y: currentY },
-            thickness: borderWidth,
-            color: borderRgb,
-        });
-
-        // Líneas verticales laterales (izquierda y derecha) de toda la tabla
-        // Línea vertical izquierda: desde el inicio del encabezado hasta el final de la última fila
-        this._currentPage.drawLine({
-            start: { x: finalTableX, y: tableTopY },
-            end: { x: finalTableX, y: tableBottomY },
-            thickness: borderWidth,
-            color: borderRgb,
-        });
-
-        // Línea vertical derecha: desde el inicio del encabezado hasta el final de la última fila
-        const tableRightX = finalTableX + availableWidth;
-        this._currentPage.drawLine({
-            start: { x: tableRightX, y: tableTopY },
-            end: { x: tableRightX, y: tableBottomY },
-            thickness: borderWidth,
-            color: borderRgb,
-        });
+        // Cierra los bordes del último segmento (o de toda la tabla si no hubo saltos de página)
+        closeTableBorders(tableTopY, tableBottomY);
 
         // Actualizar posición Y después de la tabla
         this._currentY = currentY - IncosPDFBase.LAYOUT.spacing.line;
@@ -1689,6 +1775,7 @@ export class IncosPDFLibBase {
      * @protected
      * @param {Object} opts - Opciones
      * @param {string[]} opts.lines - Líneas de texto centradas bajo la línea (orden: primera más cerca de la línea)
+     * @param {number} [opts.fontSize] - Tamaño de fuente (por defecto FONTS.normal.size)
      * @returns {Promise<void>}
      */
     async _addSignatureBlock(opts = {}) {
@@ -1709,7 +1796,7 @@ export class IncosPDFLibBase {
 
         const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
         const font = await this._pdfDoc.embedFont(normalFontName);
-        const fontSize = IncosPDFBase.FONTS.normal.size;
+        const fontSize = opts.fontSize ?? IncosPDFBase.FONTS.normal.size;
         const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
 
         const centerX = pageWidth / 2;
@@ -1742,6 +1829,132 @@ export class IncosPDFLibBase {
             }
             textY -= fontSize + (i < lines.length - 1 ? spaceBetweenLines : 0);
         }
+    }
+
+    /**
+     * Agrega un párrafo con estilos MIXTOS por palabra (negrita y/o subrayado),
+     * con word-wrap continuo a través de TODO el párrafo (no por segmento).
+     * Pensado para textos tipo formulario legal: una oración corrida donde
+     * algunos datos variables van subrayados (como si se hubiesen escrito a
+     * máquina sobre un espacio en blanco) y alguna frase fija va en negrita.
+     *
+     * @protected
+     * @param {Array<{text: string, bold?: boolean, underline?: boolean}>} runs -
+     *   Segmentos en orden; cada uno hereda su estilo a todas sus palabras.
+     * @param {Object} [options]
+     * @param {number} [options.fontSize] - Tamaño de fuente (por defecto FONTS.normal.size)
+     * @param {number} [options.lineSpacing] - Espacio entre líneas (por defecto LAYOUT.spacing.line)
+     * @param {number} [options.paragraphSpacing] - Espacio después del párrafo (por defecto LAYOUT.spacing.paragraph)
+     * @param {number} [options.underlineOffset] - Distancia del subrayado bajo la línea base (por defecto 2)
+     * @param {number} [options.marginLeft] - Override del margen izquierdo (por defecto LAYOUT.margins.left)
+     * @param {number} [options.marginRight] - Override del margen derecho (por defecto LAYOUT.margins.right)
+     * @returns {Promise<void>} Actualiza el estado interno _currentY
+     */
+    async _addRichParagraph(runs, options = {}) {
+        if (!this._pdfDoc || !this._currentPage) {
+            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
+        }
+        if (!Array.isArray(runs) || runs.length === 0) return;
+
+        const { width: pageWidth } = this._currentPage.getSize();
+        const fontSize = options.fontSize ?? IncosPDFBase.FONTS.normal.size;
+        const lineSpacing = options.lineSpacing ?? IncosPDFBase.LAYOUT.spacing.line;
+        const paragraphSpacing = options.paragraphSpacing ?? IncosPDFBase.LAYOUT.spacing.paragraph;
+        const underlineOffset = options.underlineOffset ?? 2;
+
+        const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
+        const boldFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
+        const normalFont = await this._pdfDoc.embedFont(normalFontName);
+        const boldFont = await this._pdfDoc.embedFont(boldFontName);
+        const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
+
+        const { margins } = IncosPDFBase.LAYOUT;
+        const marginLeft = options.marginLeft ?? margins.left;
+        const marginRight = options.marginRight ?? margins.right;
+        const maxWidth = pageWidth - marginLeft - marginRight;
+        const x0 = marginLeft;
+
+        // Tokenizar por palabra, preservando el estilo del segmento de origen.
+        const tokens = [];
+        for (const run of runs) {
+            const words = String(run?.text ?? '').split(' ').filter((w) => w !== '');
+            for (const word of words) {
+                tokens.push({ word, bold: !!run.bold, underline: !!run.underline });
+            }
+        }
+        if (tokens.length === 0) return;
+
+        const spaceWidth = normalFont.widthOfTextAtSize(' ', fontSize);
+
+        // Empaquetar tokens en líneas respetando maxWidth (wrap continuo).
+        const lines = [];
+        let currentLine = [];
+        let currentWidth = 0;
+        for (const token of tokens) {
+            const font = token.bold ? boldFont : normalFont;
+            const wordWidth = font.widthOfTextAtSize(token.word, fontSize);
+            const extra = currentLine.length > 0 ? spaceWidth : 0;
+            if (currentWidth + extra + wordWidth > maxWidth && currentLine.length > 0) {
+                lines.push(currentLine);
+                currentLine = [token];
+                currentWidth = wordWidth;
+            } else {
+                currentLine.push(token);
+                currentWidth += extra + wordWidth;
+            }
+        }
+        if (currentLine.length > 0) lines.push(currentLine);
+
+        // _drawUnderlineSegment vive FUERA del loop de líneas (no-loop-func):
+        // recibe start/end/y explícitos en vez de cerrar sobre variables
+        // mutables del loop.
+        const drawUnderlineSegment = (startX, endX, y) => {
+            this._currentPage.drawLine({
+                start: { x: startX, y: y - underlineOffset },
+                end: { x: endX, y: y - underlineOffset },
+                thickness: 0.75,
+                color: textRgb,
+            });
+        };
+
+        // Dibujar línea por línea; agrupa palabras subrayadas consecutivas en
+        // un solo trazo continuo (no un subrayado cortado por cada palabra).
+        let currentY = this._currentY;
+        for (const line of lines) {
+            let x = x0;
+            let underlineStart = null;
+            let underlineEnd = null;
+
+            for (const token of line) {
+                const font = token.bold ? boldFont : normalFont;
+                const wordWidth = font.widthOfTextAtSize(token.word, fontSize);
+                this._currentPage.drawText(token.word, {
+                    x,
+                    y: currentY,
+                    size: fontSize,
+                    font,
+                    color: textRgb,
+                });
+
+                if (token.underline) {
+                    if (underlineStart === null) underlineStart = x;
+                    underlineEnd = x + wordWidth;
+                } else if (underlineStart !== null) {
+                    drawUnderlineSegment(underlineStart, underlineEnd, currentY);
+                    underlineStart = null;
+                    underlineEnd = null;
+                }
+
+                x += wordWidth + spaceWidth;
+            }
+            if (underlineStart !== null) {
+                drawUnderlineSegment(underlineStart, underlineEnd, currentY);
+            }
+
+            currentY -= fontSize + lineSpacing;
+        }
+
+        this._currentY = currentY - paragraphSpacing;
     }
 
     // ============================================

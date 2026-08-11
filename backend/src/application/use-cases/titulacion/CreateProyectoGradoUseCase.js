@@ -8,7 +8,7 @@ import {
 import { sequelize } from '../../../infrastructure/database/sequelize.js';
 import {
   assertEstudianteSinProyectoVigente,
-  assertEstudianteEsTercerAnio,
+  resolveInscripcionVigenteEstudiante,
 } from './helpers/proyectoTutoriaGuards.js';
 
 /**
@@ -21,9 +21,11 @@ import {
  *   individuales; los consumidores nuevos leen la satélite, no la raíz).
  * - Solo la modalidad PSP (MODALIDAD_GRUPAL_CODIGO) admite varios integrantes.
  * - Regla: un estudiante solo puede tener UN proyecto vigente.
- * - Regla (extensión 2026-07-31, Requisito 1): TODOS los estudiantes
- *   (titular e integrantes PSP) deben estar cursando el 3er año en la
- *   gestión de creación — ver `assertEstudianteEsTercerAnio`.
+ * - Regla del 3er año (Requisito 1, 2026-07-31) RETIRADA el 2026-08-11: elegir
+ *   modalidad de graduación / iniciar un proyecto de grado ya no depende del
+ *   año que cursa el estudiante — queda a criterio administrativo de
+ *   Dirección de Carrera, no del sistema. Se conserva
+ *   `resolveInscripcionVigenteEstudiante` solo para derivar carreraId/gestionId.
  * - `estudiante_id` legacy de la raíz: titular en individuales, NULL en grupales.
  * - `estado` SIEMPRE nace en PERFIL (transiciones vía T11).
  * - `carreraId`/`gestionId`: si no llegan en el body, se derivan de la
@@ -36,7 +38,7 @@ export class CreateProyectoGradoUseCase {
    * @param {Object} params.integranteProyectoRepository
    * @param {Object} params.modalidadGradoRepository
    * @param {Object} params.studentRepository - Validación de estudiantes
-   * @param {Object} params.enrollmentRepository - Guard de 3er año (vista 101)
+   * @param {Object} params.enrollmentRepository - Inscripción vigente (vista 101)
    * @param {Object} params.calificacionContextoRepository - Gestión vigente
    *   (fallback cuando el body no manda gestionId)
    * @param {ILogger} params.logger
@@ -170,8 +172,8 @@ export class CreateProyectoGradoUseCase {
   }
 
   /**
-   * Valida existencia, ausencia de proyecto vigente y 3er año de CADA
-   * estudiante (titular e integrantes PSP grupales).
+   * Valida existencia y ausencia de proyecto vigente de CADA estudiante
+   * (titular e integrantes PSP grupales), y resuelve su inscripción vigente.
    * @private
    * @returns {Promise<Object|null>} Fila de inscripción (vista 101) del
    *   titular, para derivar carreraId/gestionId si el body no los manda.
@@ -191,7 +193,7 @@ export class CreateProyectoGradoUseCase {
         estudianteId,
       });
       // eslint-disable-next-line no-await-in-loop
-      const inscripcion = await assertEstudianteEsTercerAnio({
+      const inscripcion = await resolveInscripcionVigenteEstudiante({
         enrollmentRepository: this.enrollmentRepository,
         estudianteId,
         gestionId,
@@ -204,8 +206,8 @@ export class CreateProyectoGradoUseCase {
   }
 
   /**
-   * Resuelve la gestión efectiva para el guard de 3er año: la del body si
-   * llega, o la vigente (mismo patrón `resolverGestion` de
+   * Resuelve la gestión efectiva para derivar carreraId/gestionId: la del
+   * body si llega, o la vigente (mismo patrón `resolverGestion` de
    * GetPanelAcompanamientoUseCase).
    * @private
    */

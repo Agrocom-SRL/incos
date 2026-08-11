@@ -3,8 +3,9 @@
  * carrera (módulo TIT · Titulación, Requisito 2 — extensión 2026-07-31).
  *
  * Descarga por blob AUTENTICADO (permiso `titulacion.proyecto` · EXPORTAR);
- * nunca por URL estática. Mismos filtros que la vista en pantalla
- * (`useAvanceTutoriaCarreraApi`).
+ * nunca por URL estática. Botón directo en `ProyectosGradoList` (sin página
+ * intermedia): siempre gestión vigente + todas las carreras, mismo criterio
+ * que aplica el backend cuando no recibe `gestionId`/`carreraId`.
  */
 
 import { useCallback, useMemo, useState } from 'react';

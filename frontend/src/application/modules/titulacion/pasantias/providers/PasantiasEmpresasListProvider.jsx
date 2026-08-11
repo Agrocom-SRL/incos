@@ -2,9 +2,9 @@
  * Provider: catálogo de empresas de pasantía (TIT · Pasantías).
  *
  * ABM de catálogo (patrón catálogos de Configuración): lista con
- * `incluirInactivos: true` (administra el toggle de estado P10) + mutación de
- * estado. Provider DELGADO: solo ensambla; el feedback y las columnas viven
- * en `usePasantiasEmpresasListPage`.
+ * `incluirInactivos: true` (administra el toggle de estado P10) + mutaciones
+ * de estado y eliminación (P21). Provider DELGADO: solo ensambla; el feedback
+ * y las columnas viven en `usePasantiasEmpresasListPage`.
  */
 
 import { useMemo } from 'react';
@@ -16,11 +16,11 @@ export const PasantiasEmpresasListProvider = ({ children }) => {
   const { empresas, loading, error, refetch } = usePasantiasEmpresasApi({
     incluirInactivos: true,
   });
-  const { cambiarEstadoEmpresa } = usePasantiaEmpresaMutations();
+  const { cambiarEstadoEmpresa, eliminarEmpresa } = usePasantiaEmpresaMutations();
 
   const value = useMemo(
-    () => ({ empresas, loading, error, refetch, cambiarEstadoEmpresa }),
-    [empresas, loading, error, refetch, cambiarEstadoEmpresa],
+    () => ({ empresas, loading, error, refetch, cambiarEstadoEmpresa, eliminarEmpresa }),
+    [empresas, loading, error, refetch, cambiarEstadoEmpresa, eliminarEmpresa],
   );
 
   return (

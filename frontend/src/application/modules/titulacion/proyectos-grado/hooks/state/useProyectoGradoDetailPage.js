@@ -29,6 +29,7 @@ import {
   PROYECTOS_GRADO_LIST_PATH,
   TIT_PROYECTOS_MENU_KEY,
   proyectoGradoEditarPath,
+  proyectoGradoActaDefensaPath,
 } from '@application-titulacion/config/paths';
 
 /** Estado del proyecto en el que se habilita el registro del acta (C6/D2). */
@@ -52,7 +53,6 @@ export const useProyectoGradoDetailPage = () => {
     docentesCatalogo,
     formularioModalidad,
     actaDefensa,
-    registrarActaDefensa,
     exportActaDefensaPdf,
     anularActaDefensa,
   } = useProyectoGradoDetailContext();
@@ -88,11 +88,11 @@ export const useProyectoGradoDetailPage = () => {
   const [asignandoTutor, setAsignandoTutor] = useState(false);
 
   const handleAsignarTutor = useCallback(
-    async (tutorId) => {
+    async ({ tutorId, observaciones } = {}) => {
       if (!proyectoId || tutorId == null) return;
       setAsignandoTutor(true);
       try {
-        const result = await mutations.asignarTutor(proyectoId, tutorId);
+        const result = await mutations.asignarTutor(proyectoId, { tutorId, observaciones });
         if (result?.success) {
           notification.success({
             title: 'Tutor asignado',
@@ -145,6 +145,46 @@ export const useProyectoGradoDetailPage = () => {
         }
       } finally {
         setAprobandoEtapa(false);
+      }
+    },
+    [proyectoId, mutations, notification, refetch],
+  );
+
+  // ————— Cancelar proyecto (T11 con destino CANCELADO, extensión 2026-08-11) —————
+  /**
+   * Flujo SEPARADO del avance de etapa (pedido explícito del usuario):
+   * cancelar es posible desde cualquier etapa vigente, no una opción más a
+   * elegir junto a la siguiente etapa dentro de `AprobarEtapaModal`.
+   */
+  const [cancelarModalOpen, setCancelarModalOpen] = useState(false);
+  const [cancelandoProyecto, setCancelandoProyecto] = useState(false);
+
+  const puedeCancelarProyecto = transicionesDisponibles.includes('CANCELADO');
+
+  const handleCancelarProyecto = useCallback(
+    async (motivo) => {
+      if (!proyectoId) return;
+      setCancelandoProyecto(true);
+      try {
+        const result = await mutations.aprobarEtapa(proyectoId, {
+          estado: 'CANCELADO',
+          observaciones: motivo,
+        });
+        if (result?.success) {
+          notification.success({
+            title: 'Proyecto cancelado',
+            description: 'El proyecto quedó cancelado y no admite más transiciones.',
+          });
+          setCancelarModalOpen(false);
+          await refetch();
+        } else {
+          notification.error({
+            title: 'No se pudo cancelar el proyecto',
+            description: result?.error || 'Intente nuevamente en unos instantes.',
+          });
+        }
+      } finally {
+        setCancelandoProyecto(false);
       }
     },
     [proyectoId, mutations, notification, refetch],
@@ -266,7 +306,33 @@ export const useProyectoGradoDetailPage = () => {
     [proyectoId, bitacoraDrawer.entrada, bitacora, notification, cerrarBitacoraDrawer, refetch],
   );
 
-  // ————— Avances (T21) y dictámenes (T23) —————
+  // ————— Avances (T18-T21) —————
+  /**
+   * Subida de avance desde la ficha (extensión 2026-08-11, pedido explícito
+   * del usuario): el tab "Avances" solo mostraba archivos ya subidos por el
+   * estudiante y no ofrecía forma de registrar uno — `CreateAvanceProyectoUseCase`
+   * ya admite roles administrativos, solo faltaba la UI en esta pantalla.
+   */
+  const [subirAvanceOpen, setSubirAvanceOpen] = useState(false);
+
+  const handleSubirAvance = useCallback(
+    async ({ file, titulo, descripcion }) => {
+      if (!proyectoId || !file) return;
+      const result = await avances.subirAvance(proyectoId, { file, titulo, descripcion });
+      if (result?.success) {
+        notification.success({ title: 'Avance registrado' });
+        setSubirAvanceOpen(false);
+        await refetch();
+      } else {
+        notification.error({
+          title: 'No se pudo registrar el avance',
+          description: result?.error || 'Verifique el archivo (PDF o Word) e intente nuevamente.',
+        });
+      }
+    },
+    [proyectoId, avances, notification, refetch],
+  );
+
   const handleDescargarAvance = useCallback(
     async (avance) => {
       const result = await avances.descargarArchivo(proyectoId, avance);
@@ -309,35 +375,25 @@ export const useProyectoGradoDetailPage = () => {
   const puedeRegistrarActa =
     proyecto?.estado === ESTADO_PROYECTO_DEFENSA && puedeAprobarProyecto;
 
-  const [actaModalOpen, setActaModalOpen] = useState(false);
-
   /** Carga LAZY: la dispara la tab al abrirse por primera vez, no el montaje de la ficha. */
   const handleAbrirTabActaDefensa = useCallback(() => {
     if (!proyectoId || actaDefensa.cargado || actaDefensa.loading) return;
     actaDefensa.cargar(proyectoId);
   }, [proyectoId, actaDefensa]);
 
-  const handleRegistrarActaDefensa = useCallback(
-    async (payload) => {
-      if (!proyectoId) return;
-      const result = await registrarActaDefensa.registrar(proyectoId, payload);
-      if (result?.success) {
-        notification.success({
-          title: 'Acta de defensa registrada',
-          description:
-            'Se registró el acta de defensa y el proyecto quedó actualizado con el resultado del tribunal.',
-        });
-        setActaModalOpen(false);
-        await Promise.all([refetch(), actaDefensa.cargar(proyectoId)]);
-      } else {
-        notification.error({
-          title: 'No se pudo registrar el acta de defensa',
-          description: result?.error || 'Intente nuevamente en unos instantes.',
-        });
-      }
-    },
-    [proyectoId, registrarActaDefensa, notification, refetch, actaDefensa],
-  );
+  /**
+   * Registrar acta = página propia (extensión 2026-08-11, pedido explícito
+   * del usuario: eran muchos datos para un modal), no un modal más de la
+   * ficha. Lleva `returnListPath`/`menuSidebarKey` para que, al volver desde
+   * esa página, el flujo regrese a la lista de origen (mismo criterio que
+   * "Editar proyecto").
+   */
+  const handleIrARegistrarActa = useCallback(() => {
+    if (!proyectoId) return;
+    navigate(proyectoGradoActaDefensaPath(proyectoId), {
+      state: { returnListPath, menuSidebarKey },
+    });
+  }, [navigate, proyectoId, returnListPath, menuSidebarKey]);
 
   const handleExportarActaPdf = useCallback(
     async (acta) => {
@@ -407,6 +463,16 @@ export const useProyectoGradoDetailPage = () => {
       submit: handleAprobarEtapa,
       saving: aprobandoEtapa,
       transiciones: transicionesDisponibles,
+      proyecto,
+      bitacoraCount: bitacora.entradas?.length ?? 0,
+    },
+    cancelarModal: {
+      open: cancelarModalOpen,
+      abrir: () => setCancelarModalOpen(true),
+      cerrar: () => setCancelarModalOpen(false),
+      submit: handleCancelarProyecto,
+      saving: cancelandoProyecto,
+      puedeCancelar: puedeCancelarProyecto,
     },
     // Integrantes
     integrantes: {
@@ -438,6 +504,13 @@ export const useProyectoGradoDetailPage = () => {
       descargandoId: avances.descargandoId,
       descargar: handleDescargarAvance,
       revisar: abrirRevisionAvance,
+      subirModal: {
+        open: subirAvanceOpen,
+        abrir: () => setSubirAvanceOpen(true),
+        cerrar: () => setSubirAvanceOpen(false),
+        submit: handleSubirAvance,
+        subiendo: avances.subiendo,
+      },
     },
     // Dictámenes
     dictamenes: {
@@ -462,16 +535,8 @@ export const useProyectoGradoDetailPage = () => {
       descargandoId: exportActaDefensaPdf.descargandoId,
       exportarPdf: handleExportarActaPdf,
       anular: abrirAnularActaModal,
-      modal: {
-        open: actaModalOpen,
-        abrir: () => setActaModalOpen(true),
-        cerrar: () => setActaModalOpen(false),
-        submit: handleRegistrarActaDefensa,
-        saving: registrarActaDefensa.saving,
-        docentes: docentesCatalogo.docentes,
-        loadingDocentes: docentesCatalogo.loading,
-        docentesDisponible: docentesCatalogo.disponible,
-      },
+      // Registrar acta = página propia (extensión 2026-08-11), no modal.
+      irARegistrar: handleIrARegistrarActa,
       anularModal: {
         open: Boolean(actaAAnular),
         acta: actaAAnular,

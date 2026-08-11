@@ -61,15 +61,22 @@ export const TITULACION_TOKENS = {
   anularActaDefensaUseCase: 'titulacion.anularActaDefensaUseCase',
 
   // Use Cases — extensión 2026-07-31 (formulario de modalidad de graduación,
-  // reporte de avance por carrera, planilla de avance "10 en 10")
+  // reporte de avance por carrera)
   listEstudiantesElegiblesModalidadGradoUseCase:
     'titulacion.listEstudiantesElegiblesModalidadGradoUseCase',
   exportFormularioModalidadGradoPdfUseCase: 'titulacion.exportFormularioModalidadGradoPdfUseCase',
   getAvanceTutoriaCarreraUseCase: 'titulacion.getAvanceTutoriaCarreraUseCase',
   exportAvanceTutoriaCarreraPdfUseCase: 'titulacion.exportAvanceTutoriaCarreraPdfUseCase',
-  getPlanillaAvanceTercerAnioUseCase: 'titulacion.getPlanillaAvanceTercerAnioUseCase',
-  exportPlanillaAvanceTercerAnioExcelUseCase:
-    'titulacion.exportPlanillaAvanceTercerAnioExcelUseCase',
+
+  // Use Cases — extensión 2026-08-10: Seguimiento de tutorías a docentes
+  // (reemplaza la planilla de avance "10 en 10" de 3er año). El use case
+  // por docente alimenta el tablero en pantalla; el de por carrera (mismo
+  // mes, agrupado por carrera en vez de por docente) es exclusivo del Excel.
+  getSeguimientoTutoriaDocentesUseCase: 'titulacion.getSeguimientoTutoriaDocentesUseCase',
+  getSeguimientoTutoriaDocentesPorCarreraUseCase:
+    'titulacion.getSeguimientoTutoriaDocentesPorCarreraUseCase',
+  exportSeguimientoTutoriaDocentesExcelUseCase:
+    'titulacion.exportSeguimientoTutoriaDocentesExcelUseCase',
 
   // Controllers — Titulación
   listProyectosGradoController: 'titulacion.listProyectosGradoController',
@@ -109,9 +116,11 @@ export const TITULACION_TOKENS = {
     'titulacion.exportFormularioModalidadGradoPdfController',
   getAvanceTutoriaCarreraController: 'titulacion.getAvanceTutoriaCarreraController',
   exportAvanceTutoriaCarreraPdfController: 'titulacion.exportAvanceTutoriaCarreraPdfController',
-  getPlanillaAvanceTercerAnioController: 'titulacion.getPlanillaAvanceTercerAnioController',
-  exportPlanillaAvanceTercerAnioExcelController:
-    'titulacion.exportPlanillaAvanceTercerAnioExcelController',
+
+  // Controllers — extensión 2026-08-10: Seguimiento de tutorías a docentes
+  getSeguimientoTutoriaDocentesController: 'titulacion.getSeguimientoTutoriaDocentesController',
+  exportSeguimientoTutoriaDocentesExcelController:
+    'titulacion.exportSeguimientoTutoriaDocentesExcelController',
 
   // Router
   proyectosGradoRouter: 'titulacion.proyectosGradoRouter',

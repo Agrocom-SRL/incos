@@ -18,4 +18,15 @@ export class IBitacoraProyectoRepository extends IRepository {
   async findByProyectoGradoId(_proyectoGradoId) {
     throw new Error('Method findByProyectoGradoId() must be implemented');
   }
+
+  /**
+   * Máximo `porcentaje_avance` histórico registrado para el proyecto (piso
+   * para no permitir que una nueva entrada retroceda el avance del proyecto).
+   *
+   * @param {number} _proyectoGradoId
+   * @returns {Promise<number>} 0 si el proyecto aún no tiene ningún % registrado.
+   */
+  async findMaxPorcentajeAvance(_proyectoGradoId) {
+    throw new Error('Method findMaxPorcentajeAvance() must be implemented');
+  }
 }

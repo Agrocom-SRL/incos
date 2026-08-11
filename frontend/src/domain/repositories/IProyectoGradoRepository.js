@@ -179,8 +179,8 @@ export class IProyectoGradoRepository extends IBaseRepository {
   }
 
   // ==========================================================
-  // Extensión 2026-07-31 — Requisitos 1-3 (formulario de modalidad de
-  // graduación, reporte de avance por carrera, planilla "10 en 10").
+  // Extensión 2026-07-31 — Requisitos 1-2 (formulario de modalidad de
+  // graduación, reporte de avance por carrera).
   // ==========================================================
 
   /**
@@ -204,16 +204,6 @@ export class IProyectoGradoRepository extends IBaseRepository {
   }
 
   /**
-   * Reporte de avance de tutorías por carrera: resumen agregado + detalle
-   * por proyecto (Requisito 2, proyecto·LISTAR, `avanceTutoriaCarrera`).
-   * @param {{gestionId?: number, carreraId?: number}} [_params]
-   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
-   */
-  async obtenerAvanceTutoriaCarrera(_params) {
-    throw new Error('Método obtenerAvanceTutoriaCarrera debe ser implementado');
-  }
-
-  /**
    * Descarga el PDF del reporte de avance de tutorías por carrera
    * (Requisito 2, proyecto·EXPORTAR, blob).
    * @param {{gestionId?: number, carreraId?: number}} [_params]
@@ -223,25 +213,34 @@ export class IProyectoGradoRepository extends IBaseRepository {
     throw new Error('Método exportarAvanceTutoriaCarreraPdf debe ser implementado');
   }
 
+  // ==========================================================
+  // Extensión 2026-08-10 — Seguimiento de tutorías a docentes: reemplaza la
+  // planilla de avance "10 en 10" de 3er año (dependía de
+  // Matrícula/periodo_numero=3, sin datos en desarrollo, sin documento
+  // físico real).
+  // ==========================================================
+
   /**
-   * Planilla de avance de tutorías "10 en 10" (bimestral, 3er año): preview
-   * en pantalla (Requisito 3, proyecto·LISTAR, `planillaAvanceTercerAnio`).
-   * `carreraId` y `bimestre` son requeridos por el backend.
-   * @param {{carreraId: number, gestionId?: number, bimestre: number}} _params
+   * Seguimiento de tutorías a docentes: roster de tutoriados ACTIVOS por
+   * docente-tutor con el agregado mensual de bitácora, preview en pantalla
+   * (proyecto·LISTAR, `seguimientoTutoriaDocentes`). Todos los filtros son
+   * OPCIONALES; sin `anio`/`mes` el backend usa el mes/año actual del
+   * servidor.
+   * @param {{docenteId?: number, carreraId?: number, anio?: number, mes?: number}} [_params]
    * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
    */
-  async obtenerPlanillaAvanceTercerAnio(_params) {
-    throw new Error('Método obtenerPlanillaAvanceTercerAnio debe ser implementado');
+  async obtenerSeguimientoTutoriaDocentes(_params) {
+    throw new Error('Método obtenerSeguimientoTutoriaDocentes debe ser implementado');
   }
 
   /**
-   * Descarga el Excel de la planilla de avance de tutorías (Requisito 3,
-   * proyecto·EXPORTAR, blob).
-   * @param {{carreraId: number, gestionId?: number, bimestre: number}} _params
+   * Descarga el Excel del seguimiento de tutorías a docentes (una hoja por
+   * docente, proyecto·EXPORTAR, blob).
+   * @param {{docenteId?: number, carreraId?: number, anio?: number, mes?: number}} [_params]
    * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
    */
-  async exportarPlanillaAvanceTercerAnioExcel(_params) {
-    throw new Error('Método exportarPlanillaAvanceTercerAnioExcel debe ser implementado');
+  async exportarSeguimientoTutoriaDocentesExcel(_params) {
+    throw new Error('Método exportarSeguimientoTutoriaDocentesExcel debe ser implementado');
   }
 
   // ==========================================================

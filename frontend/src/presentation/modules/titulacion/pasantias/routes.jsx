@@ -30,6 +30,9 @@ const PasantiaEmpresaFormCreateConnector = lazy(
 const PasantiaEmpresaFormEditConnector = lazy(
   () => import('./connectors/PasantiaEmpresaFormEditConnector.jsx'),
 );
+const PasantiaEmpresaDetailConnector = lazy(
+  () => import('./connectors/PasantiaEmpresaDetailConnector.jsx'),
+);
 const MiPasantiaConnector = lazy(() => import('./connectors/MiPasantiaConnector.jsx'));
 
 export const pasantiasRoutes = [
@@ -61,6 +64,16 @@ export const pasantiasRoutes = [
     breadcrumbLabel: 'Editar empresa',
     permiso: 'titulacion.pasantia.empresa',
     accion: 'EDITAR',
+    menu: null,
+    breadcrumbParent: 'TIT-PASANTIAS',
+  },
+  {
+    path: '/titulacion/pasantias/empresas/:empresaId',
+    element: <PasantiaEmpresaDetailConnector />,
+    key: 'TIT-PASANTIAS-EMPRESA-DETALLE',
+    breadcrumbLabel: 'Detalle de empresa',
+    permiso: 'titulacion.pasantia.empresa',
+    accion: 'DETALLE',
     menu: null,
     breadcrumbParent: 'TIT-PASANTIAS',
   },

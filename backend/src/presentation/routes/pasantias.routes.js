@@ -48,9 +48,14 @@ export function buildPasantiasRouter({ controllers, middlewares }) {
   const pasantiaAprobar = [authenticate, verificarPermiso('titulacion.pasantia', 'APROBAR')];
   const pasantiaExportar = [authenticate, verificarPermiso('titulacion.pasantia', 'EXPORTAR')];
   const empresaListar = [authenticate, verificarPermiso('titulacion.pasantia.empresa', 'LISTAR')];
+  const empresaDetalle = [authenticate, verificarPermiso('titulacion.pasantia.empresa', 'DETALLE')];
   const empresaCrear = [authenticate, verificarPermiso('titulacion.pasantia.empresa', 'CREAR')];
   const empresaEditar = [authenticate, verificarPermiso('titulacion.pasantia.empresa', 'EDITAR')];
   const empresaActivar = [authenticate, verificarPermiso('titulacion.pasantia.empresa', 'ACTIVAR')];
+  const empresaEliminar = [
+    authenticate,
+    verificarPermiso('titulacion.pasantia.empresa', 'ELIMINAR'),
+  ];
   const informeListar = [authenticate, verificarPermiso('titulacion.pasantia.informe', 'LISTAR')];
   const informeCrear = [authenticate, verificarPermiso('titulacion.pasantia.informe', 'CREAR')];
   const informeEditar = [authenticate, verificarPermiso('titulacion.pasantia.informe', 'EDITAR')];
@@ -94,6 +99,15 @@ export function buildPasantiasRouter({ controllers, middlewares }) {
     (req, res, next) => controllers.createPasantiaEmpresaController.handle(req, res, next)
   );
 
+  // P20 GET /empresas/:empresaId - Ficha de empresa
+  router.get(
+    '/empresas/:empresaId',
+    ...empresaDetalle,
+    empresaIdValidator,
+    validateRequest,
+    (req, res, next) => controllers.getPasantiaEmpresaController.handle(req, res, next)
+  );
+
   // P9 PUT /empresas/:empresaId - Edición de empresa
   router.put(
     '/empresas/:empresaId',
@@ -112,6 +126,15 @@ export function buildPasantiasRouter({ controllers, middlewares }) {
     setEstadoPasantiaEmpresaValidator,
     validateRequest,
     (req, res, next) => controllers.setEstadoPasantiaEmpresaController.handle(req, res, next)
+  );
+
+  // P21 DELETE /empresas/:empresaId - Eliminar empresa (soft)
+  router.delete(
+    '/empresas/:empresaId',
+    ...empresaEliminar,
+    empresaIdValidator,
+    validateRequest,
+    (req, res, next) => controllers.deletePasantiaEmpresaController.handle(req, res, next)
   );
 
   // P18 GET /mis-pasantias - Bandeja del docente supervisor de la sesión (anti-IDOR)
@@ -227,6 +250,16 @@ export function buildPasantiasRouter({ controllers, middlewares }) {
     updateSeguimientoPasantiaValidator,
     validateRequest,
     (req, res, next) => controllers.updateSeguimientoPasantiaController.handle(req, res, next)
+  );
+
+  // GET /:id/seguimientos/:seguimientoId/pdf - Descarga de la hoja de seguimiento (extensión 2026-08-11)
+  router.get(
+    '/:id/seguimientos/:seguimientoId/pdf',
+    ...pasantiaExportar,
+    idValidator,
+    seguimientoIdValidator,
+    validateRequest,
+    (req, res, next) => controllers.exportSeguimientoPasantiaPdfController.handle(req, res, next)
   );
 
   return router;

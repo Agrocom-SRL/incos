@@ -24,6 +24,9 @@ import ProyectoActaDefensaSection from '@titulacion/proyectos-grado/components/o
 import SubirAvanceModal from '@titulacion/proyectos-grado/components/modals/SubirAvanceModal';
 import '@presentation/styles/pages/detail-page.css';
 
+/** Estado terminal: sin más actividad sobre el proyecto (mismo criterio que la ficha del tutor/admin). */
+const ESTADO_PROYECTO_CANCELADO = 'CANCELADO';
+
 const MiProyectoGradoPage = () => {
   const {
     proyecto,
@@ -47,14 +50,17 @@ const MiProyectoGradoPage = () => {
     actaDefensa,
   } = useMiProyectoGradoPage();
 
+  const estaCancelado = proyecto?.estado === ESTADO_PROYECTO_CANCELADO;
+
   // Bitácora en modo estudiante: sin edición, con acción "Confirmar" (firma).
+  // Un proyecto CANCELADO no admite más firmas (mismo criterio que la ficha).
   const bitacoraColumns = createBitacoraTableColumns({
     modoEstudiante: true,
-    onConfirmar: handleConfirmarEntrada,
+    onConfirmar: estaCancelado ? null : handleConfirmarEntrada,
     confirmandoId,
   });
 
-  const subirAvanceAction = proyecto ? (
+  const subirAvanceAction = proyecto && !estaCancelado ? (
     <ActionButton
       permiso={TITULACION_PERMISOS.avance}
       accion="CREAR"

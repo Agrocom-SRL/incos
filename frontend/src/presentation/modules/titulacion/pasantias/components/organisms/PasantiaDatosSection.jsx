@@ -1,19 +1,20 @@
 /**
- * Organismo: tab "Datos" de la ficha-hub del trámite de pasantía (TIT).
+ * Organismo: tab "Datos" de la ficha-hub del trámite de pasantía (TIT) —
+ * datos del trámite y del estudiante. La info de empresa/puesto, contrato de
+ * trabajo (convalidación) y supervisión se separó a `PasantiaEmpresaSection`
+ * (extensión 2026-08-11, pedido explícito del usuario): son datos de un
+ * tercero (la empresa), no del trámite en sí ni del estudiante.
  *
  * DetailInfoCard + DetailField (patrón ProyectoDatosSection). Recibe el
- * trámite ya mapeado (vista 168); no llama hooks. La sección de contrato
- * solo se muestra en el camino CONVALIDACION.
+ * trámite ya mapeado (vista 168); no llama hooks.
  */
 
-import { IdcardOutlined, ShopOutlined, SolutionOutlined, UserOutlined } from '@ant-design/icons';
+import { IdcardOutlined, SolutionOutlined } from '@ant-design/icons';
 import { DetailInfoCard } from '@molecules';
 import { DetailField, StatusPill } from '@atoms';
 import {
   formatEstadoPasantia,
-  formatTipoContrato,
   formatTipoPasantia,
-  formatTipoSocietario,
   getEstadoPasantiaPillClass,
 } from '@application-titulacion/utils/pasantiasPills';
 
@@ -47,58 +48,6 @@ const PasantiaDatosSection = ({ pasantia }) => (
       <DetailField label="C.I.">{pasantia.estudianteCi || '—'}</DetailField>
       <DetailField label="Carrera">{pasantia.carreraNombre || '—'}</DetailField>
       <DetailField label="Celular">{pasantia.estudianteCelular || '—'}</DetailField>
-    </DetailInfoCard>
-
-    <DetailInfoCard title="Empresa y puesto" icon={<ShopOutlined />} cols={3}>
-      <DetailField label="Empresa">{pasantia.empresaNombre || 'Sin empresa asignada'}</DetailField>
-      <DetailField label="Tipo societario">
-        {pasantia.empresaTipoSocietario
-          ? formatTipoSocietario(pasantia.empresaTipoSocietario)
-          : '—'}
-      </DetailField>
-      <DetailField label="NIT">{pasantia.empresaNit || '—'}</DetailField>
-      <DetailField label="Dirección">{pasantia.empresaDireccion || '—'}</DetailField>
-      <DetailField label="Teléfono">{pasantia.empresaTelefono || '—'}</DetailField>
-      <DetailField label="Sector / actividad">{pasantia.empresaSectorActividad || '—'}</DetailField>
-      <DetailField label="Área / departamento">{pasantia.areaDepartamento || '—'}</DetailField>
-      <DetailField label="Cargo / puesto">{pasantia.cargoPuesto || '—'}</DetailField>
-      <DetailField label="En funcionamiento">
-        {pasantia.empresaEnFuncionamiento == null
-          ? '—'
-          : pasantia.empresaEnFuncionamiento
-            ? 'Sí'
-            : 'No'}
-      </DetailField>
-      {pasantia.funciones ? (
-        <DetailField label="Funciones" span={3}>
-          {pasantia.funciones}
-        </DetailField>
-      ) : null}
-    </DetailInfoCard>
-
-    {pasantia.tipo === 'CONVALIDACION' ? (
-      <DetailInfoCard title="Contrato de trabajo (convalidación)" icon={<SolutionOutlined />} cols={3}>
-        <DetailField label="Tipo de contrato">
-          {pasantia.tipoContrato ? formatTipoContrato(pasantia.tipoContrato) : '—'}
-        </DetailField>
-        <DetailField label="Detalle del contrato">{pasantia.tipoContratoDetalle || '—'}</DetailField>
-      </DetailInfoCard>
-    ) : null}
-
-    <DetailInfoCard title="Supervisión" icon={<UserOutlined />} cols={3}>
-      <DetailField label="Docente supervisor">
-        {pasantia.docenteSupervisorNombre || 'Sin supervisor asignado'}
-      </DetailField>
-      <DetailField label="Responsable en la empresa">
-        {pasantia.responsableEmpresa || '—'}
-      </DetailField>
-      <DetailField label="Cargo del responsable">{pasantia.cargoResponsable || '—'}</DetailField>
-      <DetailField label="Teléfono del responsable">
-        {pasantia.telefonoResponsable || '—'}
-      </DetailField>
-      <DetailField label="Último seguimiento">
-        {pasantia.ultimoSeguimientoFechaLabel || 'Sin registros'}
-      </DetailField>
     </DetailInfoCard>
   </div>
 );

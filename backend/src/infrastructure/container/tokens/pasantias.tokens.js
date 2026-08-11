@@ -16,6 +16,7 @@ export const PASANTIAS_TOKENS = {
 
   // Servicios propios del módulo
   pasantiaInformePdfGenerator: 'pasantias.pasantiaInformePdfGenerator',
+  pasantiaSeguimientoPdfGenerator: 'pasantias.pasantiaSeguimientoPdfGenerator',
 
   // Use Cases — trámites
   listPasantiasUseCase: 'pasantias.listPasantiasUseCase',
@@ -27,9 +28,11 @@ export const PASANTIAS_TOKENS = {
 
   // Use Cases — catálogo de empresas
   listPasantiasEmpresasUseCase: 'pasantias.listPasantiasEmpresasUseCase',
+  getPasantiaEmpresaUseCase: 'pasantias.getPasantiaEmpresaUseCase',
   createPasantiaEmpresaUseCase: 'pasantias.createPasantiaEmpresaUseCase',
   updatePasantiaEmpresaUseCase: 'pasantias.updatePasantiaEmpresaUseCase',
   setEstadoPasantiaEmpresaUseCase: 'pasantias.setEstadoPasantiaEmpresaUseCase',
+  deletePasantiaEmpresaUseCase: 'pasantias.deletePasantiaEmpresaUseCase',
 
   // Use Cases — portal por rol
   listMisPasantiasSupervisadasUseCase: 'pasantias.listMisPasantiasSupervisadasUseCase',
@@ -43,6 +46,7 @@ export const PASANTIAS_TOKENS = {
   listSeguimientosPasantiaUseCase: 'pasantias.listSeguimientosPasantiaUseCase',
   createSeguimientoPasantiaUseCase: 'pasantias.createSeguimientoPasantiaUseCase',
   updateSeguimientoPasantiaUseCase: 'pasantias.updateSeguimientoPasantiaUseCase',
+  exportSeguimientoPasantiaPdfUseCase: 'pasantias.exportSeguimientoPasantiaPdfUseCase',
 
   // Controllers — trámites
   listPasantiasController: 'pasantias.listPasantiasController',
@@ -54,9 +58,11 @@ export const PASANTIAS_TOKENS = {
 
   // Controllers — catálogo de empresas
   listPasantiasEmpresasController: 'pasantias.listPasantiasEmpresasController',
+  getPasantiaEmpresaController: 'pasantias.getPasantiaEmpresaController',
   createPasantiaEmpresaController: 'pasantias.createPasantiaEmpresaController',
   updatePasantiaEmpresaController: 'pasantias.updatePasantiaEmpresaController',
   setEstadoPasantiaEmpresaController: 'pasantias.setEstadoPasantiaEmpresaController',
+  deletePasantiaEmpresaController: 'pasantias.deletePasantiaEmpresaController',
 
   // Controllers — portal por rol
   listMisPasantiasSupervisadasController: 'pasantias.listMisPasantiasSupervisadasController',
@@ -70,6 +76,7 @@ export const PASANTIAS_TOKENS = {
   listSeguimientosPasantiaController: 'pasantias.listSeguimientosPasantiaController',
   createSeguimientoPasantiaController: 'pasantias.createSeguimientoPasantiaController',
   updateSeguimientoPasantiaController: 'pasantias.updateSeguimientoPasantiaController',
+  exportSeguimientoPasantiaPdfController: 'pasantias.exportSeguimientoPasantiaPdfController',
 
   // Routers
   pasantiasRouter: 'pasantias.router',

@@ -36,8 +36,7 @@ const ProyectoDatosSection = ({ proyecto }) => (
       </DetailField>
     </DetailInfoCard>
 
-    <DetailInfoCard title="Descripción y objetivos" icon={<FileTextOutlined />} cols={1}>
-      <DetailField label="Descripción">{proyecto.descripcion || '—'}</DetailField>
+    <DetailInfoCard title="Objetivos" icon={<FileTextOutlined />} cols={1}>
       <DetailField label="Objetivos">{proyecto.objetivos || '—'}</DetailField>
       {proyecto.metodologia ? (
         <DetailField label="Metodología">{proyecto.metodologia}</DetailField>
@@ -45,26 +44,28 @@ const ProyectoDatosSection = ({ proyecto }) => (
       {proyecto.alcance ? <DetailField label="Alcance">{proyecto.alcance}</DetailField> : null}
     </DetailInfoCard>
 
-    <DetailInfoCard title="Tutoría" icon={<UserOutlined />} cols={3}>
-      <DetailField label="Tutor">{proyecto.tutorNombre || 'Sin tutor asignado'}</DetailField>
-      <DetailField label="Correo del tutor">{proyecto.tutorEmail || '—'}</DetailField>
-      <DetailField label="Teléfono del tutor">{proyecto.tutorTelefono || '—'}</DetailField>
-      <DetailField label="Última tutoría">{proyecto.ultimaTutoriaLabel || 'Sin registros'}</DetailField>
-      <DetailField label="Entradas de bitácora">{proyecto.bitacoraTotal}</DetailField>
-      <DetailField label="Observaciones pendientes">
-        {proyecto.observacionesPendientes}
-      </DetailField>
-      {proyecto.observacionesTutor ? (
-        <DetailField label="Observaciones del tutor" span={3}>
-          {proyecto.observacionesTutor}
+    {proyecto.tutorId ? (
+      <DetailInfoCard title="Tutoría" icon={<UserOutlined />} cols={3}>
+        <DetailField label="Tutor">{proyecto.tutorNombre || '—'}</DetailField>
+        <DetailField label="Correo del tutor">{proyecto.tutorEmail || '—'}</DetailField>
+        <DetailField label="Teléfono del tutor">{proyecto.tutorTelefono || '—'}</DetailField>
+        <DetailField label="Última tutoría">{proyecto.ultimaTutoriaLabel || 'Sin registros'}</DetailField>
+        <DetailField label="Entradas de bitácora">{proyecto.bitacoraTotal}</DetailField>
+        <DetailField label="Observaciones pendientes">
+          {proyecto.observacionesPendientes}
         </DetailField>
-      ) : null}
-      {proyecto.observacionesComite ? (
-        <DetailField label="Observaciones del comité" span={3}>
-          {proyecto.observacionesComite}
-        </DetailField>
-      ) : null}
-    </DetailInfoCard>
+        {proyecto.observacionesTutor ? (
+          <DetailField label="Observaciones del tutor" span={3}>
+            {proyecto.observacionesTutor}
+          </DetailField>
+        ) : null}
+        {proyecto.observacionesComite ? (
+          <DetailField label="Observaciones del comité" span={3}>
+            {proyecto.observacionesComite}
+          </DetailField>
+        ) : null}
+      </DetailInfoCard>
+    ) : null}
   </div>
 );
 

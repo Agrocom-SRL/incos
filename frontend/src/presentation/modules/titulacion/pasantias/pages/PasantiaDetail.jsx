@@ -1,11 +1,23 @@
 /**
  * Ficha-hub de trámite de pasantía (Titulación · TIT · DETALLE) — cabecera de
- * perfil + tabs datos / informes / seguimientos.
+ * perfil + tabs datos / informes / seguimientos, con la línea de tiempo del
+ * trámite y la transición de estado en la barra lateral (`PageTemplate`
+ * sidebar → `InfoSidebar`, extensión 2026-08-11, mismo movimiento que
+ * `ProyectoGradoDetail`).
  *
  * Patrón ficha-hub de `ProyectoGradoDetail` (DetailPageShell +
  * DetailProfileCard + DetailTabsPanel). Acción de cabecera gated por permiso
- * (ActionButton fail-closed): transición de estado (pasantia·APROBAR, P6).
+ * (ActionButton fail-closed): informe de verificación/convalidación — primer
+ * paso legal del trámite (emitir si no existe, descargar si ya fue emitido).
  * Página "dumb": la orquestación vive en `usePasantiaDetailPage`.
+ *
+ * Transición de estado (P6, reincorporado 2026-08-11 — pedido explícito del
+ * usuario, estaba retirado desde 2026-08-09 en espera de definir el
+ * mecanismo): botón "Transición de estado" en la tarjeta de línea de tiempo
+ * del sidebar (`PasantiaTimeline` slot `action`, mismo patrón que
+ * `ProyectoGradoTimeline`). Autorizar a EN_CURSO/CONVALIDADA exige el informe
+ * de verificación/convalidación con resultado VIABLE (R.M. 487/2023) — el
+ * modal ya recibe los destinos filtrados por el hook.
  */
 
 import { useState } from 'react';
@@ -13,8 +25,10 @@ import { Flex } from 'antd';
 import {
   ArrowLeftOutlined,
   CheckCircleOutlined,
+  FileAddOutlined,
   FilePdfOutlined,
   ScheduleOutlined,
+  ShopOutlined,
   SolutionOutlined,
 } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
@@ -28,11 +42,12 @@ import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPer
 import PasantiaFichaHeader from '@titulacion/pasantias/components/organisms/PasantiaFichaHeader';
 import PasantiaTimeline from '@titulacion/pasantias/components/organisms/PasantiaTimeline';
 import PasantiaDatosSection from '@titulacion/pasantias/components/organisms/PasantiaDatosSection';
+import PasantiaEmpresaSection from '@titulacion/pasantias/components/organisms/PasantiaEmpresaSection';
 import PasantiaInformesSection from '@titulacion/pasantias/components/organisms/PasantiaInformesSection';
 import PasantiaSeguimientosSection from '@titulacion/pasantias/components/organisms/PasantiaSeguimientosSection';
-import TransicionPasantiaModal from '@titulacion/pasantias/components/modals/TransicionPasantiaModal';
 import InformePasantiaDrawer from '@titulacion/pasantias/components/modals/InformePasantiaDrawer';
 import SeguimientoPasantiaDrawer from '@titulacion/pasantias/components/modals/SeguimientoPasantiaDrawer';
+import TransicionPasantiaModal from '@titulacion/pasantias/components/modals/TransicionPasantiaModal';
 import '@presentation/styles/pages/detail-page.css';
 
 const PasantiaDetail = () => {
@@ -44,6 +59,7 @@ const PasantiaDetail = () => {
     breadcrumbItems,
     handleVolver,
     handleEditar,
+    informeVerificacion,
     transicionModal,
     informes,
     seguimientos,
@@ -52,22 +68,51 @@ const PasantiaDetail = () => {
 
   const [activeKey, setActiveKey] = useState('datos');
 
+  const nombreInforme =
+    pasantia?.tipo === 'CONVALIDACION' ? 'informe de convalidación' : 'informe de verificación';
+
   const headerActions = (
     <Flex gap="small" wrap>
-      <ActionButton
-        permiso={TITULACION_PERMISOS.pasantia}
-        accion="APROBAR"
-        variant="success"
-        icon={<CheckCircleOutlined />}
-        disabled={transicionModal.transiciones.length === 0}
-        onClick={transicionModal.abrir}
-      >
-        Transición de estado
-      </ActionButton>
+      {informeVerificacion.informe ? (
+        <ActionButton
+          permiso={TITULACION_PERMISOS.pasantia}
+          accion="EXPORTAR"
+          variant="primary"
+          icon={<FilePdfOutlined />}
+          loading={informeVerificacion.descargando}
+          onClick={informeVerificacion.onDescargar}
+        >
+          Descargar {nombreInforme}
+        </ActionButton>
+      ) : (
+        <ActionButton
+          permiso={TITULACION_PERMISOS.pasantiaInforme}
+          accion="CREAR"
+          variant="primary"
+          icon={<FileAddOutlined />}
+          onClick={informeVerificacion.onEmitir}
+        >
+          Emitir {nombreInforme}
+        </ActionButton>
+      )}
       <BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver}>
         Volver
       </BackButton>
     </Flex>
+  );
+
+  const sidebarAction = (
+    <ActionButton
+      permiso={TITULACION_PERMISOS.pasantia}
+      accion="APROBAR"
+      variant="success"
+      icon={<CheckCircleOutlined />}
+      block
+      disabled={transicionModal.transiciones.length === 0}
+      onClick={transicionModal.abrir}
+    >
+      Transición de estado
+    </ActionButton>
   );
 
   const tabItems = pasantia
@@ -76,6 +121,11 @@ const PasantiaDetail = () => {
           key: 'datos',
           label: <DetailTabLabel icon={<SolutionOutlined />}>Datos</DetailTabLabel>,
           children: <PasantiaDatosSection pasantia={pasantia} />,
+        },
+        {
+          key: 'empresa',
+          label: <DetailTabLabel icon={<ShopOutlined />}>Empresa</DetailTabLabel>,
+          children: <PasantiaEmpresaSection pasantia={pasantia} />,
         },
         {
           key: 'informes',
@@ -90,7 +140,6 @@ const PasantiaDetail = () => {
               loading={informes.loading}
               error={informes.error}
               descargandoId={informes.descargandoId}
-              onNuevoInforme={informes.abrirNuevo}
               onEditarInforme={informes.abrirEditar}
               onDescargar={informes.descargar}
             />
@@ -108,8 +157,10 @@ const PasantiaDetail = () => {
               seguimientos={seguimientos.items}
               loading={seguimientos.loading}
               error={seguimientos.error}
+              descargandoId={seguimientos.descargandoId}
               onNuevoSeguimiento={seguimientos.abrirNuevo}
               onEditarSeguimiento={seguimientos.abrirEditar}
+              onDescargar={seguimientos.descargar}
             />
           ),
         },
@@ -125,6 +176,7 @@ const PasantiaDetail = () => {
           actions={headerActions}
         />
       }
+      sidebar={pasantia ? <PasantiaTimeline pasantia={pasantia} action={sidebarAction} /> : null}
     >
       <DetailPageShell
         loading={loading}
@@ -141,27 +193,17 @@ const PasantiaDetail = () => {
               puedeEditar={puedeEditar}
               onEditar={handleEditar}
             />
-            <PasantiaTimeline pasantia={pasantia} />
             <DetailTabsPanel items={tabItems} activeKey={activeKey} onChange={setActiveKey} />
           </Flex>
         ) : null}
       </DetailPageShell>
 
-      <TransicionPasantiaModal
-        open={transicionModal.open}
-        onCancel={transicionModal.cerrar}
-        onSubmit={transicionModal.submit}
-        saving={transicionModal.saving}
-        transiciones={transicionModal.transiciones}
-        estadoActual={pasantia?.estado ?? null}
-        horasCumplidas={pasantia?.horasCumplidas ?? null}
-        horasRequeridas={pasantia?.horasRequeridas ?? null}
-      />
       <InformePasantiaDrawer
         open={informes.drawer.open}
         informe={informes.drawer.informe}
         tipoPasantia={pasantia?.tipo ?? 'PASANTIA'}
         estudianteNombre={pasantia?.estudianteNombre}
+        areaDepartamento={pasantia?.areaDepartamento}
         onClose={informes.cerrarDrawer}
         onSubmit={informes.guardar}
         saving={informes.guardando}
@@ -173,6 +215,17 @@ const PasantiaDetail = () => {
         onClose={seguimientos.cerrarDrawer}
         onSubmit={seguimientos.guardar}
         saving={seguimientos.guardando}
+      />
+      <TransicionPasantiaModal
+        open={transicionModal.open}
+        onCancel={transicionModal.cerrar}
+        onSubmit={transicionModal.submit}
+        saving={transicionModal.saving}
+        transiciones={transicionModal.transiciones}
+        estadoActual={pasantia?.estado ?? null}
+        horasCumplidas={pasantia?.horasCumplidas ?? null}
+        horasRequeridas={pasantia?.horasRequeridas ?? null}
+        avisoInforme={transicionModal.avisoInforme}
       />
     </PageTemplate>
   );

@@ -1,5 +1,9 @@
 import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
-import { TIPOS_DICTAMEN_TUTORIA } from '../../../domain/constants/titulacion.constants.js';
+import {
+  TIPOS_DICTAMEN_TUTORIA,
+  TIPOS_BITACORA_TUTORIA,
+  ESTADOS_BITACORA_TUTORIA,
+} from '../../../domain/constants/titulacion.constants.js';
 import { getProyectoOrFail } from './helpers/proyectoTutoriaGuards.js';
 import {
   buildContextoDictamenPdf,
@@ -15,6 +19,11 @@ import {
  * DESIGNACIÓN OFICIAL: genera el PDF (IncosPDFLibBase + Plantilla.pdf), lo
  * guarda en uploads/documentos/proyectos-grado/:id/ y lo registra en
  * dictamenes_proyecto (tipo DESIGNACION_OFICIAL) para su envío a la DDE.
+ *
+ * Extensión 2026-08-11 (pedido explícito del usuario): además, registra la
+ * designación como una entrada de bitácora del proyecto (fecha, actividad y
+ * observaciones si el body las trae) — el historial de tutoría queda visible
+ * en la bitácora sin que el usuario tenga que registrarlo a mano.
  */
 export class AsignarTutorProyectoUseCase {
   /**
@@ -22,6 +31,7 @@ export class AsignarTutorProyectoUseCase {
    * @param {Object} params.proyectoGradoRepository
    * @param {Object} params.proyectoGradoListadoViewRepository - Vistas 159/160
    * @param {Object} params.dictamenProyectoRepository
+   * @param {Object} params.bitacoraProyectoRepository
    * @param {Object} params.teacherRepository - Validación del docente tutor
    * @param {Object} params.managementRepository - Año de gestión para el PDF
    * @param {Object} params.designacionTutorPdfGenerator - IDesignacionTutorPdfGenerator
@@ -32,6 +42,7 @@ export class AsignarTutorProyectoUseCase {
     proyectoGradoRepository,
     proyectoGradoListadoViewRepository,
     dictamenProyectoRepository,
+    bitacoraProyectoRepository,
     teacherRepository,
     managementRepository,
     designacionTutorPdfGenerator,
@@ -41,6 +52,7 @@ export class AsignarTutorProyectoUseCase {
     this.proyectoGradoRepository = proyectoGradoRepository;
     this.proyectoGradoListadoViewRepository = proyectoGradoListadoViewRepository;
     this.dictamenProyectoRepository = dictamenProyectoRepository;
+    this.bitacoraProyectoRepository = bitacoraProyectoRepository;
     this.teacherRepository = teacherRepository;
     this.managementRepository = managementRepository;
     this.designacionTutorPdfGenerator = designacionTutorPdfGenerator;
@@ -50,7 +62,7 @@ export class AsignarTutorProyectoUseCase {
 
   /**
    * @param {number} proyectoGradoId
-   * @param {Object} body - { tutorId, numeroInforme?, fechaEmision?, destinatario? }
+   * @param {Object} body - { tutorId, observaciones?, numeroInforme?, fechaEmision?, destinatario? }
    * @param {number|null} userId
    * @returns {Promise<{proyectoGrado: Object}>}
    */
@@ -107,6 +119,22 @@ export class AsignarTutorProyectoUseCase {
       },
       userId,
     });
+
+    // Registro automático, no una observación pendiente de resolución: nace
+    // ya SUBSANADO y "confirmado" (nadie debe atenderlo ni firmarlo).
+    await this.bitacoraProyectoRepository.create(
+      {
+        proyectoGradoId,
+        tipo: TIPOS_BITACORA_TUTORIA.REUNION,
+        fecha: fechaEmision,
+        actividad: `Asignación de tutor: ${tutorNombre}`,
+        observaciones: body.observaciones ?? null,
+        estado: ESTADOS_BITACORA_TUTORIA.SUBSANADO,
+        confirmadoEstudiante: true,
+        fechaConfirmacion: fechaEmision,
+      },
+      userId
+    );
 
     this.logger.info('[Tutorías] Tutor asignado y designación emitida', {
       proyectoGradoId,

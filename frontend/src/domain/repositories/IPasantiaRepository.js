@@ -25,6 +25,14 @@ export class IPasantiaRepository extends IBaseRepository {
   }
 
   /**
+   * Ficha de una empresa del catálogo (P20, empresa·DETALLE, `pasantiaEmpresa`).
+   * @param {string|number} _empresaId
+   */
+  async obtenerEmpresaPorId(_empresaId) {
+    throw new Error('Método obtenerEmpresaPorId debe ser implementado');
+  }
+
+  /**
    * Alta de una empresa en el catálogo (P8, empresa·CREAR, `pasantiaEmpresa`).
    * @param {Object} _data
    */
@@ -48,6 +56,14 @@ export class IPasantiaRepository extends IBaseRepository {
    */
   async cambiarEstadoEmpresa(_empresaId, _activo) {
     throw new Error('Método cambiarEstadoEmpresa debe ser implementado');
+  }
+
+  /**
+   * Elimina (soft) una empresa del catálogo (P21, empresa·ELIMINAR).
+   * @param {string|number} _empresaId
+   */
+  async eliminarEmpresa(_empresaId) {
+    throw new Error('Método eliminarEmpresa debe ser implementado');
   }
 
   /**
@@ -142,5 +158,15 @@ export class IPasantiaRepository extends IBaseRepository {
    */
   async actualizarSeguimiento(_id, _seguimientoId, _data) {
     throw new Error('Método actualizarSeguimiento debe ser implementado');
+  }
+
+  /**
+   * Descarga la hoja de seguimiento por endpoint autenticado (pasantia·EXPORTAR).
+   * @param {string|number} _id
+   * @param {string|number} _seguimientoId
+   * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
+   */
+  async descargarSeguimientoPdf(_id, _seguimientoId) {
+    throw new Error('Método descargarSeguimientoPdf debe ser implementado');
   }
 }

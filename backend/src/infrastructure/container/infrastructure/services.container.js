@@ -54,7 +54,7 @@ import { FichaSeguimientoClasePdfGenerator } from '../../external/pdf/docentes/F
 import { FormularioModalidadGradoPdfGenerator } from '../../external/pdf/titulacion/FormularioModalidadGradoPdfGenerator.js';
 import { AvanceTutoriaCarreraPdfGenerator } from '../../external/pdf/titulacion/AvanceTutoriaCarreraPdfGenerator.js';
 import { ActaDefensaPdfGenerator } from '../../external/pdf/titulacion/ActaDefensaPdfGenerator.js';
-import { PlanillaAvanceTutoriaExcelBuilder } from '../../external/excel/titulacion-planilla-avance/PlanillaAvanceTutoriaExcelBuilder.js';
+import { SeguimientoTutoriaDocentesExcelBuilder } from '../../external/excel/titulacion-seguimiento-docentes/SeguimientoTutoriaDocentesExcelBuilder.js';
 import { UploadsStorageAdapter } from '../../services/UploadsStorageAdapter.js';
 
 export function registerServicesModule(container) {
@@ -241,8 +241,8 @@ export function registerServicesModule(container) {
     );
     registerService(
         container,
-        SERVICIOS_TOKENS.planillaAvanceTutoriaExcelGenerator,
-        () => new PlanillaAvanceTutoriaExcelBuilder()
+        SERVICIOS_TOKENS.seguimientoTutoriaDocentesExcelGenerator,
+        () => new SeguimientoTutoriaDocentesExcelBuilder()
     );
 
     // ============================================

@@ -2,8 +2,8 @@
  * MiPasantiaPage — portal del estudiante (TIT-MI-PASANTIA, patrón Mi
  * proyecto). Presenta SU trámite compuesto (P19: pasantía + informes +
  * seguimientos) como ficha de detalle de SOLO LECTURA: cabecera de perfil
- * (sd-profile) + datos + informes + seguimientos sin acciones (el rol
- * ESTUDIANTE solo tiene pasantia·DETALLE).
+ * (sd-profile) + datos + empresa/supervisión + informes + seguimientos sin
+ * acciones (el rol ESTUDIANTE solo tiene pasantia·DETALLE).
  *
  * El backend resuelve el estudiante por token; esta pantalla jamás envía
  * `estudianteId`. Si no hay trámite (`pasantia = null`) muestra el estado
@@ -16,6 +16,7 @@ import { DetailPageShell } from '@organisms';
 import { useMiPasantiaPage } from '@application-titulacion/pasantias/hooks/state/useMiPasantiaPage';
 import PasantiaFichaHeader from '@titulacion/pasantias/components/organisms/PasantiaFichaHeader';
 import PasantiaDatosSection from '@titulacion/pasantias/components/organisms/PasantiaDatosSection';
+import PasantiaEmpresaSection from '@titulacion/pasantias/components/organisms/PasantiaEmpresaSection';
 import PasantiaInformesSection from '@titulacion/pasantias/components/organisms/PasantiaInformesSection';
 import PasantiaSeguimientosSection from '@titulacion/pasantias/components/organisms/PasantiaSeguimientosSection';
 import '@presentation/styles/pages/detail-page.css';
@@ -41,6 +42,8 @@ const MiPasantiaPage = () => {
             <PasantiaFichaHeader pasantia={pasantia} />
 
             <PasantiaDatosSection pasantia={pasantia} />
+
+            <PasantiaEmpresaSection pasantia={pasantia} />
 
             <PasantiaInformesSection
               informes={informes}

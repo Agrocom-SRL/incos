@@ -62,7 +62,7 @@ INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ru
 ('titulacion.bitacora', 'Bitácora de tutoría: listar, crear y editar entradas', NULL, 'TITULACION', 'TIT', 'tit_proyectos', '/titulacion/proyectos-grado', 1, NOW(), NOW()),
 ('titulacion.avance', 'Avances del proyecto: listar, ver detalle/descargar y subir archivos', NULL, 'TITULACION', 'TIT', 'tit_proyectos', '/titulacion/proyectos-grado', 1, NOW(), NOW()),
 ('titulacion.pasantia', 'Pasantías (práctica laboral): listar, ver detalle, registrar, editar, eliminar, transicionar estados y exportar PDF de informes', NULL, 'TITULACION', 'TIT', 'tit_pasantias', '/titulacion/pasantias', 1, NOW(), NOW()),
-('titulacion.pasantia.empresa', 'Catálogo de empresas de pasantía: listar, crear, editar y activar/desactivar', NULL, 'TITULACION', 'TIT', 'tit_pasantias', '/titulacion/pasantias', 1, NOW(), NOW()),
+('titulacion.pasantia.empresa', 'Catálogo de empresas de pasantía: listar, ver detalle, crear, editar, activar/desactivar y eliminar', NULL, 'TITULACION', 'TIT', 'tit_pasantias', '/titulacion/pasantias', 1, NOW(), NOW()),
 ('titulacion.pasantia.informe', 'Informes de pasantía (verificación/convalidación): listar, emitir y editar', NULL, 'TITULACION', 'TIT', 'tit_pasantias', '/titulacion/pasantias', 1, NOW(), NOW()),
 ('titulacion.pasantia.seguimiento', 'Seguimientos de pasantía: listar, registrar y editar', NULL, 'TITULACION', 'TIT', 'tit_pasantias', '/titulacion/pasantias', 1, NOW(), NOW());
 
@@ -96,10 +96,15 @@ JOIN (
   -- EXPORTAR: descarga del PDF de informes (GET /pasantias/:id/informes/:informeId/pdf)
   UNION ALL SELECT 'titulacion.pasantia', 'EXPORTAR'
   UNION ALL SELECT 'titulacion.pasantia.empresa', 'LISTAR'
+  UNION ALL SELECT 'titulacion.pasantia.empresa', 'DETALLE'
   UNION ALL SELECT 'titulacion.pasantia.empresa', 'CREAR'
   UNION ALL SELECT 'titulacion.pasantia.empresa', 'EDITAR'
   -- ACTIVAR: toggle activo del catálogo (PATCH /pasantias/empresas/:empresaId/estado)
   UNION ALL SELECT 'titulacion.pasantia.empresa', 'ACTIVAR'
+  -- ELIMINAR: soft-delete (DELETE /pasantias/empresas/:empresaId) — igual que
+  -- titulacion.pasantia, se reserva a DIR_ACADEMICO/RECTOR (control total más
+  -- abajo); SEC_ACADEMICA gestiona el catálogo pero no lo elimina.
+  UNION ALL SELECT 'titulacion.pasantia.empresa', 'ELIMINAR'
   UNION ALL SELECT 'titulacion.pasantia.informe', 'LISTAR'
   UNION ALL SELECT 'titulacion.pasantia.informe', 'CREAR'
   UNION ALL SELECT 'titulacion.pasantia.informe', 'EDITAR'
@@ -142,6 +147,7 @@ FROM (
   UNION ALL SELECT 'SEC_ACADEMICA', 'titulacion.pasantia', 'EDITAR'
   UNION ALL SELECT 'SEC_ACADEMICA', 'titulacion.pasantia', 'EXPORTAR'
   UNION ALL SELECT 'SEC_ACADEMICA', 'titulacion.pasantia.empresa', 'LISTAR'
+  UNION ALL SELECT 'SEC_ACADEMICA', 'titulacion.pasantia.empresa', 'DETALLE'
   UNION ALL SELECT 'SEC_ACADEMICA', 'titulacion.pasantia.empresa', 'CREAR'
   UNION ALL SELECT 'SEC_ACADEMICA', 'titulacion.pasantia.empresa', 'EDITAR'
   UNION ALL SELECT 'SEC_ACADEMICA', 'titulacion.pasantia.empresa', 'ACTIVAR'

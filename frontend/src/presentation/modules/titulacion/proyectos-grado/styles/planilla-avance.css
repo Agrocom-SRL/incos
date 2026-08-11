@@ -1,25 +1,20 @@
 /* ============================================================================
-   Titulación — planilla de avance de tutorías "10 en 10" (Requisito 3,
-   extensión 2026-07-31). Réplica en pantalla del folio impreso: banda de
-   color institucional, cabecera con carrera/gestión/bimestre, tabla de
-   nómina con nº de tutorías/porcentaje de avance/resultado y hoja final de
-   firmas de docentes tutores + cuadro de %.
+   Titulación — seguimiento de tutorías a docentes (extensión 2026-08-10).
+   Reemplaza la planilla de avance "10 en 10" de 3er año (dependía de
+   Matrícula/periodo_numero=3, sin datos en desarrollo y sin documento físico
+   real). Réplica en pantalla del bloque que exporta el backend (una hoja de
+   Excel por docente): banda con el nombre del docente-tutor, meta-row con
+   carrera(s)/tutorías del mes/tutoriados, tabla de roster y una única línea
+   de firma del docente al pie (reporte ADMINISTRATIVO a los docentes: sin
+   tally de resultados de estudiantes).
 
    Inspirado en el lenguaje visual de la vista de folio del Libro de registro
    (`academico/libros/styles/libros.css`, `.folio-sheet`), pero con clases
-   PROPIAS (`tit-planilla-*`, dominio distinto: avance de tutoría bimestral,
-   no notas finales) — no se importa ni se reutiliza ese archivo. Tokens
-   únicamente (var(--...) inyectadas por injectCSSVariables); ningún valor de
-   spacing/tipografía/color se hardcodea aquí.
+   PROPIAS (`tit-planilla-*`, dominio distinto) — no se importa ni se
+   reutiliza ese archivo. Tokens únicamente (var(--...) inyectadas por
+   injectCSSVariables); ningún valor de spacing/tipografía/color se
+   hardcodea aquí.
    ============================================================================ */
-
-.tit-planilla-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--spacing-md);
-}
 
 .tit-planilla-sheet {
   background: var(--color-bg-container, #ffffff);
@@ -146,31 +141,12 @@
   color: var(--color-text-secondary);
 }
 
-.tit-planilla-tally {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-lg);
-  justify-content: center;
-  padding: 0 var(--spacing-lg) var(--spacing-xl);
-}
-
-.tit-planilla-tally__item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-xs);
-  min-width: 96px;
-}
-
-.tit-planilla-tally__value {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-strong);
-  color: var(--color-text);
-}
-
-.tit-planilla-tally__label {
-  font-size: var(--font-size-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--color-text-secondary);
+/**
+ * Modificador: UNA sola firma por bloque de docente (en vez de la grilla de
+ * 3 columnas con varios tutores del folio anterior) — un docente firma una
+ * sola vez por su planilla mensual, alineada al margen derecho del bloque.
+ */
+.tit-planilla-firmas--single {
+  grid-template-columns: minmax(0, 320px);
+  justify-content: end;
 }

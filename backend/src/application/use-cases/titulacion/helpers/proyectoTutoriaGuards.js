@@ -90,10 +90,14 @@ export async function assertEstudianteSinProyectoVigente({
 }
 
 /**
- * Verifica que el estudiante esté cursando el 3er año en la gestión indicada
- * (regla de negocio: solo estudiantes de 3er año pueden elegir modalidad de
- * graduación / iniciar un proyecto de grado). Lanza ValidationError si no hay
- * inscripción vigente o si el periodo representativo no es el 3ro.
+ * Resuelve la inscripción vigente del estudiante en la gestión indicada.
+ *
+ * Ya NO exige que el estudiante esté cursando el 3er año (regla retirada
+ * 2026-08-11: elegir modalidad de graduación / iniciar un proyecto de grado
+ * queda a criterio administrativo de Dirección de Carrera, no del sistema —
+ * mismo criterio ya aplicado en frontend, ver `useProyectoGradoFormPage`).
+ * Lanza ValidationError si el estudiante no tiene inscripción vigente, ya que
+ * de ahí se derivan `carreraId`/`gestionId` cuando el body no los manda.
  *
  * Reutiliza EnrollmentRepository.obtenerListadoMatriculas (vista 101) en vez
  * de reescribir el JOIN de matrícula → periodo.
@@ -107,7 +111,7 @@ export async function assertEstudianteSinProyectoVigente({
  *   gestion_id, periodo_numero) para reutilizarla como fuente de datos
  *   derivados.
  */
-export async function assertEstudianteEsTercerAnio({
+export async function resolveInscripcionVigenteEstudiante({
   enrollmentRepository,
   estudianteId,
   gestionId = null,
@@ -127,11 +131,6 @@ export async function assertEstudianteEsTercerAnio({
   if (!inscripcion) {
     throw new ValidationError(
       `El estudiante con ID ${estudianteId} no tiene una inscripción vigente en la gestión indicada.`
-    );
-  }
-  if (Number(inscripcion.periodo_numero) !== 3) {
-    throw new ValidationError(
-      'El estudiante debe estar cursando el 3er año para elegir modalidad de graduación / iniciar un proyecto de grado.'
     );
   }
   return inscripcion;

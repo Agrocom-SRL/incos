@@ -1,7 +1,32 @@
 # Matriz de Permisos - Instituto INCOS
-## Ultima actualizacion: 2026-08-02
+## Ultima actualizacion: 2026-08-10
 
 Documento de auditoria funcional (frontend + backend + seeds) sobre permisos por accion.
+
+## Changelog 2026-08-10 — TIT: Requisito 3 reemplazado por "Seguimiento de tutorías a docentes" (sin permisos nuevos)
+
+La planilla "10 en 10" (bimestral, dependía de Matrícula/`periodo_numero=3`,
+sin correspondencia con ningún documento físico real del instituto) se
+reemplazó por un reporte administrativo A LOS DOCENTES (réplica de
+`PLANILLA DE SEGUIMIENTO DE TUTORIA 2026.xlsx`), roster-driven desde
+`proyectos_grado`/`integrantes_proyecto`, filtro mes+año. **No se agregan
+permisos ni acciones**: reutiliza `titulacion.proyecto` LISTAR/EXPORTAR,
+mismo criterio que la extensión 2026-07-31 que reemplaza.
+
+| Endpoint | Acción | `dataFieldName` |
+|---|---|---|
+| `GET /proyectos-grado/reportes/seguimiento-tutoria-docentes` | LISTAR | `seguimientoTutoriaDocentes` |
+| `GET /proyectos-grado/reportes/seguimiento-tutoria-docentes/export` | EXPORTAR | binario (.xlsx) |
+
+Vistas SQL reescritas en el mismo número (no se crearon vistas nuevas):
+`180-vista-base-tutoria-bitacora-mes-fila.sql` (antes
+`...-bimestre-fila`), `181-vista-tutoria-seguimiento-docentes.sql` (antes
+`...-planilla-avance-tercer-anio`). Endpoints, use cases, controllers,
+validator y builder Excel (`excel/titulacion-seguimiento-docentes/`, antes
+`titulacion-planilla-avance/`) renombrados en consecuencia. Ver nota
+"SUPERSEDIDO" en `docs/plan/titulacion-avance-y-modalidad-plan-desarrollo.md`
+para el registro histórico del diseño descartado. Requisitos 1 y 2 (fila de
+la entrada 2026-07-31 de abajo) NO cambiaron.
 
 ## Changelog 2026-08-02 — TIT: anulación de acta de defensa (P8) + guard anti-IDOR en satélites del proyecto (sin permisos nuevos)
 

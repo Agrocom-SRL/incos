@@ -68,16 +68,26 @@ export class SearchStudentUseCase extends BaseSearchUseCase {
     ]);
 
     const gestionAnioByStudentId = {};
+    const carreraByStudentId = {};
     (academicRows || []).forEach((row) => {
       const id = row?.estudiante_id;
-      if (id != null && gestionAnioByStudentId[id] === undefined) {
+      if (id == null) return;
+      if (gestionAnioByStudentId[id] === undefined) {
         gestionAnioByStudentId[id] = row.gestion_ingreso_anio ?? null;
+      }
+      if (carreraByStudentId[id] === undefined) {
+        carreraByStudentId[id] = {
+          carreraId: row.carrera_id ?? null,
+          carreraNombre: row.carrera_nombre ?? null,
+        };
       }
     });
 
     return applyResumenAcademico(results, resumenByStudentId).map((item) => ({
       ...item,
       gestionIngresoAnio: gestionAnioByStudentId[item.id] ?? null,
+      carreraId: carreraByStudentId[item.id]?.carreraId ?? null,
+      carreraNombre: carreraByStudentId[item.id]?.carreraNombre ?? null,
     }));
   }
 }

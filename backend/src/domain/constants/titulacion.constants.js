@@ -164,29 +164,17 @@ export const RESULTADOS_DICTAMEN_TUTORIA = {
 export const RESULTADOS_DICTAMEN_TUTORIA_VALUES = Object.values(RESULTADOS_DICTAMEN_TUTORIA);
 
 // ============================================
-// PLANILLA DE AVANCE "10 EN 10" (Requisito 3 — extensión 2026-07-31)
-// Artefacto de impresión/monitoreo bimestral de 3er año. NO es un documento
-// legal con folio persistido (a diferencia del Libro de registro, schema 25):
-// se deriva en tiempo de lectura de bitacora_proyecto + integrantes_proyecto
-// + proyectos_grado + periodos_academicos (vista 181). Constante propia, NO
-// se importa nada de `domain/constants/libros.constants.js`.
+// SEGUIMIENTO DE TUTORÍAS A DOCENTES (extensión 2026-08-10)
+// Reemplaza la "Planilla de avance 10 en 10" de 3er año (dependía de
+// Matrícula/periodo_numero=3, sin datos en desarrollo y sin correspondencia
+// con ningún documento físico real). Reporte ADMINISTRATIVO de Dirección
+// Académica sobre el cumplimiento de cada docente-tutor (no un reporte al
+// estudiante): réplica digital de "PLANILLA DE SEGUIMIENTO DE TUTORIA
+// 2026.xlsx". Se deriva en tiempo de lectura de bitacora_proyecto +
+// integrantes_proyecto + proyectos_grado (vistas 180/181), filtrado por
+// año/mes calendario (no bimestre, no folio, no clasificación de resultado):
+// no requiere constantes propias, a diferencia del artefacto anterior.
 // ============================================
-
-/** Estudiantes por folio impreso de la planilla de seguimiento de tutoría. */
-export const ESTUDIANTES_POR_FOLIO_TUTORIA = 10;
-
-/**
- * Clasificación de cada estudiante de 3er año en la planilla bimestral
- * (columna `resultado_tutoria` de la vista 181).
- */
-export const RESULTADOS_TUTORIA_TERCER_ANIO = {
-  APROBADO: 'APROBADO',
-  REPROBADO: 'REPROBADO',
-  ABANDONO: 'ABANDONO',
-  EN_PROCESO: 'EN_PROCESO',
-};
-
-export const RESULTADOS_TUTORIA_TERCER_ANIO_VALUES = Object.values(RESULTADOS_TUTORIA_TERCER_ANIO);
 
 // ============================================
 // ACTA DE DEFENSA (tablas `actas_defensa` / `tribunal_acta_defensa`,

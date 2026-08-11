@@ -1,13 +1,14 @@
 /**
- * Mapper de aplicación: TutoriaAvance (módulo TIT · titulación, extensión
- * 2026-07-31)
+ * Mapper de aplicación: TutoriaAvance (módulo TIT · titulación)
  *
- * Convierte filas crudas (snake_case) de las vistas 178/179/181 al formato de
- * presentación camelCase, compartido por los 3 requisitos:
+ * Convierte filas crudas (snake_case) de las vistas 178/179/181(+180) al
+ * formato de presentación camelCase, compartido por:
  * - Requisito 1 (formulario de modalidad de graduación): estudiantes
  *   elegibles de 3er año (vista 178).
  * - Requisito 2 (reporte de avance por carrera): resumen agregado (vista 179).
- * - Requisito 3 (planilla "10 en 10"): roster por bimestre (vista 181).
+ * - Seguimiento de tutorías a docentes (2026-08-10, reemplaza la planilla de
+ *   avance "10 en 10" de 3er año): roster de tutoriados por docente-tutor
+ *   (vista 181 + agregado mensual de la 180, resuelto en el repositorio).
  *
  * Los nombres de personas ya vienen armados en orden institucional
  * (APELLIDO_PATERNO APELLIDO_MATERNO NOMBRES) desde las vistas base
@@ -77,43 +78,44 @@ export function avanceCarreraRowsToPresentation(rows) {
 }
 
 /**
- * Fila de la vista 181 (roster de 3er año por bimestre) → presentación.
+ * Fila del roster de seguimiento a docentes (vista 181 + agregado mensual de
+ * la 180, ya combinados en `TutoriaAvanceViewRepository.findSeguimientoTutoriaDocentes`)
+ * → presentación. Grano: un tutoriado ACTIVO de un proyecto con tutor,
+ * dentro del mes/año consultado.
  * @param {Object|null} row
  * @returns {Object|null}
  */
-export function planillaRowToPresentation(row) {
+export function seguimientoDocenteRowToPresentation(row) {
   if (!row) return null;
   return {
     estudianteId: row.estudiante_id,
     ci: row.ci ?? null,
     expedicion: row.expedicion ?? null,
-    nombres: row.nombres ?? null,
-    apellidoPaterno: row.apellido_paterno ?? null,
-    apellidoMaterno: row.apellido_materno ?? null,
     nombreCompleto: row.estudiante_nombre_completo ?? null,
+    proyectoGradoId: row.proyecto_grado_id ?? null,
+    proyectoTitulo: row.proyecto_titulo ?? null,
+    proyectoEstado: row.proyecto_estado ?? null,
     carreraId: row.carrera_id ?? null,
     carreraCodigo: row.carrera_codigo ?? null,
     carreraNombre: row.carrera_nombre ?? null,
-    gestionId: row.gestion_id ?? null,
-    proyectoGradoId: row.proyecto_grado_id ?? null,
-    proyectoEstado: row.proyecto_estado ?? null,
-    tutorNombre: row.tutor_nombre ?? null,
-    bimestre: row.bimestre != null ? Number(row.bimestre) : null,
-    totalTutoriasBimestre: Number(row.total_tutorias_bimestre ?? 0),
+    docenteId: row.tutor_id ?? null,
+    docenteNombre: row.tutor_nombre ?? null,
+    totalTutoriasMes: Number(row.total_tutorias_mes ?? 0),
+    tutoriasEjecutadasMes: Number(row.tutorias_ejecutadas_mes ?? 0),
     porcentajeAvance: row.porcentaje_avance != null ? Number(row.porcentaje_avance) : null,
+    ultimaActividad: row.ultima_actividad ?? null,
     ultimaObservacion: row.ultima_observacion ?? null,
-    resultadoTutoria: row.resultado_tutoria ?? null,
   };
 }
 
 /**
- * Filas de la vista 181 → presentación.
+ * Filas del roster de seguimiento a docentes → presentación.
  * @param {Array<Object>} rows
  * @returns {Array<Object>}
  */
-export function planillaRowsToPresentation(rows) {
+export function seguimientoDocentesRowsToPresentation(rows) {
   if (!Array.isArray(rows)) return [];
-  return rows.map(planillaRowToPresentation);
+  return rows.map(seguimientoDocenteRowToPresentation);
 }
 
 /**
@@ -136,11 +138,11 @@ export class TutoriaAvanceMapper {
     return avanceCarreraRowsToPresentation(rows);
   }
 
-  static planillaRowToPresentation(row) {
-    return planillaRowToPresentation(row);
+  static seguimientoDocenteRowToPresentation(row) {
+    return seguimientoDocenteRowToPresentation(row);
   }
 
-  static planillaRowsToPresentation(rows) {
-    return planillaRowsToPresentation(rows);
+  static seguimientoDocentesRowsToPresentation(rows) {
+    return seguimientoDocentesRowsToPresentation(rows);
   }
 }

@@ -134,6 +134,7 @@ export const mapEmpresa = (raw) => {
   return {
     id: raw.id,
     nombre: cleanText(raw.nombre) || `Empresa ${raw.id}`,
+    nombreComercial: cleanText(raw.nombreComercial),
     tipoSocietario: raw.tipoSocietario ?? null,
     nit: cleanText(raw.nit),
     enFuncionamiento: raw.enFuncionamiento == null
@@ -228,7 +229,8 @@ export const mapFormValuesToPasantiaPayload = (values = {}) => {
     fechaInicio: toIsoDate(values.fechaInicio),
     fechaFinalizacion: toIsoDate(values.fechaFinalizacion),
     horasRequeridas: values.horasRequeridas != null ? Number(values.horasRequeridas) : null,
-    horasCumplidas: values.horasCumplidas != null ? Number(values.horasCumplidas) : null,
+    // horasCumplidas NO se llena en este formulario: alta usa el default de
+    // la tabla (0) y edición no la toca (se actualiza desde seguimiento).
     tipoContrato: esConvalidacion ? (values.tipoContrato ?? null) : null,
     tipoContratoDetalle: esConvalidacion ? cleanText(values.tipoContratoDetalle) : null,
     responsableEmpresa: cleanText(values.responsableEmpresa),
@@ -251,7 +253,6 @@ export const mapPasantiaToFormValues = (pasantia) => ({
   fechaInicio: pasantia?.fechaInicio ? dayjs(pasantia.fechaInicio) : undefined,
   fechaFinalizacion: pasantia?.fechaFinalizacion ? dayjs(pasantia.fechaFinalizacion) : undefined,
   horasRequeridas: pasantia?.horasRequeridas ?? HORAS_PASANTIA_MIN,
-  horasCumplidas: pasantia?.horasCumplidas ?? undefined,
   tipoContrato: pasantia?.tipoContrato ?? undefined,
   tipoContratoDetalle: pasantia?.tipoContratoDetalle ?? '',
   responsableEmpresa: pasantia?.responsableEmpresa ?? '',
@@ -263,6 +264,7 @@ export const mapPasantiaToFormValues = (pasantia) => ({
 /** Valores del formulario de empresa → payload del backend (P8/P9). */
 export const mapFormValuesToEmpresaPayload = (values = {}) => ({
   nombre: (values.nombre || '').trim(),
+  nombreComercial: cleanText(values.nombreComercial),
   tipoSocietario: values.tipoSocietario ?? null,
   nit: cleanText(values.nit),
   enFuncionamiento: values.enFuncionamiento === true,
@@ -275,6 +277,7 @@ export const mapFormValuesToEmpresaPayload = (values = {}) => ({
 /** Empresa → valores iniciales del formulario (alta y edición). */
 export const mapEmpresaToFormValues = (empresa) => ({
   nombre: empresa?.nombre ?? '',
+  nombreComercial: empresa?.nombreComercial ?? '',
   tipoSocietario: empresa?.tipoSocietario ?? undefined,
   nit: empresa?.nit ?? '',
   enFuncionamiento: empresa?.enFuncionamiento ?? true,

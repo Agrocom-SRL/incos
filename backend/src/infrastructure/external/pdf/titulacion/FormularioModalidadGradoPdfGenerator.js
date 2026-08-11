@@ -1,18 +1,33 @@
 /**
  * FormularioModalidadGradoPdfGenerator (módulo TIT · titulación, Requisito 1
- * — extensión 2026-07-31)
+ * — extensión 2026-07-31, alineado 2026-08-10 al documento físico real
+ * "FORMULARIO DE MODALIDAD DE GRADUACION (FMDG-1)" — Resolución Ministerial
+ * 426/2016)
  *
- * Genera el FORMULARIO DE MODALIDAD DE GRADUACIÓN (FMDG-1) a partir de la
- * plantilla institucional (Plantilla.pdf) con pdf-lib. Patrón
- * DesignacionTutorPdfGenerator: extiende IncosPDFLibBase, retorna Buffer (no
- * se guarda en uploads ni se registra en dictamenes_proyecto — documento
- * "export", ver §0.4 del plan de desarrollo).
+ * Genera el FMDG-1 a partir de la plantilla institucional (Plantilla.pdf,
+ * ya trae ambos logos — Ministerio de Educación + INCOS — y el pie
+ * institucional) con pdf-lib. Patrón DesignacionTutorPdfGenerator: extiende
+ * IncosPDFLibBase, retorna Buffer (no se guarda en uploads ni se registra en
+ * dictamenes_proyecto — documento "export", ver §0.4 del plan de desarrollo).
+ *
+ * Campos y texto de declaración replican 1:1 el documento físico: NOMBRES /
+ * APELLIDOS (2 campos, no 3) / CÉDULA DE IDENTIDAD (Nº + expedido) / Nº DE
+ * CELULAR / INSTITUTO / CARRERA / MODALIDAD DE GRADUACIÓN / NOMBRE-TEMA /
+ * OBJETIVOS (texto libre, el declarante ya distingue "Objetivo General" de
+ * "Objetivos Específicos" dentro del mismo campo — separados por línea en
+ * blanco, cada bloque se imprime como párrafo propio) + declaración fija +
+ * "Lugar y fecha" + nota al pie.
  *
  * @implements {IFormularioModalidadGradoPdfGenerator}
  */
 
 import { IncosPDFLibBase } from '../IncosPDFLibBase.js';
 import { IncosPDFBase } from '../IncosPDFBase.js';
+
+const MESES_ES = [
+  'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+  'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
+];
 
 export class FormularioModalidadGradoPdfGenerator extends IncosPDFLibBase {
   /**
@@ -34,14 +49,10 @@ export class FormularioModalidadGradoPdfGenerator extends IncosPDFLibBase {
       this._initializeDocumentState(pdfDoc, firstPage, true);
 
       await this._addDocumentTitle('FORMULARIO DE MODALIDAD DE GRADUACIÓN (FMDG-1)');
-      if (options.proyecto?.gestionAnio) {
-        await this._addSubtitle(`GESTIÓN ${options.proyecto.gestionAnio}`);
-      }
       this._addSpace();
 
-      await this._buildDatosDeclarante(options);
-      await this._buildDatosProyecto(options);
-      await this._buildDeclaracion();
+      await this._buildDatos(options);
+      await this._buildDeclaracion(options);
       await this._buildFirmas(options);
 
       const pdfBuffer = await this._saveDocument(pdfDoc);
@@ -58,63 +69,113 @@ export class FormularioModalidadGradoPdfGenerator extends IncosPDFLibBase {
     }
   }
 
-  /** @private */
-  async _buildDatosDeclarante(options) {
+  /**
+   * NOMBRES / APELLIDOS / CÉDULA DE IDENTIDAD (Nº + expedido + celular) /
+   * INSTITUTO / CARRERA / MODALIDAD DE GRADUACIÓN / NOMBRE-TEMA / OBJETIVOS.
+   * @private
+   */
+  async _buildDatos(options) {
     const est = options.estudiante || {};
-    await this._addSection('DATOS DEL DECLARANTE');
+    const proyecto = options.proyecto || {};
+    const apellidos = [est.apellidoPaterno, est.apellidoMaterno].filter(Boolean).join(' ');
+
     await this._addBoxedFieldGrid(
       [
         { label: 'Nombres:', value: est.nombres || '' },
-        { label: 'Apellido paterno:', value: est.apellidoPaterno || '' },
-        { label: 'Apellido materno:', value: est.apellidoMaterno || '' },
+        { label: 'Apellidos:', value: apellidos },
       ],
-      [
-        {
-          label: 'Cédula de identidad:',
-          value: this._formatCi(est.ci, est.expedicion),
-        },
-        { label: 'Nº de celular:', value: est.celular || '' },
-        { label: 'Instituto:', value: 'INSTITUTO TÉCNICO INCOS SANTA CRUZ' },
-      ],
-      45,
-      95,
-      110
+      [],
+      100,
+      90
     );
-    this._addSpace();
-  }
 
-  /** @private */
-  async _buildDatosProyecto(options) {
-    const proyecto = options.proyecto || {};
-    await this._addSection('MODALIDAD DE GRADUACIÓN');
     await this._addBoxedFieldGrid(
       [
+        { label: 'C.I. Nº:', value: est.ci || '' },
+        { label: 'Expedido en:', value: est.expedicion || '' },
+      ],
+      [{ label: 'Nº de celular:', value: est.celular || '' }],
+      55,
+      90,
+      110
+    );
+
+    await this._addBoxedFieldGrid(
+      [
+        { label: 'Instituto:', value: 'INSTITUTO TÉCNICO INCOS SANTA CRUZ' },
         { label: 'Carrera:', value: proyecto.carreraNombre || '' },
         { label: 'Modalidad de graduación:', value: proyecto.modalidadNombre || '' },
       ],
       [],
-      100
+      100,
+      150
     );
     this._addSpace();
 
     await this._addSection('NOMBRE / TEMA');
     await this._addParagraph(proyecto.titulo || '');
 
-    if (proyecto.objetivos) {
-      await this._addSection('OBJETIVOS');
-      await this._addParagraph(proyecto.objetivos);
+    await this._addSection('OBJETIVOS');
+    await this._addMultiParagraph(proyecto.objetivos);
+    this._addSpace();
+  }
+
+  /**
+   * Imprime texto libre respetando párrafos separados por línea en blanco
+   * (p.ej. "Objetivo General:" / "Objetivos Específicos:") — `_addParagraph`
+   * por sí solo colapsa TODO salto de línea a un espacio.
+   * @private
+   */
+  async _addMultiParagraph(text) {
+    const str = String(text ?? '').trim();
+    if (!str) return;
+    const paragraphs = str
+      .split(/\n\s*\n/)
+      .map((p) => p.trim())
+      .filter(Boolean);
+    for (const paragraph of paragraphs) {
+      await this._addParagraph(paragraph);
     }
+  }
+
+  /**
+   * Declaración fija (idéntica al documento físico) + "Yo [nombre], con C.I.
+   * [ci], declaro..." + Lugar y fecha (autogenerada, no manuscrita).
+   * @private
+   */
+  async _buildDeclaracion(options) {
+    const est = options.estudiante || {};
+    await this._addParagraph(
+      '1. A la fecha declaro que tengo definido el tema de la modalidad de graduación, ' +
+        'por lo cual solicito proseguir como corresponda.'
+    );
+    await this._addParagraph(
+      '2. De existir algún impedimento para continuar con el proceso de modalidad de ' +
+        'graduación se solicita se notifique para tomar las acciones correctivas.'
+    );
+    this._addSpace();
+
+    const nombreCompleto =
+      est.nombreCompleto || [est.apellidoPaterno, est.apellidoMaterno, est.nombres].filter(Boolean).join(' ');
+    await this._addParagraph(
+      `Yo ${nombreCompleto || '—'}, con C.I. ${est.ci || '—'}, declaro que todos los datos ` +
+        'consignados en el presente formulario son verídicos.'
+    );
+    await this._addParagraph(`Lugar y fecha: ${this._formatLugarFecha()}.`);
+    this._addSpace();
+
+    await this._addParagraph(
+      'NOTA: El contenido de la presente declaración es de exclusiva responsabilidad del declarante.',
+      { fontSize: IncosPDFBase.FONTS.small.size }
+    );
     this._addSpace();
   }
 
   /** @private */
-  async _buildDeclaracion() {
-    await this._addParagraph(
-      'Declaro que tengo definido el tema de mi proyecto de grado bajo la modalidad de ' +
-        'graduación señalada, comprometiéndome a su desarrollo conforme al reglamento ' +
-        'institucional vigente.'
-    );
-    this._addSpace();
+  _formatLugarFecha() {
+    const ahora = new Date();
+    const mes = MESES_ES[ahora.getMonth()] ?? '';
+    return `Santa Cruz, ${ahora.getDate()} de ${mes} de ${ahora.getFullYear()}`;
   }
 
   /** @private */

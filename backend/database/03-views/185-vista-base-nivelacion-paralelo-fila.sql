@@ -41,6 +41,16 @@
 -- ALTERNA (materia arrastrada, `enrollmentId`+`planSubjectId`) no se podía
 -- armar desde esta vista para `ListMateriasPendientesEstudianteUseCase`.
 --
+-- ⚠️ 2026-08-08 (simplificación temporal): el JOIN con historial_matricula
+-- SOLO usa el ancla A (matricula_materia_id) porque el servidor todavía no
+-- tiene las columnas inscripcion_id/asignatura_plan_id en esa tabla (faltaba
+-- aplicar 05-migrations/26-migrate-alter-tablas-existentes.sql, #1054 al
+-- crear la vista). Efecto: los eventos de materia ARRASTRADA (ancla B, sin
+-- matrícula este año) NO se conectan por ahora — la celda de esa materia se
+-- ve como si no tuviera evento de historial. Revertir a la versión con
+-- ambas anclas (ver bloque OR comentado abajo) en cuanto se aplique la
+-- migración 26 en el servidor.
+--
 -- Uso:
 --   SELECT * FROM vista_base_nivelacion_paralelo_fila
 --   WHERE paralelo_gestion_id = ? ORDER BY nombre_completo, asignatura_orden;
@@ -83,14 +93,17 @@ LEFT JOIN historial_matricula hm
   ON hm.vigente = TRUE
   AND hm.activo = TRUE
   AND hm.deleted_at IS NULL
-  AND (
-    hm.matricula_materia_id = cen.matricula_materia_id
-    OR (
-      hm.matricula_materia_id IS NULL
-      AND hm.inscripcion_id = cen.inscripcion_id
-      AND hm.asignatura_plan_id = cen.asignatura_plan_id
-    )
-  )
+  AND hm.matricula_materia_id = cen.matricula_materia_id
+  -- Ancla B (materia arrastrada) deshabilitada temporalmente, ver nota
+  -- 2026-08-08 arriba. Al aplicar la migración 26, restaurar:
+  -- AND (
+  --   hm.matricula_materia_id = cen.matricula_materia_id
+  --   OR (
+  --     hm.matricula_materia_id IS NULL
+  --     AND hm.inscripcion_id = cen.inscripcion_id
+  --     AND hm.asignatura_plan_id = cen.asignatura_plan_id
+  --   )
+  -- )
 LEFT JOIN nivelaciones niv
   ON niv.historial_matricula_id = hm.id
   AND niv.deleted_at IS NULL

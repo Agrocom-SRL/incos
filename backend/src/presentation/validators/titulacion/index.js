@@ -21,7 +21,7 @@ export {
   createAvanceValidator,
   listEstudiantesElegiblesValidator,
   avanceTutoriaCarreraValidator,
-  planillaAvanceTercerAnioValidator,
+  seguimientoTutoriaDocentesValidator,
   registrarActaDefensaValidator,
   anularActaDefensaValidator,
 } from './proyectos-grado.validator.js';

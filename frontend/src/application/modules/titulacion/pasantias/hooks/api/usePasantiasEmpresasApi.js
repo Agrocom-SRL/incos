@@ -62,7 +62,15 @@ export const usePasantiasEmpresasApi = ({ incluirInactivos = false } = {}) => {
     () =>
       empresas
         .filter((e) => e.activo)
-        .map((e) => ({ value: e.id, label: e.nit ? `${e.nombre} · NIT ${e.nit}` : e.nombre })),
+        .map((e) => {
+          const nombrePrincipal = e.nombreComercial || e.nombre;
+          const partes = [
+            nombrePrincipal,
+            e.nombreComercial ? e.nombre : null,
+            e.nit ? `NIT ${e.nit}` : null,
+          ].filter(Boolean);
+          return { value: e.id, label: partes.join(' · ') };
+        }),
     [empresas],
   );
 

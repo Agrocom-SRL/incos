@@ -1,10 +1,10 @@
 /**
  * Hook de API: mutaciones del catálogo de empresas de pasantía (módulo TIT).
  *
- * Alta/edición (P8/P9, `pasantiaEmpresa`) y toggle de estado (P10, ACTIVAR —
+ * Alta/edición (P8/P9, `pasantiaEmpresa`), toggle de estado (P10, ACTIVAR —
  * PATCH /empresas/:empresaId/estado, patrón EstadoTogglePill de los catálogos
- * de Configuración). Solo HTTP + estado de guardado; el feedback vive en
- * hooks/state.
+ * de Configuración) y eliminación (P21, soft-delete). Solo HTTP + estado de
+ * guardado; el feedback vive en hooks/state.
  */
 
 import { useCallback, useMemo, useState } from 'react';
@@ -29,8 +29,13 @@ export const usePasantiaEmpresaMutations = () => {
     [],
   );
 
+  const eliminarEmpresa = useCallback(
+    (empresaId) => pasantiaRepository.eliminarEmpresa(empresaId),
+    [],
+  );
+
   return useMemo(
-    () => ({ saving, guardarEmpresa, cambiarEstadoEmpresa }),
-    [saving, guardarEmpresa, cambiarEstadoEmpresa],
+    () => ({ saving, guardarEmpresa, cambiarEstadoEmpresa, eliminarEmpresa }),
+    [saving, guardarEmpresa, cambiarEstadoEmpresa, eliminarEmpresa],
   );
 };
