@@ -15,6 +15,15 @@
  * REVISAR un avance concreto ya subido (REVISION_AVANCE) — una actividad
  * genérica (REUNION) ya no puede fijar arbitrariamente el % de avance del
  * proyecto, para no mezclar "hubo una reunión" con "el proyecto avanzó X%".
+ *
+ * Piso = % actual del proyecto (extensión 2026-08-11, pedido explícito del
+ * usuario): el avance es monotónico creciente — en una revisión NUEVA el
+ * campo arranca precargado con `porcentajeActual` y no admite un valor menor
+ * (`InputNumber min`), para que cada tutoría solo pueda sumar, nunca
+ * retroceder lo ya alcanzado (el backend valida lo mismo en
+ * `CreateBitacoraEntradaUseCase`). Al EDITAR una entrada existente no se
+ * fuerza el piso: es corrección de historial, puede bajar un valor mal
+ * cargado.
  */
 
 import { useEffect, useMemo } from 'react';
@@ -40,6 +49,7 @@ const BitacoraEntradaDrawer = ({
   entrada = null,
   avance = null,
   proyectoTitulo = null,
+  porcentajeActual = 0,
 }) => {
   const [form] = Form.useForm();
 
@@ -54,18 +64,20 @@ const BitacoraEntradaDrawer = ({
       ? 'Revisar avance'
       : 'Nueva entrada de bitácora';
 
-  // Precarga por modo cada vez que se abre el drawer.
+  // Precarga por modo cada vez que se abre el drawer. En una revisión NUEVA
+  // el % arranca en el piso ya alcanzado (porcentajeActual), no en null —
+  // así el tutor parte de "lo que ya hay" y solo puede sumar.
   useEffect(() => {
     if (!open) return;
     form.setFieldsValue({
       fecha: entrada?.fecha ? dayjs(entrada.fecha) : dayjs(),
       actividad: entrada?.actividad ?? '',
       observaciones: entrada?.observaciones ?? '',
-      porcentajeAvance: entrada?.porcentajeAvance ?? null,
+      porcentajeAvance: esEdicion ? (entrada?.porcentajeAvance ?? null) : porcentajeActual,
       estado: entrada?.estado ?? 'PENDIENTE',
       estadoRevisionAvance: 'OBSERVADO',
     });
-  }, [open, entrada, form]);
+  }, [open, entrada, esEdicion, porcentajeActual, form]);
 
   const resultadoOptions = useMemo(
     () => RESULTADOS_REVISION.map((r) => ({ value: r, label: formatEstadoAvance(r) })),
@@ -176,8 +188,19 @@ const BitacoraEntradaDrawer = ({
           <Form.Item
             name="porcentajeAvance"
             label="Porcentaje de avance del proyecto (opcional)"
+            extra={
+              !esEdicion
+                ? `El proyecto ya alcanzó ${porcentajeActual}% — no puede registrar un valor menor.`
+                : undefined
+            }
           >
-            <InputNumber min={0} max={100} step={5} addonAfter="%" style={{ width: '100%' }} />
+            <InputNumber
+              min={esEdicion ? 0 : porcentajeActual}
+              max={100}
+              step={5}
+              addonAfter="%"
+              style={{ width: '100%' }}
+            />
           </Form.Item>
         ) : null}
 

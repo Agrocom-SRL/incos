@@ -92,4 +92,18 @@ export class BitacoraProyectoRepository extends BaseRepository {
     const result = await this.findAll({ proyectoGradoId });
     return result[this.getCollectionName()] ?? [];
   }
+
+  /**
+   * Máximo `porcentaje_avance` histórico del proyecto (mismo criterio que la
+   * vista 160): piso para que una nueva entrada no pueda retroceder el
+   * avance ya alcanzado.
+   * @param {number} proyectoGradoId
+   * @returns {Promise<number>}
+   */
+  async findMaxPorcentajeAvance(proyectoGradoId) {
+    const max = await this.getModel().max('porcentajeAvance', {
+      where: { proyectoGradoId, activo: true },
+    });
+    return max != null ? Number(max) : 0;
+  }
 }

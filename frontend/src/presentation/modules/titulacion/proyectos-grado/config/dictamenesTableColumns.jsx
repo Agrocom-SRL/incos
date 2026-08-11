@@ -17,7 +17,7 @@ import { TableActions } from '@molecules';
 import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import { formatTipoDictamen } from '@application-titulacion/utils/titulacionPills';
 
-export const createDictamenesTableColumns = ({ onDescargar, descargandoId = null } = {}) => {
+export const createDictamenesTableColumns = ({ onDescargar = null, descargandoId = null } = {}) => {
   return [
     {
       title: '#',
@@ -67,30 +67,35 @@ export const createDictamenesTableColumns = ({ onDescargar, descargandoId = null
         />
       ),
     },
-    {
-      title: 'Acciones',
-      key: 'acciones',
-      width: 90,
-      align: 'right',
-      render: (_, record) => (
-        <TableActions
-          record={record}
-          extraActions={[
-            {
-              key: 'descargar',
-              icon: <DownloadOutlined />,
-              variant: 'info',
-              tooltip: record.tieneArchivo
-                ? 'Descargar dictamen (PDF)'
-                : 'El dictamen no tiene archivo generado',
-              permiso: TITULACION_PERMISOS.proyecto,
-              accion: 'EXPORTAR',
-              disabled: !record.tieneArchivo || descargandoId === record.id,
-              onClick: () => onDescargar(record),
-            },
-          ]}
-        />
-      ),
-    },
+    // La columna de acciones solo existe si hay handler (oculta en proyectos CANCELADOS).
+    ...(onDescargar
+      ? [
+          {
+            title: 'Acciones',
+            key: 'acciones',
+            width: 90,
+            align: 'right',
+            render: (_, record) => (
+              <TableActions
+                record={record}
+                extraActions={[
+                  {
+                    key: 'descargar',
+                    icon: <DownloadOutlined />,
+                    variant: 'info',
+                    tooltip: record.tieneArchivo
+                      ? 'Descargar dictamen (PDF)'
+                      : 'El dictamen no tiene archivo generado',
+                    permiso: TITULACION_PERMISOS.proyecto,
+                    accion: 'EXPORTAR',
+                    disabled: !record.tieneArchivo || descargandoId === record.id,
+                    onClick: () => onDescargar(record),
+                  },
+                ]}
+              />
+            ),
+          },
+        ]
+      : []),
   ];
 };

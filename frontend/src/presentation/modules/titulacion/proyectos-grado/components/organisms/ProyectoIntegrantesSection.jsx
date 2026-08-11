@@ -14,7 +14,7 @@ import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPer
 import { esModalidadGrupal } from '@application-titulacion/utils/titulacionPills';
 import { createIntegrantesTableColumns } from '@titulacion/proyectos-grado/config/integrantesTableColumns';
 
-const ProyectoIntegrantesSection = ({ proyecto, onAgregar, onToggleEstado }) => {
+const ProyectoIntegrantesSection = ({ proyecto, onAgregar = null, onToggleEstado = null }) => {
   const integrantes = proyecto.integrantes ?? [];
   const columns = createIntegrantesTableColumns({ onToggleEstado });
   const grupal = esModalidadGrupal(proyecto.modalidadCodigo);
@@ -26,7 +26,7 @@ const ProyectoIntegrantesSection = ({ proyecto, onAgregar, onToggleEstado }) => 
         icon={<TeamOutlined />}
         cols={1}
         extra={
-          grupal ? (
+          grupal && onAgregar ? (
             <ActionButton
               permiso={TITULACION_PERMISOS.proyecto}
               accion="EDITAR"

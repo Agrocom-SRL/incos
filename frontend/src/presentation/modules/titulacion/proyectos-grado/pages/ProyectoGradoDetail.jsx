@@ -66,6 +66,8 @@ import '@presentation/styles/pages/detail-page.css';
 
 /** Estado del proyecto en el que el CTA principal apunta a registrar el acta (D3). */
 const ESTADO_PROYECTO_DEFENSA = 'DEFENSA';
+/** Estado terminal: sin más transiciones ni actividad nueva sobre el proyecto (extensión 2026-08-11). */
+const ESTADO_PROYECTO_CANCELADO = 'CANCELADO';
 
 const ProyectoGradoDetail = () => {
   const {
@@ -99,28 +101,43 @@ const ProyectoGradoDetail = () => {
 
   /** En DEFENSA, el CTA principal guía a registrar el acta en vez de la transición genérica (D3). */
   const enDefensa = proyecto?.estado === ESTADO_PROYECTO_DEFENSA;
+  /**
+   * Proyecto CANCELADO = estado terminal, sin más transiciones (extensión
+   * 2026-08-11, pedido explícito del usuario): ninguna acción de la ficha
+   * debe quedar disponible (agregar avance/bitácora/integrante, editar,
+   * exportar) — la única salida es "Volver". La cancelación en sí ya quedó
+   * registrada como entrada de bitácora automática por el backend
+   * (`AprobarEtapaProyectoUseCase`), y el botón "Cancelar proyecto" sigue
+   * disponible en cualquier etapa VIGENTE (se oculta solo, vía
+   * `cancelarModal.puedeCancelar`, una vez que el proyecto ya está cancelado).
+   */
+  const estaCancelado = proyecto?.estado === ESTADO_PROYECTO_CANCELADO;
 
   const headerActions = (
     <Flex gap="small" wrap>
-      <ActionButton
-        permiso={TITULACION_PERMISOS.proyecto}
-        accion="APROBAR"
-        variant="success"
-        icon={<UserSwitchOutlined />}
-        onClick={tutorModal.abrir}
-      >
-        {proyecto?.tutorId ? 'Cambiar tutor' : 'Asignar tutor'}
-      </ActionButton>
-      <ActionButton
-        permiso={TITULACION_PERMISOS.proyecto}
-        accion="EXPORTAR"
-        variant="info"
-        icon={<FilePdfOutlined />}
-        loading={formularioModalidad.descargando}
-        onClick={formularioModalidad.exportar}
-      >
-        Exportar formulario FMDG-1
-      </ActionButton>
+      {!estaCancelado ? (
+        <>
+          <ActionButton
+            permiso={TITULACION_PERMISOS.proyecto}
+            accion="APROBAR"
+            variant="success"
+            icon={<UserSwitchOutlined />}
+            onClick={tutorModal.abrir}
+          >
+            {proyecto?.tutorId ? 'Cambiar tutor' : 'Asignar tutor'}
+          </ActionButton>
+          <ActionButton
+            permiso={TITULACION_PERMISOS.proyecto}
+            accion="EXPORTAR"
+            variant="info"
+            icon={<FilePdfOutlined />}
+            loading={formularioModalidad.descargando}
+            onClick={formularioModalidad.exportar}
+          >
+            Exportar formulario FMDG-1
+          </ActionButton>
+        </>
+      ) : null}
       <BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver}>
         Volver
       </BackButton>
@@ -134,7 +151,7 @@ const ProyectoGradoDetail = () => {
    * es posible desde cualquier etapa vigente, no una opción a elegir junto a
    * la siguiente etapa).
    */
-  const etapaAction = enDefensa ? (
+  const etapaAction = estaCancelado ? null : enDefensa ? (
     <ActionButton
       permiso={TITULACION_PERMISOS.proyecto}
       accion="APROBAR"
@@ -159,22 +176,23 @@ const ProyectoGradoDetail = () => {
     </ActionButton>
   );
 
-  const sidebarAction = (
-    <Flex vertical gap={8} style={{ width: '100%' }}>
-      {etapaAction}
-      {cancelarModal.puedeCancelar ? (
-        <ActionButton
-          permiso={TITULACION_PERMISOS.proyecto}
-          accion="APROBAR"
-          variant="error"
-          block
-          onClick={cancelarModal.abrir}
-        >
-          Cancelar proyecto
-        </ActionButton>
-      ) : null}
-    </Flex>
-  );
+  const sidebarAction =
+    etapaAction || cancelarModal.puedeCancelar ? (
+      <Flex vertical gap={8} style={{ width: '100%' }}>
+        {etapaAction}
+        {cancelarModal.puedeCancelar ? (
+          <ActionButton
+            permiso={TITULACION_PERMISOS.proyecto}
+            accion="APROBAR"
+            variant="error"
+            block
+            onClick={cancelarModal.abrir}
+          >
+            Cancelar proyecto
+          </ActionButton>
+        ) : null}
+      </Flex>
+    ) : null;
 
   const tabItems = proyecto
     ? [
@@ -193,8 +211,8 @@ const ProyectoGradoDetail = () => {
           children: (
             <ProyectoIntegrantesSection
               proyecto={proyecto}
-              onAgregar={integrantes.abrirModal}
-              onToggleEstado={integrantes.toggleEstado}
+              onAgregar={estaCancelado ? null : integrantes.abrirModal}
+              onToggleEstado={estaCancelado ? null : integrantes.toggleEstado}
             />
           ),
         },
@@ -210,8 +228,8 @@ const ProyectoGradoDetail = () => {
               entradas={bitacora.entradas}
               loading={bitacora.loading}
               error={bitacora.error}
-              onNuevaEntrada={bitacora.abrirNuevaEntrada}
-              onEditarEntrada={bitacora.abrirEditarEntrada}
+              onNuevaEntrada={estaCancelado ? null : bitacora.abrirNuevaEntrada}
+              onEditarEntrada={estaCancelado ? null : bitacora.abrirEditarEntrada}
             />
           ),
         },
@@ -228,18 +246,20 @@ const ProyectoGradoDetail = () => {
               loading={avances.loading}
               error={avances.error}
               descargandoId={avances.descargandoId}
-              onDescargar={avances.descargar}
-              onRevisar={avances.revisar}
+              onDescargar={estaCancelado ? null : avances.descargar}
+              onRevisar={estaCancelado ? null : avances.revisar}
               extra={
-                <ActionButton
-                  permiso={TITULACION_PERMISOS.avance}
-                  accion="CREAR"
-                  variant="primary"
-                  icon={<UploadOutlined />}
-                  onClick={avances.subirModal.abrir}
-                >
-                  Subir avance
-                </ActionButton>
+                !estaCancelado ? (
+                  <ActionButton
+                    permiso={TITULACION_PERMISOS.avance}
+                    accion="CREAR"
+                    variant="primary"
+                    icon={<UploadOutlined />}
+                    onClick={avances.subirModal.abrir}
+                  >
+                    Subir avance
+                  </ActionButton>
+                ) : null
               }
             />
           ),
@@ -257,7 +277,7 @@ const ProyectoGradoDetail = () => {
               loading={dictamenes.loading}
               error={dictamenes.error}
               descargandoId={dictamenes.descargandoId}
-              onDescargar={dictamenes.descargar}
+              onDescargar={estaCancelado ? null : dictamenes.descargar}
             />
           ),
         },
@@ -274,11 +294,11 @@ const ProyectoGradoDetail = () => {
               actas={actaDefensa.items}
               loading={actaDefensa.loading}
               error={actaDefensa.error}
-              puedeRegistrar={actaDefensa.puedeRegistrar}
+              puedeRegistrar={!estaCancelado && actaDefensa.puedeRegistrar}
               descargandoId={actaDefensa.descargandoId}
-              onRegistrar={actaDefensa.modal.abrir}
-              onExportarPdf={actaDefensa.exportarPdf}
-              onAnular={actaDefensa.anular}
+              onRegistrar={estaCancelado ? null : actaDefensa.modal.abrir}
+              onExportarPdf={estaCancelado ? null : actaDefensa.exportarPdf}
+              onAnular={estaCancelado ? null : actaDefensa.anular}
             />
           ),
         },
@@ -308,7 +328,7 @@ const ProyectoGradoDetail = () => {
           <Flex vertical gap={allSpacing.marginLG}>
             <ProyectoGradoFichaHeader
               proyecto={proyecto}
-              puedeEditar={puedeEditar}
+              puedeEditar={puedeEditar && !estaCancelado}
               onEditar={handleEditar}
             />
             <DetailTabsPanel items={tabItems} activeKey={activeKey} onChange={handleTabChange} />
@@ -360,6 +380,7 @@ const ProyectoGradoDetail = () => {
         entrada={bitacora.drawer.entrada}
         avance={bitacora.drawer.avance}
         proyectoTitulo={proyecto?.titulo}
+        porcentajeActual={proyecto?.porcentajeAvance ?? 0}
         onClose={bitacora.cerrarDrawer}
         onSubmit={bitacora.guardar}
         saving={bitacora.guardando}

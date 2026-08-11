@@ -67,7 +67,7 @@ const ActaCard = ({ acta, descargando, onExportarPdf, onAnular }) => {
               className={getEstadoActaDefensaPillClass(acta.estado)}
             />
           ) : null}
-          {!esAnulada ? (
+          {!esAnulada && onExportarPdf ? (
             <ActionButton
               permiso={TITULACION_PERMISOS.proyecto}
               accion="EXPORTAR"
@@ -79,13 +79,13 @@ const ActaCard = ({ acta, descargando, onExportarPdf, onAnular }) => {
               Exportar acta (PDF)
             </ActionButton>
           ) : null}
-          {!esAnulada ? (
+          {!esAnulada && onAnular ? (
             <ActionButton
               permiso={TITULACION_PERMISOS.proyecto}
               accion="APROBAR"
               variant="danger"
               icon={<StopOutlined />}
-              onClick={() => onAnular?.(acta)}
+              onClick={() => onAnular(acta)}
             >
               Anular acta
             </ActionButton>

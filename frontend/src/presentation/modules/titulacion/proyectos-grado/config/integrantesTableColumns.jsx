@@ -23,7 +23,7 @@ const ESTADO_INTEGRANTE_META = {
   RETIRADO: { label: 'Retirado', pill: 'cfg-materia-pill--inactiva' },
 };
 
-export const createIntegrantesTableColumns = ({ onToggleEstado }) => {
+export const createIntegrantesTableColumns = ({ onToggleEstado = null } = {}) => {
   return [
     {
       title: '#',
@@ -79,30 +79,35 @@ export const createIntegrantesTableColumns = ({ onToggleEstado }) => {
         return <StatusPill label={meta.label} className={`cfg-materia-pill ${meta.pill}`} />;
       },
     },
-    {
-      title: 'Acciones',
-      key: 'acciones',
-      width: 90,
-      align: 'right',
-      render: (_, record) => {
-        const retirado = record.estado === 'RETIRADO';
-        return (
-          <TableActions
-            record={record}
-            extraActions={[
-              {
-                key: 'toggleEstado',
-                icon: retirado ? <UserAddOutlined /> : <UserDeleteOutlined />,
-                variant: retirado ? 'success' : 'error',
-                tooltip: retirado ? 'Reincorporar al proyecto' : 'Retirar del proyecto',
-                permiso: TITULACION_PERMISOS.proyecto,
-                accion: 'EDITAR',
-                onClick: () => onToggleEstado(record),
-              },
-            ]}
-          />
-        );
-      },
-    },
+    // La columna de acciones solo existe si hay un handler (oculta en proyectos CANCELADOS).
+    ...(onToggleEstado
+      ? [
+          {
+            title: 'Acciones',
+            key: 'acciones',
+            width: 90,
+            align: 'right',
+            render: (_, record) => {
+              const retirado = record.estado === 'RETIRADO';
+              return (
+                <TableActions
+                  record={record}
+                  extraActions={[
+                    {
+                      key: 'toggleEstado',
+                      icon: retirado ? <UserAddOutlined /> : <UserDeleteOutlined />,
+                      variant: retirado ? 'success' : 'error',
+                      tooltip: retirado ? 'Reincorporar al proyecto' : 'Retirar del proyecto',
+                      permiso: TITULACION_PERMISOS.proyecto,
+                      accion: 'EDITAR',
+                      onClick: () => onToggleEstado(record),
+                    },
+                  ]}
+                />
+              );
+            },
+          },
+        ]
+      : []),
   ];
 };

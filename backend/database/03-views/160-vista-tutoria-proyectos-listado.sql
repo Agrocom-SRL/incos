@@ -9,8 +9,15 @@
 -- Bases:
 --   - 159 vista_base_tutoria_proyecto_integrante_fila (identidad + integrantes)
 --   - bitacora_proyecto (última tutoría, total, observaciones pendientes,
---     último porcentaje_avance registrado, última observación del tutor)
+--     MÁXIMO porcentaje_avance registrado, última observación del tutor)
 --   - avances_proyecto (avances pendientes de revisión u observados)
+--
+-- porcentaje_avance = MAX(...), no el último registro cronológico (2026-08-11,
+-- pedido explícito del usuario): una revisión posterior a un avance distinto
+-- (p. ej. re-revisar un avance anterior después de haber aprobado uno al
+-- 100%) NO debe hacer retroceder el % del proyecto. El avance del proyecto
+-- es monotónico creciente en la práctica; el máximo histórico es la lectura
+-- correcta de "en qué % está el proyecto", no la última fila insertada.
 --
 -- ultima_observacion (2026-07-31, extensión Requisito 2 — reporte de avance
 -- por carrera): subconsulta correlacionada LIMIT 1 (no GROUP_CONCAT, para no
@@ -63,7 +70,7 @@ LEFT JOIN (
     MAX(b.fecha) AS ultima_tutoria_fecha,
     COUNT(*) AS total_tutorias,
     SUM(CASE WHEN b.estado = 'PENDIENTE' THEN 1 ELSE 0 END) AS observaciones_pendientes,
-    SUBSTRING_INDEX(GROUP_CONCAT(b.porcentaje_avance ORDER BY b.fecha DESC, b.id DESC), ',', 1) AS porcentaje_avance,
+    MAX(b.porcentaje_avance) AS porcentaje_avance,
     (
       SELECT b2.observaciones
       FROM bitacora_proyecto b2

@@ -18,7 +18,7 @@ import {
 } from '@application-titulacion/utils/titulacionPills';
 
 export const createAvancesTableColumns = ({
-  onDescargar,
+  onDescargar = null,
   descargandoId = null,
   onRevisar = null,
 } = {}) => {
@@ -99,41 +99,50 @@ export const createAvancesTableColumns = ({
         />
       ),
     },
-    {
-      title: 'Acciones',
-      key: 'acciones',
-      width: 100,
-      align: 'right',
-      render: (_, record) => (
-        <TableActions
-          record={record}
-          extraActions={[
-            {
-              key: 'descargar',
-              icon: <DownloadOutlined />,
-              variant: 'info',
-              tooltip: 'Descargar archivo',
-              permiso: TITULACION_PERMISOS.avance,
-              accion: 'DETALLE',
-              disabled: descargandoId === record.id,
-              onClick: () => onDescargar(record),
-            },
-            ...(onRevisar
-              ? [
-                  {
-                    key: 'revisar',
-                    icon: <AuditOutlined />,
-                    variant: 'warning',
-                    tooltip: 'Revisar avance (entrada de bitácora)',
-                    permiso: TITULACION_PERMISOS.bitacora,
-                    accion: 'CREAR',
-                    onClick: () => onRevisar(record),
-                  },
-                ]
-              : []),
-          ]}
-        />
-      ),
-    },
+    // La columna de acciones solo existe si hay al menos un handler (oculta en proyectos CANCELADOS).
+    ...(onDescargar || onRevisar
+      ? [
+          {
+            title: 'Acciones',
+            key: 'acciones',
+            width: 100,
+            align: 'right',
+            render: (_, record) => (
+              <TableActions
+                record={record}
+                extraActions={[
+                  ...(onDescargar
+                    ? [
+                        {
+                          key: 'descargar',
+                          icon: <DownloadOutlined />,
+                          variant: 'info',
+                          tooltip: 'Descargar archivo',
+                          permiso: TITULACION_PERMISOS.avance,
+                          accion: 'DETALLE',
+                          disabled: descargandoId === record.id,
+                          onClick: () => onDescargar(record),
+                        },
+                      ]
+                    : []),
+                  ...(onRevisar
+                    ? [
+                        {
+                          key: 'revisar',
+                          icon: <AuditOutlined />,
+                          variant: 'warning',
+                          tooltip: 'Revisar avance (entrada de bitácora)',
+                          permiso: TITULACION_PERMISOS.bitacora,
+                          accion: 'CREAR',
+                          onClick: () => onRevisar(record),
+                        },
+                      ]
+                    : []),
+                ]}
+              />
+            ),
+          },
+        ]
+      : []),
   ];
 };

@@ -13,7 +13,13 @@ import { ActionButton } from '@atoms';
 import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import { createBitacoraTableColumns } from '@titulacion/proyectos-grado/config/bitacoraTableColumns';
 
-const ProyectoBitacoraSection = ({ entradas, loading, error, onNuevaEntrada, onEditarEntrada }) => {
+const ProyectoBitacoraSection = ({
+  entradas,
+  loading,
+  error,
+  onNuevaEntrada = null,
+  onEditarEntrada = null,
+}) => {
   const columns = createBitacoraTableColumns({ onEditar: onEditarEntrada });
 
   return (
@@ -23,15 +29,17 @@ const ProyectoBitacoraSection = ({ entradas, loading, error, onNuevaEntrada, onE
         icon={<FileTextOutlined />}
         cols={1}
         extra={
-          <ActionButton
-            permiso={TITULACION_PERMISOS.bitacora}
-            accion="CREAR"
-            variant="primary"
-            icon={<FileAddOutlined />}
-            onClick={onNuevaEntrada}
-          >
-            Nueva entrada
-          </ActionButton>
+          onNuevaEntrada ? (
+            <ActionButton
+              permiso={TITULACION_PERMISOS.bitacora}
+              accion="CREAR"
+              variant="primary"
+              icon={<FileAddOutlined />}
+              onClick={onNuevaEntrada}
+            >
+              Nueva entrada
+            </ActionButton>
+          ) : null
         }
       >
         {error ? (

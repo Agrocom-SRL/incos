@@ -71,6 +71,21 @@ export class CreateBitacoraEntradaUseCase {
       );
     }
 
+    // El avance del proyecto es monotónico creciente (extensión 2026-08-11,
+    // pedido explícito del usuario): una nueva entrada no puede registrar un
+    // % menor al máximo ya alcanzado, sin importar qué avance se esté
+    // revisando — evita que una revisión fuera de orden retroceda el % del
+    // proyecto (mismo criterio que el MAX(...) de la vista 160).
+    if (body.porcentajeAvance !== undefined && body.porcentajeAvance !== null) {
+      const maxActual =
+        await this.bitacoraProyectoRepository.findMaxPorcentajeAvance(proyectoGradoId);
+      if (Number(body.porcentajeAvance) < maxActual) {
+        throw new ValidationError(
+          `El avance no puede ser menor al ${maxActual}% ya registrado para este proyecto.`
+        );
+      }
+    }
+
     const fecha = body.fecha ?? hoyISO();
     let bitacoraEntrada = null;
 
