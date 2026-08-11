@@ -3,9 +3,11 @@
  *
  * Provider DELGADO (espejo de `CursoCapacitacionFormProvider`): ensambla la
  * ficha (solo edición, para precargar titular/integrantes), las mutaciones y
- * los catálogos reutilizados del plan — modalidades (T2), carreras y
- * docentes (con degradación si el rol no tiene el permiso del catálogo).
- * La orquestación del formulario vive en `useProyectoGradoFormPage`.
+ * los catálogos reutilizados del plan — modalidades (T2) y carreras. El
+ * catálogo de docentes y la asignación de tutor NO viven aquí (2026-08-11):
+ * ese flujo es exclusivo de la ficha (`ProyectoGradoDetailProvider`,
+ * `AsignarTutorModal`). La orquestación del formulario vive en
+ * `useProyectoGradoFormPage`.
  */
 
 import { useEffect, useMemo } from 'react';
@@ -13,15 +15,13 @@ import { useGetProyectoGrado } from '@application-titulacion/proyectos-grado/hoo
 import { useProyectoGradoMutations } from '@application-titulacion/proyectos-grado/hooks/api/useProyectoGradoMutations';
 import { useModalidadesGradoApi } from '@application-titulacion/proyectos-grado/hooks/api/useModalidadesGradoApi';
 import { useCarrerasCatalogoTitApi } from '@application-titulacion/proyectos-grado/hooks/api/useCarrerasCatalogoTitApi';
-import { useDocentesCatalogoTitApi } from '@application-titulacion/proyectos-grado/hooks/api/useDocentesCatalogoTitApi';
 import { ProyectoGradoFormContext } from '@application-titulacion/proyectos-grado/context/ProyectoGradoFormContext';
 
 export const ProyectoGradoFormProvider = ({ children, proyectoId = null }) => {
   const { proyecto, loading: loadingProyecto, error: errorProyecto, cargar } = useGetProyectoGrado();
-  const { saving, guardarProyecto, asignarTutor } = useProyectoGradoMutations();
+  const { saving, guardarProyecto } = useProyectoGradoMutations();
   const modalidades = useModalidadesGradoApi();
   const carrerasCatalogo = useCarrerasCatalogoTitApi();
-  const docentesCatalogo = useDocentesCatalogoTitApi();
 
   const id = proyectoId != null ? Number(proyectoId) : null;
   const idValido = id != null && Number.isFinite(id) && id > 0;
@@ -41,7 +41,6 @@ export const ProyectoGradoFormProvider = ({ children, proyectoId = null }) => {
       errorProyecto,
       saving,
       guardarProyecto,
-      asignarTutor,
       // Catálogos
       modalidadOptions: modalidades.options,
       modalidadById: modalidades.modalidadById,
@@ -49,9 +48,6 @@ export const ProyectoGradoFormProvider = ({ children, proyectoId = null }) => {
       carreras: carrerasCatalogo.carreras,
       loadingCarreras: carrerasCatalogo.loading,
       carrerasDisponible: carrerasCatalogo.disponible,
-      docentes: docentesCatalogo.docentes,
-      loadingDocentes: docentesCatalogo.loading,
-      docentesDisponible: docentesCatalogo.disponible,
     }),
     [
       idValido,
@@ -61,10 +57,8 @@ export const ProyectoGradoFormProvider = ({ children, proyectoId = null }) => {
       errorProyecto,
       saving,
       guardarProyecto,
-      asignarTutor,
       modalidades,
       carrerasCatalogo,
-      docentesCatalogo,
     ],
   );
 

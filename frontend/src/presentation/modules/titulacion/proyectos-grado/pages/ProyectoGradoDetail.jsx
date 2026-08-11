@@ -95,7 +95,7 @@ const ProyectoGradoDetail = () => {
       <ActionButton
         permiso={TITULACION_PERMISOS.proyecto}
         accion="APROBAR"
-        variant="info"
+        variant="warning"
         icon={<UserSwitchOutlined />}
         onClick={tutorModal.abrir}
       >

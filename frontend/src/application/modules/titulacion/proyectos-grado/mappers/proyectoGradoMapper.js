@@ -52,7 +52,6 @@ export const mapProyectoGrado = (raw) => {
   return {
     id: raw.id,
     titulo: cleanText(raw.titulo) || 'Sin título',
-    descripcion: cleanText(raw.descripcion),
     objetivos: cleanText(raw.objetivos),
     estado: raw.estado ?? null,
     gestionId: raw.gestionId ?? null,
@@ -299,12 +298,10 @@ export const mapFormValuesToProyectoPayload = (values = {}) => {
 
   return {
     titulo: (values.titulo || '').trim(),
-    descripcion: (values.descripcion || '').trim() || null,
     objetivos: (values.objetivos || '').trim() || null,
     modalidadId: values.modalidadId != null ? Number(values.modalidadId) : null,
     carreraId: values.carreraId != null ? Number(values.carreraId) : null,
     gestionId: values.gestionId != null ? Number(values.gestionId) : undefined,
-    tutorId: values.tutorId != null ? Number(values.tutorId) : null,
     titularEstudianteId,
     estudianteIds,
   };
@@ -313,11 +310,9 @@ export const mapFormValuesToProyectoPayload = (values = {}) => {
 /** Ficha → valores iniciales del formulario (alta y edición). */
 export const mapProyectoToFormValues = (proyecto) => ({
   titulo: proyecto?.titulo ?? '',
-  descripcion: proyecto?.descripcion ?? '',
   objetivos: proyecto?.objetivos ?? '',
   modalidadId: proyecto?.modalidadId ?? undefined,
   carreraId: proyecto?.carreraId ?? undefined,
-  tutorId: proyecto?.tutorId ?? undefined,
   estudianteId:
     proyecto?.integrantes?.find((i) => i.rol === 'TITULAR' && i.estado === 'ACTIVO')
       ?.estudianteId ?? proyecto?.estudianteId ?? undefined,
