@@ -1,6 +1,8 @@
 /**
  * Ficha-hub de trámite de pasantía (Titulación · TIT · DETALLE) — cabecera de
- * perfil + tabs datos / informes / seguimientos.
+ * perfil + tabs datos / informes / seguimientos, con la línea de tiempo del
+ * trámite en la barra lateral (`PageTemplate` sidebar → `InfoSidebar`,
+ * extensión 2026-08-11, mismo movimiento que `ProyectoGradoDetail`).
  *
  * Patrón ficha-hub de `ProyectoGradoDetail` (DetailPageShell +
  * DetailProfileCard + DetailTabsPanel). Acción de cabecera gated por permiso
@@ -10,7 +12,8 @@
  *
  * NOTA (2026-08-09): se retiró el botón/modal de transición de estado manual
  * (P6, `TransicionPasantiaModal`) — la máquina de estados se gobernará de
- * otra forma (por definir); `PasantiaTimeline` (solo lectura) se mantiene.
+ * otra forma (por definir); `PasantiaTimeline` (solo lectura) se mantiene,
+ * ahora en el sidebar en vez de bajo la cabecera de la ficha.
  */
 
 import { useState } from 'react';
@@ -20,6 +23,7 @@ import {
   FileAddOutlined,
   FilePdfOutlined,
   ScheduleOutlined,
+  ShopOutlined,
   SolutionOutlined,
 } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
@@ -33,6 +37,7 @@ import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPer
 import PasantiaFichaHeader from '@titulacion/pasantias/components/organisms/PasantiaFichaHeader';
 import PasantiaTimeline from '@titulacion/pasantias/components/organisms/PasantiaTimeline';
 import PasantiaDatosSection from '@titulacion/pasantias/components/organisms/PasantiaDatosSection';
+import PasantiaEmpresaSection from '@titulacion/pasantias/components/organisms/PasantiaEmpresaSection';
 import PasantiaInformesSection from '@titulacion/pasantias/components/organisms/PasantiaInformesSection';
 import PasantiaSeguimientosSection from '@titulacion/pasantias/components/organisms/PasantiaSeguimientosSection';
 import InformePasantiaDrawer from '@titulacion/pasantias/components/modals/InformePasantiaDrawer';
@@ -97,6 +102,11 @@ const PasantiaDetail = () => {
           children: <PasantiaDatosSection pasantia={pasantia} />,
         },
         {
+          key: 'empresa',
+          label: <DetailTabLabel icon={<ShopOutlined />}>Empresa</DetailTabLabel>,
+          children: <PasantiaEmpresaSection pasantia={pasantia} />,
+        },
+        {
           key: 'informes',
           label: (
             <DetailTabLabel icon={<FilePdfOutlined />}>
@@ -109,7 +119,6 @@ const PasantiaDetail = () => {
               loading={informes.loading}
               error={informes.error}
               descargandoId={informes.descargandoId}
-              onNuevoInforme={informes.abrirNuevo}
               onEditarInforme={informes.abrirEditar}
               onDescargar={informes.descargar}
             />
@@ -144,6 +153,7 @@ const PasantiaDetail = () => {
           actions={headerActions}
         />
       }
+      sidebar={pasantia ? <PasantiaTimeline pasantia={pasantia} /> : null}
     >
       <DetailPageShell
         loading={loading}
@@ -160,7 +170,6 @@ const PasantiaDetail = () => {
               puedeEditar={puedeEditar}
               onEditar={handleEditar}
             />
-            <PasantiaTimeline pasantia={pasantia} />
             <DetailTabsPanel items={tabItems} activeKey={activeKey} onChange={setActiveKey} />
           </Flex>
         ) : null}

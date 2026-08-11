@@ -3,17 +3,17 @@
  * P11-P14).
  *
  * DetailInfoCard + tabla de informes institucionales (verificación de empresa
- * / convalidación de trabajo). "Emitir informe" gated por informe·CREAR;
- * editar por informe·EDITAR y descarga del PDF por pasantia·EXPORTAR (en las
- * columnas). Estados carga/vacío/error cubiertos. Con `readOnly` (portal del
- * estudiante) la tabla es de solo lectura.
+ * / convalidación de trabajo). "Emitir informe" ya vive en la cabecera de la
+ * ficha (`informeVerificacion`, único informe posible por trámite — primer
+ * paso legal); esta tab NO repite ese botón (extensión 2026-08-11, pedido
+ * explícito del usuario), solo edita (informe·EDITAR) y descarga el PDF
+ * (pasantia·EXPORTAR) en las columnas. Estados carga/vacío/error cubiertos.
+ * Con `readOnly` (portal del estudiante) la tabla es de solo lectura.
  */
 
 import { Alert, Empty, Table } from 'antd';
-import { FileAddOutlined, FilePdfOutlined } from '@ant-design/icons';
+import { FilePdfOutlined } from '@ant-design/icons';
 import { DetailInfoCard } from '@molecules';
-import { ActionButton } from '@atoms';
-import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import { createInformesPasantiaTableColumns } from '@titulacion/pasantias/config/informesPasantiaTableColumns';
 
 const PasantiaInformesSection = ({
@@ -21,7 +21,6 @@ const PasantiaInformesSection = ({
   loading,
   error,
   descargandoId,
-  onNuevoInforme,
   onEditarInforme,
   onDescargar,
   readOnly = false,
@@ -35,24 +34,7 @@ const PasantiaInformesSection = ({
 
   return (
     <div className="sd-tab-body">
-      <DetailInfoCard
-        title={`Informes (${informes.length})`}
-        icon={<FilePdfOutlined />}
-        cols={1}
-        extra={
-          !readOnly ? (
-            <ActionButton
-              permiso={TITULACION_PERMISOS.pasantiaInforme}
-              accion="CREAR"
-              variant="primary"
-              icon={<FileAddOutlined />}
-              onClick={onNuevoInforme}
-            >
-              Emitir informe
-            </ActionButton>
-          ) : null
-        }
-      >
+      <DetailInfoCard title={`Informes (${informes.length})`} icon={<FilePdfOutlined />} cols={1}>
         {error ? (
           <Alert type="error" showIcon title="No se pudieron cargar los informes" description={error} />
         ) : informes.length === 0 && !loading ? (
