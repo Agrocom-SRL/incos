@@ -4,6 +4,8 @@ import {
   TRANSICIONES_PROYECTO_GRADO,
   TIPOS_DICTAMEN_TUTORIA,
   RESULTADOS_DICTAMEN_TUTORIA,
+  TIPOS_BITACORA_TUTORIA,
+  ESTADOS_BITACORA_TUTORIA,
 } from '../../../domain/constants/titulacion.constants.js';
 import { getProyectoOrFail } from './helpers/proyectoTutoriaGuards.js';
 import {
@@ -39,7 +41,16 @@ const NOTA_POR_ESTADO = {
  * TRANSICIONES_PROYECTO_GRADO). Fija automáticamente la fecha de la etapa y,
  * cuando la transición es a APROBADO (aprobación final), emite el INFORME DE
  * VIABILIDAD TÉCNICA: PDF guardado en uploads y registrado en
- * dictamenes_proyecto (tipo VIABILIDAD_TECNICA).
+ * dictamenes_proyecto (tipo VIABILIDAD_TECNICA) — SIN resultado propio (ver
+ * nota 2026-08-11 abajo).
+ *
+ * Extensión 2026-08-11 (pedido explícito del usuario): además, registra la
+ * transición como una entrada de bitácora del proyecto (fecha, etapa origen →
+ * destino y observaciones si el body las trae). También deja de auto-asignar
+ * `resultado` (antes siempre "APROBADO") al dictamen de viabilidad técnica en
+ * `dictamenes_proyecto`: es documentación oficial que firman todas las
+ * partes, decidir ese resultado está fuera del alcance del sistema — el PDF
+ * se sigue emitiendo igual, solo cambia el registro que guarda el sistema.
  */
 export class AprobarEtapaProyectoUseCase {
   /**
@@ -47,6 +58,7 @@ export class AprobarEtapaProyectoUseCase {
    * @param {Object} params.proyectoGradoRepository
    * @param {Object} params.proyectoGradoListadoViewRepository - Vistas 159/160
    * @param {Object} params.dictamenProyectoRepository
+   * @param {Object} params.bitacoraProyectoRepository
    * @param {Object} params.managementRepository - Año de gestión para el PDF
    * @param {Object} params.viabilidadProyectoPdfGenerator - IViabilidadProyectoPdfGenerator
    * @param {Object} params.uploadsStorage - IUploadsStorage
@@ -56,6 +68,7 @@ export class AprobarEtapaProyectoUseCase {
     proyectoGradoRepository,
     proyectoGradoListadoViewRepository,
     dictamenProyectoRepository,
+    bitacoraProyectoRepository,
     managementRepository,
     viabilidadProyectoPdfGenerator,
     uploadsStorage,
@@ -64,6 +77,7 @@ export class AprobarEtapaProyectoUseCase {
     this.proyectoGradoRepository = proyectoGradoRepository;
     this.proyectoGradoListadoViewRepository = proyectoGradoListadoViewRepository;
     this.dictamenProyectoRepository = dictamenProyectoRepository;
+    this.bitacoraProyectoRepository = bitacoraProyectoRepository;
     this.managementRepository = managementRepository;
     this.viabilidadProyectoPdfGenerator = viabilidadProyectoPdfGenerator;
     this.uploadsStorage = uploadsStorage;
@@ -117,6 +131,22 @@ export class AprobarEtapaProyectoUseCase {
 
     const updated = await this.proyectoGradoRepository.update(proyectoGradoId, data, userId);
 
+    // Registro automático, no una observación pendiente de resolución: nace
+    // ya SUBSANADO y "confirmado" (nadie debe atenderlo ni firmarlo).
+    await this.bitacoraProyectoRepository.create(
+      {
+        proyectoGradoId,
+        tipo: TIPOS_BITACORA_TUTORIA.REUNION,
+        fecha,
+        actividad: `Transición de etapa: ${proyecto.estado} → ${destino}`,
+        observaciones: body.observaciones ?? null,
+        estado: ESTADOS_BITACORA_TUTORIA.SUBSANADO,
+        confirmadoEstudiante: true,
+        fechaConfirmacion: fecha,
+      },
+      userId
+    );
+
     // Aprobación final → informe de VIABILIDAD TÉCNICA con PDF.
     if (destino === ESTADOS_PROYECTO_GRADO.APROBADO) {
       await this._emitirViabilidadTecnica(updated, body, fecha, userId);
@@ -160,7 +190,10 @@ export class AprobarEtapaProyectoUseCase {
       dictamenData: {
         tipo: TIPOS_DICTAMEN_TUTORIA.VIABILIDAD_TECNICA,
         numeroInforme: body.numeroInforme ?? null,
-        resultado: RESULTADOS_DICTAMEN_TUTORIA.APROBADO,
+        // Extensión 2026-08-11 (pedido explícito del usuario): el sistema ya
+        // no se auto-asigna un resultado — es documentación oficial que
+        // firman todas las partes, fuera del alcance del sistema decidirlo.
+        resultado: null,
         fechaEmision,
         destinatario,
         contenido: body.contenido ?? `Informe de viabilidad técnica del proyecto "${proyecto.titulo}".`,

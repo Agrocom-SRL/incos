@@ -75,11 +75,12 @@ export const TRANSICIONES_PROYECTO = {
 };
 
 /**
- * Explicación de la consecuencia de CADA transición del modal genérico
- * (`AprobarEtapaModal`), espejo exacto de `AprobarEtapaProyectoUseCase`
- * (T11, backend): qué campo de fecha fija y si dispara algo automático. Se
- * muestra en el modal ANTES de confirmar — el usuario reportó que elegir una
- * opción del `Select` sin saber qué iba a pasar era confuso.
+ * Explicación de la consecuencia de CADA transición, espejo exacto de
+ * `AprobarEtapaProyectoUseCase` (T11, backend): qué campo de fecha fija y si
+ * dispara algo automático. Se muestra ANTES de confirmar — el usuario
+ * reportó que no saber qué iba a pasar al continuar era confuso. `CANCELADO`
+ * ya no vive en `AprobarEtapaModal` (rediseño 2026-08-11): la reutiliza
+ * `CancelarProyectoModal`, el flujo dedicado a cancelar.
  */
 const EXPLICACION_TRANSICION_PROYECTO = {
   APROBADO_PERFIL: 'Se registrará la fecha de aprobación del perfil con la fecha de hoy.',
@@ -96,9 +97,6 @@ const EXPLICACION_TRANSICION_PROYECTO = {
 /** Texto de consecuencia de una transición del proyecto, o `null` si no aplica. */
 export const formatExplicacionTransicionProyecto = (estado) =>
   EXPLICACION_TRANSICION_PROYECTO[estado] ?? null;
-
-/** Destinos irreversibles: exigen confirmación adicional antes de registrar (regla A5). */
-export const ESTADOS_TRANSICION_PROYECTO_IRREVERSIBLES = ['CANCELADO'];
 
 /** ENUM del backend (avances_proyecto.estado_revision). */
 export const ESTADOS_REVISION_AVANCE = [
@@ -155,20 +153,6 @@ const DICTAMEN_TIPO_META = {
 
 /** Etiqueta legible del tipo de dictamen. */
 export const formatTipoDictamen = (tipo) => DICTAMEN_TIPO_META[tipo] ?? tipo ?? '—';
-
-const DICTAMEN_RESULTADO_META = {
-  APROBADO: { label: 'Aprobado', pill: 'cfg-materia-pill--success' },
-  OBSERVADO: { label: 'Observado', pill: 'cfg-materia-pill--warning' },
-  RECHAZADO: { label: 'Rechazado', pill: 'cfg-materia-pill--danger' },
-};
-
-/** Etiqueta legible del resultado de un dictamen (NULL en designaciones). */
-export const formatResultadoDictamen = (resultado) =>
-  DICTAMEN_RESULTADO_META[resultado]?.label ?? resultado ?? '—';
-
-/** Clase completa del StatusPill para el resultado de un dictamen. */
-export const getResultadoDictamenPillClass = (resultado) =>
-  `cfg-materia-pill ${DICTAMEN_RESULTADO_META[resultado]?.pill ?? 'cfg-materia-pill--default'}`;
 
 /**
  * ENUM del backend (actas_defensa.resultado, extensión 2026-08-01 — acta de

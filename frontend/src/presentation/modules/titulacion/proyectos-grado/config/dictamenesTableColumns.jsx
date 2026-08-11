@@ -4,17 +4,18 @@
  * Los dictámenes los GENERA el backend (designación de tutor T10 y
  * transiciones T11); aquí solo lectura + descarga del PDF por endpoint
  * autenticado (proyecto·EXPORTAR, T23).
+ *
+ * Extensión 2026-08-11 (pedido explícito del usuario): sin columna
+ * "Resultado" — decidir el resultado de un dictamen (documentación oficial
+ * que firman todas las partes) está fuera del alcance del sistema; mostrarlo
+ * como si el sistema lo asignara era engañoso.
  */
 
 import { CalendarOutlined, DownloadOutlined, FilePdfOutlined } from '@ant-design/icons';
-import { StatusPill, IdentidadCelda, InfoLinesCell } from '@atoms';
+import { IdentidadCelda, InfoLinesCell } from '@atoms';
 import { TableActions } from '@molecules';
 import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
-import {
-  formatResultadoDictamen,
-  formatTipoDictamen,
-  getResultadoDictamenPillClass,
-} from '@application-titulacion/utils/titulacionPills';
+import { formatTipoDictamen } from '@application-titulacion/utils/titulacionPills';
 
 export const createDictamenesTableColumns = ({ onDescargar, descargandoId = null } = {}) => {
   return [
@@ -51,21 +52,6 @@ export const createDictamenesTableColumns = ({ onDescargar, descargandoId = null
           ].filter(Boolean)}
         />
       ),
-    },
-    {
-      title: 'Resultado',
-      key: 'resultado',
-      width: 130,
-      align: 'center',
-      render: (_, record) =>
-        record.resultado ? (
-          <StatusPill
-            label={formatResultadoDictamen(record.resultado)}
-            className={getResultadoDictamenPillClass(record.resultado)}
-          />
-        ) : (
-          '—'
-        ),
     },
     {
       title: 'Archivo',

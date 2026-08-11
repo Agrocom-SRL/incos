@@ -219,6 +219,7 @@ export function registerProyectosGradoResource(container) {
           TITULACION_TOKENS.proyectoGradoListadoViewRepository
         ),
         dictamenProyectoRepository: c.resolve(TITULACION_TOKENS.dictamenProyectoRepository),
+        bitacoraProyectoRepository: c.resolve(TITULACION_TOKENS.bitacoraProyectoRepository),
         teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
         managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
         designacionTutorPdfGenerator: c.resolve(SERVICIOS_TOKENS.designacionTutorPdfGenerator),
@@ -237,6 +238,7 @@ export function registerProyectosGradoResource(container) {
           TITULACION_TOKENS.proyectoGradoListadoViewRepository
         ),
         dictamenProyectoRepository: c.resolve(TITULACION_TOKENS.dictamenProyectoRepository),
+        bitacoraProyectoRepository: c.resolve(TITULACION_TOKENS.bitacoraProyectoRepository),
         managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
         viabilidadProyectoPdfGenerator: c.resolve(SERVICIOS_TOKENS.viabilidadProyectoPdfGenerator),
         uploadsStorage: c.resolve(SERVICIOS_TOKENS.uploadsStorage),

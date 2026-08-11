@@ -9,6 +9,12 @@
  *
  * Réplica digital de la planilla de seguimiento DDE (FECHA · ACTIVIDAD ·
  * OBSERVACIONES · % de avance).
+ *
+ * Separación actividades / avances concretos (extensión 2026-08-11, pedido
+ * explícito del usuario): el % de avance del proyecto solo se registra al
+ * REVISAR un avance concreto ya subido (REVISION_AVANCE) — una actividad
+ * genérica (REUNION) ya no puede fijar arbitrariamente el % de avance del
+ * proyecto, para no mezclar "hubo una reunión" con "el proyecto avanzó X%".
  */
 
 import { useEffect, useMemo } from 'react';
@@ -39,6 +45,8 @@ const BitacoraEntradaDrawer = ({
 
   const esEdicion = entrada != null;
   const esRevision = !esEdicion && avance != null;
+  /** El % de avance solo aplica a una revisión de avance concreto, nunca a una actividad genérica. */
+  const mostrarAvance = esRevision || (esEdicion && entrada?.tipo === 'REVISION_AVANCE');
 
   const title = esEdicion
     ? 'Editar entrada de bitácora'
@@ -75,7 +83,9 @@ const BitacoraEntradaDrawer = ({
       fecha: values.fecha ? values.fecha.format('YYYY-MM-DD') : undefined,
       actividad: (values.actividad || '').trim() || null,
       observaciones: (values.observaciones || '').trim() || null,
-      porcentajeAvance: values.porcentajeAvance ?? null,
+      // Solo se manda si aplica: en edición, omitir la clave deja el valor
+      // existente intacto (UpdateBitacoraEntradaUseCase actualiza por campo presente).
+      ...(mostrarAvance ? { porcentajeAvance: values.porcentajeAvance ?? null } : {}),
     };
     if (esEdicion) {
       await onSubmit({ ...base, estado: values.estado });
@@ -162,12 +172,14 @@ const BitacoraEntradaDrawer = ({
           />
         </Form.Item>
 
-        <Form.Item
-          name="porcentajeAvance"
-          label="Porcentaje de avance del proyecto (opcional)"
-        >
-          <InputNumber min={0} max={100} step={5} addonAfter="%" style={{ width: '100%' }} />
-        </Form.Item>
+        {mostrarAvance ? (
+          <Form.Item
+            name="porcentajeAvance"
+            label="Porcentaje de avance del proyecto (opcional)"
+          >
+            <InputNumber min={0} max={100} step={5} addonAfter="%" style={{ width: '100%' }} />
+          </Form.Item>
+        ) : null}
 
         {esEdicion ? (
           <Form.Item
