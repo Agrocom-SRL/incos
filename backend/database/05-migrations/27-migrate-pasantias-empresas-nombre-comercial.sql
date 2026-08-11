@@ -27,14 +27,11 @@ SET @pe_aplicado := (
 );
 
 SET @pe_ddl := IF(@pe_aplicado = 0,
-"ALTER TABLE instituto_incos.pasantias_empresas
+"ALTER TABLE pasantias_empresas
     ADD COLUMN nombre_comercial VARCHAR(200) NULL COMMENT 'Nombre comercial o de fantasía, si difiere de la razón social (ej. razón social \"Embotelladora Boliviana S.A.\", nombre comercial \"Embol\")' AFTER nombre,
     ADD INDEX idx_nombre_comercial (nombre_comercial) COMMENT 'Búsqueda por nombre comercial'",
 "SELECT 'pasantias_empresas.nombre_comercial: ya estaba aplicado, sin cambios' AS aviso");
 
-PREPARE pe_stmt FROM @pe_ddl;
-EXECUTE pe_stmt;
-DEALLOCATE PREPARE pe_stmt;
 
 -- ============================================
 -- VERIFICACIÓN (solo lectura, ejecutar tras aplicar)
