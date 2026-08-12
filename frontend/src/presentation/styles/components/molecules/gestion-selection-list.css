@@ -29,8 +29,22 @@
   color: inherit;
 }
 
+.gestion-selection-item .gestion-selection-item-icon {
+  font-size: var(--font-size-base, 16px);
+}
+
+.gestion-selection-item .gestion-selection-item-text {
+  font-size: var(--font-size-md, 14px);
+}
+
+.gestion-selection-item.gestion-selection-item-selected .gestion-selection-item-text {
+  font-weight: 600;
+}
+
 .gestion-selection-item .gestion-selection-item-year {
   color: var(--color-text-tertiary, rgba(0, 0, 0, 0.45));
+  margin-left: 4px;
+  font-size: var(--font-size-sm, 13px);
 }
 
 .gestion-selection-item:last-child {

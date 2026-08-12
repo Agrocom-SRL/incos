@@ -14,7 +14,7 @@
  */
 
 import { useCallback, useState } from 'react';
-import { useEstudiantesApi } from '@application-estudiantes/hooks/api/useEstudiantesApi';
+import { useEstudiantesApi } from '@application-matricula/admision/hooks/api/useEstudiantesApi';
 import { useServerPaginatedList } from '@application/utils';
 import {
   useBuscarEstudiantesHistorial,

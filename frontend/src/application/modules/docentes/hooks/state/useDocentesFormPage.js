@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import apiClient from '@api-client';
 import { ESTADOS_CIVILES_ENDPOINTS } from '@api/endpoints';
 import { useCasesFactory } from '@container';
-import { useStudentGeographicApi } from '@application-estudiantes/hooks/api';
+import { useStudentGeographicApi } from '@application-matricula/admision/hooks/api';
 import { EXPEDICIONES, GENEROS } from '@infrastructure/config/constants';
 import {
   createDocenteWizardSteps,

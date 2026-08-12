@@ -1,90 +1,49 @@
 // src/presentation/modules/matricula/routes.jsx
 /**
- * Rutas del dominio Matrícula (sidebar MAT, junto a Admisión/Becas en estudiantes).
- * URLs canónicas: /matricula/*; /inscripciones/* redirigen por compatibilidad.
+ * Dominio Matrícula (MAT). Raíz de menú: dominios/routes.jsx → key MAT.
+ *
+ * Consolida bajo un único folder los ítems de menú del dominio, cada uno
+ * con su propio directorio y routes.jsx (mismo patrón de composición que
+ * capacitacion/titulacion/finanzas):
+ * - `nuevo/`: "Nuevo estudiante" (alta + edición, único componente
+ *   `EstudiantesRegister.jsx`, permisos `matricula.admision.crear/editar`),
+ *   URLs `/estudiantes/registrar` y `/estudiantes/:id/editar` (sin cambio de URL).
+ * - `admision/`: "Proceso de admisión" (listado + ficha de detalle, permiso
+ *   `matricula.admision.ver`), URLs `/estudiantes/listar` y `/estudiantes/:id`
+ *   (sin cambio de URL). También aloja `MAT-DOCUMENTOS` (placeholder, aún sin
+ *   construir) y el resto del núcleo compartido de estudiante (fusionado desde
+ *   `estudiantes/`, ya eliminada), consumido en cruce por `nuevo/`, `becas/`,
+ *   `aportes/`, `seguridad/`, `docentes/` y `registro/`.
+ * - `becas/`: "Becas y descuentos" (listado + flujo de asignación en 3
+ *   pasos), URLs `/estudiantes/becas/*` (sin cambio de URL).
+ * - `registro/`: "Registro de matrículas" (inscripción a materias por
+ *   gestión, permiso `matricula.inscribir`), URLs `/matricula/*` con
+ *   redirects de compatibilidad desde `/inscripciones/*`.
+ * - `aportes/`: "Aportes de matrícula" (pagos de cuotas por estudiante,
+ *   permiso `matricula.pago.aporte.ver`), URL con menú `/matricula/aportes/listar`
+ *   más las URLs legacy `/pagos/*` (sin menú, dominio Finanzas, siguen
+ *   operativas — misma carpeta atiende ambos dominios, sin cambio de URL).
  */
 
-import { lazy } from 'react';
-import { Navigate } from 'react-router-dom';
 import { UnderConstruction } from '@components/pages';
-
-const MatriculaNuevaConnector = lazy(() => import('./connectors/InscripcionesNuevaConnector'));
-const MatriculaEditarConnector = lazy(() => import('./connectors/InscripcionesEditarConnector'));
-const MatriculaDetailConnector = lazy(() => import('./connectors/DetailConnector'));
-const MatriculaListConnector = lazy(() => import('./connectors/ListConnector'));
+import { estudiantesNuevoRoutes } from './nuevo/routes.jsx';
+import { estudiantesAdmisionRoutes } from './admision/routes.jsx';
+import { matriculaBecasRoutes } from './becas/routes.jsx';
+import { matriculaRegistroRoutes } from './registro/routes.jsx';
+import { matriculaAportesRoutes } from './aportes/routes.jsx';
 
 export const matriculaRoutes = [
   {
-    path: '/matricula/listar',
-    element: <MatriculaListConnector />,
-    key: 'MAT-LISTA',
-    // Rama docente self: el DOCENTE entra con `docentes.ver` y el connector le
-    // monta "Mis estudiantes" (roster de SUS cursos; el backend restringe por
-    // asignación). El staff sigue entrando con `matricula.inscribir`.
-    permisoAny: ['matricula.inscribir', 'docentes.ver'],
-    accion: 'LISTAR',
-    menu: {
-      label: 'Registro de matrículas',
-      module: 'MAT',
-      parent: 'MAT',
-      order: 3,
-      labelByRole: { ESTUDIANTE: 'Mi matrícula', DOCENTE: 'Mis estudiantes' },
-    },
-  },
-  {
-    path: '/matricula/nueva',
-    element: <MatriculaNuevaConnector />,
-    key: 'MAT-NUEVA',
-    permiso: 'matricula.inscribir',
-    accion: 'CREAR',
-    menu: null,
-    breadcrumbParent: 'MAT-LISTA',
-  },
-  {
-    path: '/inscripciones',
-    element: <Navigate to="/matricula/listar" replace />,
-    key: 'MAT-INS-REDIRECT-ROOT',
-    menu: null,
-  },
-  {
-    path: '/inscripciones/listar',
-    element: <Navigate to="/matricula/listar" replace />,
-    key: 'MAT-INS-REDIRECT-LIST',
-    menu: null,
-  },
-  {
-    path: '/inscripciones/nueva',
-    element: <Navigate to="/matricula/nueva" replace />,
-    key: 'MAT-INS-REDIRECT-NUEVA',
-    menu: null,
-  },
-  {
-    path: '/inscripciones/materias/validar',
+    path: '/matricula',
     element: <UnderConstruction />,
-    key: 'GES-MAT-VALIDAR',
-    permiso: 'institucional.oferta.gestionar',
-    accion: 'EDITAR',
+    key: 'MAT-ROOT',
     menu: null,
-    breadcrumbParent: 'GES',
   },
-  {
-    path: '/inscripciones/:id',
-    element: <MatriculaDetailConnector />,
-    key: 'MAT-INS-DETALLE',
-    permiso: 'matricula.inscribir',
-    accion: 'DETALLE',
-    menu: null,
-    breadcrumbParent: 'MAT-LISTA',
-  },
-  {
-    path: '/inscripciones/:id/editar',
-    element: <MatriculaEditarConnector />,
-    key: 'MAT-INS-EDITAR',
-    permiso: 'matricula.inscripcion.editar',
-    accion: 'EDITAR',
-    menu: null,
-    breadcrumbParent: 'MAT-LISTA',
-  },
+  ...estudiantesNuevoRoutes,
+  ...estudiantesAdmisionRoutes,
+  ...matriculaBecasRoutes,
+  ...matriculaRegistroRoutes,
+  ...matriculaAportesRoutes,
 ];
 
 export default matriculaRoutes;

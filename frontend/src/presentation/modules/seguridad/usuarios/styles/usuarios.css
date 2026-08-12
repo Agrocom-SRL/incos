@@ -451,30 +451,8 @@
   word-break: break-word;
 }
 
-/* Wizard (variant tabs) — índice/check dentro del label de la pestaña. */
-.wizard-form__tab-index {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  font-size: var(--font-size-sm, 12px);
-  font-weight: 700;
-  line-height: 1;
-  background: color-mix(in srgb, var(--primary, #196b45) 12%, transparent);
-  color: var(--primary, #196b45);
-}
-
-.cfg-academico-workspace__tabs.ant-tabs .ant-tabs-tab-active .wizard-form__tab-index {
-  background: var(--primary, #196b45);
-  color: var(--surface, #fff);
-}
-
-/* Error puntual del wizard, junto al footer de navegación. */
-.wizard-form__footer-error {
-  margin-bottom: 16px;
-}
+/* Wizard (variant tabs): badge de pestaña y error de footer viven ahora en
+   presentation/styles/components/organisms/wizard-form.css (compartido). */
 
 /* Buscador de vínculo (estudiante/docente) — plano, sin card; input propio + panel de resultados. */
 .seg-vinculo-busqueda {

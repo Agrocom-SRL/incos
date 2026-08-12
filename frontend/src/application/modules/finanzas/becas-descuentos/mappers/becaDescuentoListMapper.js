@@ -1,7 +1,7 @@
 /**
  * Mapper: catálogo maestro Becas y descuentos (API → DTO UI, módulo Finanzas).
  *
- * Distinto del flujo legacy de asignación (`application/modules/estudiantes/`
+ * Distinto del flujo de asignación (`application/modules/matricula/becas/`
  * mapea `estudiantes_becas`, NO este catálogo). `dataKey` (front) coincide con
  * el `dataFieldName` (back): becasDescuentos (listado) / becaDescuento (detalle).
  * Campos backend (BecaDescuentoMapper.entityToPresentation):

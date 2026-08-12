@@ -29,7 +29,7 @@
  * - Muestra/oculta campos adicionales según el estado de entrega
  */
 
-import { Form } from 'antd';
+import { Form, Row, Col } from 'antd';
 import { FileTextOutlined, CheckCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { Alert, FieldSwitch, FieldCheckbox, FieldTextarea, Container, Heading, Text, Badge } from '@atoms';
 import { useDocumentoItem } from './hooks/useDocumentoItem';
@@ -78,14 +78,17 @@ const DocumentoItem = ({
 
   return (
     <Container className="documento-item" vertical gap="md">
-      {/* Título y Switch */}
+      {/* Título y Switch: icono + texto en línea; el asterisco de requerido fluye
+          al final del texto (dentro del mismo span), no en una línea propia */}
       <Container className="documento-item-header">
         <Heading level={5} gap="small">
           <FileTextOutlined />
-          {tituloDocumento}
-          {esRequerido && (
-            <Text className="documento-required">*</Text>
-          )}
+          <span className="documento-item-title">
+            {tituloDocumento}
+            {esRequerido && (
+              <Text className="documento-required">*</Text>
+            )}
+          </span>
         </Heading>
 
         <Form.Item
@@ -112,31 +115,34 @@ const DocumentoItem = ({
         />
       )}
 
-      {/* Indicador "Se acepta Fotocopia": siempre en su propia línea para evitar cortes de texto */}
-      {mostrarIndicadorFotocopia && (
-        <div className="documento-item__fotocopia-wrap">
-          <Badge
-            variant="success"
-            icon={<CheckCircleOutlined />}
-            text="Se acepta Fotocopia"
-            className="documento-item__fotocopia-badge"
-          />
-        </div>
-      )}
-
-      {/* En trámite y motivo: solo cuando el documento está Pendiente, en bloque debajo */}
-      {!entregado && (
-        <>
-          <Form.Item
-            name={fieldNameEnTramite}
-            valuePropName="checked"
-            style={{ marginBottom: 0 }}
-          >
-            <FieldCheckbox disabled={readOnly}>
-              En trámite
-            </FieldCheckbox>
-          </Form.Item>
-        </>
+      {/* Indicador "Se acepta Fotocopia" y checkbox "En trámite" (solo Pendiente),
+          lado a lado en mitades cuando ambos están visibles */}
+      {(mostrarIndicadorFotocopia || !entregado) && (
+        <Row gutter={[16, 8]} align="middle" className="documento-item__fotocopia-wrap">
+          {mostrarIndicadorFotocopia && (
+            <Col xs={24} sm={!entregado ? 12 : 24}>
+              <Badge
+                variant="success"
+                icon={<CheckCircleOutlined />}
+                text="Se acepta Fotocopia"
+                className="documento-item__fotocopia-badge"
+              />
+            </Col>
+          )}
+          {!entregado && (
+            <Col xs={24} sm={mostrarIndicadorFotocopia ? 12 : 24}>
+              <Form.Item
+                name={fieldNameEnTramite}
+                valuePropName="checked"
+                style={{ marginBottom: 0 }}
+              >
+                <FieldCheckbox disabled={readOnly}>
+                  En trámite
+                </FieldCheckbox>
+              </Form.Item>
+            </Col>
+          )}
+        </Row>
       )}
 
       {/* Textarea para observaciones (motivo de no entrega) - solo visible cuando switch es FALSE */}

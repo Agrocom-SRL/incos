@@ -4,7 +4,7 @@
  */
 import { useEffect, useMemo, useRef } from 'react';
 import { Form } from 'antd';
-import { useStudentCatalogApi, useStudentGeographicApi } from '@application-estudiantes/hooks/api';
+import { useStudentCatalogApi, useStudentGeographicApi } from '@application-matricula/admision/hooks/api';
 import { transformToOptions } from '@application/utils';
 import { EXPEDICIONES } from '@infrastructure/config/constants';
 

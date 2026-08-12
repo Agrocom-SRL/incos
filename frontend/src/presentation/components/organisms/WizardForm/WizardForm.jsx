@@ -67,6 +67,9 @@ const WizardForm = React.forwardRef(({
   variant = 'steps',
   // Mensaje de error puntual mostrado junto al footer del wizard (no permanente arriba de la página).
   errorMessage = '',
+  // Solo variant="tabs": todo avance por click de pestaña —incluso a pasos ya visitados—
+  // exige validar el paso visible vía onValidateBeforeNext; el retroceso queda siempre libre.
+  strictForwardNavigation = false,
 }, ref) => {
   // Hook que compone toda la lógica del wizard (navegación + formulario + cargadores)
   const {
@@ -144,25 +147,58 @@ const WizardForm = React.forwardRef(({
     prev();
   }, [currentStep, form, prev, onBeforePrevStep]);
 
+  // Avance directo a un paso destino validando antes el paso visible (modo estricto de tabs).
+  const navigateForwardTo = React.useCallback((target) => {
+    const currentStepNumber = currentStep + 1;
+    const proceed = () => {
+      onBeforeNextStep?.(currentStepNumber, form);
+      goTo(target);
+    };
+    if (onValidateBeforeNext) {
+      const validationPromise = onValidateBeforeNext(currentStepNumber, form);
+      if (!validationPromise || typeof validationPromise?.then !== 'function') {
+        return;
+      }
+      validationPromise
+        .then(proceed)
+        .catch((err) => {
+          if (typeof onValidationError === 'function') onValidationError(err);
+        });
+    } else {
+      proceed();
+    }
+  }, [currentStep, form, goTo, onValidateBeforeNext, onBeforeNextStep, onValidationError]);
+
   // Si no hay step configurado, no renderizar nada
   if (!currentStepConfig) {
     return null;
   }
 
   // Navegación por click de pestaña (solo variant="tabs"):
-  // - hacia un paso ya visitado/completado (<= maxStepReached) → salto directo
-  // - al paso inmediatamente siguiente → pasa por handleNext (respeta onValidateBeforeNext)
-  // - a pasos futuros no adyacentes → se ignora
+  // - hacia atrás → salto directo, siempre permitido (notificando onBeforePrevStep, como "Anterior")
+  // - hacia adelante con strictForwardNavigation → valida el paso visible antes de saltar
+  // - sin modo estricto: paso ya visitado (<= maxStepReached) → salto directo;
+  //   paso inmediatamente siguiente → handleNext (respeta onValidateBeforeNext)
+  // - a pasos futuros no navegables → se ignora
   const handleTabChange = (key) => {
     const target = Number(key);
     if (!Number.isInteger(target) || target === currentStep) return;
+    if (target < currentStep) {
+      onBeforePrevStep?.(currentStep + 1, form);
+      goTo(target);
+      return;
+    }
+    const navigable = target <= maxStepReached || target === currentStep + 1;
+    if (!navigable) return;
+    if (strictForwardNavigation) {
+      navigateForwardTo(target);
+      return;
+    }
     if (target <= maxStepReached) {
       goTo(target);
       return;
     }
-    if (target === currentStep + 1) {
-      handleNext();
-    }
+    handleNext();
   };
 
   // Cuerpo del paso actual (compartido por ambas variantes).

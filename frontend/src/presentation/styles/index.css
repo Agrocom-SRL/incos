@@ -64,6 +64,7 @@
 @import './components/organisms/table-list-view.css';
 @import './components/organisms/page-header.css';
 @import './components/organisms/page-bottom.css';
+@import './components/organisms/wizard-form.css';
 @import './components/organisms/InscripcionesPeriodoMateriasStepContent.css';
 @import './components/organisms/InscripcionesPeriodoParalelosStepContent.css';
 

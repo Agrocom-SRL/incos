@@ -86,7 +86,7 @@ const FormField = ({
       <Form.Item
         label={field.label}
         {...layoutProps}
-        className="form-field"
+        className={isVertical ? 'form-field form-field--vertical' : 'form-field'}
         {...preserveDisplay}
         shouldUpdate={(prevValues, currentValues) => {
           // Actualizar cuando cambien los campos dependencies
