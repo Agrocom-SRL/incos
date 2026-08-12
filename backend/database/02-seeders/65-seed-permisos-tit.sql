@@ -58,7 +58,7 @@ INSERT INTO grupos_ui (codigo, nombre, dominio, orden, activo, created_at, updat
 
 -- 1) Permisos del módulo TIT
 INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ruta_sidebar, activo, created_at, updated_at) VALUES
-('titulacion.proyecto', 'Proyectos de grado: listar, detalle, crear, editar, eliminar, aprobar etapas/tutor, registrar acta de defensa y exportar reportes (modalidad, avance por carrera, planilla, acta de defensa)', NULL, 'TITULACION', 'TIT', 'tit_proyectos', '/titulacion/proyectos-grado', 1, NOW(), NOW()),
+('titulacion.proyecto', 'Proyectos de grado: listar, detalle, crear, editar, eliminar, aprobar y exportar', 'Incluye aprobar etapas/tutor, registrar acta de defensa y exportar reportes (modalidad, avance por carrera, planilla, acta de defensa)', 'TITULACION', 'TIT', 'tit_proyectos', '/titulacion/proyectos-grado', 1, NOW(), NOW()),
 ('titulacion.bitacora', 'Bitácora de tutoría: listar, crear y editar entradas', NULL, 'TITULACION', 'TIT', 'tit_proyectos', '/titulacion/proyectos-grado', 1, NOW(), NOW()),
 ('titulacion.avance', 'Avances del proyecto: listar, ver detalle/descargar y subir archivos', NULL, 'TITULACION', 'TIT', 'tit_proyectos', '/titulacion/proyectos-grado', 1, NOW(), NOW()),
 ('titulacion.pasantia', 'Pasantías (práctica laboral): listar, ver detalle, registrar, editar, eliminar, transicionar estados y exportar PDF de informes', NULL, 'TITULACION', 'TIT', 'tit_pasantias', '/titulacion/pasantias', 1, NOW(), NOW()),
