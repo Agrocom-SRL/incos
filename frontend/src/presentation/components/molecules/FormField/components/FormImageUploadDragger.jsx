@@ -76,15 +76,18 @@ const FormImageUploadDragger = ({
   );
   const hasPreview = Boolean(previewUrl);
 
+  // `field.acceptAnyFile`: opt-in aditivo para campos de documento (PDF/DOC además
+  // de imagen); el filtro fino lo pone `field.accept`. Sin la prop, se conserva la
+  // validación histórica de solo-imagen (carreras, QR de cuenta).
   const handleBeforeUpload = useCallback(
     (file) => {
-      if (!isImageFile(file)) {
+      if (!field.acceptAnyFile && !isImageFile(file)) {
         message.error('Seleccione un archivo de imagen (JPG, PNG, WEBP, GIF, etc.)');
         return Upload.LIST_IGNORE;
       }
       return false;
     },
-    [message],
+    [message, field.acceptAnyFile],
   );
 
   const handleChange = useCallback(
@@ -113,7 +116,9 @@ const FormImageUploadDragger = ({
             {hasPreview ? <UploadOutlined /> : <InboxOutlined />}
           </p>
           <p className="form-image-upload__title">
-            {hasPreview ? 'Cambiar imagen' : 'Arrastre y suelte la imagen aquí'}
+            {hasPreview
+              ? field.uploadTitleChange || 'Cambiar imagen'
+              : field.uploadTitle || 'Arrastre y suelte la imagen aquí'}
           </p>
           <p className="form-image-upload__hint">
             o <span className="form-image-upload__link">haga clic para seleccionar</span>

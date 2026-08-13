@@ -66,7 +66,9 @@
 @import './components/organisms/page-bottom.css';
 @import './components/organisms/wizard-form.css';
 @import './components/organisms/form-workspace-section.css';
+@import './components/organisms/resumen-panels.css';
 @import './components/organisms/becas-asignar.css';
+@import './components/organisms/pagos-registrar.css';
 @import './components/organisms/InscripcionesPeriodoMateriasStepContent.css';
 @import './components/organisms/InscripcionesPeriodoParalelosStepContent.css';
 

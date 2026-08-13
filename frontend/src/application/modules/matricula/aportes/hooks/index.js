@@ -24,6 +24,11 @@ export { usePagosDetailContext } from './context/usePagosDetailContext';
 // Exporta directamente desde el archivo (el index.js intermedio es opcional)
 export { usePagosData } from './state/usePagosData';
 export { usePagosRegistrarData } from './state/usePagosRegistrarData';
+export {
+  usePagosRegistrarPageState,
+  OPCIONES_COMPROMISO,
+  DIAS_COMPROMISO_DEFAULT,
+} from './state/usePagosRegistrarPageState';
 
 // ============================================
 // 3. API / DATA FETCHING (Application Layer)

@@ -26,3 +26,8 @@ export {
   formatBsConSimbolo,
 } from './montoFormatters';
 
+export {
+  formatFechaLiteral,
+  formatFechaCorta,
+} from './dateFormatters';
+

@@ -34,6 +34,10 @@ export const useAsignarBecaPageData = (options = {}) => {
   const returnSelectionPath = location.state?.returnSelectionPath;
   const returnListPath = location.state?.returnListPath;
   const menuSidebarKeyFromState = location.state?.menuSidebarKey;
+  // Origen con contexto propio (formulario de registro de pago): volver ahí,
+  // con su state completo (studentId incluido, que ese formulario exige).
+  const returnTo = location.state?.returnTo;
+  const returnState = location.state?.returnState;
 
   const pageTitle = useMemo(() => {
     if (studentName) {
@@ -54,6 +58,10 @@ export const useAsignarBecaPageData = (options = {}) => {
   );
 
   const handleVolver = useCallback(() => {
+    if (returnTo) {
+      navigate(returnTo, { state: returnState || (studentId ? { studentId } : undefined) });
+      return;
+    }
     const navExtras = menuSidebarKeyFromState ? { menuSidebarKey: menuSidebarKeyFromState } : undefined;
     if (returnSelectionPath) {
       navigate(returnSelectionPath, { state: navExtras });
@@ -68,7 +76,7 @@ export const useAsignarBecaPageData = (options = {}) => {
     } else {
       navigate('/estudiantes/listar');
     }
-  }, [navigate, returnSelectionPath, returnListPath, menuSidebarKeyFromState, studentId]);
+  }, [navigate, returnTo, returnState, returnSelectionPath, returnListPath, menuSidebarKeyFromState, studentId]);
 
   return useMemo(() => {
     return {

@@ -30,7 +30,7 @@
 
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { Form } from 'antd';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useMessage } from '@application/utils';
 import { useCreateAsignarBeca } from '@application-matricula/becas/hooks/api/useCreateAsignarBeca';
 // useDeleteBecaAsignada es compartido (también usado por la ficha de admisión): sigue en la raíz de `estudiantes/`.
@@ -59,6 +59,12 @@ export const useAsignarBecaFormHandlers = (studentId, options = {}) => {
     
     // Hook de navegación
     const navigate = useNavigate();
+
+    // Origen del flujo: si se llegó desde el formulario de registro de pago,
+    // trae la ruta de retorno y su contexto (studentId, returnListPath, menú).
+    const location = useLocation();
+    const returnTo = location.state?.returnTo || null;
+    const returnState = location.state?.returnState || null;
     
     // Hook de API para crear asignación de beca
     const { createAsignarBeca, loading: loadingCreate, error: errorCreate, validationErrors: validationErrorsCreate } = useCreateAsignarBeca();
@@ -199,13 +205,28 @@ export const useAsignarBecaFormHandlers = (studentId, options = {}) => {
             const pagoAporteId = data.pagoAporteId ?? null;
 
             if (esBeca100 && pagoAporteId) {
-                // Beca 100%: ir al detalle del pago para permitir descargar el recibo
+                // Beca 100% (aporte cubierto en su totalidad): ir al detalle del pago
+                // para descargar el recibo. Aplica también viniendo del formulario de
+                // pagos: ya no queda nada que registrar.
                 navigate(`/pagos/${pagoAporteId}`, {
                     replace: true,
-                    state: { studentId, fromBeca100: true, menuSidebarKey: MENU_SIDEBAR_KEY_MAT_APORTES },
+                    state: {
+                        studentId,
+                        fromBeca100: true,
+                        menuSidebarKey: returnState?.menuSidebarKey || MENU_SIDEBAR_KEY_MAT_APORTES,
+                    },
+                });
+            } else if (returnTo) {
+                // Origen: formulario de registro de pago → volver a él con su contexto
+                // (ruta matrícula o legacy, lista de retorno, ítem de menú). Si el
+                // descuento dejó el saldo en 0, ese formulario redirige por sí mismo
+                // al detalle del pago.
+                navigate(returnTo, {
+                    replace: true,
+                    state: returnState || { studentId },
                 });
             } else {
-                // Beca < 100%: ir a registrar pago con el estudiante
+                // Beca < 100% sin origen explícito: ir a registrar pago con el estudiante
                 navigate('/pagos/registrar', {
                     state: { studentId, menuSidebarKey: MENU_SIDEBAR_KEY_MAT_APORTES },
                     replace: true,
@@ -221,7 +242,7 @@ export const useAsignarBecaFormHandlers = (studentId, options = {}) => {
         }
 
         return result;
-    }, [studentId, selectedBecaDescuento, getFormValues, createAsignarBeca, showMessage, handleSubmitResult, navigate, isEditMode, editBecaAsignada?.id, deleteBecaAsignada]);
+    }, [studentId, selectedBecaDescuento, createAsignarBeca, showMessage, handleSubmitResult, navigate, isEditMode, editBecaAsignada?.id, deleteBecaAsignada, returnTo, returnState]);
 
     // Memoizar el objeto retornado para mantener referencia estable
     // Esto permite que el useMemo del Provider sea más efectivo

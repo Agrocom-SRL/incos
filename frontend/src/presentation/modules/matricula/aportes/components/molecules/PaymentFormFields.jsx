@@ -15,6 +15,8 @@
  * @param {boolean} requiereCodigoComprobante - Si requiere código de comprobante
  * @param {boolean} requiereDocumentoRespaldo - Si requiere documento de respaldo
  * @param {boolean} esQR - Si es método QR
+ * @param {boolean} showObservacion - Mostrar el campo de observación (el wizard de
+ *   registro la captura en el paso de Confirmación, no junto al comprobante)
  */
 
 import { useMemo } from 'react';
@@ -34,7 +36,7 @@ import { Button } from '@atoms';
 const { TextArea } = Input;
 
 const PaymentFormFields = ({
-  form,
+  form, // eslint-disable-line no-unused-vars -- contrato histórico del padre; los campos usan el Form del contexto
   cuentasPagoData,
   bancosAutorizadosData,
   requiereFechaPago = false,
@@ -42,18 +44,20 @@ const PaymentFormFields = ({
   requiereNumeroTransaccion = false,
   requiereCodigoComprobante = false,
   requiereDocumentoRespaldo = false,
-  esQR = false
+  esQR = false,
+  showObservacion = true
 }) => {
   // Crear mapa de bancos por ID para búsqueda rápida
+  const bancosAutorizados = bancosAutorizadosData?.bancosAutorizados;
   const bancosMap = useMemo(() => {
-    if (!bancosAutorizadosData?.bancosAutorizados || !Array.isArray(bancosAutorizadosData.bancosAutorizados)) {
+    if (!bancosAutorizados || !Array.isArray(bancosAutorizados)) {
       return {};
     }
-    return bancosAutorizadosData.bancosAutorizados.reduce((map, banco) => {
+    return bancosAutorizados.reduce((map, banco) => {
       map[banco.id] = banco;
       return map;
     }, {});
-  }, [bancosAutorizadosData?.bancosAutorizados]);
+  }, [bancosAutorizados]);
 
   // Helper para obtener nombre del banco
   const obtenerNombreBanco = (cuenta) => {
@@ -265,7 +269,8 @@ const PaymentFormFields = ({
       )}
 
       {/* 6. Observación - Opcional */}
-      <Col xs={12}>
+      {showObservacion && (
+      <Col xs={24} md={12}>
         <Form.Item
           name="descripcion"
           label={
@@ -302,6 +307,7 @@ const PaymentFormFields = ({
           />
         </Form.Item>
       </Col>
+      )}
     </Row>
   );
 };

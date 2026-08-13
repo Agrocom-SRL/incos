@@ -198,10 +198,7 @@ export const usePagosRegistrarData = (studentId = null) => {
             }
 
             const result = await useCaseInstance.ejecutar(dataToSend);
-            
-            // Debug: Log del resultado para ver qué está llegando
-            console.log('[usePagosRegistrarData] Resultado del registro:', result);
-            
+
             if (!result || !result.success) {
                 // Preservar la estructura completa del error para que el componente pueda extraer el mensaje
                 // El error puede ser un objeto { code, message, details } o un string

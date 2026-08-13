@@ -187,6 +187,7 @@ const renderDate = (field, disabled, readOnly, minAge) => (
     picker={field.picker || 'date'}
     minAge={minAge}
     defaultValue={field.defaultValue}
+    disabledDate={field.disabledDate}
   />
 );
 

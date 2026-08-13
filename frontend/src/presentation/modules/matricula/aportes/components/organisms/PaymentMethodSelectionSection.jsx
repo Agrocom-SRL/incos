@@ -148,110 +148,43 @@ const PaymentMethodSelectionSection = ({
           <Radio.Group
             value={selectedValue}
             onChange={handleRadioChange}
-            style={{ width: '100%' }}
+            className="pago-metodo-grid"
           >
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-              gap: token.margin
-            }}>
-              {sortedMetodosPago.map((metodoPago) => {
-                const isSelected = selectedValue === metodoPago.id;
-                const { icon: IconComponent, color, bgColor } = getMethodConfig(metodoPago.codigo);
+            {sortedMetodosPago.map((metodoPago) => {
+              const isSelected = selectedValue === metodoPago.id;
+              const { icon: IconComponent, color, bgColor } = getMethodConfig(metodoPago.codigo);
 
-                return (
-                  <Radio.Button
-                    key={metodoPago.id}
-                    value={metodoPago.id}
-                    style={{
-                      width: '100%',
-                      height: 'auto',
-                      padding: 0,
-                      margin: 0,
-                      border: isSelected
-                        ? `2px solid ${color}`
-                        : `2px solid ${token.colorBorderSecondary}`,
-                      borderRadius: token.borderRadiusLG,
-                      backgroundColor: isSelected ? bgColor : token.colorBgContainer,
-                      transition: 'all 0.3s ease',
-                      overflow: 'hidden',
-                      cursor: 'pointer',
-                      boxShadow: 'none',
-                    }}
-                    className="payment-method-card"
-                  >
-                    <Flex
-                      align="center"
-                      gap="middle"
-                      style={{ padding: token.paddingMD }}
-                    >
-                      <Flex
-                        align="center"
-                        justify="center"
-                        style={{
-                          width: token.controlHeightLG,
-                          height: token.controlHeightLG,
-                          borderRadius: token.borderRadiusLG,
-                          backgroundColor: isSelected ? color : token.colorFillTertiary,
-                          transition: 'all 0.3s ease',
-                          flexShrink: 0,
-                        }}
-                      >
-                        <IconComponent
-                          style={{
-                            fontSize: token.fontSizeHeading3,
-                            color: isSelected ? token.colorWhite : token.colorTextTertiary,
-                            transition: 'all 0.3s ease',
-                          }}
-                        />
-                      </Flex>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <Text strong style={{ display: 'block', fontSize: token.fontSizeLG }}>
-                          {metodoPago.nombre}
-                        </Text>
-                        {metodoPago.codigo && (
-                          <Text type="secondary" style={{ fontSize: token.fontSizeSM }}>
-                            {metodoPago.codigo}
-                          </Text>
-                        )}
-                      </div>
-                      {isSelected && (
-                        <Flex
-                          align="center"
-                          justify="center"
-                          style={{
-                            width: token.controlHeightXS,
-                            height: token.controlHeightXS,
-                            borderRadius: '50%',
-                            backgroundColor: color,
-                            flexShrink: 0,
-                          }}
-                        >
-                          <span style={{ color: token.colorWhite }}>✓</span>
-                        </Flex>
+              return (
+                <Radio.Button
+                  key={metodoPago.id}
+                  value={metodoPago.id}
+                  className="pago-metodo-card"
+                  // Acento categórico del medio de pago (tokens del theme) → CSS vars;
+                  // el relieve/hover/selección viven en pagos-registrar.css
+                  style={{ '--metodo-accent': color, '--metodo-accent-bg': bgColor }}
+                >
+                  <span className="pago-metodo-card__body">
+                    <span className="pago-metodo-card__icon">
+                      <IconComponent />
+                    </span>
+                    <span className="pago-metodo-card__text">
+                      <span className="pago-metodo-card__nombre">{metodoPago.nombre}</span>
+                      {metodoPago.codigo && (
+                        <span className="pago-metodo-card__codigo">{metodoPago.codigo}</span>
                       )}
-                    </Flex>
-                  </Radio.Button>
-                );
-              })}
-            </div>
+                    </span>
+                    {isSelected && (
+                      <span className="pago-metodo-card__check" aria-hidden>
+                        ✓
+                      </span>
+                    )}
+                  </span>
+                </Radio.Button>
+              );
+            })}
           </Radio.Group>
         </Form.Item>
       )}
-
-      <style>{`
-        .payment-method-card:hover {
-          transform: translateY(-2px);
-        }
-        .payment-method-card .ant-radio-button-wrapper {
-          border: none !important;
-          box-shadow: none !important;
-        }
-        .payment-method-card .ant-radio-button-wrapper-checked {
-          border: none !important;
-          box-shadow: none !important;
-        }
-      `}</style>
     </>
   );
 

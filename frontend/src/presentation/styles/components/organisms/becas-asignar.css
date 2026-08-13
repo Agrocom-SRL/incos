@@ -3,8 +3,8 @@
    ============================================================================
    - .beca-card:         contenido de cada tarjeta de la grilla de selección
    - .beca-card-popover: popover con la descripción completa (hover en la card)
-   - .beca-resumen:      resumen compacto del paso Confirmación (estudiante | beca)
-   Solo layout y composición; colores/tamaños vía variables del tema (root.js).
+   El resumen del paso Confirmación usa los paneles compartidos .resumen-panel*
+   (resumen-panels.css). Solo layout; colores/tamaños vía variables del tema.
    ============================================================================ */
 
 /* --- Tarjeta de selección ------------------------------------------------- */
@@ -105,81 +105,5 @@
   font-size: var(--font-size-sm);
 }
 
-/* --- Resumen de confirmación (estudiante | beca) --------------------------- */
-
-/* Paneles gemelos: misma lógica de columnas por contenedor que la grilla de
-   selección (apilan solos cuando el espacio no alcanza el mínimo). */
-.beca-resumen {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
-  gap: var(--spacing-base);
-  align-items: stretch;
-}
-
-/* Mismo lenguaje de panel suave que .fw-subsection (form-workspace-section.css) */
-.beca-resumen__panel {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-  background: var(--border-soft, var(--color-bg-layout));
-  border: 1px solid var(--border, var(--color-primary-border));
-  border-radius: var(--radius-lg, 12px);
-  padding: 18px 20px 20px;
-}
-
-.beca-resumen__beca-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--spacing-sm);
-}
-
-.beca-resumen__panel-label {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-strong);
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-}
-
-.beca-resumen__panel-label .anticon {
-  color: var(--color-primary);
-  font-size: var(--font-size-base);
-}
-
-.beca-resumen__titulo.ant-typography {
-  margin: 0;
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-strong);
-  line-height: var(--line-height-sm);
-}
-
-.beca-resumen__desc.ant-typography {
-  margin: 0;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-}
-
-.beca-resumen__meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--spacing-xs) var(--spacing-base);
-  margin-top: auto;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-}
-
-.beca-resumen__meta-item {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  white-space: nowrap;
-}
-
-.beca-resumen__meta-item .anticon {
-  color: var(--color-text-tertiary);
-}
+/* El resumen de confirmación (estudiante | beca) vive en resumen-panels.css
+   (.resumen-panels / .resumen-panel*), compartido con matrícula/aportes. */

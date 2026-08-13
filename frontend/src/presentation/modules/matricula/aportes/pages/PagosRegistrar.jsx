@@ -1,584 +1,266 @@
 /**
  * PagosRegistrar - Página para registrar un pago
- * 
- * Single Responsibility: Mostrar el formulario para registrar un pago de un estudiante
- * 
- * Atomic Design: Page
- * - Orquesta datos + componentes (toda la lógica de montos/cuotas/compromiso vive aquí
- *   y en los contextos de aplicación; el shell y el workspace solo presentan)
  *
- * Arquitectura:
- * Page → shell global (PageHeaderArea + DashboardPageShell + MainContent) +
- * CfgFormWorkspace (organismo compartido) con secciones planas:
- * información del estudiante, detalle del aporte, método de pago y detalle del pago.
- * - Los botones Cancelar / Registrar pago van en el footer del workspace.
+ * Single Responsibility: Orquestar el wizard de registro de pago de un estudiante
+ *
+ * Atomic Design: Page
+ * - Shell alineado al patrón de EstudiantesAsignarBeca:
+ *   PageHeaderArea (PageHeader + BackButton) + DashboardPageShell + MainContent.
+ * - El contenido es un `WizardForm variant="tabs"`:
+ *   1. "Estado del aporte" → verificación a ancho completo (sin panel de
+ *      estudiante: la identidad va en el título de la página y en Confirmación).
+ *      El botón "Asignar beca" vive en la cabecera del card (headerActions),
+ *      como en los formularios de Configuración.
+ *   2. "Datos del pago" → tres secciones del workspace: método de pago,
+ *      datos del comprobante y monto de esta cuota
+ *      (solo si el pago NO es gratuito; con beca 100% el wizard salta este paso).
+ *   3. "Confirmación" → resumen del pago + compromiso de pago inline cuando es
+ *      la 1ra cuota con saldo restante (reemplaza al antiguo modal) + observación.
  * - También se sirve por la ruta legacy `/pagos/registrar` (dominio Finanzas):
  *   `returnListPath`/`menuSidebarKey` y las redirecciones se conservan intactos.
+ *
+ * Arquitectura:
+ * Page → shell global + WizardForm (organismo compartido)
+ * - Toda la lógica vive en usePagosRegistrarPageState (application/hooks/state):
+ *   validaciones espejo del backend, payload, idempotencia, recibo y redirecciones.
  */
 
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useMemo, useEffect, useState, useRef } from 'react';
-import { Flex, Form, App, Spin } from 'antd';
-import { ArrowLeftOutlined, GiftOutlined, SaveOutlined } from '@ant-design/icons';
-import dayjs from 'dayjs';
+import { useCallback, useMemo } from 'react';
+import { Flex, Spin } from 'antd';
+import { ArrowLeftOutlined, GiftOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
-import { ActionButton, BackButton, Button, formatFechaCompromiso } from '@atoms';
-import { CfgFormWorkspace } from '@organisms';
+import { ActionButton, BackButton } from '@atoms';
+import { FormWorkspaceSection, WizardForm } from '@organisms';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
-import { useStudentDetailContext } from '@application-matricula/admision/hooks';
-import { usePagosRegistrarContext } from '@application-pagos/hooks';
-import { downloadFile } from '@application/utils';
-import { StudentInfoSection } from '@matricula/admision/components/organisms';
+import { usePagosRegistrarPageState } from '@application-pagos/hooks';
+import { formatFechaLiteral } from '@application/utils';
 import {
-  PaymentMethodSelectionSection,
-  ContributionDetailSummary,
-  SelectedPaymentSection,
-  CompromisoPagoModal,
+  PagoEstadoAporteSection,
+  PagoDatosPagoSection,
+  PagoConfirmacionResumen,
 } from '../components/organisms';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
 
-/**
- * Plazos del compromiso de pago que el usuario puede elegir al registrar la
- * PRIMERA cuota (debe coincidir con DIAS_COMPROMISO_PERMITIDOS del backend).
- */
-const OPCIONES_COMPROMISO = [
-  { value: 15, label: '15 días', sub: '2 semanas' },
-  { value: 30, label: '30 días', sub: '1 mes' },
-  { value: 45, label: '45 días', sub: '1 mes y medio' },
-  { value: 60, label: '60 días', sub: '2 meses' },
-  { value: 90, label: '90 días', sub: '3 meses' },
-];
-
-/** Plazo por defecto del compromiso (alineado con el backend). */
-const DIAS_COMPROMISO_DEFAULT = 90;
-
 const PagosRegistrar = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { message } = App.useApp(); // Usar message del contexto de App
-
-  // Obtener studentId del estado de navegación
-  const studentId = location.state?.studentId || null;
-  const menuSidebarKeyFromState = location.state?.menuSidebarKey;
-  /** Lista desde la que se llegó (p. ej. /matricula/aportes/listar) si no hay estudiante en contexto. */
-  const returnListPathFromState = location.state?.returnListPath || '/pagos/listar';
-  const returnListPath = location.state?.returnListPath;
-
-  // Obtener datos del estudiante desde el contexto de detalle (para StudentInfoSection)
-  const studentDetailContext = useStudentDetailContext();
-  const student = studentDetailContext?.student?.student || null;
-  const loadingStudent = studentDetailContext?.loading || false;
-
-  // Obtener datos de becas desde el contexto de registro de pagos
-  const pagosRegistrarContext = usePagosRegistrarContext();
+  // Toda la lógica del flujo vive en el hook de estado de la pantalla
   const {
+    student,
+    pageTitle,
+    breadcrumbItems,
+    handleVolver,
+    handleAsignarBeca,
+    ocultarBotonAsignarBeca,
+    sinEstudiante,
+    redirigiendoADetalle,
+    cargandoDatosBase,
     becaActiva,
-    loadingScholarships,
-  } = pagosRegistrarContext || {};
-
-  // Obtener TODO del contexto de registro de pagos (incluye estado actual del aporte: saldo real, cuotas pagadas, tiene_descuento_aplicado)
-  const {
-    loading = false,
-    estadoActualAporte = null,
-    loadingEstadoAporte = false,
-    metodosPago,
+    porcentajeBeca,
+    descuentoBeca,
+    esPrimeraCuota,
+    estadoActualAporte,
+    configuracionAporteActiva,
     configuracionAportes,
+    metodosPago,
     cuentasPago,
     bancosAutorizados,
+    montoCuota,
+    saldoPendiente,
+    esPagoGratuito,
+    mostrarSelectorCompromiso,
+    saldoRestanteCompromiso,
+    compromisoDias,
+    setCompromisoDias,
+    fechaCompromisoProyectada,
+    opcionesCompromiso,
     form,
-    registrarPago,
-  } = pagosRegistrarContext || {};
+    validarPasoDatosPago,
+    handleFinish,
+    isSubmitting,
+    submitError,
+  } = usePagosRegistrarPageState();
 
-  // Estado local para idempotencia: prevenir múltiples clics
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const isSubmittingRef = useRef(false); // Ref para evitar race conditions
-  // Bloquear redirección automática (saldo 0 → detalle) hasta después de descargar el recibo
-  const pendienteDescargaReciboRef = useRef(false);
+  const backAction = (
+    <BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver}>
+      Volver
+    </BackButton>
+  );
 
-  // Monto de esta cuota (lo que el usuario ingresa en Detalle del Aporte). Inicia en 0; no se pre-rellena con el saldo pendiente.
-  const [montoCuota, setMontoCuota] = useState(0);
+  // "Asignar beca" en la cabecera del card del paso 1 (la beca modifica el saldo
+  // que se verifica en ese paso), como los formularios de Configuración.
+  const asignarBecaAction = useMemo(
+    () =>
+      !ocultarBotonAsignarBeca ? (
+        <ActionButton
+          permiso="matricula.beca.asignar"
+          accion="CREAR"
+          variant="success"
+          icon={<GiftOutlined />}
+          onClick={handleAsignarBeca}
+        >
+          Asignar beca
+        </ActionButton>
+      ) : null,
+    [ocultarBotonAsignarBeca, handleAsignarBeca]
+  );
 
-  // Formulario para registro de pago
-  // Si el contexto no proporciona un form, crear uno nuevo
-  const [formPago] = Form.useForm();
-  const formInstance = form || formPago;
+  // Pasos del wizard: config vacío por sección, todo el contenido es custom
+  // vía renderSectionContent (patrón EstudiantesAsignarBeca). Con pago gratuito
+  // (beca/condonación 100%) no hay paso "Datos del pago".
+  const wizardSteps = useMemo(() => {
+    const pasoAporte = {
+      title: 'Estado del aporte',
+      formTitle: 'Verifique el estado del aporte',
+      description:
+        'Revise el monto del aporte, la beca aplicada, las cuotas registradas y el saldo pendiente antes de continuar.',
+      sections: ['aporte'],
+      config: { aporte: {} },
+      headerActions: asignarBecaAction,
+    };
+    const pasoPago = {
+      title: 'Datos del pago',
+      formTitle: 'Registre los datos del pago',
+      description:
+        'Seleccione el método de pago, complete los datos del comprobante e indique el monto de esta cuota.',
+      sections: ['pago'],
+      config: { pago: {} },
+    };
+    const pasoConfirmacion = {
+      title: 'Confirmación',
+      formTitle: 'Confirme el registro del pago',
+      description: esPagoGratuito
+        ? 'Revise el resumen y registre el pago del aporte cubierto por la beca.'
+        : 'Revise el resumen del pago y registre la cuota.',
+      sections: ['confirmacion'],
+      config: { confirmacion: {} },
+    };
+    return esPagoGratuito
+      ? [pasoAporte, pasoConfirmacion]
+      : [pasoAporte, pasoPago, pasoConfirmacion];
+  }, [esPagoGratuito, asignarBecaAction]);
 
-  // ── Compromiso de pago (plazo elegible) ───────────────────────────────
-  // En la PRIMERA cuota que NO cancela todo el aporte, el usuario elige en cuántos
-  // días se compromete el estudiante a saldar el resto. El backend crea el
-  // compromiso con esa fecha (fecha de pago + N días). Tras la primera cuota ya no
-  // se vuelve a mostrar. Si se cancela todo o es pago gratuito (beca 100%), no aplica.
-  const [compromisoDias, setCompromisoDias] = useState(DIAS_COMPROMISO_DEFAULT);
-  // Modal de confirmación del compromiso: se abre al guardar cuando la 1ra cuota deja saldo.
-  const [compromisoModalOpen, setCompromisoModalOpen] = useState(false);
-  // Pago ya validado, en espera de que el operador confirme el plazo del compromiso.
-  const [pagoPendiente, setPagoPendiente] = useState(null);
-  const fechaPagoWatch = Form.useWatch('fechaPago', formInstance);
-  const esPrimeraCuota = useMemo(() => {
-    if (!estadoActualAporte) return false;
-    const cantidad = Number(estadoActualAporte.cantidad_pagos ?? 0);
-    const cuotas = Array.isArray(estadoActualAporte.cuotas) ? estadoActualAporte.cuotas.length : 0;
-    return cantidad === 0 && cuotas === 0;
-  }, [estadoActualAporte]);
-  const fechaCompromisoProyectada = useMemo(() => {
-    const baseFecha = fechaPagoWatch && dayjs(fechaPagoWatch).isValid() ? dayjs(fechaPagoWatch) : dayjs();
-    return baseFecha.add(compromisoDias, 'day').format('YYYY-MM-DD');
-  }, [fechaPagoWatch, compromisoDias]);
+  // Compuerta de avance: el paso "Datos del pago" exige monto válido, método
+  // seleccionado y campos del comprobante correctos (la validación vive en el hook).
+  const onValidateBeforeNext = useCallback(
+    (stepNumber) => {
+      if (!esPagoGratuito && stepNumber === 2) {
+        return validarPasoDatosPago();
+      }
+      return Promise.resolve();
+    },
+    [esPagoGratuito, validarPasoDatosPago]
+  );
 
-  // Obtener configuración de aporte activa (la primera activa/vigente)
-  const configuracionAporteActiva = useMemo(() => {
-    if (!configuracionAportes?.configuracionAportes || !Array.isArray(configuracionAportes.configuracionAportes)) {
+  // Al fallar la validación del paso, desplazar la vista al primer campo con error.
+  const onValidationError = useCallback(
+    (err) => {
+      const firstErrorField = err?.errorFields?.[0]?.name;
+      if (firstErrorField) {
+        form.scrollToField(firstErrorField, { behavior: 'smooth', block: 'center' });
+      }
+    },
+    [form]
+  );
+
+  // Finalizar: validar el paso visible (Confirmación: observación) y delegar en
+  // handleFinish del hook, que valida el flujo completo y arma el payload.
+  const handleWizardFinish = useCallback(async () => {
+    try {
+      await form.validateFields();
+    } catch (err) {
+      onValidationError(err);
+      return;
+    }
+    await handleFinish(form.getFieldsValue(true));
+  }, [form, handleFinish, onValidationError]);
+
+  // Contenido custom por sección (la página construye cada panel del wizard)
+  const renderSectionContent = useCallback(
+    (_stepIndex, sectionKey, _section, formInstance) => {
+      if (sectionKey === 'aporte') {
+        // Panel único a ancho completo: la identidad del estudiante ya está en el
+        // título de la página y en el resumen del paso Confirmación.
+        return (
+          <PagoEstadoAporteSection
+            configuracionAporte={configuracionAporteActiva}
+            becaActiva={becaActiva}
+            estadoActualAporte={estadoActualAporte}
+            error={configuracionAportes?.error}
+          />
+        );
+      }
+      if (sectionKey === 'pago') {
+        // El organismo compone sus secciones del workspace con campos por config
+        // (método → comprobante → monto), sin wrapper adicional.
+        return (
+          <PagoDatosPagoSection
+            saldoPendiente={saldoPendiente}
+            metodosPago={metodosPago}
+            cuentasPago={cuentasPago}
+            bancosAutorizados={bancosAutorizados}
+            form={formInstance}
+          />
+        );
+      }
+      if (sectionKey === 'confirmacion') {
+        return (
+          <FormWorkspaceSection
+            title="Resumen del pago"
+            description="Revise los datos del pago y registre la observación si corresponde."
+            form={formInstance}
+          >
+            <PagoConfirmacionResumen
+              student={student}
+              becaActiva={becaActiva}
+              porcentajeBeca={porcentajeBeca}
+              descuentoBeca={descuentoBeca}
+              esPrimeraCuota={esPrimeraCuota}
+              estadoActualAporte={estadoActualAporte}
+              configuracionAporte={configuracionAporteActiva}
+              esPagoGratuito={esPagoGratuito}
+              montoCuota={montoCuota}
+              selectedMetodoPago={metodosPago?.selectedMetodoPago ?? null}
+              cuentasPago={cuentasPago}
+              saldoRestante={saldoRestanteCompromiso}
+              mostrarSelectorCompromiso={mostrarSelectorCompromiso}
+              opcionesCompromiso={opcionesCompromiso}
+              compromisoDias={compromisoDias}
+              onChangeCompromisoDias={setCompromisoDias}
+              fechaCompromiso={formatFechaLiteral(fechaCompromisoProyectada)}
+              form={formInstance}
+            />
+          </FormWorkspaceSection>
+        );
+      }
       return null;
-    }
-    // Buscar configuración activa (aporte_activo === true)
-    return configuracionAportes.configuracionAportes.find(
-      (config) => config.aporteActivo === true || config.aporte_activo === true
-    ) || configuracionAportes.configuracionAportes[0] || null; // Si no hay activa, usar la primera
-  }, [configuracionAportes]);
+    },
+    [
+      student,
+      configuracionAporteActiva,
+      becaActiva,
+      porcentajeBeca,
+      descuentoBeca,
+      esPrimeraCuota,
+      estadoActualAporte,
+      configuracionAportes?.error,
+      montoCuota,
+      saldoPendiente,
+      metodosPago,
+      cuentasPago,
+      bancosAutorizados,
+      esPagoGratuito,
+      saldoRestanteCompromiso,
+      mostrarSelectorCompromiso,
+      opcionesCompromiso,
+      compromisoDias,
+      setCompromisoDias,
+      fechaCompromisoProyectada,
+    ]
+  );
 
-  // Saldo real a pagar: si hay estado actual del aporte, usar saldo_pendiente; si no, calcular desde config + beca
-  const montoPagado = useMemo(() => {
-    if (estadoActualAporte && typeof estadoActualAporte.saldo_pendiente === 'number') {
-      return Number(estadoActualAporte.saldo_pendiente);
-    }
-    if (!configuracionAporteActiva) return 0;
-    const montoBase = Number(configuracionAporteActiva.montoBase) || 0;
-    const tieneBeca = becaActiva && (() => {
-      const stateValue = becaActiva.state || becaActiva.estado;
-      if (!stateValue) return false;
-      const normalizedState = String(stateValue).toUpperCase();
-      const tieneEstadoValido = normalizedState === 'ACTIVA' || normalizedState === 'ACTIVE' || normalizedState === 'PENDIENTE';
-      const tienePorcentaje = becaActiva.scholarshipPercentage || becaActiva.porcentaje;
-      return tieneEstadoValido && tienePorcentaje;
-    })();
-    const porcentajeDescuento = tieneBeca ? (becaActiva.scholarshipPercentage || becaActiva.porcentaje || (becaActiva.scholarshipType?.percentage) || 0) : 0;
-    const descuentoBeca = tieneBeca ? (montoBase * porcentajeDescuento / 100) : 0;
-    return Math.max(0, montoBase - descuentoBeca);
-  }, [configuracionAporteActiva, becaActiva, estadoActualAporte]);
-
-  // Si ya tiene descuento aplicado en la cabecera, ocultar botón "Asignar beca"
-  const ocultarBotonAsignarBeca = !!(estadoActualAporte && estadoActualAporte.tiene_descuento_aplicado);
-
-  // Determinar si es pago gratuito real: solo cuando el saldo obligatorio del aporte es 0
-  // (caso típico: el aporte quedó totalmente cubierto por beca/condonación)
-  const esPagoGratuito = montoPagado === 0;
-
-  // ¿La cuota actual cancela todo el saldo? (se compara en enteros, como el resto del flujo)
-  const cancelaTodo = useMemo(() => {
-    const saldo = Math.floor(Number(montoPagado) || 0);
-    const cuota = Math.floor(Number(montoCuota) || 0);
-    return saldo > 0 && cuota >= saldo;
-  }, [montoPagado, montoCuota]);
-
-  // El compromiso solo aplica en la 1ra cuota, con saldo a financiar y sin pago gratuito.
-  const mostrarSelectorCompromiso = esPrimeraCuota && !esPagoGratuito && !cancelaTodo;
-
-  // Saldo que quedará pendiente tras esta cuota (lo que el estudiante se compromete a cancelar).
-  const saldoRestanteCompromiso = useMemo(() => {
-    const saldo = Math.floor(Number(montoPagado) || 0);
-    const cuota = Math.floor(Number(montoCuota) || 0);
-    return Math.max(0, saldo - cuota);
-  }, [montoPagado, montoCuota]);
-
-  // Si no hay deuda, forzar 0. Si el usuario ingresó más que el saldo real (ej. tras actualizar datos), recortar al saldo. No autocompletar el saldo al cargar.
-  useEffect(() => {
-    if (montoPagado <= 0) {
-      setMontoCuota(0);
-      return;
-    }
-    const saldoEntero = Math.floor(Number(montoPagado));
-    const actual = montoCuota != null && montoCuota !== '' ? Math.floor(Number(montoCuota)) : null;
-    if (actual != null && actual > saldoEntero) {
-      setMontoCuota(saldoEntero);
-    }
-  }, [montoPagado, montoCuota]);
-
-  const handleVolver = () => {
-    if (returnListPath) {
-      navigate(returnListPath, {
-        state: menuSidebarKeyFromState ? { menuSidebarKey: menuSidebarKeyFromState } : undefined,
-      });
-      return;
-    }
-    navigate(`/estudiantes/${studentId}`);
-  };
-
-  // Handler para ir a asignar beca (misma lógica que en detalle de estudiante)
-  const handleAsignarBeca = () => {
-    if (!studentId) {
-      message.warning('ID de estudiante no disponible');
-      return;
-    }
-    navigate('/estudiantes/becas/asignar', { state: { studentId } });
-  };
-
-  // Handler para finalizar el registro de pago
-  const handleFinish = async (values) => {
-    // IDEMPOTENCIA: Prevenir múltiples clics simultáneos
-    if (isSubmittingRef.current || isSubmitting) {
-      console.warn('[PagosRegistrar] Intento de pago duplicado bloqueado (idempotencia)');
-      message.warning('El pago ya se está procesando. Espere un momento, por favor.');
-      return;
-    }
-
-    // Marcar como procesando antes de cualquier validación
-    setIsSubmitting(true);
-    isSubmittingRef.current = true;
-
-    try {
-      // ============================================
-      // VALIDACIONES SEGÚN EL VALIDADOR DEL BACKEND
-      // ============================================
-
-      // 1. Validar student_id (requerido, número entero > 0)
-      if (!studentId || !Number.isInteger(Number(studentId)) || Number(studentId) < 1) {
-        message.error('El ID del estudiante es obligatorio y debe ser un número válido');
-        // Resetear estado si falla validación temprana
-        setIsSubmitting(false);
-        isSubmittingRef.current = false;
-        return;
-      }
-
-      // 1.1. Validar monto de esta cuota (solo si NO es pago gratuito): >= 0 permitido (p. ej. inicio en 0 sin tocar el input)
-      if (
-        !esPagoGratuito &&
-        (
-          montoCuota == null ||
-          montoCuota === '' ||
-          Number.isNaN(Number(montoCuota)) ||
-          Number(montoCuota) < 0
-        )
-      ) {
-        message.error('Indique un monto válido (>= 0) en el detalle del aporte');
-        setIsSubmitting(false);
-        isSubmittingRef.current = false;
-        return;
-      }
-
-      if (!esPagoGratuito) {
-        const saldoMax = Math.floor(Number(montoPagado));
-        const montoEnviar = Math.floor(Number(montoCuota));
-        if (montoEnviar > saldoMax) {
-          message.error(`El monto no puede superar el saldo pendiente (${saldoMax})`);
-          setIsSubmitting(false);
-          isSubmittingRef.current = false;
-          return;
-        }
-      }
-
-      // 2. Validar payment_method_id (solo si NO es pago gratuito)
-      // Si es pago gratuito (monto = 0), no se requiere método de pago
-      let metodoPagoId = null;
-      if (!esPagoGratuito) {
-        // Solo validar método de pago si hay monto a pagar
-        if (!metodosPago?.selectedMetodoPago) {
-          message.error('Por favor seleccione un método de pago');
-          setIsSubmitting(false);
-          isSubmittingRef.current = false;
-          return;
-        }
-
-        metodoPagoId = Number(metodosPago.selectedMetodoPago.id);
-        if (![1, 2, 3, 4].includes(metodoPagoId)) {
-          message.error('Método de pago no válido. Seleccione efectivo, QR, transferencia o depósito.');
-          setIsSubmitting(false);
-          isSubmittingRef.current = false;
-          return;
-        }
-      }
-
-      // 3. Validar payment_date (SIEMPRE requerido para todos los métodos)
-      let paymentDate;
-      if (esPagoGratuito) {
-        // Para pagos gratuitos, usar fecha actual
-        paymentDate = dayjs().format('YYYY-MM-DD');
-      } else {
-        // Para todos los métodos (incluyendo EFECTIVO), la fecha es REQUERIDA
-        if (values.fechaPago) {
-          paymentDate = dayjs(values.fechaPago).format('YYYY-MM-DD');
-        } else {
-          message.error('La fecha de pago es obligatoria');
-          setIsSubmitting(false);
-          isSubmittingRef.current = false;
-          return;
-        }
-
-        // Validar formato de fecha
-        if (!dayjs(paymentDate).isValid()) {
-          message.error('La fecha de pago debe estar en formato válido (YYYY-MM-DD)');
-          setIsSubmitting(false);
-          isSubmittingRef.current = false;
-          return;
-        }
-      }
-
-      // 4. Validar observación (campo descripcion en API, opcional, máx. 500 caracteres)
-      const descripcion = (values.descripcion || '').trim();
-      if (descripcion && descripcion.length > 500) {
-        message.error('La observación no puede exceder 500 caracteres');
-        setIsSubmitting(false);
-        isSubmittingRef.current = false;
-        return;
-      }
-      // Si está vacío, usar null o string vacío (según lo que acepte el backend)
-
-      // 5. Validar payment_account_id (solo si NO es pago gratuito)
-      let paymentAccountId = null;
-      if (!esPagoGratuito && metodoPagoId) {
-        const esEfectivo = metodoPagoId === 1;
-        const esQR = metodoPagoId === 2;
-        const esTransferencia = metodoPagoId === 3;
-        const esDeposito = metodoPagoId === 4;
-
-        if (esTransferencia || esDeposito) {
-          // Para TRANSFERENCIA y DEPOSITO, la cuenta es REQUERIDA
-          paymentAccountId = values.cuentaPagoId || cuentasPago?.selectedCuentaPago?.id;
-          if (!paymentAccountId || !Number.isInteger(Number(paymentAccountId)) || Number(paymentAccountId) < 1) {
-            const metodoNombre = esTransferencia ? 'Transferencia' : 'Depósito';
-            message.error(`La cuenta de pago es obligatoria para el método ${metodoNombre}`);
-            setIsSubmitting(false);
-            isSubmittingRef.current = false;
-            return;
-          }
-          paymentAccountId = Number(paymentAccountId);
-        } else if (esQR) {
-          // Para QR, la cuenta es OPCIONAL (la cuenta está en la imagen del QR)
-          paymentAccountId = values.cuentaPagoId || cuentasPago?.selectedCuentaPago?.id || null;
-          if (paymentAccountId) {
-            paymentAccountId = Number(paymentAccountId);
-          }
-        } else if (esEfectivo) {
-          // Para EFECTIVO, la cuenta debe ser NULL
-          paymentAccountId = null;
-        }
-      }
-
-      // 6. Validar código de comprobante (REQUERIDO para QR, TRANSFERENCIA, DEPOSITO)
-      let codigoComprobante = null;
-      if (!esPagoGratuito && metodoPagoId) {
-        const esQR = metodoPagoId === 2;
-        const esTransferencia = metodoPagoId === 3;
-        const esDeposito = metodoPagoId === 4;
-
-        if (esQR || esTransferencia || esDeposito) {
-          // Para QR, TRANSFERENCIA y DEPOSITO, el código de comprobante es REQUERIDO
-          codigoComprobante = (values.codigoComprobante || '').trim();
-          if (!codigoComprobante || codigoComprobante.length === 0) {
-            const metodoNombre = esQR ? 'QR' : esTransferencia ? 'Transferencia' : 'Depósito';
-            message.error(`El código de comprobante es obligatorio para el método ${metodoNombre}`);
-            setIsSubmitting(false);
-            isSubmittingRef.current = false;
-            return;
-          }
-        }
-      }
-
-      // 7. Validar transaction_number (OPCIONAL para todos los métodos)
-      let transactionNumber = null;
-      if (!esPagoGratuito && metodoPagoId) {
-        // El número de transacción es opcional, solo se guarda si se proporciona
-        transactionNumber = (values.numeroTransaccion || '').trim() || null;
-      }
-
-      // 8. Obtener archivo de documento de respaldo (si existe)
-      let documentoRespaldo = null;
-      if (values.documentoRespaldo && values.documentoRespaldo.length > 0) {
-        // Ant Design Upload devuelve un array, obtener el primer archivo
-        const file = values.documentoRespaldo[0];
-        console.log('[PagosRegistrar] Archivo del formulario:', {
-          file,
-          hasOriginFileObj: !!file.originFileObj,
-          isFile: file instanceof File,
-          tipo: typeof file,
-          constructor: file?.constructor?.name,
-        });
-        // Si es un objeto de Ant Design Upload, obtener el archivo original
-        documentoRespaldo = file.originFileObj || file;
-        console.log('[PagosRegistrar] Archivo final extraído:', {
-          documentoRespaldo,
-          isFile: documentoRespaldo instanceof File,
-          tipo: typeof documentoRespaldo,
-          constructor: documentoRespaldo?.constructor?.name,
-        });
-      } else {
-        console.log('[PagosRegistrar] No hay archivo en el formulario', {
-          hasDocumentoRespaldo: !!values.documentoRespaldo,
-          length: values.documentoRespaldo?.length,
-        });
-      }
-
-      // ============================================
-      // PREPARAR DATOS PARA EL BACKEND (snake_case)
-      // ============================================
-      const pagoData = {
-        studentId: Number(studentId),
-        amount: esPagoGratuito ? 0 : Number(montoCuota), // Monto de esta cuota (el que se muestra en "Saldo a Pagar")
-        paymentMethodId: metodoPagoId || 1, // Si es gratuito, usar EFECTIVO (1) por defecto
-        paymentAccountId: paymentAccountId,
-        paymentDate: paymentDate,
-        transactionNumber: transactionNumber, // Opcional, puede ser null
-        codigoComprobante: codigoComprobante || null, // Requerido para QR/TRANSFERENCIA/DEPOSITO, null para otros
-        descripcion: descripcion || null, // Opcional, puede ser null o string vacío
-        documentoRespaldo: documentoRespaldo, // Archivo de documento de respaldo (opcional)
-        // Plazo del compromiso: solo cuando aplica (1ra cuota con saldo pendiente); si no, el backend lo ignora.
-        compromisoDias: mostrarSelectorCompromiso ? compromisoDias : undefined,
-      };
-
-      // Si es la 1ra cuota y queda saldo pendiente, confirmar el plazo del compromiso en un
-      // modal antes de registrar. El plazo definitivo se toma al confirmar (compromisoDias).
-      if (mostrarSelectorCompromiso) {
-        setIsSubmitting(false);
-        isSubmittingRef.current = false;
-        setPagoPendiente(pagoData);
-        setCompromisoModalOpen(true);
-        return;
-      }
-
-      await ejecutarRegistro(pagoData);
-    } catch (error) {
-      console.error('Error al registrar pago:', error);
-      message.error('Error inesperado al registrar el pago');
-
-      // Resetear estado en caso de error para permitir reintento
-      setIsSubmitting(false);
-      isSubmittingRef.current = false;
-    }
-  };
-
-  // Ejecuta el registro contra el backend y maneja el resultado (éxito/errores/recibo).
-  // Se llama tanto en el flujo directo como al confirmar el modal de compromiso.
-  const ejecutarRegistro = async (pagoData) => {
-    if (!registrarPago) {
-      message.error('Error: Función de registro no disponible');
-      return;
-    }
-
-    setIsSubmitting(true);
-    isSubmittingRef.current = true;
-
-    try {
-      // Realizar la petición de registro (ya estamos protegidos contra múltiples clics)
-      const result = await registrarPago(pagoData);
-
-      // Debug: Log del resultado para ver qué está llegando
-      console.log('[PagosRegistrar] Resultado del registro:', result);
-
-      if (result && result.success) {
-        setIsSubmitting(false);
-        isSubmittingRef.current = false;
-        // Bloquear redirección automática (saldo 0 → detalle) hasta descargar recibo y navegar nosotros
-        pendienteDescargaReciboRef.current = true;
-        message.success('Pago registrado exitosamente');
-
-        const irAlEstudiante = () => {
-          navigate(`/estudiantes/${studentId}`);
-          pendienteDescargaReciboRef.current = false;
-        };
-
-        if (result.data && result.data.reciboPDF) {
-          try {
-            const reciboPath = result.data.reciboPDF;
-            const relativePath = reciboPath.startsWith('/') ? reciboPath : '/' + reciboPath;
-            const fileName = relativePath.split('/').pop() || 'recibo_pago.pdf';
-            downloadFile(relativePath, fileName);
-            message.success('Recibo descargado. Redirigiendo al estudiante...', 2);
-            // No saltar de página hasta que el usuario haya tenido tiempo de ver y guardar el recibo
-            setTimeout(irAlEstudiante, 2500);
-          } catch (pdfError) {
-            console.error('Error al descargar el recibo PDF:', pdfError);
-            message.warning('Pago registrado. El recibo no se pudo descargar; estará en Documentos del estudiante.');
-            setTimeout(irAlEstudiante, 2000);
-          }
-        } else {
-          setTimeout(irAlEstudiante, 1500);
-        }
-      } else {
-        // Extraer el mensaje de error correctamente
-        let errorMessage = 'Error al registrar el pago';
-        if (result && result.error) {
-          // Debug: Log del error para ver su estructura
-          console.log('[PagosRegistrar] Error recibido:', result.error, 'Tipo:', typeof result.error);
-
-          if (typeof result.error === 'object' && result.error !== null) {
-            // Si el error es un objeto con estructura { code, message, details }
-            if (result.error.message && typeof result.error.message === 'string') {
-              errorMessage = result.error.message;
-            } else {
-              // Si no tiene message, intentar convertir el objeto a string
-              errorMessage = JSON.stringify(result.error);
-            }
-          } else if (typeof result.error === 'string') {
-            // Si el error es un string simple
-            errorMessage = result.error;
-          }
-        }
-        console.log('[PagosRegistrar] Mensaje de error final:', errorMessage);
-        message.error(errorMessage);
-
-        // Resetear estado en caso de error para permitir reintento
-        setIsSubmitting(false);
-        isSubmittingRef.current = false;
-      }
-    } catch (error) {
-      console.error('Error al registrar pago:', error);
-      message.error('Error inesperado al registrar el pago');
-
-      // Resetear estado en caso de error para permitir reintento
-      setIsSubmitting(false);
-      isSubmittingRef.current = false;
-    }
-  };
-
-  // Confirmar el compromiso: registrar con el plazo elegido (compromisoDias actual).
-  const handleConfirmarCompromiso = async () => {
-    if (!pagoPendiente) return;
-    await ejecutarRegistro({ ...pagoPendiente, compromisoDias });
-    setCompromisoModalOpen(false);
-    setPagoPendiente(null);
-  };
-
-  // Cancelar el compromiso: cerrar el modal y volver al formulario sin registrar.
-  const handleCancelarCompromiso = () => {
-    if (isSubmitting) return;
-    setCompromisoModalOpen(false);
-    setPagoPendiente(null);
-  };
-
-  // Breadcrumb con jerarquía de dominio (patrón de Matrícula); el retorno a la
-  // lista respeta la lista de origen (matrícula/aportes o finanzas legacy).
-  const breadcrumbItems = useMemo(() => [
-    { title: 'Inicio', href: '/' },
-    { title: 'Matrícula' },
-    { title: 'Aportes de matrícula', href: returnListPathFromState },
-    { title: 'Registrar pago' },
-  ], [returnListPathFromState]);
-
-  // Sin estudiante no hay formulario: volver a la lista que originó el flujo (finanzas o matrícula/aportes)
-  useEffect(() => {
-    if (!studentId) {
-      navigate(returnListPathFromState, { replace: true });
-    }
-  }, [studentId, navigate, returnListPathFromState]);
-
-  // Si el saldo es 0 y existe cabecera, ir al detalle del pago (no mostrar formulario de registro)
-  // No redirigir si estamos esperando descargar el recibo tras un pago recién registrado
-  useEffect(() => {
-    if (pendienteDescargaReciboRef.current) return;
-    if (estadoActualAporte && !loadingEstadoAporte && Number(estadoActualAporte.saldo_pendiente) === 0 && estadoActualAporte.cabecera?.id && studentId) {
-      navigate(`/pagos/${estadoActualAporte.cabecera.id}`, {
-        replace: true,
-        state: {
-          studentId,
-          ...(menuSidebarKeyFromState ? { menuSidebarKey: menuSidebarKeyFromState } : {}),
-        },
-      });
-    }
-  }, [estadoActualAporte, loadingEstadoAporte, navigate, studentId, menuSidebarKeyFromState]);
-
-  // Si no hay studentId, no renderizar nada (se redirige automáticamente)
-  if (!studentId) {
+  // Sin estudiante: se redirige a la lista de origen (shell con aviso de carga)
+  if (sinEstudiante) {
     return (
       <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
         <PageHeaderArea>
@@ -595,10 +277,8 @@ const PagosRegistrar = () => {
     );
   }
 
-  // Si saldo es 0 y hay cabecera, no mostrar formulario (se redirige al detalle)
-  // No entrar aquí si acabamos de registrar y estamos descargando el recibo
-  const redirigirADetalle = estadoActualAporte && !loadingEstadoAporte && Number(estadoActualAporte.saldo_pendiente) === 0 && estadoActualAporte.cabecera?.id && !pendienteDescargaReciboRef.current;
-  if (redirigirADetalle) {
+  // Aporte ya cubierto: se redirige al detalle del pago (no hay nada que registrar)
+  if (redirigiendoADetalle) {
     return (
       <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
         <PageHeaderArea>
@@ -615,182 +295,41 @@ const PagosRegistrar = () => {
     );
   }
 
-  // Datos base de la página aún en carga: no montar el formulario (mismo criterio que antes)
-  const cargandoDatosBase = loadingStudent || loadingScholarships;
-
-  // Mismo criterio de deshabilitado que tenía el botón dentro de SelectedPaymentSection;
-  // ahora vive en el footer del workspace.
-  const registrarDisabled =
-    !configuracionAporteActiva ||
-    (!esPagoGratuito && (
-      montoCuota == null ||
-      montoCuota === '' ||
-      Number.isNaN(Number(montoCuota)) ||
-      Number(montoCuota) < 0
-    )) ||
-    (!esPagoGratuito && !(metodosPago?.selectedMetodoPago)) ||
-    loadingStudent ||
-    loading;
-
-  // Secciones planas del workspace (título + descripción + divisor estándar).
-  // La primera no repite título: StudentInfoSection (compartido con `becas/`,
-  // no se modifica) ya trae su propia cabecera "Información del estudiante".
-  const workspaceSections = [
-    ...(student
-      ? [
-          {
-            key: 'estudiante',
-            children: <StudentInfoSection student={student} />,
-          },
-        ]
-      : []),
-    {
-      key: 'detalle',
-      title: 'Detalle del aporte',
-      description: 'Revise el saldo del aporte académico y registre el monto de esta cuota.',
-      // Resumen tipo recibo; usa estado actual si existe para saldo real y cuotas pagadas
-      children: (
-        <ContributionDetailSummary
-          configuracionAporte={configuracionAporteActiva}
-          becaActiva={becaActiva}
-          estadoActualAporte={estadoActualAporte}
-          loading={configuracionAportes?.loading || loadingScholarships || loadingEstadoAporte}
-          error={configuracionAportes?.error}
-          montoCuota={montoCuota}
-          onMontoCuotaChange={setMontoCuota}
-          montoObligatorioMax={montoPagado}
-        />
-      ),
-    },
-    // Método de pago (solo si NO es pago gratuito)
-    ...(!esPagoGratuito
-      ? [
-          {
-            key: 'metodo',
-            title: 'Método de pago',
-            description: 'Seleccione el método con el que el estudiante realiza el pago.',
-            children: (
-              <PaymentMethodSelectionSection
-                bare
-                metodosPagoData={metodosPago}
-                onSelectMetodoPago={metodosPago?.onSelectMetodoPago}
-                form={formInstance}
-                onFinish={handleFinish}
-              />
-            ),
-          },
-        ]
-      : []),
-    // Detalle del pago (solo si es gratuito o ya hay método seleccionado)
-    ...((esPagoGratuito || metodosPago?.selectedMetodoPago)
-      ? [
-          {
-            key: 'detalle-pago',
-            title: 'Detalles del pago',
-            description: 'Verifique el monto y complete la información del comprobante.',
-            children: (
-              <SelectedPaymentSection
-                selectedConfiguracion={configuracionAporteActiva}
-                selectedMetodoPago={esPagoGratuito ? null : metodosPago?.selectedMetodoPago ?? null}
-                selectedCuentaPago={cuentasPago?.selectedCuentaPago ?? null}
-                cuentasPagoData={cuentasPago ?? {}}
-                bancosAutorizadosData={bancosAutorizados ?? {}}
-                becaActiva={becaActiva}
-                montoCuota={montoCuota}
-                form={formInstance}
-              />
-            ),
-          },
-        ]
-      : []),
-  ];
-
-  // Botones en el footer del workspace: mismo mecanismo que antes (submit del Form)
-  const workspaceFooter = (
-    <Flex justify="flex-end" gap="small" wrap>
-      <Button variant="default" onClick={handleVolver}>
-        Cancelar
-      </Button>
-      <Button
-        variant="primary"
-        icon={<SaveOutlined />}
-        onClick={() => formInstance?.submit()}
-        disabled={registrarDisabled || isSubmitting}
-        loading={isSubmitting}
-      >
-        {isSubmitting ? 'Registrando…' : 'Registrar pago'}
-      </Button>
-    </Flex>
-  );
-
   return (
     <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
       <PageHeaderArea>
-        <PageHeader
-          title={`Registrar pago${student ? ` - ${student.nombreCompleto || student.codigoEstudiante || ''}` : ''}`}
-          breadcrumbItems={breadcrumbItems}
-          actions={
-            <Flex gap="small" wrap>
-              {!ocultarBotonAsignarBeca && (
-                <ActionButton
-                  permiso="matricula.beca.asignar"
-                  accion="CREAR"
-                  variant="success"
-                  icon={<GiftOutlined />}
-                  onClick={handleAsignarBeca}
-                >
-                  Asignar beca
-                </ActionButton>
-              )}
-              <BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver}>
-                Volver
-              </BackButton>
-            </Flex>
-          }
-        />
+        <PageHeader title={pageTitle} breadcrumbItems={breadcrumbItems} actions={backAction} />
       </PageHeaderArea>
 
       <DashboardPageShell>
         <MainContent>
-          <Spin spinning={cargandoDatosBase} tip="Cargando datos del estudiante…">
-            <Flex vertical gap="middle" className="cfg-academico-page__stack">
-              {cargandoDatosBase ? (
-                <div className="sd-spin-body" />
-              ) : (
-                <Form
-                  form={formInstance}
-                  onFinish={handleFinish}
-                  layout="vertical"
-                  className="cfg-academico-form"
-                  data-section="pagos-registrar-form"
-                >
-                  <CfgFormWorkspace
-                    title="Registro del pago"
-                    description="Verifique la información del estudiante, revise el saldo del aporte y complete los datos de la cuota que usted registrará."
-                    form={formInstance}
-                    sections={workspaceSections}
-                    footer={workspaceFooter}
-                  />
-                </Form>
-              )}
-            </Flex>
+          <Spin spinning={cargandoDatosBase} tip="Cargando los datos del estudiante y del aporte…">
+            {cargandoDatosBase ? (
+              <div className="sd-spin-body" />
+            ) : (
+              <WizardForm
+                variant="tabs"
+                steps={wizardSteps}
+                form={form}
+                loading={isSubmitting}
+                viewMode={false}
+                resolveOptions={() => []}
+                initialValues={{ montoCuota: 0 }}
+                onFinish={handleWizardFinish}
+                showSaveButton={false}
+                renderSectionContent={renderSectionContent}
+                onValidateBeforeNext={onValidateBeforeNext}
+                onValidationError={onValidationError}
+                strictForwardNavigation
+                errorMessage={typeof submitError === 'string' ? submitError : ''}
+                finishLabel="Registrar pago"
+                nextLabel="Siguiente"
+                prevLabel="Anterior"
+              />
+            )}
           </Spin>
         </MainContent>
       </DashboardPageShell>
-
-      {/* Compromiso de pago: confirmación del plazo antes de registrar (solo 1ra cuota con
-          saldo pendiente). El backend crea el compromiso con fecha de pago + N días. */}
-      <CompromisoPagoModal
-        open={compromisoModalOpen}
-        saldoRestante={saldoRestanteCompromiso}
-        opciones={OPCIONES_COMPROMISO}
-        diasSeleccionados={compromisoDias}
-        onChangeDias={setCompromisoDias}
-        fechaCompromiso={formatFechaCompromiso(fechaCompromisoProyectada)}
-        confirmLoading={isSubmitting}
-        onConfirm={handleConfirmarCompromiso}
-        onCancel={handleCancelarCompromiso}
-      />
     </Flex>
   );
 };
