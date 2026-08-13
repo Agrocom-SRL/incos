@@ -21,6 +21,8 @@ export const getStep4Fields = () => {
   return {
     resumen: {
       title: 'Resumen de inscripción',
+      description:
+        'Verifique el estudiante, la carrera y las materias seleccionadas antes de elegir el paralelo.',
       fields: [
         {
           name: 'resumenInscripcion',
@@ -36,6 +38,8 @@ export const getStep4Fields = () => {
     },
     paralelos: {
       title: 'Paralelos por periodo',
+      description:
+        'Cada tarjeta muestra el turno y la cantidad de inscritos; seleccione una por periodo.',
       fields: [
         {
           name: 'listaParalelos',

@@ -13,9 +13,12 @@ export const step0EnrichmentStrategy = (step, stepIndex, _enrichers, context) =>
   return {
     ...step,
     title: 'Estudiante a inscribir',
+    description:
+      'El estudiante ya está seleccionado; verifique sus datos y continúe con la inscripción.',
     config: {
       buscarEstudiante: {
         title: 'Estudiante a inscribir',
+        description: 'Verifique los datos del estudiante antes de continuar con la carrera.',
         fields: [
           {
             name: 'estudianteSeleccionado',

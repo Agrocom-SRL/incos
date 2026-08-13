@@ -1,16 +1,15 @@
 /**
  * InscripcionesPeriodoParalelosStepContent - Contenido del paso "Paralelos por periodo" (step 3)
  *
- * Muestra por cada periodo seleccionado (en step 2) una columna con los paralelos
- * de ese periodo, con datos estadísticos y turnos. La selección (carrera, periodos, materias)
- * se recupera del paso anterior.
+ * Cabecera de sección estándar (FormWorkspaceSection, sin Card). Muestra por cada periodo
+ * seleccionado (en step 2) una columna con los paralelos de ese periodo, con datos
+ * estadísticos y turnos. La selección (carrera, periodos, materias) se recupera del paso anterior.
  */
 
 import React from 'react';
 import { Row, Col, Typography } from 'antd';
-import { Card } from '@atoms';
-import { FormField, DataCards } from '@molecules';
-import { getFieldColumns } from '@molecules/FormSection/utils/fieldColumns';
+import { FormWorkspaceSection } from '@organisms';
+import { DataCards } from '@molecules';
 
 const { Title } = Typography;
 
@@ -108,6 +107,11 @@ const InscripcionesPeriodoParalelosStepContent = ({
   const emptyMessage = listaParalelosField?.emptyMessage ?? 'No hay paralelos en este periodo.';
   const selectedParalelosByPeriod = paralelosData?.selectedParalelosByPeriod ?? {};
 
+  // Campos planos de la sección (sin la lista de cards, que se pinta aparte como children)
+  const sectionFields = (section?.fields ?? []).filter(
+    (f) => f.name !== 'listaParalelos' && f.type !== 'cards'
+  );
+
   const groups = groupParalelosByPeriod(paralelos, selectedPeriodIds, periodos, carreras);
   const isThreeColumns = groups.length === 3;
 
@@ -118,65 +122,56 @@ const InscripcionesPeriodoParalelosStepContent = ({
     : null;
 
   return (
-    <Card
-      title={section?.title}
-      variant="outlined"
-      shadow={false}
-      headerColor="primary"
-      className="form-section step2-periodo-paralelos-section"
-    >
-      <Row gutter={[24, 16]}>
-        {section?.fields
-          ?.filter((f) => f.name !== 'listaParalelos' && f.type !== 'cards')
-          .map((field) => (
-            <Col key={field.name} {...getFieldColumns(field.span ?? 12)}>
-              <FormField field={field} form={form} resolveOptions={resolveOptions} />
-            </Col>
-          ))}
-      </Row>
+    <div className="step2-periodo-paralelos-section">
+      <FormWorkspaceSection
+        title={section?.title}
+        description={section?.description}
+        fields={sectionFields}
+        form={form}
+        resolveOptions={resolveOptions}
+      >
+        {selectedPeriodIds.length > 0 && (
+          <>
+            <Title level={5} className="step2-paralelos-columns-title">
+              Paralelos por periodo
+            </Title>
+            <Row
+              gutter={0}
+              className={`step2-paralelos-columns ${isThreeColumns ? 'step2-paralelos-columns--three' : ''}`}
+            >
+              {groups.map((group, index) => {
+                const spanPerCol = groups.length > 0 ? Math.floor(ROW_SPAN / groups.length) : ROW_SPAN;
+                const selectedInColumn = selectedParalelosByPeriod[group.periodId] ?? null;
+                return (
+                  <Col key={group.periodId} span={spanPerCol} className="step2-paralelos-column-col">
+                    <div
+                      className={`step2-paralelos-column ${index > 0 ? 'step2-paralelos-column--with-divider' : ''}`}
+                    >
+                      <div className="step2-paralelos-column__header">{group.periodName}</div>
+                      <DataCards
+                        data={group.paralelos}
+                        loading={loading}
+                        emptyMessage={emptyMessage}
+                        renderItem={renderItem}
+                        onSelect={handleSelect}
+                        selectedItem={selectedInColumn}
+                        className="step2-paralelos-cards"
+                      />
+                    </div>
+                  </Col>
+                );
+              })}
+            </Row>
+          </>
+        )}
 
-      {selectedPeriodIds.length > 0 && (
-        <>
-          <Title level={5} className="step2-paralelos-columns-title">
-            Paralelos por periodo
-          </Title>
-          <Row
-            gutter={0}
-            className={`step2-paralelos-columns ${isThreeColumns ? 'step2-paralelos-columns--three' : ''}`}
-            style={{ width: '100%' }}
-          >
-            {groups.map((group, index) => {
-              const spanPerCol = groups.length > 0 ? Math.floor(ROW_SPAN / groups.length) : ROW_SPAN;
-              const selectedInColumn = selectedParalelosByPeriod[group.periodId] ?? null;
-              return (
-                <Col key={group.periodId} span={spanPerCol} className="step2-paralelos-column-col">
-                  <div
-                    className={`step2-paralelos-column ${index > 0 ? 'step2-paralelos-column--with-divider' : ''}`}
-                  >
-                    <div className="step2-paralelos-column__header">{group.periodName}</div>
-                    <DataCards
-                      data={group.paralelos}
-                      loading={loading}
-                      emptyMessage={emptyMessage}
-                      renderItem={renderItem}
-                      onSelect={handleSelect}
-                      selectedItem={selectedInColumn}
-                      className="step2-paralelos-cards"
-                    />
-                  </div>
-                </Col>
-              );
-            })}
-          </Row>
-        </>
-      )}
-
-      {selectedPeriodIds.length === 0 && (
-        <div className="step2-paralelos-empty-hint">
-          Seleccione carrera y uno o más periodos en los pasos anteriores para ver los paralelos por columna.
-        </div>
-      )}
-    </Card>
+        {selectedPeriodIds.length === 0 && (
+          <div className="step2-paralelos-empty-hint">
+            Seleccione carrera y uno o más periodos en los pasos anteriores para ver los paralelos por columna.
+          </div>
+        )}
+      </FormWorkspaceSection>
+    </div>
   );
 };
 

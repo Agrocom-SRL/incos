@@ -11,6 +11,8 @@ import { StatusPill, Text } from '@atoms';
 
 const BUSCAR_ESTUDIANTE_HEADER = {
   title: 'Datos del estudiante',
+  description:
+    'Puede buscar por cédula de identidad, código de estudiante, nombres o apellidos.',
 };
 
 const BUSCAR_ESTUDIANTE_FIELDS = [

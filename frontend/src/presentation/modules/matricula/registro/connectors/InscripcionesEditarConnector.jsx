@@ -11,12 +11,33 @@
 
 import { useParams } from 'react-router-dom';
 import { useMemo } from 'react';
-import { PageTemplate } from '@templates';
+import { Flex, Skeleton, Alert } from 'antd';
+import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
-import { Spin, Alert } from 'antd';
+import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import { InscripcionesProvider, InscripcionDetailProvider, InscripcionesNuevaProvider } from '@application-matricula/registro/providers';
 import { useInscripcionDetailContext } from '@application-matricula/registro/hooks';
 import InscripcionesNueva from '@matricula/registro/pages/InscripcionesNueva';
+
+// Breadcrumb con jerarquía de dominio, igual al de la página del wizard (useInscripcionNuevaPageData)
+const EDITAR_BREADCRUMB_ITEMS = [
+  { title: 'Inicio', href: '/' },
+  { title: 'Matrícula' },
+  { title: 'Registro de matrículas', href: '/matricula/listar' },
+  { title: 'Editar inscripción' },
+];
+
+/** Shell de los estados transitorios (cargando / error / no encontrada), mismo patrón que la página. */
+const EditarStateShell = ({ children }) => (
+  <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
+    <PageHeaderArea>
+      <PageHeader title="Editar inscripción" breadcrumbItems={EDITAR_BREADCRUMB_ITEMS} />
+    </PageHeaderArea>
+    <DashboardPageShell>
+      <MainContent>{children}</MainContent>
+    </DashboardPageShell>
+  </Flex>
+);
 
 /**
  * Construye editData para InscripcionesNuevaProvider a partir de la inscripción cargada por GetEnrollmentById.
@@ -115,37 +136,25 @@ function InscripcionesEditarContent() {
 
   if (loading) {
     return (
-      <PageTemplate
-        header={<PageHeader title="Editar inscripción" breadcrumbItems={[{ title: 'Inicio', href: '/' }, { title: 'Lista de matrículas', href: '/matricula/listar' }, { title: 'Editar inscripción' }]} />}
-      >
-        <div style={{ textAlign: 'center', padding: '50px' }}>
-          <Spin size="large">
-            <div style={{ minHeight: '200px' }}>
-              <p>Cargando datos de la inscripción...</p>
-            </div>
-          </Spin>
-        </div>
-      </PageTemplate>
+      <EditarStateShell>
+        <Skeleton active paragraph={{ rows: 8 }} />
+      </EditarStateShell>
     );
   }
 
   if (error) {
     return (
-      <PageTemplate
-        header={<PageHeader title="Editar inscripción" breadcrumbItems={[{ title: 'Inicio', href: '/' }, { title: 'Lista de matrículas', href: '/matricula/listar' }, { title: 'Editar inscripción' }]} />}
-      >
+      <EditarStateShell>
         <Alert type="error" showIcon title="Error al cargar la inscripción" description={error} />
-      </PageTemplate>
+      </EditarStateShell>
     );
   }
 
   if (!inscripcion || !editData) {
     return (
-      <PageTemplate
-        header={<PageHeader title="Editar inscripción" breadcrumbItems={[{ title: 'Inicio', href: '/' }, { title: 'Lista de matrículas', href: '/matricula/listar' }, { title: 'Editar inscripción' }]} />}
-      >
+      <EditarStateShell>
         <Alert type="warning" showIcon title="No se encontró la inscripción" />
-      </PageTemplate>
+      </EditarStateShell>
     );
   }
 

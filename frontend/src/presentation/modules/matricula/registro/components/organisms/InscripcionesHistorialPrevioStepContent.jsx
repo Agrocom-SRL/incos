@@ -1,10 +1,11 @@
 /**
  * Paso dedicado: historial de notas (tabla historial_previo).
+ * Cabecera de sección estándar (FormWorkspaceSection, sin Card).
  */
 
 import React from 'react';
 import { Alert } from 'antd';
-import { Card } from '@atoms';
+import { FormWorkspaceSection } from '@organisms';
 import HistorialPrevioNotasSection from './HistorialPrevioNotasSection';
 
 const InscripcionesHistorialPrevioStepContent = ({
@@ -12,12 +13,10 @@ const InscripcionesHistorialPrevioStepContent = ({
   historialPrevioData,
 }) => {
   return (
-    <Card
+    <FormWorkspaceSection
       title={section?.title ?? 'Historial de notas'}
-      variant="outlined"
-      shadow={false}
-      headerColor="primary"
-      className="form-section step-historial-previo-section"
+      description={section?.description}
+      fields={[]}
     >
       {historialPrevioData?.hasRows ? (
         <HistorialPrevioNotasSection
@@ -35,7 +34,7 @@ const InscripcionesHistorialPrevioStepContent = ({
           description="No hay materias de periodos anteriores pendientes para los periodos seleccionados. Puede finalizar la inscripción si el resto del formulario está completo."
         />
       )}
-    </Card>
+    </FormWorkspaceSection>
   );
 };
 

@@ -1,28 +1,28 @@
 /**
  * SelectedPaymentSection - Organism para la sección de pago seleccionado
- * 
+ *
  * Single Responsibility: Mostrar información del pago configurado y formulario completo
- * 
+ *
  * Atomic Design: Organism
- * - Combina molecules (PaymentAmountDisplay, PaymentMethodInfo, PaymentFormFields) y atoms (Card, Row, Col, Button, Space, Form, Divider)
- * 
+ * - Sección PLANA dentro del workspace de formulario (`CfgFormWorkspace`):
+ *   la tarjeta, el título y la descripción los pone la sección del workspace
+ *   en la página — aquí no va ninguna `Card` anidada.
+ * - Los botones Cancelar / Registrar pago viven en el footer del workspace (página), no aquí.
+ * - Combina molecules (PaymentAmountDisplay, PaymentMethodInfo, PaymentFormFields).
+ *
  * @param {Object} selectedConfiguracion - Configuración de aporte seleccionada
  * @param {Object} selectedMetodoPago - Método de pago seleccionado
  * @param {Object} selectedCuentaPago - Cuenta de pago seleccionada (opcional, según método)
  * @param {Object} cuentasPagoData - Datos de cuentas de pago para el select
  * @param {Object} bancosAutorizadosData - Datos de bancos autorizados (opcional)
  * @param {Object} becaActiva - Beca activa del estudiante (opcional)
+ * @param {number|string} montoCuota - Monto de esta cuota (lo que ingresó el usuario en Detalle del Aporte)
  * @param {Object} form - Instancia del formulario de Ant Design
- * @param {Function} onCancel - Callback cuando se cancela
- * @param {boolean} disabled - Si el formulario no puede enviarse (validación / carga de datos)
- * @param {boolean} submitting - Si el envío al servidor está en curso (spinner en el botón)
  */
 
 import { useEffect } from 'react';
-import { Row, Col, Space, Form, Divider, Typography, Input, Tag } from 'antd';
-import { SaveOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { Row, Col, Flex, Form, Divider, Typography, Input, Tag } from 'antd';
 import dayjs from 'dayjs';
-import { Card, Button } from '@atoms';
 import {
   PaymentAmountDisplay,
   PaymentMethodInfo,
@@ -46,10 +46,7 @@ const SelectedPaymentSection = ({
   bancosAutorizadosData,
   becaActiva,
   montoCuota,
-  form,
-  onCancel,
-  disabled = false,
-  submitting = false
+  form
 }) => {
   // Calcular descuento automáticamente basado en beca activa
   const montoTotal = Number(selectedConfiguracion?.montoBase) || 0;
@@ -124,215 +121,87 @@ const SelectedPaymentSection = ({
   if (!selectedConfiguracion) return null;
 
   // El padre solo renderiza este componente cuando esPagoGratuito || selectedMetodoPago
-  return (
-    <Card
-      title={
-        <Space>
-          <CheckCircleOutlined style={{ color: '#52c41a', fontSize: '20px' }} />
-          <span style={{ fontSize: '18px', fontWeight: 600 }}>Detalles del pago</span>
-        </Space>
-      }
-      style={{
-        marginTop: '24px',
-        marginBottom: '24px',
-        borderRadius: '12px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
-      }}
-      headerColor="primary"
-    >
-      {montoPagado === 0 ? (
+  if (montoPagado === 0) {
+    return (
+      <Flex vertical gap="middle">
+        {/* Etiqueta de pago gratuito (aporte cubierto por beca/condonación) */}
         <div>
-          {/* Label de Pago Gratuito */}
-          <div style={{
-            marginBottom: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            <Tag
-              color="success"
-              style={{
-                fontSize: '20px',
-                padding: '4px 12px',
-                fontWeight: 600,
-                borderRadius: '6px'
-              }}
-            >
-              Pago gratuito
-            </Tag>
-          </div>
-
-          {/* No usar Form aquí: ya estamos dentro del Form del padre; solo Form.Item para no anidar <form> */}
-          <Form.Item
-            name="descripcion"
-            label={
-              <span style={{ fontWeight: 500, fontSize: '14px' }}>
-                Observación
-              </span>
-            }
-            tooltip="Observación del pago: plazo, datos adicionales (opcional)"
-            required={false}
-            rules={[
-              // Validar longitud solo si se proporciona un valor
-              {
-                validator: (_, value) => {
-                  if (!value || value.trim().length === 0) {
-                    return Promise.resolve(); // Permitir vacío
-                  }
-                  if (value.trim().length > 500) {
-                    return Promise.reject('La observación no puede exceder 500 caracteres');
-                  }
-                  return Promise.resolve();
-                }
-              }
-            ]}
-          >
-            <Input.TextArea
-              rows={3}
-              placeholder="Ej: Plazo de entrega, datos adicionales... (opcional)"
-              maxLength={500}
-              showCount
-              style={{
-                borderRadius: '8px',
-                fontSize: '14px'
-              }}
-            />
-          </Form.Item>
-
-          {/* Botones de acción */}
-          <Divider style={{ margin: '32px 0 24px 0' }} />
-          <div style={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            gap: '12px',
-            paddingTop: '8px',
-          }}>
-            <Button
-              variant="default"
-              onClick={onCancel}
-              size="large"
-              style={{
-                borderRadius: '8px',
-                paddingLeft: '24px',
-                paddingRight: '24px',
-                height: '42px',
-                fontWeight: 500,
-              }}
-            >
-              Cancelar
-            </Button>
-            <Button
-              variant="primary"
-              onClick={() => form?.submit()}
-              icon={<SaveOutlined />}
-              disabled={disabled || submitting}
-              loading={submitting}
-              size="large"
-              style={{
-                borderRadius: '8px',
-                paddingLeft: '32px',
-                paddingRight: '32px',
-                height: '42px',
-                fontWeight: 600,
-                boxShadow: '0 2px 8px rgba(24, 144, 255, 0.3)',
-              }}
-            >
-              {submitting ? 'Registrando…' : 'Registrar pago'}
-            </Button>
-          </div>
+          <Tag color="success">Pago gratuito</Tag>
         </div>
-      ) : (
-        <>
-          {/* Saldo a Pagar y Método de Pago lado a lado */}
-          <Row gutter={[24, 16]} style={{ marginBottom: '24px' }}>
-            {/* Saldo a Pagar: monto de esta cuota (el que ingresó el usuario en Detalle del Aporte) */}
-            <Col xs={24} md={12}>
-              <PaymentAmountDisplay
-                montoPagado={montoCuota != null && montoCuota !== '' ? Number(montoCuota) : montoPagado}
-              />
-            </Col>
 
-            {/* Método de Pago */}
-            <Col xs={24} md={12}>
-              <PaymentMethodInfo
-                selectedMetodoPago={selectedMetodoPago}
-                selectedCuentaPago={selectedCuentaPago}
-                requiereCuenta={requiereCuenta}
-                esTransferencia={esTransferencia}
-              />
-            </Col>
-          </Row>
+        {/* No usar Form aquí: ya estamos dentro del Form del padre; solo Form.Item para no anidar <form> */}
+        <Form.Item
+          name="descripcion"
+          label="Observación"
+          tooltip="Observación del pago: plazo, datos adicionales (opcional)"
+          required={false}
+          rules={[
+            // Validar longitud solo si se proporciona un valor
+            {
+              validator: (_, value) => {
+                if (!value || value.trim().length === 0) {
+                  return Promise.resolve(); // Permitir vacío
+                }
+                if (value.trim().length > 500) {
+                  return Promise.reject('La observación no puede exceder 500 caracteres');
+                }
+                return Promise.resolve();
+              }
+            }
+          ]}
+        >
+          <Input.TextArea
+            rows={3}
+            placeholder="Ej: Plazo de entrega, datos adicionales... (opcional)"
+            maxLength={500}
+            showCount
+          />
+        </Form.Item>
+      </Flex>
+    );
+  }
 
-          <Divider style={{ margin: '24px 0' }} />
+  return (
+    <Flex vertical gap="middle">
+      {/* Saldo a Pagar y Método de Pago lado a lado */}
+      <Row gutter={[24, 16]}>
+        {/* Saldo a Pagar: monto de esta cuota (el que ingresó el usuario en Detalle del Aporte) */}
+        <Col xs={24} md={12}>
+          <PaymentAmountDisplay
+            montoPagado={montoCuota != null && montoCuota !== '' ? Number(montoCuota) : montoPagado}
+          />
+        </Col>
 
-          {/* Formulario para completar el pago */}
-          <div>
-            <Title level={5} style={{
-              marginBottom: '20px',
-              fontSize: '16px',
-              fontWeight: 600,
-              color: '#262626'
-            }}>
-              Completar información del pago
-            </Title>
-            {/* No usar Form aquí: ya estamos dentro del Form del padre; solo contenido para no anidar <form> */}
-            <PaymentFormFields
-              form={form}
-              cuentasPagoData={cuentasPagoData}
-              bancosAutorizadosData={bancosAutorizadosData}
-              requiereFechaPago={requiereFechaPago}
-              requiereCuenta={requiereCuenta}
-              requiereNumeroTransaccion={mostrarNumeroTransaccion}
-              requiereCodigoComprobante={requiereCodigoComprobante}
-              requiereDocumentoRespaldo={mostrarDocumentoRespaldo}
-              esQR={esQR}
-            />
-          </div>
+        {/* Método de Pago */}
+        <Col xs={24} md={12}>
+          <PaymentMethodInfo
+            selectedMetodoPago={selectedMetodoPago}
+            selectedCuentaPago={selectedCuentaPago}
+            requiereCuenta={requiereCuenta}
+            esTransferencia={esTransferencia}
+          />
+        </Col>
+      </Row>
 
-          {/* Botones de acción */}
-          <Divider style={{ margin: '32px 0 24px 0' }} />
-          <div style={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            gap: '12px',
-            paddingTop: '8px',
-          }}>
-            <Button
-              variant="default"
-              onClick={onCancel}
-              size="large"
-              style={{
-                borderRadius: '8px',
-                paddingLeft: '24px',
-                paddingRight: '24px',
-                height: '42px',
-                fontWeight: 500,
-              }}
-            >
-              Cancelar
-            </Button>
-            <Button
-              variant="primary"
-              onClick={() => form?.submit()}
-              icon={<SaveOutlined />}
-              disabled={disabled || submitting}
-              loading={submitting}
-              size="large"
-              style={{
-                borderRadius: '8px',
-                paddingLeft: '32px',
-                paddingRight: '32px',
-                height: '42px',
-                fontWeight: 600,
-                boxShadow: '0 2px 8px rgba(24, 144, 255, 0.3)',
-              }}
-            >
-              {submitting ? 'Registrando…' : 'Registrar pago'}
-            </Button>
-          </div>
-        </>
-      )}
-    </Card>
+      <Divider style={{ margin: 0 }} />
+
+      {/* Formulario para completar el pago */}
+      <div>
+        <Title level={5}>Completar información del pago</Title>
+        {/* No usar Form aquí: ya estamos dentro del Form del padre; solo contenido para no anidar <form> */}
+        <PaymentFormFields
+          form={form}
+          cuentasPagoData={cuentasPagoData}
+          bancosAutorizadosData={bancosAutorizadosData}
+          requiereFechaPago={requiereFechaPago}
+          requiereCuenta={requiereCuenta}
+          requiereNumeroTransaccion={mostrarNumeroTransaccion}
+          requiereCodigoComprobante={requiereCodigoComprobante}
+          requiereDocumentoRespaldo={mostrarDocumentoRespaldo}
+          esQR={esQR}
+        />
+      </div>
+    </Flex>
   );
 };
 

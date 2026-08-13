@@ -8,7 +8,9 @@ import { WIZARD_SECTION_HISTORIAL } from '@application-matricula/registro/utils/
 /** Sin alerts aquí: el contenido lo muestra InscripcionesHistorialPrevioStepContent. */
 export const getStepHistorialPrevioFields = () => ({
   [WIZARD_SECTION_HISTORIAL]: {
-    title: 'Historial de notas',
+    title: 'Notas de periodos anteriores',
+    description:
+      'Ingrese la nota final de cada materia concluida o márquela como convalidada.',
     fields: [],
   },
 });

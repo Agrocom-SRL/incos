@@ -1,11 +1,16 @@
 /**
  * PaymentMethodSelectionSection - Organism para la sección de selección de método de pago
- * 
+ *
  * Single Responsibility: Mostrar el formulario de selección de método de pago
- * 
+ *
  * Atomic Design: Organism
  * - Combina atoms (Card, Form, Alert, Radio) para selección de método de pago
- * 
+ * - Con `bare` se renderiza como sección PLANA (sin `Card` propia) para vivir
+ *   dentro de un `CfgFormWorkspace` (PagosRegistrar); sin `bare` conserva la
+ *   tarjeta con título (PagosEditarCuota, aún con el shell anterior).
+ * - Neutros (bordes, fondos, textos) desde el theme de AntD (`theme.useToken`);
+ *   los colores por método son acentos categóricos propios de cada medio de pago.
+ *
  * @param {Object} metodosPagoData - Datos de métodos de pago
  * @param {Array} metodosPagoData.metodosPago - Lista de métodos de pago
  * @param {boolean} metodosPagoData.loading - Estado de carga
@@ -14,10 +19,11 @@
  * @param {Function} onSelectMetodoPago - Callback cuando se selecciona un método de pago
  * @param {Object} form - Instancia del formulario de Ant Design
  * @param {Function} onFinish - Callback cuando se envía el formulario
+ * @param {boolean} bare - Renderizar sin Card (sección plana dentro del workspace)
  */
 
 import { useEffect } from 'react';
-import { Form, Alert, Radio, Spin, Empty, Space, Typography } from 'antd';
+import { Form, Alert, Flex, Radio, Spin, Empty, Typography, theme } from 'antd';
 import { Card } from '@atoms';
 import {
   CreditCardOutlined,
@@ -33,8 +39,11 @@ const PaymentMethodSelectionSection = ({
   metodosPagoData,
   onSelectMetodoPago,
   form,
-  onFinish
+  onFinish, // eslint-disable-line no-unused-vars -- contrato histórico del padre; el submit va por form.submit()
+  bare = false
 }) => {
+  const { token } = theme.useToken();
+
   // Handler para cuando cambia la selección del radio
   const handleRadioChange = (e) => {
     const metodoPagoId = e.target.value;
@@ -74,22 +83,22 @@ const PaymentMethodSelectionSection = ({
     }
   }, [form, metodosPagoData.selectedMetodoPago?.id]);
 
-  // Función para obtener icono y color según el método
+  // Acentos categóricos por método de pago (identidad de cada medio, no estados del sistema)
   const getMethodConfig = (codigo) => {
     const code = codigo?.toUpperCase() || '';
     switch (code) {
       case 'EFECTIVO':
-        return { icon: DollarOutlined, color: '#52c41a', bgColor: '#f6ffed' };
+        return { icon: DollarOutlined, color: token.colorSuccess, bgColor: token.colorSuccessBg };
       case 'TRANSFERENCIA':
-        return { icon: BankOutlined, color: '#1890ff', bgColor: '#e6f7ff' };
+        return { icon: BankOutlined, color: token.colorInfo, bgColor: token.colorInfoBg };
       case 'DEPOSITO':
-        return { icon: BankOutlined, color: '#722ed1', bgColor: '#f9f0ff' };
+        return { icon: BankOutlined, color: token.purple, bgColor: token['purple-1'] };
       case 'QR':
-        return { icon: QrcodeOutlined, color: '#eb2f96', bgColor: '#fff0f6' };
+        return { icon: QrcodeOutlined, color: token.magenta, bgColor: token['magenta-1'] };
       case 'TIGO_MONEY':
-        return { icon: MobileOutlined, color: '#fa8c16', bgColor: '#fff7e6' };
+        return { icon: MobileOutlined, color: token.orange, bgColor: token['orange-1'] };
       default:
-        return { icon: CreditCardOutlined, color: '#1890ff', bgColor: '#e6f7ff' };
+        return { icon: CreditCardOutlined, color: token.colorInfo, bgColor: token.colorInfoBg };
     }
   };
 
@@ -106,44 +115,27 @@ const PaymentMethodSelectionSection = ({
     return 0;
   }) : [];
 
-  return (
-    <Card
-      title={
-        <span style={{ fontSize: '18px', fontWeight: 600 }}>
-          Seleccionar método de pago
-        </span>
-      }
-      style={{
-        marginTop: '24px',
-        marginBottom: '24px',
-        borderRadius: '12px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
-      }}
-      headerColor="primary"
-    >
+  const content = (
+    <>
       {metodosPagoData.error && (
         <Alert
           title="Error al cargar métodos de pago"
           description={metodosPagoData.error}
           type="error"
           showIcon
-          style={{ marginBottom: '24px', borderRadius: '8px' }}
+          style={{ marginBottom: token.marginLG }}
         />
       )}
 
       {metodosPagoData.loading ? (
-        <div style={{ textAlign: 'center', padding: '60px 40px' }}>
-          <Spin size="large">
-            <div style={{ minHeight: '100px' }}>
-              <p style={{ marginTop: '16px', color: '#8c8c8c' }}>Cargando métodos de pago...</p>
-            </div>
-          </Spin>
-        </div>
+        <Flex align="center" gap="small">
+          <Spin size="small" />
+          <Text type="secondary">Cargando métodos de pago…</Text>
+        </Flex>
       ) : !metodosPagoData.metodosPago || metodosPagoData.metodosPago.length === 0 ? (
         <Empty
           description="No hay métodos de pago disponibles"
           image={Empty.PRESENTED_IMAGE_SIMPLE}
-          style={{ padding: '40px 0' }}
         />
       ) : (
         /* No usar Form aquí: ya estamos dentro del Form del padre; solo Form.Item para no anidar <form> */
@@ -161,7 +153,7 @@ const PaymentMethodSelectionSection = ({
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-              gap: '16px'
+              gap: token.margin
             }}>
               {sortedMetodosPago.map((metodoPago) => {
                 const isSelected = selectedValue === metodoPago.id;
@@ -174,94 +166,71 @@ const PaymentMethodSelectionSection = ({
                     style={{
                       width: '100%',
                       height: 'auto',
-                      padding: '0',
+                      padding: 0,
                       margin: 0,
                       border: isSelected
                         ? `2px solid ${color}`
-                        : '2px solid #e8e8e8',
-                      borderRadius: '12px',
-                      backgroundColor: isSelected ? bgColor : '#ffffff',
+                        : `2px solid ${token.colorBorderSecondary}`,
+                      borderRadius: token.borderRadiusLG,
+                      backgroundColor: isSelected ? bgColor : token.colorBgContainer,
                       transition: 'all 0.3s ease',
                       overflow: 'hidden',
                       cursor: 'pointer',
-                      boxShadow: isSelected
-                        ? `0 4px 12px rgba(0,0,0,0.1)`
-                        : '0 2px 4px rgba(0,0,0,0.04)',
+                      boxShadow: 'none',
                     }}
                     className="payment-method-card"
                   >
-                    <div
-                      style={{
-                        padding: '20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '16px',
-                      }}
+                    <Flex
+                      align="center"
+                      gap="middle"
+                      style={{ padding: token.paddingMD }}
                     >
-                      <div
+                      <Flex
+                        align="center"
+                        justify="center"
                         style={{
-                          width: '56px',
-                          height: '56px',
-                          borderRadius: '12px',
-                          backgroundColor: isSelected ? color : '#f5f5f5',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
+                          width: token.controlHeightLG,
+                          height: token.controlHeightLG,
+                          borderRadius: token.borderRadiusLG,
+                          backgroundColor: isSelected ? color : token.colorFillTertiary,
                           transition: 'all 0.3s ease',
                           flexShrink: 0,
                         }}
                       >
                         <IconComponent
                           style={{
-                            fontSize: '28px',
-                            color: isSelected ? '#fff' : '#8c8c8c',
+                            fontSize: token.fontSizeHeading3,
+                            color: isSelected ? token.colorWhite : token.colorTextTertiary,
                             transition: 'all 0.3s ease',
                           }}
                         />
-                      </div>
+                      </Flex>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div
-                          style={{
-                            fontWeight: 600,
-                            fontSize: '16px',
-                            color: '#262626',
-                            marginBottom: '4px',
-                            lineHeight: '1.4',
-                          }}
-                        >
+                        <Text strong style={{ display: 'block', fontSize: token.fontSizeLG }}>
                           {metodoPago.nombre}
-                        </div>
+                        </Text>
                         {metodoPago.codigo && (
-                          <Text
-                            type="secondary"
-                            style={{
-                              fontSize: '13px',
-                              fontWeight: 500,
-                              textTransform: 'uppercase',
-                              letterSpacing: '0.5px',
-                            }}
-                          >
+                          <Text type="secondary" style={{ fontSize: token.fontSizeSM }}>
                             {metodoPago.codigo}
                           </Text>
                         )}
                       </div>
                       {isSelected && (
-                        <div
+                        <Flex
+                          align="center"
+                          justify="center"
                           style={{
-                            width: '24px',
-                            height: '24px',
+                            width: token.controlHeightXS,
+                            height: token.controlHeightXS,
                             borderRadius: '50%',
                             backgroundColor: color,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
                             flexShrink: 0,
                           }}
                         >
-                          <span style={{ color: '#fff', fontSize: '14px' }}>✓</span>
-                        </div>
+                          <span style={{ color: token.colorWhite }}>✓</span>
+                        </Flex>
                       )}
-                    </div>
+                    </Flex>
                   </Radio.Button>
                 );
               })}
@@ -273,7 +242,6 @@ const PaymentMethodSelectionSection = ({
       <style>{`
         .payment-method-card:hover {
           transform: translateY(-2px);
-          box-shadow: 0 4px 16px rgba(0,0,0,0.12) !important;
         }
         .payment-method-card .ant-radio-button-wrapper {
           border: none !important;
@@ -284,6 +252,21 @@ const PaymentMethodSelectionSection = ({
           box-shadow: none !important;
         }
       `}</style>
+    </>
+  );
+
+  // Sección plana (workspace) o tarjeta propia (shell anterior)
+  if (bare) {
+    return content;
+  }
+
+  return (
+    <Card
+      title="Seleccionar método de pago"
+      style={{ marginTop: token.marginLG, marginBottom: token.marginLG }}
+      headerColor="primary"
+    >
+      {content}
     </Card>
   );
 };

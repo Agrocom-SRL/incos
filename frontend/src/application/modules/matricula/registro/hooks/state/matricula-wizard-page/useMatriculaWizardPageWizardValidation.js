@@ -7,6 +7,8 @@ import { App } from 'antd';
 
 export const useMatriculaWizardPageWizardValidation = ({
   isNuevoEstudiante,
+  studentSearch,
+  editData,
   carrerasData,
   periodosData,
   selectedMateriaIdsByPeriod,
@@ -25,6 +27,14 @@ export const useMatriculaWizardPageWizardValidation = ({
   const handleValidateBeforeNext = useCallback(
     (stepNumber, formInstance) => {
       return new Promise((resolve, reject) => {
+        // Paso 1 (Buscar estudiante): no avanzar sin un estudiante seleccionado.
+        // En edición (editData) o con estudiante preseleccionado, selectedStudent ya viene poblado.
+        if (stepNumber === 1 && !editData && !studentSearch?.selectedStudent) {
+          message.error('Seleccione un estudiante de la lista de resultados antes de continuar.');
+          reject(new Error('Estudiante no seleccionado'));
+          return;
+        }
+
         if (stepNumber === stepNumbers.carrera) {
           const carreraId =
             formInstance?.getFieldValue('carrera') ?? carrerasData?.selectedCarrera?.id;
@@ -125,11 +135,22 @@ export const useMatriculaWizardPageWizardValidation = ({
           return;
         }
 
+        // Pasos sin regla propia (p. ej. "Buscar estudiante"): validar los campos
+        // requeridos montados del paso visible. El wizard solo monta los Form.Item del
+        // paso actual, por lo que validateFields() sin argumentos valida exactamente
+        // ese paso (con estudiante ya seleccionado la sección no tiene requeridos).
+        if (formInstance?.validateFields) {
+          formInstance.validateFields().then(resolve).catch(reject);
+          return;
+        }
+
         resolve();
       });
     },
     [
       stepNumbers,
+      studentSearch?.selectedStudent,
+      editData,
       carrerasData?.selectedCarrera,
       periodosData,
       selectedMateriaIdsByPeriod,

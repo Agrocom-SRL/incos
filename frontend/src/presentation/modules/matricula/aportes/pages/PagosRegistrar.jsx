@@ -4,24 +4,28 @@
  * Single Responsibility: Mostrar el formulario para registrar un pago de un estudiante
  * 
  * Atomic Design: Page
- * - Orquesta datos + componentes
- * - Pasa HEADER al Template (estructura)
- * - Muestra formulario de registro de pago
- * 
+ * - Orquesta datos + componentes (toda la lógica de montos/cuotas/compromiso vive aquí
+ *   y en los contextos de aplicación; el shell y el workspace solo presentan)
+ *
  * Arquitectura:
- * Page → Template (header) + Contenido (formulario de registro)
- * - Template maneja: estructura/layout (header, content)
- * - Contenido muestra: formulario para registrar pago
+ * Page → shell global (PageHeaderArea + DashboardPageShell + MainContent) +
+ * CfgFormWorkspace (organismo compartido) con secciones planas:
+ * información del estudiante, detalle del aporte, método de pago y detalle del pago.
+ * - Los botones Cancelar / Registrar pago van en el footer del workspace.
+ * - También se sirve por la ruta legacy `/pagos/registrar` (dominio Finanzas):
+ *   `returnListPath`/`menuSidebarKey` y las redirecciones se conservan intactos.
  */
 
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useMemo, useEffect, useState, useRef } from 'react';
-import { Spin, Form, App } from 'antd';
-import { ArrowLeftOutlined, GiftOutlined } from '@ant-design/icons';
+import { Flex, Form, App, Spin } from 'antd';
+import { ArrowLeftOutlined, GiftOutlined, SaveOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { PageTemplate } from '@templates';
+import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
-import { ActionButton, Button, formatFechaCompromiso } from '@atoms';
+import { ActionButton, BackButton, Button, formatFechaCompromiso } from '@atoms';
+import { CfgFormWorkspace } from '@organisms';
+import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import { useStudentDetailContext } from '@application-matricula/admision/hooks';
 import { usePagosRegistrarContext } from '@application-pagos/hooks';
 import { downloadFile } from '@application/utils';
@@ -32,6 +36,8 @@ import {
   SelectedPaymentSection,
   CompromisoPagoModal,
 } from '../components/organisms';
+import '@presentation/styles/pages/detail-page.css';
+import '@configuracion/academico/styles/academico-form-page.css';
 
 /**
  * Plazos del compromiso de pago que el usuario puede elegir al registrar la
@@ -75,7 +81,6 @@ const PagosRegistrar = () => {
   // Obtener TODO del contexto de registro de pagos (incluye estado actual del aporte: saldo real, cuotas pagadas, tiene_descuento_aplicado)
   const {
     loading = false,
-    error = null,
     estadoActualAporte = null,
     loadingEstadoAporte = false,
     metodosPago,
@@ -541,12 +546,14 @@ const PagosRegistrar = () => {
     setPagoPendiente(null);
   };
 
-  // Configurar breadcrumb items
+  // Breadcrumb con jerarquía de dominio (patrón de Matrícula); el retorno a la
+  // lista respeta la lista de origen (matrícula/aportes o finanzas legacy).
   const breadcrumbItems = useMemo(() => [
     { title: 'Inicio', href: '/' },
-    { title: 'Pagos', href: '/pagos' },
+    { title: 'Matrícula' },
+    { title: 'Aportes de matrícula', href: returnListPathFromState },
     { title: 'Registrar pago' },
-  ], []);
+  ], [returnListPathFromState]);
 
   // Sin estudiante no hay formulario: volver a la lista que originó el flujo (finanzas o matrícula/aportes)
   useEffect(() => {
@@ -573,22 +580,18 @@ const PagosRegistrar = () => {
   // Si no hay studentId, no renderizar nada (se redirige automáticamente)
   if (!studentId) {
     return (
-      <PageTemplate
-        header={
-          <PageHeader
-            title="Registrar pago"
-            breadcrumbItems={breadcrumbItems}
-          />
-        }
-      >
-        <div style={{ padding: '24px', textAlign: 'center' }}>
-          <Spin size="large">
-            <div style={{ minHeight: '200px' }}>
-              <p>Redirigiendo...</p>
-            </div>
-          </Spin>
-        </div>
-      </PageTemplate>
+      <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
+        <PageHeaderArea>
+          <PageHeader title="Registrar pago" breadcrumbItems={breadcrumbItems} />
+        </PageHeaderArea>
+        <DashboardPageShell>
+          <MainContent>
+            <Spin spinning tip="Redirigiendo a la lista anterior…">
+              <div className="sd-spin-body" />
+            </Spin>
+          </MainContent>
+        </DashboardPageShell>
+      </Flex>
     );
   }
 
@@ -597,93 +600,95 @@ const PagosRegistrar = () => {
   const redirigirADetalle = estadoActualAporte && !loadingEstadoAporte && Number(estadoActualAporte.saldo_pendiente) === 0 && estadoActualAporte.cabecera?.id && !pendienteDescargaReciboRef.current;
   if (redirigirADetalle) {
     return (
-      <PageTemplate header={<PageHeader title="Registrar pago" breadcrumbItems={breadcrumbItems} />}>
-        <div style={{ textAlign: 'center', padding: '50px' }}>
-          <Spin size="large">
-            <div style={{ minHeight: '120px' }}>
-              <p>El aporte ya está cubierto. Redirigiendo al detalle del pago...</p>
-            </div>
-          </Spin>
-        </div>
-      </PageTemplate>
+      <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
+        <PageHeaderArea>
+          <PageHeader title="Registrar pago" breadcrumbItems={breadcrumbItems} />
+        </PageHeaderArea>
+        <DashboardPageShell>
+          <MainContent>
+            <Spin spinning tip="El aporte ya está cubierto. Redirigiendo al detalle del pago…">
+              <div className="sd-spin-body" />
+            </Spin>
+          </MainContent>
+        </DashboardPageShell>
+      </Flex>
     );
   }
 
-  return (
-    <PageTemplate
-      header={
-        <PageHeader
-          title={`Registrar pago${student ? ` - ${student.nombreCompleto || student.codigoEstudiante || ''}` : ''}`}
-          breadcrumbItems={breadcrumbItems}
-          actions={
-            <>
-              {!ocultarBotonAsignarBeca && (
-                <ActionButton
-                  permiso="matricula.beca.asignar"
-                  accion="CREAR"
-                  variant="success"
-                  icon={<GiftOutlined />}
-                  onClick={handleAsignarBeca}
-                  style={{ marginRight: 8 }}
-                >
-                  Asignar beca
-                </ActionButton>
-              )}
-              <Button
-                icon={<ArrowLeftOutlined />}
-                onClick={handleVolver}
-                variant="default"
-              >
-                Volver
-              </Button>
-            </>
-          }
+  // Datos base de la página aún en carga: no montar el formulario (mismo criterio que antes)
+  const cargandoDatosBase = loadingStudent || loadingScholarships;
+
+  // Mismo criterio de deshabilitado que tenía el botón dentro de SelectedPaymentSection;
+  // ahora vive en el footer del workspace.
+  const registrarDisabled =
+    !configuracionAporteActiva ||
+    (!esPagoGratuito && (
+      montoCuota == null ||
+      montoCuota === '' ||
+      Number.isNaN(Number(montoCuota)) ||
+      Number(montoCuota) < 0
+    )) ||
+    (!esPagoGratuito && !(metodosPago?.selectedMetodoPago)) ||
+    loadingStudent ||
+    loading;
+
+  // Secciones planas del workspace (título + descripción + divisor estándar).
+  // La primera no repite título: StudentInfoSection (compartido con `becas/`,
+  // no se modifica) ya trae su propia cabecera "Información del estudiante".
+  const workspaceSections = [
+    ...(student
+      ? [
+          {
+            key: 'estudiante',
+            children: <StudentInfoSection student={student} />,
+          },
+        ]
+      : []),
+    {
+      key: 'detalle',
+      title: 'Detalle del aporte',
+      description: 'Revise el saldo del aporte académico y registre el monto de esta cuota.',
+      // Resumen tipo recibo; usa estado actual si existe para saldo real y cuotas pagadas
+      children: (
+        <ContributionDetailSummary
+          configuracionAporte={configuracionAporteActiva}
+          becaActiva={becaActiva}
+          estadoActualAporte={estadoActualAporte}
+          loading={configuracionAportes?.loading || loadingScholarships || loadingEstadoAporte}
+          error={configuracionAportes?.error}
+          montoCuota={montoCuota}
+          onMontoCuotaChange={setMontoCuota}
+          montoObligatorioMax={montoPagado}
         />
-      }
-    >
-      <div style={{ padding: '24px' }}>
-        {loadingStudent || loadingScholarships ? (
-          <div style={{ textAlign: 'center', padding: '50px' }}>
-            <Spin size="large">
-              <div style={{ minHeight: '200px' }}>
-                <p>Cargando datos del estudiante...</p>
-              </div>
-            </Spin>
-          </div>
-        ) : (
-          <Form
-            form={formInstance}
-            onFinish={handleFinish}
-            layout="vertical"
-            data-section="pagos-registrar-form"
-          >
-            {/* Sección 1: Información del estudiante */}
-            {student ? <StudentInfoSection student={student} /> : null}
-
-            {/* Sección 2: Detalle del Aporte (Resumen tipo recibo; usa estado actual si existe para saldo real y cuotas pagadas) */}
-            <ContributionDetailSummary
-              configuracionAporte={configuracionAporteActiva}
-              becaActiva={becaActiva}
-              estadoActualAporte={estadoActualAporte}
-              loading={configuracionAportes?.loading || loadingScholarships || loadingEstadoAporte}
-              error={configuracionAportes?.error}
-              montoCuota={montoCuota}
-              onMontoCuotaChange={setMontoCuota}
-              montoObligatorioMax={montoPagado}
-            />
-
-            {/* Sección 3: Selección de Método de Pago (solo si NO es pago gratuito) */}
-            {!esPagoGratuito ? (
+      ),
+    },
+    // Método de pago (solo si NO es pago gratuito)
+    ...(!esPagoGratuito
+      ? [
+          {
+            key: 'metodo',
+            title: 'Método de pago',
+            description: 'Seleccione el método con el que el estudiante realiza el pago.',
+            children: (
               <PaymentMethodSelectionSection
+                bare
                 metodosPagoData={metodosPago}
                 onSelectMetodoPago={metodosPago?.onSelectMetodoPago}
                 form={formInstance}
                 onFinish={handleFinish}
               />
-            ) : null}
-
-            {/* Sección 4: Detalles del Pago y Formulario Completo (solo si es gratuito o ya hay método seleccionado) */}
-            {(esPagoGratuito || metodosPago?.selectedMetodoPago) ? (
+            ),
+          },
+        ]
+      : []),
+    // Detalle del pago (solo si es gratuito o ya hay método seleccionado)
+    ...((esPagoGratuito || metodosPago?.selectedMetodoPago)
+      ? [
+          {
+            key: 'detalle-pago',
+            title: 'Detalles del pago',
+            description: 'Verifique el monto y complete la información del comprobante.',
+            children: (
               <SelectedPaymentSection
                 selectedConfiguracion={configuracionAporteActiva}
                 selectedMetodoPago={esPagoGratuito ? null : metodosPago?.selectedMetodoPago ?? null}
@@ -693,26 +698,85 @@ const PagosRegistrar = () => {
                 becaActiva={becaActiva}
                 montoCuota={montoCuota}
                 form={formInstance}
-                onFinish={handleFinish}
-                onCancel={handleVolver}
-                submitting={isSubmitting}
-                disabled={
-                  !configuracionAporteActiva ||
-                  (!esPagoGratuito && (
-                    montoCuota == null ||
-                    montoCuota === '' ||
-                    Number.isNaN(Number(montoCuota)) ||
-                    Number(montoCuota) < 0
-                  )) ||
-                  (!esPagoGratuito && !(metodosPago?.selectedMetodoPago)) ||
-                  loadingStudent ||
-                  loading
-                }
               />
-            ) : null}
-          </Form>
-        )}
-      </div>
+            ),
+          },
+        ]
+      : []),
+  ];
+
+  // Botones en el footer del workspace: mismo mecanismo que antes (submit del Form)
+  const workspaceFooter = (
+    <Flex justify="flex-end" gap="small" wrap>
+      <Button variant="default" onClick={handleVolver}>
+        Cancelar
+      </Button>
+      <Button
+        variant="primary"
+        icon={<SaveOutlined />}
+        onClick={() => formInstance?.submit()}
+        disabled={registrarDisabled || isSubmitting}
+        loading={isSubmitting}
+      >
+        {isSubmitting ? 'Registrando…' : 'Registrar pago'}
+      </Button>
+    </Flex>
+  );
+
+  return (
+    <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
+      <PageHeaderArea>
+        <PageHeader
+          title={`Registrar pago${student ? ` - ${student.nombreCompleto || student.codigoEstudiante || ''}` : ''}`}
+          breadcrumbItems={breadcrumbItems}
+          actions={
+            <Flex gap="small" wrap>
+              {!ocultarBotonAsignarBeca && (
+                <ActionButton
+                  permiso="matricula.beca.asignar"
+                  accion="CREAR"
+                  variant="success"
+                  icon={<GiftOutlined />}
+                  onClick={handleAsignarBeca}
+                >
+                  Asignar beca
+                </ActionButton>
+              )}
+              <BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver}>
+                Volver
+              </BackButton>
+            </Flex>
+          }
+        />
+      </PageHeaderArea>
+
+      <DashboardPageShell>
+        <MainContent>
+          <Spin spinning={cargandoDatosBase} tip="Cargando datos del estudiante…">
+            <Flex vertical gap="middle" className="cfg-academico-page__stack">
+              {cargandoDatosBase ? (
+                <div className="sd-spin-body" />
+              ) : (
+                <Form
+                  form={formInstance}
+                  onFinish={handleFinish}
+                  layout="vertical"
+                  className="cfg-academico-form"
+                  data-section="pagos-registrar-form"
+                >
+                  <CfgFormWorkspace
+                    title="Registro del pago"
+                    description="Verifique la información del estudiante, revise el saldo del aporte y complete los datos de la cuota que usted registrará."
+                    form={formInstance}
+                    sections={workspaceSections}
+                    footer={workspaceFooter}
+                  />
+                </Form>
+              )}
+            </Flex>
+          </Spin>
+        </MainContent>
+      </DashboardPageShell>
 
       {/* Compromiso de pago: confirmación del plazo antes de registrar (solo 1ra cuota con
           saldo pendiente). El backend crea el compromiso con fecha de pago + N días. */}
@@ -727,7 +791,7 @@ const PagosRegistrar = () => {
         onConfirm={handleConfirmarCompromiso}
         onCancel={handleCancelarCompromiso}
       />
-    </PageTemplate>
+    </Flex>
   );
 };
 

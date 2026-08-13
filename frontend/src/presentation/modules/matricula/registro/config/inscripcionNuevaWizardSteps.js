@@ -19,30 +19,40 @@ import { getStepHistorialPrevioFields } from './steps/step5HistorialPrevio.js';
 const STEP0_HEADER = {
   title: 'Buscar estudiante',
   formTitle: 'Información del estudiante',
+  description:
+    'Busque al estudiante por cédula de identidad, código o nombre y selecciónelo en la lista de resultados.',
   sections: ['buscarEstudiante'],
 };
 
 const STEP1_HEADER = {
   title: 'Seleccionar carrera',
-  formTitle: 'Carrera',
+  formTitle: 'Selección de carrera',
+  description:
+    'Confirme la carrera en la que se inscribirá el estudiante; la gestión académica se asigna automáticamente.',
   sections: ['carrera'],
 };
 
 const STEP2_HEADER = {
   title: 'Periodo y materias',
   formTitle: 'Periodo y materias',
+  description:
+    'Seleccione los periodos académicos y marque las materias que el estudiante cursará en esta gestión.',
   sections: ['periodoYMaterias'],
 };
 
 const STEP3_HEADER = {
   title: 'Paralelo',
-  formTitle: 'Paralelo',
+  formTitle: 'Selección de paralelo',
+  description:
+    'Revise el resumen de la inscripción y elija un paralelo por cada periodo seleccionado.',
   sections: ['resumen', 'paralelos'],
 };
 
 const STEP_HISTORIAL_HEADER = {
   title: 'Historial de notas',
   formTitle: 'Historial de notas',
+  description:
+    'Registre las notas de las materias ya cursadas para completar el historial académico del estudiante.',
   sections: [WIZARD_SECTION_HISTORIAL],
 };
 

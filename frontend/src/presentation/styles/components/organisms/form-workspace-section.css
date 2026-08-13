@@ -1,18 +1,19 @@
 /**
- * Wizard de admisión (Nuevo estudiante) — piezas visuales propias del módulo.
- * Complementa el shell compartido (academico-form-page.css + wizard-form.css).
+ * FormWorkspaceSection (organismo compartido) — sección plana de formulario
+ * dentro de un workspace, subsecciones como panel moderno y radios como pills.
+ * Promovido desde matricula/nuevo (estudiante-wizard.css) al ganar más consumidores.
  */
 
 /* Subsección moderna: panel suave con título/descripción a la izquierda,
    reemplaza el divisor centrado legacy de FormSubsection. */
-.est-wizard-subsection {
+.fw-subsection {
   background: var(--border-soft, #f9fafb);
   border: 1px solid var(--border, #e8eaed);
   border-radius: var(--radius-lg, 12px);
   padding: 18px 20px 20px;
 }
 
-.est-wizard-subsection__header {
+.fw-subsection__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -20,30 +21,30 @@
   margin-bottom: 4px;
 }
 
-.est-wizard-subsection__title {
+.fw-subsection__title {
   font-size: var(--font-size-md, 15px);
 }
 
-.est-wizard-subsection__desc.ant-typography {
+.fw-subsection__desc.ant-typography {
   margin-bottom: 14px;
   font-size: var(--font-size-sm, 13px);
 }
 
-.est-wizard-subsection__header + .cfg-academico-form-workspace__grid {
+.fw-subsection__header + .cfg-academico-form-workspace__grid {
   margin-top: 10px;
 }
 
-/* Radios como pills separadas (nacionalidad, primera nacionalidad):
-   mismo lenguaje que las pills de estado/tipo del resto del sistema. */
-.est-pill-radio .ant-radio-group {
+/* Radios como pills separadas: mismo lenguaje que las pills de estado/tipo del sistema.
+   Uso: field config con `className: 'fw-pill-radio'` (+ radioLayout: 'horizontal'). */
+.fw-pill-radio .ant-radio-group {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
 /* Anula el width:100% legacy de .form-field .field-radio .ant-radio-wrapper */
-.est-pill-radio .field-radio .ant-radio-wrapper,
-.est-pill-radio .ant-radio-wrapper {
+.fw-pill-radio .field-radio .ant-radio-wrapper,
+.fw-pill-radio .ant-radio-wrapper {
   width: auto !important;
   display: inline-flex !important;
   align-items: center;
@@ -55,23 +56,23 @@
   transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 }
 
-.est-pill-radio .ant-radio-wrapper .ant-radio {
+.fw-pill-radio .ant-radio-wrapper .ant-radio {
   display: none;
 }
 
-.est-pill-radio .ant-radio-wrapper:hover {
+.fw-pill-radio .ant-radio-wrapper:hover {
   border-color: var(--primary, #196b45);
   color: var(--primary, #196b45);
 }
 
-.est-pill-radio .ant-radio-wrapper-checked,
-.est-pill-radio .ant-radio-wrapper-checked:hover {
-  border-color: var(--primary, #196b45);
-  background: var(--primary, #196b45);
+.fw-pill-radio .ant-radio-wrapper-checked,
+.fw-pill-radio .ant-radio-wrapper-checked:hover {
+  border-color: var(--primary, #196b45) !important;
+  background: var(--primary, #196b45) !important;
   color: var(--surface, #fff);
   font-weight: 600;
 }
 
-.est-pill-radio .ant-radio-wrapper-disabled {
+.fw-pill-radio .ant-radio-wrapper-disabled {
   opacity: 0.55;
 }

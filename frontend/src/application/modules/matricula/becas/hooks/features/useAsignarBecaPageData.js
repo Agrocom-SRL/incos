@@ -42,10 +42,12 @@ export const useAsignarBecaPageData = (options = {}) => {
     return isEditMode ? 'Editar asignación de beca' : 'Asignar beca';
   }, [studentName, isEditMode]);
 
+  // Breadcrumb con jerarquía de dominio (patrón de Seguridad/Configuración)
   const breadcrumbItems = useMemo(
     () => [
       { title: 'Inicio', href: '/' },
-      { title: 'Becas', href: '/estudiantes/becas/listar' },
+      { title: 'Matrícula' },
+      { title: 'Becas y descuentos', href: '/estudiantes/becas/listar' },
       { title: isEditMode ? 'Editar asignación de beca' : 'Asignar beca' },
     ],
     [isEditMode]

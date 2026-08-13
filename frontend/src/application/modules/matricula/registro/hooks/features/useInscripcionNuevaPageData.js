@@ -40,10 +40,11 @@ export const useInscripcionNuevaPageData = (options = {}) => {
         return 'Inscribir estudiantes nuevos';
     }, [mode]);
 
-    // Breadcrumb items
+    // Breadcrumb con jerarquía de dominio (Inicio / Matrícula / Registro de matrículas / <título>)
     const breadcrumbItems = useMemo(() => [
         { title: 'Inicio', href: '/' },
-        { title: 'Lista de matrículas', href: '/matricula/listar' },
+        { title: 'Matrícula' },
+        { title: 'Registro de matrículas', href: '/matricula/listar' },
         { title: pageTitle },
     ], [pageTitle]);
 

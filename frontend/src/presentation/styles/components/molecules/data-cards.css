@@ -13,6 +13,25 @@
   gap: var(--spacing-base);
 }
 
+/* Variante de grilla fluida (opt-in con `className="data-cards--fill"`):
+   columnas calculadas por el ancho del CONTENEDOR (reacciona al colapso del
+   sidebar, no al viewport). Cada tarjeta exige un ancho mínimo
+   (--data-cards-min); la columna que no alcanza ese mínimo no entra y su
+   espacio se reparte entre las que sí entran (1fr), sin hueco al final. */
+.data-cards.data-cards--fill {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(min(var(--data-cards-min, 260px), 100%), 1fr));
+  align-items: stretch;
+}
+
+.data-cards.data-cards--fill .data-cards__card {
+  flex: initial;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  height: 100%;
+}
+
 /* Estado de carga */
 .data-cards-loading {
   min-height: 200px;

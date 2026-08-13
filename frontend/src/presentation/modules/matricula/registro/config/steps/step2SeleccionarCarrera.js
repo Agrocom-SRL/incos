@@ -7,7 +7,9 @@
  */
 
 const CARRERA_HEADER = {
-  title: 'Seleccionar carrera',
+  title: 'Carrera',
+  description:
+    'Los estudiantes nuevos eligen carrera; los antiguos mantienen la carrera asignada en sus datos académicos.',
 };
 
 const CARRERA_FIELDS = [

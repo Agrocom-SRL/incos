@@ -61,6 +61,8 @@ export const useMatriculaWizardPage = () => {
 
   const validation = useMatriculaWizardPageWizardValidation({
     isNuevoEstudiante,
+    studentSearch,
+    editData,
     carrerasData,
     periodosData,
     selectedMateriaIdsByPeriod,

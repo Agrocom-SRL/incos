@@ -29,7 +29,7 @@
  * - Muestra/oculta campos adicionales según el estado de entrega
  */
 
-import { Form, Row, Col } from 'antd';
+import { Form } from 'antd';
 import { FileTextOutlined, CheckCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { Alert, FieldSwitch, FieldCheckbox, FieldTextarea, Container, Heading, Text, Badge } from '@atoms';
 import { useDocumentoItem } from './hooks/useDocumentoItem';
@@ -115,34 +115,31 @@ const DocumentoItem = ({
         />
       )}
 
-      {/* Indicador "Se acepta Fotocopia" y checkbox "En trámite" (solo Pendiente),
-          lado a lado en mitades cuando ambos están visibles */}
+      {/* Indicador "Se acepta Fotocopia" y checkbox "En trámite" (solo Pendiente):
+          lado a lado cuando el ancho de la card lo permite; con flex-wrap cada uno
+          baja a su propia línea en cards angostas (sin solaparse) */}
       {(mostrarIndicadorFotocopia || !entregado) && (
-        <Row gutter={[16, 8]} align="middle" className="documento-item__fotocopia-wrap">
+        <div className="documento-item__meta-row documento-item__fotocopia-wrap">
           {mostrarIndicadorFotocopia && (
-            <Col xs={24} sm={!entregado ? 12 : 24}>
-              <Badge
-                variant="success"
-                icon={<CheckCircleOutlined />}
-                text="Se acepta Fotocopia"
-                className="documento-item__fotocopia-badge"
-              />
-            </Col>
+            <Badge
+              variant="success"
+              icon={<CheckCircleOutlined />}
+              text="Se acepta Fotocopia"
+              className="documento-item__fotocopia-badge"
+            />
           )}
           {!entregado && (
-            <Col xs={24} sm={mostrarIndicadorFotocopia ? 12 : 24}>
-              <Form.Item
-                name={fieldNameEnTramite}
-                valuePropName="checked"
-                style={{ marginBottom: 0 }}
-              >
-                <FieldCheckbox disabled={readOnly}>
-                  En trámite
-                </FieldCheckbox>
-              </Form.Item>
-            </Col>
+            <Form.Item
+              name={fieldNameEnTramite}
+              valuePropName="checked"
+              style={{ marginBottom: 0 }}
+            >
+              <FieldCheckbox disabled={readOnly}>
+                En trámite
+              </FieldCheckbox>
+            </Form.Item>
           )}
-        </Row>
+        </div>
       )}
 
       {/* Textarea para observaciones (motivo de no entrega) - solo visible cuando switch es FALSE */}

@@ -8,7 +8,9 @@
  */
 
 const PERIODO_MATERIAS_HEADER = {
-  title: 'Periodo y materias',
+  title: 'Periodos y materias a cursar',
+  description:
+    'Los estudiantes nuevos cursan todas las materias del primer año; los antiguos eligen periodos y materias.',
 };
 
 const PERIODO_MATERIAS_FIELDS = [

@@ -1,9 +1,9 @@
 /**
- * Sección plana del wizard de admisión (MAT), análoga a `seguridad/usuarios/components/organisms/UsuarioFormSection.jsx`
- * pero con soporte de condicionales/subsecciones/documento (reutiliza `FormSection` vía deep-import, sin tocarlo);
- * candidata a promoverse a `@organisms` compartido si aparece un segundo consumidor fuera de este wizard.
- *
- * Atomic Design: organismo del módulo Matrícula → Admisión (compone moléculas FieldRenderer/FormField).
+ * Sección plana de formulario dentro de un workspace (`cfg-academico-form-workspace`),
+ * con soporte de condicionales/subsecciones/documento: reutiliza los helpers compartidos de
+ * `FormSection` (deep-import, sin tocarlo) y renderiza las subsecciones como panel moderno
+ * (título/descripción a la izquierda) en lugar del divisor centrado legacy.
+ * Promovida desde `matricula/nuevo` al aparecer más consumidores (registro, becas).
  */
 import { useMemo } from 'react';
 import { Col, Row, Typography } from 'antd';
@@ -33,7 +33,7 @@ const withVerticalLabels = (fields) =>
     return { ...field, labelLayout: field.labelLayout ?? 'vertical' };
   });
 
-export default function EstudianteFormSection({
+export default function FormWorkspaceSection({
   title = null,
   description = null,
   fields = [],
@@ -67,9 +67,9 @@ export default function EstudianteFormSection({
 
     return (
       <Col span={24} key={`subsection-${field.subsectionIndex ?? field.subsectionTitle ?? index}`}>
-        <div className="est-wizard-subsection">
-          <div className="est-wizard-subsection__header">
-            <Text strong className="est-wizard-subsection__title">
+        <div className="fw-subsection">
+          <div className="fw-subsection__header">
+            <Text strong className="fw-subsection__title">
               {field.subsectionTitle}
             </Text>
             {field.showDeleteButton && field.onDelete ? (
@@ -82,7 +82,7 @@ export default function EstudianteFormSection({
             ) : null}
           </div>
           {field.description ? (
-            <Paragraph type="secondary" className="est-wizard-subsection__desc">
+            <Paragraph type="secondary" className="fw-subsection__desc">
               {field.description}
             </Paragraph>
           ) : null}

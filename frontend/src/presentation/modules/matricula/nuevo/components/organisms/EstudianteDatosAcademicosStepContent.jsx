@@ -16,7 +16,7 @@
 
 import { Form, Row, Col } from 'antd';
 import ParaleloCarreraPicker from '@configuracion/recursos/components/organisms/ParaleloCarreraPicker';
-import EstudianteFormSection from './EstudianteFormSection';
+import { FormWorkspaceSection } from '@organisms';
 import GestionSelectionSection from './GestionSelectionSection';
 
 const EstudianteDatosAcademicosStepContent = ({
@@ -37,7 +37,7 @@ const EstudianteDatosAcademicosStepContent = ({
   const carreraField = section?.fields?.find((f) => f.name === 'carreraId');
 
   return (
-    <EstudianteFormSection title={section?.title} description={section?.description} fields={[]}>
+    <FormWorkspaceSection title={section?.title} description={section?.description} fields={[]}>
       <Row gutter={24}>
         {requiereGestion && (
           <Col xs={24} sm={24} md={8} lg={8}>
@@ -67,7 +67,7 @@ const EstudianteDatosAcademicosStepContent = ({
           </Col>
         )}
       </Row>
-    </EstudianteFormSection>
+    </FormWorkspaceSection>
   );
 };
 

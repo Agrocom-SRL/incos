@@ -53,7 +53,14 @@
   margin-left: 4px;
 }
 
-/* Fila fotocopia + en trámite (mitades cuando ambos visibles) */
+/* Fila fotocopia + en trámite: lado a lado con wrap según el ancho real de la card */
+.documento-item__meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-xs, 8px) var(--spacing-lg, 24px);
+}
+
 .documento-item__fotocopia-wrap {
   margin-bottom: var(--spacing-xs);
 }

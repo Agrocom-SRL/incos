@@ -1,7 +1,8 @@
 /**
  * InscripcionesPeriodoMateriasStepContent - Contenido del paso "Periodo y materias" (step 2)
  *
- * Usa DataList/SelectableDataList vía MateriasList:
+ * Cabecera de sección estándar (FormWorkspaceSection, sin Card) + DataList/SelectableDataList
+ * vía MateriasList:
  * - Periodo(s) con checkboxes; alerta de información como componente aparte (fuera de infoPeriodoMaterias)
  * - Por cada periodo seleccionado, un bloque con título y MateriasList (lista seleccionable)
  * - NUEVO: un solo periodo (primer año), materias todas seleccionadas y bloqueadas (disabled)
@@ -9,10 +10,8 @@
  */
 
 import React, { useEffect } from 'react';
-import { Row, Col, Typography, Alert } from 'antd';
-import { Card } from '@atoms';
-import { FormField } from '@molecules';
-import { getFieldColumns } from '@molecules/FormSection/utils/fieldColumns';
+import { Typography, Alert } from 'antd';
+import { FormWorkspaceSection } from '@organisms';
 import MateriasList from './MateriasList';
 
 function buildMateriasGroups(materiasByPeriod, selectedPeriodIds, periodos) {
@@ -38,7 +37,8 @@ const InscripcionesPeriodoMateriasStepContent = ({
   studentSearch,
   resolveOptions,
   readOnly = false,
-  isEditModeAntiguo = false,
+  // Recibida por contrato de la página (edición de estudiante antiguo); sin uso visual propio aquí.
+  isEditModeAntiguo: _isEditModeAntiguo = false,
   materiasInvalid = false,
   materiasInvalidHint = null,
 }) => {
@@ -50,6 +50,12 @@ const InscripcionesPeriodoMateriasStepContent = ({
   const disableMaterias = isNuevo || readOnly;
 
   const groups = buildMateriasGroups(materiasByPeriod, selectedPeriodIds, periodos);
+
+  // Campos planos de la sección (alerta informativa + checkboxes de periodo);
+  // la lista de materias por periodo se renderiza aparte como children.
+  const sectionFields = (section?.fields ?? []).filter(
+    (f) => f.name !== 'listaParalelos' && f.type !== 'cards'
+  );
 
   // Sincronizar el campo del formulario "periodo" con selectedPeriodIds para que los checkboxes se muestren marcados
   useEffect(() => {
@@ -80,76 +86,71 @@ const InscripcionesPeriodoMateriasStepContent = ({
   }, [isNuevo, groups.length, groups[0]?.periodId, groups[0]?.materias?.length, onToggleMaterias, selectedMateriaIdsByPeriod]);
 
   return (
-    <Card
-      title={section?.title}
-      variant="outlined"
-      shadow={false}
-      headerColor="primary"
-      className={`form-section step2-periodo-materias-section${
+    <div
+      className={`step2-periodo-materias-section${
         materiasInvalid ? ' step-periodo-materias-section--invalid' : ''
       }`}
     >
-      {readOnly && (
-        <Alert
-          type="info"
-          showIcon
-          title="Modo edición (solo paralelo)"
-          description="En inscripciones de tipo NUEVO solo puede cambiar el paralelo en el siguiente paso. Periodo y materias no se modifican."
-          style={{ marginBottom: 16, borderRadius: 8 }}
-        />
-      )}
-      <Row gutter={[24, 16]}>
-        {section?.fields
-          ?.filter((f) => f.name !== 'listaParalelos' && f.type !== 'cards')
-          .map((field) => (
-            <Col key={field.name} {...getFieldColumns(field.span ?? 12)}>
-              <FormField field={field} form={form} resolveOptions={resolveOptions} />
-            </Col>
-          ))}
-      </Row>
+      <FormWorkspaceSection
+        title={section?.title}
+        description={section?.description}
+        fields={sectionFields}
+        form={form}
+        resolveOptions={resolveOptions}
+        beforeFields={
+          readOnly ? (
+            <Alert
+              type="info"
+              showIcon
+              title="Modo edición (solo paralelo)"
+              description="En inscripciones de tipo NUEVO solo puede cambiar el paralelo en el siguiente paso. Periodo y materias no se modifican."
+            />
+          ) : null
+        }
+      >
+        {selectedPeriodIds.length > 0 && (
+          <>
+            <Typography.Title level={5} className="step2-materias-list-title">
+              {isNuevo ? 'Materias del primer año' : 'Materias a cursar en esta gestión'}
+            </Typography.Title>
 
-      {selectedPeriodIds.length > 0 && (
-        <>
-          <Typography.Title level={5} className="step2-materias-list-title">
-            {isNuevo ? 'Materias del primer año' : 'Materias a cursar en esta gestión'}
-          </Typography.Title>
-
-          {materiasInvalid && materiasInvalidHint && (
-            <div className="step2-materias-invalid-hint" role="alert">
-              {materiasInvalidHint}
-            </div>
-          )}
-
-          {error && (
-            <Alert type="error" title={error} className="step2-materias-alert step2-materias-error" />
-          )}
-
-          <div className="step2-materias-blocks">
-            {groups.map((group, index) => (
-              <div key={group.periodId} className="step2-materias-block">
-                <div className="step2-materias-block__title">{group.periodName}</div>
-                <MateriasList
-                  data={group.materias}
-                  selectedIds={selectedMateriaIdsByPeriod[group.periodId] ?? []}
-                  onSelectionChange={(ids) => onToggleMaterias?.(group.periodId, ids)}
-                  loading={loading}
-                  emptyMessage="No hay materias en este periodo."
-                  disabled={disableMaterias}
-                  showInfo={false}
-                  showSelectAll={!disableMaterias}
-                />
+            {materiasInvalid && materiasInvalidHint && (
+              <div className="step2-materias-invalid-hint" role="alert">
+                {materiasInvalidHint}
               </div>
-            ))}
-          </div>
-        </>
-      )}
+            )}
 
-      {selectedPeriodIds.length === 0 && (
-        <div className="step2-materias-empty-hint">
-          Marque uno o más periodos arriba para ver las materias por periodo.
-        </div>
-      )}
-    </Card>
+            {error && (
+              <Alert type="error" title={error} className="step2-materias-alert step2-materias-error" />
+            )}
+
+            <div className="step2-materias-blocks">
+              {groups.map((group) => (
+                <div key={group.periodId} className="step2-materias-block">
+                  <div className="step2-materias-block__title">{group.periodName}</div>
+                  <MateriasList
+                    data={group.materias}
+                    selectedIds={selectedMateriaIdsByPeriod[group.periodId] ?? []}
+                    onSelectionChange={(ids) => onToggleMaterias?.(group.periodId, ids)}
+                    loading={loading}
+                    emptyMessage="No hay materias en este periodo."
+                    disabled={disableMaterias}
+                    showInfo={false}
+                    showSelectAll={!disableMaterias}
+                  />
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {selectedPeriodIds.length === 0 && (
+          <div className="step2-materias-empty-hint">
+            Marque uno o más periodos arriba para ver las materias por periodo.
+          </div>
+        )}
+      </FormWorkspaceSection>
+    </div>
   );
 };
 

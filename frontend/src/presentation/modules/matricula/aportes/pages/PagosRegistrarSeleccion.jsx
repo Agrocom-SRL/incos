@@ -1,16 +1,28 @@
 /**
  * PagosRegistrarSeleccion — Paso previo al registro de cuota desde listados de aportes.
  * Muestra inicial y búsqueda comparten el mismo endpoint y la misma tabla de columnas.
+ *
+ * Atomic Design: Page
+ * - Shell alineado al ABM de referencia (EstudiantesAsignarBeca / ParaleloFormPage):
+ *   PageHeaderArea (PageHeader + BackButton) + DashboardPageShell + MainContent.
+ * - El contenido vive en una tarjeta `CfgFormWorkspace` de una sola sección:
+ *   buscador con debounce + tabla de estudiantes con saldo de aporte.
+ * - También se sirve por la ruta legacy `/pagos/registrar/seleccionar-estudiante`
+ *   (dominio Finanzas): `returnListPath`/`menuSidebarKey` se conservan intactos.
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Alert, Input, Table, Typography } from 'antd';
+import { Alert, Flex, Input, Table, Typography } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
-import { PageTemplate } from '@templates';
+import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
+import { BackButton, Button } from '@atoms';
+import { CfgFormWorkspace } from '@organisms';
+import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import { useCasesFactory } from '@container';
 import { createPagosSeleccionEstudianteTableColumns } from '@pagos/config/pagosSeleccionEstudianteTableColumns';
+import '@configuracion/academico/styles/academico-form-page.css';
 
 const { Text } = Typography;
 
@@ -108,123 +120,109 @@ const PagosRegistrarSeleccion = () => {
     [irARegistrar]
   );
 
+  // Breadcrumb con jerarquía de dominio (patrón de Matrícula); el retorno a la
+  // lista respeta la lista de origen (matrícula/aportes o finanzas legacy).
   const breadcrumbItems = useMemo(
     () => [
       { title: 'Inicio', href: '/' },
-      { title: 'Pagos', href: '/pagos' },
-      { title: 'Elegir estudiante' },
+      { title: 'Matrícula' },
+      { title: 'Aportes de matrícula', href: returnListPath },
+      { title: 'Seleccionar estudiante' },
     ],
-    []
-  );
-
-  const headerActions = (
-    <button type="button" className="sd-btn sd-btn--outline" onClick={handleVolverLista}>
-      <ArrowLeftOutlined /> Volver al listado
-    </button>
+    [returnListPath]
   );
 
   const esBusquedaActiva = busquedaDebounced.length >= BUSQUEDA_MIN_CHARS;
 
   return (
-    <PageTemplate
-      header={
+    <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
+      <PageHeaderArea>
         <PageHeader
-          title="Registrar pago — elegir estudiante"
+          title="Registrar pago de aporte"
           breadcrumbItems={breadcrumbItems}
-          actions={headerActions}
-        />
-      }
-      sidebar={null}
-    >
-      <div className="sd">
-        <style>{`
-          .pagos-reg-sel-table .ant-table-thead > tr > th {
-            padding: 18px 20px !important;
-          }
-          .pagos-reg-sel-table .ant-table-tbody > tr > td {
-            padding: 14px 20px !important;
-          }
-        `}</style>
-
-        <Alert
-          type="info"
-          showIcon
-          title="Resumen"
-          description={
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <p style={{ margin: 0 }}>
-                La tabla muestra primero una <strong>muestra</strong> de estudiantes con <strong>saldo de aporte</strong>{' '}
-                pendiente. Use el buscador (desde {BUSQUEDA_MIN_CHARS} caracteres) para ampliar por email, teléfono,
-                código, CI, nombre o carrera.
-              </p>
-              <p style={{ margin: 0 }}>
-                Si no lo encuentra, vaya a{' '}
-                <button type="button" className="sd-btn sd-btn--primary" style={{ verticalAlign: 'middle' }} onClick={irAEstudiantes}>
-                  Lista de estudiantes
-                </button>
-                .
-              </p>
-            </div>
+          actions={
+            <BackButton icon={<ArrowLeftOutlined />} onClick={handleVolverLista}>
+              Volver
+            </BackButton>
           }
         />
+      </PageHeaderArea>
 
-        {hayAporteCubierto ? (
-          <Alert
-            type="warning"
-            showIcon
-            title="Aporte ya cubierto"
-            description="Algún resultado corresponde a un estudiante cuyo aporte académico ya no tiene saldo pendiente. No podrá registrar otra cuota desde aquí para ese caso."
-          />
-        ) : null}
-
-        <div className="sd-card">
-          <div className="sd-card__head sd-card__head--cabecera">
-            <span className="sd-card__title">Estudiantes</span>
-          </div>
-          <div className="sd-card__body" style={{ display: 'block', padding: '16px 20px' }}>
-            <Input.Search
-              allowClear
-              placeholder="Email, teléfono, código, CI, nombre, apellidos o carrera…"
-              value={busquedaInput}
-              onChange={(e) => setBusquedaInput(e.target.value)}
-              loading={tablaLoading}
-              style={{ maxWidth: 480, marginBottom: 12 }}
-            />
-            {tablaError ? (
-              <Text type="danger" style={{ display: 'block', marginBottom: 8 }}>
-                {tablaError}
-              </Text>
+      <DashboardPageShell>
+        <MainContent>
+          <Flex vertical gap="middle" className="cfg-academico-page__stack">
+            {hayAporteCubierto ? (
+              <Alert
+                type="warning"
+                showIcon
+                title="Aporte ya cubierto"
+                description="Algún resultado corresponde a un estudiante cuyo aporte académico ya no tiene saldo pendiente. No podrá registrar otra cuota desde aquí para ese caso."
+              />
             ) : null}
-            <Text type="secondary" style={{ display: 'block', marginBottom: 12, fontSize: 13 }}>
-              {esBusquedaActiva
-                ? `Búsqueda por similitud. Escriba menos de ${BUSQUEDA_MIN_CHARS} caracteres para volver a la muestra con saldo.`
-                : `Muestra de hasta ${PRELIM_LIMIT} estudiantes con saldo pendiente. Escriba al menos ${BUSQUEDA_MIN_CHARS} caracteres para buscar.`}
-            </Text>
-            <Table
-              className="pagos-reg-sel-table"
-              rowKey={(r) => r.id}
-              loading={tablaLoading}
-              columns={columnasTabla}
-              dataSource={tablaFilas}
-              scroll={{ x: 'max-content' }}
-              pagination={
-                esBusquedaActiva
-                  ? { pageSize: 10, showSizeChanger: true, hideOnSinglePage: true }
-                  : false
-              }
-              size="middle"
-              locale={{
-                emptyText: tablaError
-                  ? String(tablaError)
-                  : tablaLoading
-                    ? 'Cargando…'
-                    : 'Sin resultados.',
-              }}
+
+            <CfgFormWorkspace
+              title="Seleccionar estudiante"
+              description="Busque al estudiante por cédula, código o nombre y selecciónelo para registrar su aporte."
+              sections={[
+                {
+                  key: 'busqueda',
+                  children: (
+                    <Flex vertical gap="small">
+                      <Input.Search
+                        allowClear
+                        placeholder="Email, teléfono, código, CI, nombre, apellidos o carrera…"
+                        value={busquedaInput}
+                        onChange={(e) => setBusquedaInput(e.target.value)}
+                        loading={tablaLoading}
+                      />
+                      <Text type="secondary">
+                        {esBusquedaActiva
+                          ? `Búsqueda por similitud. Escriba menos de ${BUSQUEDA_MIN_CHARS} caracteres para volver a la muestra con saldo.`
+                          : `Muestra de hasta ${PRELIM_LIMIT} estudiantes con saldo pendiente. Escriba al menos ${BUSQUEDA_MIN_CHARS} caracteres para buscar.`}
+                      </Text>
+                      {tablaError ? (
+                        <Alert
+                          type="error"
+                          showIcon
+                          title="No se pudo cargar la lista de estudiantes"
+                          description={String(tablaError)}
+                        />
+                      ) : null}
+                      <Table
+                        rowKey={(r) => r.id}
+                        loading={tablaLoading}
+                        columns={columnasTabla}
+                        dataSource={tablaFilas}
+                        scroll={{ x: 'max-content' }}
+                        pagination={
+                          esBusquedaActiva
+                            ? { pageSize: 10, showSizeChanger: true, hideOnSinglePage: true }
+                            : false
+                        }
+                        size="middle"
+                        locale={{
+                          emptyText: tablaError
+                            ? String(tablaError)
+                            : tablaLoading
+                              ? 'Cargando…'
+                              : 'Sin resultados.',
+                        }}
+                      />
+                      <Flex align="center" gap="small" wrap>
+                        <Text type="secondary">¿No encuentra al estudiante?</Text>
+                        <Button type="link" size="small" onClick={irAEstudiantes}>
+                          Ir a la lista de estudiantes
+                        </Button>
+                      </Flex>
+                    </Flex>
+                  ),
+                },
+              ]}
             />
-          </div>
-        </div>
-      </div>
-    </PageTemplate>
+          </Flex>
+        </MainContent>
+      </DashboardPageShell>
+    </Flex>
   );
 };
 

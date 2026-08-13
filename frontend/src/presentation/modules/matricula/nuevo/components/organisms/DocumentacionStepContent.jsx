@@ -7,7 +7,7 @@
  */
 
 import { useMemo } from 'react';
-import EstudianteFormSection from './EstudianteFormSection';
+import { FormWorkspaceSection } from '@organisms';
 import { useDocumentacionProcesadaConForm } from '@application-matricula/nuevo/hooks/features/useDocumentacionProcesada';
 import { createCamposDocumentacionDinamicos } from '@matricula/nuevo/config/estudianteDocumentacionFields';
 
@@ -69,7 +69,7 @@ const DocumentacionStepContent = ({
   }, [documentacionProcesada]);
 
   return (
-    <EstudianteFormSection
+    <FormWorkspaceSection
       title={section?.title ?? 'Documentación requerida'}
       description={section?.description}
       fields={camposCompletos}

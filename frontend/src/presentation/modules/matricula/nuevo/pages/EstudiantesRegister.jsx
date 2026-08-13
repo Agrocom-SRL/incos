@@ -41,12 +41,11 @@ import { createCamposDocumentacionDinamicos } from '@matricula/nuevo/config/estu
 import EstudianteTipoAdmisionStepContent from '@matricula/nuevo/components/organisms/EstudianteTipoAdmisionStepContent';
 import EstudianteDatosAcademicosStepContent from '@matricula/nuevo/components/organisms/EstudianteDatosAcademicosStepContent';
 import DocumentacionStepContent from '@matricula/nuevo/components/organisms/DocumentacionStepContent';
-import EstudianteFormSection from '@matricula/nuevo/components/organisms/EstudianteFormSection';
+import { FormWorkspaceSection } from '@organisms';
 import '@configuracion/academico/styles/academico-form-page.css';
-import '@matricula/nuevo/styles/estudiante-wizard.css';
 
 // Secciones "planas" (sin componente visual propio) que usan el grid genérico de
-// EstudianteFormSection: condicionales/subsecciones/documentos se resuelven vía
+// FormWorkspaceSection: condicionales/subsecciones/documentos se resuelven vía
 // FieldRenderer (deep-import), sin `Card` anidada. `formacionAcademica` es compartida
 // por los steps Transitabilidad y Traspaso (cada uno con su propio `config.formacionAcademica`).
 const FLAT_FORM_SECTION_KEYS = [
@@ -789,7 +788,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
       }
       if (FLAT_FORM_SECTION_KEYS.includes(sectionKey)) {
         return (
-          <EstudianteFormSection
+          <FormWorkspaceSection
             title={section?.title}
             description={section?.description}
             fields={section?.fields}
