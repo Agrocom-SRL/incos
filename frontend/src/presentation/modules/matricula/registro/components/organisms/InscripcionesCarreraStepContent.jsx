@@ -2,8 +2,7 @@
  * InscripcionesCarreraStepContent - Contenido del paso «Carrera y plan».
  *
  * Solo se muestra a estudiantes nuevos en el sistema (con historial digital el
- * paso se excluye del array de pasos). Sin Alerts: los datos del estudiante los
- * muestra la franja InscripcionStudentStrip y los avisos van como texto
+ * paso se excluye del array de pasos). Sin Alerts: los avisos van como texto
  * secundario discreto.
  *
  * - Carrera: picker de tarjetas del design system (@organisms/CarreraCardPicker)
@@ -97,6 +96,7 @@ const InscripcionesCarreraStepContent = ({
         <InscripcionesPlanSelectorSection
           planes={planData?.planes ?? []}
           mostrarSelector={!!planData?.mostrarSelectorPlan}
+          planFijoMotivo={planData?.planFijoMotivo ?? null}
           planResuelto={planData?.contexto?.plan ?? null}
           value={planData?.planSeleccionadoId ?? null}
           onChange={planData?.onSelectPlan}

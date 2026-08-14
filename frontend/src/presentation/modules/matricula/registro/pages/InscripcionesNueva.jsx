@@ -6,12 +6,12 @@
  * PageHeaderArea + PageHeader + BackButton, DashboardPageShell + MainContent y
  * WizardForm variant="tabs" con navegación estricta hacia adelante.
  *
- * La franja InscripcionStudentStrip (encima del wizard) reemplaza a los Alerts
- * históricos del estudiante: visible desde el paso Carrera en adelante y en el
- * paso Buscar cuando el estudiante viene preseleccionado desde el connector.
+ * Sin franja ni Alerts del estudiante encima del wizard: los datos del
+ * estudiante elegido se ven en la propia fila seleccionada del paso «Buscar»
+ * y el resto del contexto (carrera, plan, gestión) en sus pasos.
  */
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Alert, Flex, Modal, Typography } from 'antd';
 import { DollarOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
@@ -25,7 +25,6 @@ import {
   InscripcionesPeriodoMateriasStepContent,
   InscripcionesHistorialPrevioStepContent,
   InscripcionSeleccionResumen,
-  InscripcionStudentStrip,
 } from '@matricula/registro/components/organisms';
 import { WIZARD_SECTION_HISTORIAL } from '@application-matricula/registro/utils/matriculaWizardStepConfig';
 import { useMatriculaWizardPage } from '@application-matricula/registro/hooks';
@@ -72,7 +71,6 @@ const InscripcionesNueva = () => {
     materiasStepInvalid,
     setMateriasStepInvalid,
     matriculaContexto,
-    hasPreselectedStudent,
   } = useMatriculaWizardPage();
 
   const handleToggleMaterias = useCallback(
@@ -105,9 +103,6 @@ const InscripcionesNueva = () => {
     [wizardStepMeta?.indices],
   );
 
-  // Paso visible (0-based) notificado por el WizardForm: gobierna la franja.
-  const [currentStepIndex, setCurrentStepIndex] = useState(initialStep ?? 0);
-
   const selectedStudent = studentSearch?.selectedStudent ?? null;
   const contexto = matriculaContexto?.contexto ?? null;
 
@@ -120,27 +115,6 @@ const InscripcionesNueva = () => {
       editData?.carreraId ??
       null,
   );
-
-  // Franja del estudiante: pasos posteriores a Buscar y paso Buscar con
-  // estudiante preseleccionado (reemplaza a los Alerts históricos).
-  const showStudentStrip =
-    !!selectedStudent?.id &&
-    (hasPreselectedStudent || currentStepIndex > (stepIndices.buscar ?? 0));
-
-  const stripCarreraNombre =
-    contexto?.carrera?.nombre ??
-    selectedStudent?.carreraNombre ??
-    carrerasData?.selectedCarrera?.nombre ??
-    null;
-
-  // Plan mostrado en la franja: el elegido por el usuario o el resuelto por el backend.
-  const stripPlan = useMemo(() => {
-    const planes = matriculaContexto?.planes ?? [];
-    const elegido = planes.find(
-      (p) => Number(p.id) === Number(matriculaContexto?.planSeleccionadoId),
-    );
-    return elegido ?? contexto?.plan ?? null;
-  }, [matriculaContexto?.planes, matriculaContexto?.planSeleccionadoId, contexto?.plan]);
 
   // Al fallar la validación del paso, desplazar la vista al primer campo con error.
   // Las validaciones custom (carrera/periodo/paralelo/historial) rechazan sin errorFields
@@ -320,15 +294,6 @@ const InscripcionesNueva = () => {
               description="Esta inscripción es de tipo antiguo, traspaso o transitabilidad y aún no tiene registradas las notas de periodos anteriores. Use el paso «Historial de notas» (último del asistente) para ingresar las notas y finalizar. Puede volver a pasos anteriores si también desea ajustar periodos, materias o paralelos."
             />
           ) : null}
-          {showStudentStrip ? (
-            <InscripcionStudentStrip
-              student={selectedStudent}
-              carreraNombre={stripCarreraNombre}
-              plan={stripPlan}
-              gestion={contexto?.gestion ?? null}
-              esNuevoSistema={matriculaContexto?.esNuevoSistema ?? null}
-            />
-          ) : null}
           <WizardForm
             variant="tabs"
             steps={wizardSteps}
@@ -344,7 +309,6 @@ const InscripcionesNueva = () => {
             renderSectionContent={renderSectionContent}
             onValidateBeforeNext={handleValidateBeforeNext}
             onValidationError={onValidationError}
-            onStepChange={setCurrentStepIndex}
             strictForwardNavigation
             errorMessage={error}
           />

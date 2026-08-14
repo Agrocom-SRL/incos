@@ -60,6 +60,7 @@ export const useMatriculaWizardPage = () => {
     carrerasData,
     form,
     wizardStepMeta,
+    hasPreselectedStudent,
   });
 
   const validation = useMatriculaWizardPageWizardValidation({

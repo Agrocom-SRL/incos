@@ -245,15 +245,26 @@ reciente; y `SearchStudentsForInscripcionUseCase` arma `nombreCompleto` como
 `APELLIDO_PATERNO APELLIDO_MATERNO NOMBRES` (regla §4b de `incos-ui-system`),
 igual que el mapper del frontend.
 
-### B2. Franja del estudiante (organismo nuevo, reemplaza 4 Alerts)
+### B2. Franja del estudiante — ELIMINADA (2026-08-14)
 
-`InscripcionStudentStrip` — banda compacta visible en todos los pasos ≥ 2
-(y en el paso 0 cuando viene con `studentId`, reemplazando al Alert del
-`step0EnrichmentStrategy`): avatar/iniciales, nombre completo (orden
-APELLIDOS NOMBRES via `buildFullName`), código + C.I., pills: tipo de
-admisión, carrera (cuando fija), plan (cuando resuelto), gestión vigente,
-«Nuevo en el sistema» si aplica. Sin Alert; estilo `sd-profile`/pills del
-design system.
+`InscripcionStudentStrip` (banda de pills sobre el wizard: tipo de admisión,
+carrera, plan, gestión, «Nuevo en el sistema») se retira por decisión del
+usuario: duplicaba información que ya vive en cada paso y competía con el
+título de la página. Se borran el organismo, su CSS
+(`inscripcion-student-strip.css`, fuera de `styles/index.css`) y el export del
+barrel; la página ya no necesita seguir el paso visible (`onStepChange`).
+La referencia al estudiante elegido queda en la fila seleccionada del paso
+«Buscar» (resaltada, con check).
+
+#### B2.1 Pausa antes de avanzar al paso siguiente
+
+Al elegir un estudiante el wizard saltaba de paso al instante (el cambio de
+`initialStep` en `useMatriculaWizardPageWizardInit` sincroniza `useWizard`), y
+la selección no se llegaba a ver. Ahora la confirmación de la selección espera
+`STEP_ADVANCE_DELAY_MS` (1,2 s) antes de mover el paso; la pausa aprovecha para
+cargar el contexto de matrícula. No aplica en edición ni con estudiante
+preseleccionado desde el connector (`hasPreselectedStudent`), donde el paso
+inicial se resuelve al instante.
 
 ### B3. Paso «Carrera y plan» (solo esNuevoSistema)
 
@@ -263,9 +274,18 @@ design system.
   compartido `@organisms/CarreraCardPicker` (patrón páginas gemelas) y que
   `ParaleloCarreraPicker` lo reutilice. Prop `disabledIds`/`readOnly`: carrera
   fija = la suya seleccionada, las demás con overlay «No disponible».
-- Debajo, selector de plan **solo si `contexto.planes.length > 1`** y tipo ∈
-  {NUEVO, TRASPASO, TRANSITABILIDAD}: cards/radio con nombre + R.M. + pill
-  Vigente/Anterior (gris, nunca rojo). Con 1 plan: pill informativa.
+- Debajo, selector de plan. **Regla vigente (corrección del usuario 2026-08-14):**
+  el paso existe solo para nuevos en el sistema y, dentro de ellos,
+  **tipo de admisión `NUEVO` NO elige plan** (se inscribe con el plan VIGENTE
+  de la carrera, pill informativa); los demás tipos nuevos en el sistema
+  (`ANTIGUO` / `TRASPASO` / `TRANSITABILIDAD`) **sí eligen** el plan de la
+  carrera que seleccionen cuando hay más de uno habilitado (radios con nombre
+  + R.M. + pill Vigente/Anterior — gris, nunca rojo). Con 1 plan: pill
+  informativa. `useMatriculaWizardContexto` expone `mostrarSelectorPlan` y
+  `planFijoMotivo` (`ADMISION_NUEVA` | `PLAN_UNICO`) para el texto explicativo.
+- El bloque de plan se presenta como **sección propia** con el encabezado
+  estándar del formulario (`cfg-academico-form-workspace__section*`: título
+  primario verde + descripción + separador), no como un párrafo en negrita.
 - Al elegir carrera (o al entrar con carrera fija) se dispara
   `GET contexto-matricula` — la data de periodos/materias queda lista antes
   de avanzar (la «fusión» pedida).

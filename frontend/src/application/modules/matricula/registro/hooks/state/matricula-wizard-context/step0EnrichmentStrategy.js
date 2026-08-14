@@ -1,8 +1,8 @@
 /**
  * Step 0 (Buscar estudiante) con estudiante PRE-SELECCIONADO desde el connector
  * (entrada por detalle del estudiante o modo edición): el buscador no aplica y
- * el paso queda reducido a título/descrición — los datos del estudiante los
- * muestra la franja InscripcionStudentStrip (encima del wizard), sin Alerts.
+ * el paso queda reducido a título/descripción, sin Alerts (el wizard arranca
+ * directamente en el paso siguiente).
  */
 export const step0EnrichmentStrategy = (step, stepIndex, _enrichers, context) => {
   const selectedStudent = context?.studentSearch?.selectedStudent;

@@ -4,7 +4,6 @@
 
 export { default as InscripcionesCarreraStepContent } from './InscripcionesCarreraStepContent';
 export { default as InscripcionesPlanSelectorSection } from './InscripcionesPlanSelectorSection';
-export { default as InscripcionStudentStrip } from './InscripcionStudentStrip';
 export { default as InscripcionesPeriodoParalelosStepContent } from './InscripcionesPeriodoParalelosStepContent';
 export { default as InscripcionesPeriodoMateriasStepContent } from './InscripcionesPeriodoMateriasStepContent';
 export { default as InscripcionesHistorialPrevioStepContent } from './InscripcionesHistorialPrevioStepContent';

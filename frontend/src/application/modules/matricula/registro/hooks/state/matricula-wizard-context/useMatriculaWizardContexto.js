@@ -12,9 +12,6 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useGetMatriculaContexto } from '../../api/useGetMatriculaContexto';
 
-/** Tipos de admisión que eligen plan en su primera inscripción (RN-3/RN-4 planes duales). */
-const TIPOS_CON_SELECTOR_PLAN = ['NUEVO', 'TRASPASO', 'TRANSITABILIDAD'];
-
 /**
  * @param {Object} options
  * @param {Object|null} options.selectedStudent - Estudiante seleccionado en el paso Buscar
@@ -88,16 +85,26 @@ export const useMatriculaWizardContexto = ({
 
   const tieneHistorialSistema = esNuevoSistema === false;
 
+  // Elección de plan (solo dentro del paso «Carrera y plan», que existe
+  // únicamente para estudiantes nuevos en el sistema):
+  // - tipo de admisión NUEVO → NO elige: se inscribe con el plan VIGENTE de la
+  //   carrera (el backend lo resuelve al no pedir plan_estudio_id).
+  // - otros tipos (ANTIGUO / TRASPASO / TRANSITABILIDAD) nuevos en el sistema →
+  //   eligen el plan de la carrera que seleccionen, si hay más de uno habilitado.
   const tipoAdmision =
     contexto?.estudiante?.tipoAdmision ?? selectedStudent?.tipoAdmision ?? null;
+  const esAdmisionNueva = String(tipoAdmision ?? '').toUpperCase() === 'NUEVO';
 
-  // Selector de plan visible: solo nuevos en el sistema, tipo con elección de
-  // plan y más de un plan habilitado (con 1 plan se usa el vigente sin preguntar).
   const planes = useMemo(() => contexto?.planes ?? [], [contexto?.planes]);
   const mostrarSelectorPlan =
-    esNuevoSistema !== false &&
-    TIPOS_CON_SELECTOR_PLAN.includes(String(tipoAdmision ?? '').toUpperCase()) &&
-    planes.length > 1;
+    esNuevoSistema !== false && !esAdmisionNueva && planes.length > 1;
+
+  // Por qué no se pregunta el plan (lo traduce a texto el organismo del paso).
+  const planFijoMotivo = mostrarSelectorPlan
+    ? null
+    : esAdmisionNueva
+      ? 'ADMISION_NUEVA'
+      : 'PLAN_UNICO';
 
   // Plan efectivo para la Fase C (payload plan_estudio_id): elección del
   // usuario o plan resuelto por el backend.
@@ -113,6 +120,7 @@ export const useMatriculaWizardContexto = ({
       planSeleccionadoId,
       planEstudioId,
       mostrarSelectorPlan,
+      planFijoMotivo,
       onSelectPlan,
       esNuevoSistema,
       tieneHistorialSistema,
@@ -126,6 +134,7 @@ export const useMatriculaWizardContexto = ({
       planSeleccionadoId,
       planEstudioId,
       mostrarSelectorPlan,
+      planFijoMotivo,
       onSelectPlan,
       esNuevoSistema,
       tieneHistorialSistema,
