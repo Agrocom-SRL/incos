@@ -274,6 +274,7 @@ export class CreateEnrollmentUseCase {
           requestedPlanId,
           historialFilas
         );
+        await this._asegurarCarreraDatosAcademicos(studentAcademicData, studyPlan);
         await this._validateNoExistingEnrollment(studentAcademicData, management);
         await this._validatePaymentExists(student, management);
         await this._validarReglasNegocio({
@@ -336,6 +337,7 @@ export class CreateEnrollmentUseCase {
           requestedPlanId,
           historialFilas
         );
+        await this._asegurarCarreraDatosAcademicos(studentAcademicData, studyPlan);
 
         // Validar y resolver todas las asignaciones docentes (pueden ser de diferentes paralelos/periodos)
         // Todas deben pertenecer al mismo plan habilitado (misma carrera)
@@ -405,6 +407,7 @@ export class CreateEnrollmentUseCase {
         requestedPlanId,
         historialFilas
       );
+      await this._asegurarCarreraDatosAcademicos(studentAcademicData, studyPlan);
       await this._validateNoExistingEnrollment(studentAcademicData, management);
       await this._validatePaymentExists(student, management);
       teacherAssignments = await this._getCourseOfferRowsFromParallel(
@@ -734,6 +737,35 @@ export class CreateEnrollmentUseCase {
     });
 
     return created;
+  }
+
+  /**
+   * Blindaje del vínculo datos académicos → carrera: si la fila quedó sin
+   * carrera (p. ej. paralelo del catálogo sin carrera o un camino que no la
+   * determinó), se fija con la carrera del plan de estudios resuelto para la
+   * inscripción. Evita que nazcan inscripciones "sin carrera" en el listado y
+   * ediciones sin contexto.
+   * @private
+   * @param {Object} studentAcademicData - Entidad StudentAcademicData
+   * @param {Object} studyPlan - Plan de estudios resuelto para la inscripción
+   */
+  async _asegurarCarreraDatosAcademicos(studentAcademicData, studyPlan) {
+    const plain = studentAcademicData.toPlainObject
+      ? studentAcademicData.toPlainObject()
+      : studentAcademicData;
+    const currentCareerId = plain.careerId ?? plain.carreraId ?? null;
+    if (currentCareerId != null) return;
+
+    const spPlain = studyPlan.toPlainObject ? studyPlan.toPlainObject() : studyPlan;
+    const careerId = spPlain.careerId ?? spPlain.carreraId ?? null;
+    if (careerId == null) return;
+
+    await this.studentAcademicDataRepository.update(plain.id, { careerId });
+    this.logger.warn('[Inscripciones] Datos académicos sin carrera al inscribir; se fijó la carrera del plan resuelto', {
+      academicDataId: plain.id,
+      careerId,
+      studyPlanId: spPlain.id,
+    });
   }
 
   /**

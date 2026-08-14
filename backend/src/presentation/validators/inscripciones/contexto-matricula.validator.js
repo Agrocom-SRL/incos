@@ -6,6 +6,8 @@
  * - carrera_id: opcional (requerido a nivel de negocio solo si el estudiante
  *   no tiene carrera fija; esa regla vive en GetMatriculaContextoUseCase)
  * - plan_estudio_id: opcional, entero > 0
+ * - excluir_inscripcion_id: opcional, entero > 0 (modo edición del wizard: la
+ *   inscripción en edición no cuenta para el perfil esNuevoSistema/yaMatriculado)
  */
 import expressValidator from 'express-validator';
 
@@ -29,5 +31,11 @@ export const contextoMatriculaValidator = [
     .optional({ nullable: true, checkFalsy: true })
     .isInt({ min: 1 })
     .withMessage('El ID del plan de estudios debe ser un número entero mayor a 0')
+    .toInt(),
+
+  query('excluir_inscripcion_id')
+    .optional({ nullable: true, checkFalsy: true })
+    .isInt({ min: 1 })
+    .withMessage('El ID de la inscripción a excluir debe ser un número entero mayor a 0')
     .toInt(),
 ];

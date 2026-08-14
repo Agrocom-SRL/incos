@@ -90,7 +90,7 @@ export class InscripcionRepository extends IInscripcionRepository {
    */
   async obtenerContextoMatricula(params = {}) {
     try {
-      const { estudianteId, carreraId, planEstudioId } = params;
+      const { estudianteId, carreraId, planEstudioId, excluirInscripcionId } = params;
       if (!estudianteId) {
         return { success: false, error: 'ID del estudiante es requerido' };
       }
@@ -98,6 +98,9 @@ export class InscripcionRepository extends IInscripcionRepository {
       const queryParams = { estudiante_id: estudianteId };
       if (carreraId != null) queryParams.carrera_id = carreraId;
       if (planEstudioId != null) queryParams.plan_estudio_id = planEstudioId;
+      // Modo edición del wizard: la inscripción en edición no cuenta para el
+      // perfil del estudiante (esNuevoSistema / yaMatriculadoGestionActual).
+      if (excluirInscripcionId != null) queryParams.excluir_inscripcion_id = excluirInscripcionId;
 
       const response = await apiClient.get(INSCRIPCIONES_ENDPOINTS.CONTEXTO_MATRICULA, {
         params: queryParams,

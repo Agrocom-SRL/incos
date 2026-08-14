@@ -552,3 +552,71 @@ export function validarReglasInscripcion({
     throw new ValidationError([...new Set(errores)].join(' '));
   }
 }
+
+/**
+ * Deriva la carrera (y el plan) de una inscripción a partir de sus materias
+ * matriculadas: matrícula → asignatura de plan → plan de estudio → carrera.
+ *
+ * Es la fuente de verdad cuando `estudiantes_datos_academicos.carrera_id`
+ * quedó NULL (vínculo roto): la inscripción sí pertenece a una carrera concreta
+ * porque cada materia matriculada cuelga de un plan de estudios. Se recorren
+ * las matrículas hasta encontrar una resoluble (la primera basta: todas las
+ * materias de una inscripción pertenecen al mismo plan habilitado).
+ *
+ * @returns {Promise<{careerId: number, studyPlanId: number}|null>} null si la
+ *   inscripción no tiene matrículas resolubles.
+ */
+export async function derivarCarreraPlanDesdeMatriculas({
+  enrollmentId,
+  subjectEnrollmentRepository,
+  courseOfferRepository = null,
+  planSubjectRepository,
+  studyPlanRepository,
+  logger = null,
+}) {
+  const puedeDerivar =
+    enrollmentId && subjectEnrollmentRepository && planSubjectRepository && studyPlanRepository;
+  if (!puedeDerivar) return null;
+
+  const sinDerivacion = (motivo, extra = {}) => {
+    logger?.warn?.(
+      '[Inscripciones] No se pudo derivar la carrera desde las materias matriculadas',
+      { enrollmentId, motivo, ...extra }
+    );
+    return null;
+  };
+
+  const result = await subjectEnrollmentRepository.findAll({ enrollmentId }, null, null);
+  const matriculas = (result.subjectEnrollments ?? []).map((m) =>
+    m.toPlainObject ? m.toPlainObject() : m
+  );
+  if (matriculas.length === 0) return sinDerivacion('sin matrículas');
+
+  // Primera matrícula con asignatura de plan directa; si ninguna la trae, se
+  // resuelve desde la oferta de curso de la primera con oferta vinculada.
+  let planSubjectId =
+    matriculas
+      .map((m) => m.curriculumSubjectId ?? m.asignaturaPlanId ?? null)
+      .find((id) => id != null) ?? null;
+  if (planSubjectId == null && courseOfferRepository) {
+    const conOferta = matriculas.find((m) => m.offerCourseId != null);
+    if (conOferta) {
+      const offer = await courseOfferRepository.findById(conOferta.offerCourseId);
+      const offerPlain = offer?.toPlainObject ? offer.toPlainObject() : offer;
+      planSubjectId = offerPlain?.planSubjectId ?? offerPlain?.asignaturaPlanId ?? null;
+    }
+  }
+  if (planSubjectId == null) return sinDerivacion('sin asignatura de plan resoluble');
+
+  const planSubject = await planSubjectRepository.findById(planSubjectId);
+  const psPlain = planSubject?.toPlainObject ? planSubject.toPlainObject() : planSubject;
+  const studyPlanId = psPlain?.studyPlanId ?? null;
+  if (studyPlanId == null) return sinDerivacion('asignatura de plan sin plan', { planSubjectId });
+
+  const studyPlan = await studyPlanRepository.findById(studyPlanId);
+  const spPlain = studyPlan?.toPlainObject ? studyPlan.toPlainObject() : studyPlan;
+  const careerId = spPlain?.careerId ?? spPlain?.carreraId ?? null;
+  if (careerId == null) return sinDerivacion('plan sin carrera', { studyPlanId });
+
+  return { careerId: Number(careerId), studyPlanId: Number(studyPlanId) };
+}

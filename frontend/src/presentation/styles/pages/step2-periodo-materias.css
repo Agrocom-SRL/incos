@@ -213,8 +213,7 @@
 }
 
 /* Turno dentro de la pill: icono + texto */
-.paralelo-card__turno,
-.paralelo-card__elegido {
+.paralelo-card__turno{
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-xs);

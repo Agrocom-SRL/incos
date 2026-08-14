@@ -34,6 +34,7 @@ export const useMatriculaWizardContext = (mode = 'nuevo', options = {}) => {
     tipoAdmision: catalogos.tipoAdmision,
     esNuevoSistema: catalogos.matriculaContexto?.esNuevoSistema ?? null,
     hasPreselectedStudent: catalogos.hasPreselectedStudent,
+    isEditMode: Boolean(editData?.inscripcionId),
     studentSearch: catalogos.studentSearch,
     carrerasData: catalogos.carrerasData,
     periodosData: catalogos.periodosData,

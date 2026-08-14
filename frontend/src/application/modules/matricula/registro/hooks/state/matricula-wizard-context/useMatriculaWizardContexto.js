@@ -43,6 +43,12 @@ export const useMatriculaWizardContexto = ({
     if (planSeleccionadoId != null) setPlanSeleccionadoId(null);
   }
 
+  // Edición: la inscripción que se edita se excluye del perfil del estudiante
+  // (esNuevoSistema / yaMatriculadoGestionActual) — sin esto, editar la única
+  // inscripción lo volvía "con historial digital" y desaparecían los pasos
+  // Carrera e Historial de notas.
+  const excluirInscripcionId = editData?.inscripcionId ?? null;
+
   // Disparo del contexto: al montar con carrera fija, al elegir carrera y al
   // cambiar de plan (el backend revalida plan contra carrera + gestion_plan).
   useEffect(() => {
@@ -51,8 +57,9 @@ export const useMatriculaWizardContexto = ({
       estudianteId,
       carreraId,
       planEstudioId: planSeleccionadoId ?? undefined,
+      excluirInscripcionId: excluirInscripcionId ?? undefined,
     });
-  }, [estudianteId, carreraId, planSeleccionadoId, getMatriculaContexto]);
+  }, [estudianteId, carreraId, planSeleccionadoId, excluirInscripcionId, getMatriculaContexto]);
 
   const onSelectPlan = useCallback((planId) => {
     setPlanSeleccionadoId(planId != null ? Number(planId) : null);
@@ -65,8 +72,9 @@ export const useMatriculaWizardContexto = ({
       estudianteId,
       carreraId,
       planEstudioId: planSeleccionadoId ?? undefined,
+      excluirInscripcionId: excluirInscripcionId ?? undefined,
     });
-  }, [estudianteId, carreraId, planSeleccionadoId, getMatriculaContexto]);
+  }, [estudianteId, carreraId, planSeleccionadoId, excluirInscripcionId, getMatriculaContexto]);
 
   // Flags derivados (§2 del plan). null = dato aún no disponible → los
   // consumidores degradan al comportamiento histórico.

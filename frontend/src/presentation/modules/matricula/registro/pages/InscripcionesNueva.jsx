@@ -12,7 +12,7 @@
  */
 
 import { useCallback, useMemo } from 'react';
-import { Alert, Flex, Modal, Typography } from 'antd';
+import { Flex, Modal, Typography } from 'antd';
 import { DollarOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
 import { PageHeader } from '@molecules';
@@ -286,14 +286,6 @@ const InscripcionesNueva = () => {
 
       <DashboardPageShell>
         <MainContent>
-          {editData?.completarSoloHistorialPrevio ? (
-            <Alert
-              type="warning"
-              showIcon
-              title="Completar historial de notas"
-              description="Esta inscripción es de tipo antiguo, traspaso o transitabilidad y aún no tiene registradas las notas de las materias que no cursa esta gestión. Use el paso «Historial de notas» para ingresarlas y finalizar. Puede volver a pasos anteriores si también desea ajustar periodos, materias o paralelos."
-            />
-          ) : null}
           <WizardForm
             variant="tabs"
             steps={wizardSteps}

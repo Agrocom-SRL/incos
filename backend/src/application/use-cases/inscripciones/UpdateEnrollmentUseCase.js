@@ -27,6 +27,7 @@ import { parsePriorHistoryItem } from './priorHistoryItemValidation.js';
 import { EnrollmentMapper, EnrollmentSubjectMapper } from '../../mappers/inscripciones/index.js';
 import {
   cargarEstructuraPlan,
+  derivarCarreraPlanDesdeMatriculas,
   resolverPlanEstudioInscripcion,
   validarReglasInscripcion,
 } from './enrollmentBusinessRules.js';
@@ -97,6 +98,15 @@ export class UpdateEnrollmentUseCase {
     }
 
     const enrollmentPlain = enrollment.toPlainObject ? enrollment.toPlainObject() : enrollment;
+
+    // Auto-reparación del vínculo datos académicos → carrera: si la fila quedó
+    // sin carrera (inscripciones "sin carrera" del listado), se completa con la
+    // carrera derivada de las materias ya matriculadas ANTES de resolver el
+    // plan — sin carrera, resolverPlanEstudioInscripcion caía al plan vigente
+    // de una carrera arbitraria. Guardar la edición sana el dato de forma
+    // permanente sin intervención manual en la base.
+    await this._repararCarreraDatosAcademicos(enrollmentPlain);
+
     const updateData = {};
 
     if (payload.observations !== undefined) {
@@ -455,6 +465,47 @@ export class UpdateEnrollmentUseCase {
    * estudiantes_datos_academicos cuando se apruebe el DDL.
    * @private
    */
+  /**
+   * Repara `estudiantes_datos_academicos.carrera_id` cuando quedó NULL: deriva
+   * la carrera de las materias matriculadas de la inscripción (fuente de
+   * verdad: asignatura de plan → plan de estudio → carrera) y la persiste.
+   * Sin efecto cuando la fila ya tiene carrera o no hay matrículas resolubles.
+   * @private
+   * @param {Object} enrollmentPlain - Inscripción en edición (plana)
+   */
+  async _repararCarreraDatosAcademicos(enrollmentPlain) {
+    const academicDataId = enrollmentPlain.academicDataId ?? enrollmentPlain.studentAcademicData_id;
+    if (!academicDataId) return;
+
+    const studentAcademicData = await this.studentAcademicDataRepository.findById(academicDataId);
+    if (!studentAcademicData) return;
+    const plain = studentAcademicData.toPlainObject
+      ? studentAcademicData.toPlainObject()
+      : studentAcademicData;
+    const currentCareerId = plain.careerId ?? plain.carreraId ?? null;
+    if (currentCareerId != null) return;
+
+    const derivado = await derivarCarreraPlanDesdeMatriculas({
+      enrollmentId: enrollmentPlain.id,
+      subjectEnrollmentRepository: this.subjectEnrollmentRepository,
+      courseOfferRepository: this.courseOfferRepository,
+      planSubjectRepository: this.planSubjectRepository,
+      studyPlanRepository: this.studyPlanRepository,
+      logger: this.logger,
+    });
+    if (!derivado?.careerId) return;
+
+    await this.studentAcademicDataRepository.update(academicDataId, {
+      careerId: derivado.careerId,
+    });
+    this.logger.info('[Inscripciones] Carrera de datos académicos reparada desde materias matriculadas', {
+      enrollmentId: enrollmentPlain.id,
+      academicDataId,
+      careerId: derivado.careerId,
+      studyPlanId: derivado.studyPlanId,
+    });
+  }
+
   async _getStudyPlanAndManagementPlan(
     studentAcademicData,
     management,

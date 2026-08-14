@@ -62,10 +62,15 @@ export class GetMatriculaContextoUseCase {
   }
 
   /**
-   * @param {{ estudianteId: number, carreraId?: number|null, planEstudioId?: number|null }} input
+   * @param {{ estudianteId: number, carreraId?: number|null, planEstudioId?: number|null,
+   *   excluirInscripcionId?: number|null }} input - `excluirInscripcionId` (modo edición del
+   *   wizard): la inscripción que se está editando no cuenta para el perfil del estudiante
+   *   (esNuevoSistema / yaMatriculadoGestionActual); sin excluirla, editar la única
+   *   inscripción de un estudiante lo volvía "con historial digital" y el wizard
+   *   omitía los pasos Carrera e Historial de notas.
    * @returns {Promise<Object>} contexto (§3-A3 del plan de rediseño)
    */
-  async execute({ estudianteId, carreraId = null, planEstudioId = null }) {
+  async execute({ estudianteId, carreraId = null, planEstudioId = null, excluirInscripcionId = null }) {
     const student = await this.studentRepository.findById(estudianteId);
     if (!student) {
       throw new NotFoundError(`Estudiante con ID ${estudianteId}`);
@@ -108,18 +113,25 @@ export class GetMatriculaContextoUseCase {
     // Kardex (vista 141) + total de inscripciones activas en cualquier gestión.
     const historialFilas =
       await this.historialAcademicoRepository.listarFilasHistorialPorEstudiante(estudianteId);
-    const totalInscripciones = await this._contarInscripcionesActivas(estudianteId);
+    const totalInscripciones = await this._contarInscripcionesActivas(
+      estudianteId,
+      excluirInscripcionId
+    );
     const esNuevoSistema = totalInscripciones === 0;
 
-    // ¿Ya matriculado en la gestión vigente?
+    // ¿Ya matriculado en la gestión vigente? (sin contar la inscripción en edición)
     let yaMatriculadoGestionActual = false;
     if (eda) {
       const enGestion = await this.enrollmentRepository.findAll(
         { academicDataId: eda.id, managementId: management.id },
-        1,
-        1
+        null,
+        null
       );
-      yaMatriculadoGestionActual = (enGestion.enrollments ?? []).length > 0;
+      yaMatriculadoGestionActual = (enGestion.enrollments ?? []).some(
+        (enrollment) =>
+          excluirInscripcionId == null ||
+          Number(enrollment.id) !== Number(excluirInscripcionId)
+      );
     }
 
     // Traspaso más reciente (anio_cursado PRIMERO/SEGUNDO).
@@ -245,20 +257,37 @@ export class GetMatriculaContextoUseCase {
   /**
    * COUNT de inscripciones activas del estudiante en CUALQUIER gestión
    * (a través de todas sus filas de datos académicos, incluidas inactivas).
+   * Con `excluirInscripcionId` (modo edición) esa inscripción no se cuenta.
    * @private
    */
-  async _contarInscripcionesActivas(estudianteId) {
+  async _contarInscripcionesActivas(estudianteId, excluirInscripcionId = null) {
     const edaTodos = await this.studentAcademicDataRepository.findAll(
       { studentId: estudianteId, includeInactive: true },
       null,
       null
     );
-    const conteos = await Promise.all(
-      (edaTodos.studentAcademicData ?? []).map((eda) =>
-        this.enrollmentRepository.count({ academicDataId: eda.id })
+    const edas = edaTodos.studentAcademicData ?? [];
+
+    if (excluirInscripcionId == null) {
+      const conteos = await Promise.all(
+        edas.map((eda) => this.enrollmentRepository.count({ academicDataId: eda.id }))
+      );
+      return conteos.reduce((acc, n) => acc + (Number(n) || 0), 0);
+    }
+
+    const listas = await Promise.all(
+      edas.map((eda) =>
+        this.enrollmentRepository.findAll({ academicDataId: eda.id }, null, null)
       )
     );
-    return conteos.reduce((acc, n) => acc + (Number(n) || 0), 0);
+    return listas.reduce(
+      (acc, resultado) =>
+        acc +
+        (resultado.enrollments ?? []).filter(
+          (enrollment) => Number(enrollment.id) !== Number(excluirInscripcionId)
+        ).length,
+      0
+    );
   }
 
   /**

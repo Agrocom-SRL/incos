@@ -20,6 +20,7 @@ export const useMatriculaWizardEnrichment = ({
   // → los pasos dinámicos preservan el comportamiento histórico.
   esNuevoSistema = null,
   hasPreselectedStudent = false,
+  isEditMode = false,
   studentSearch,
   carrerasData,
   periodosData,
@@ -80,6 +81,7 @@ export const useMatriculaWizardEnrichment = ({
         periodosDisabledByTraspaso: periodosData.periodosDisabledByTraspaso ?? null,
       },
       hasPreselectedStudent,
+      isEditMode,
       studentSearch: {
         students: studentSearch.students,
         loading: studentSearch.loading,
@@ -111,6 +113,7 @@ export const useMatriculaWizardEnrichment = ({
       handleSelectCarrera,
       handleSelectParalelo,
       hasPreselectedStudent,
+      isEditMode,
       carreraIdForParalelos,
       periodosData,
       studentSearch,

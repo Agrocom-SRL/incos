@@ -358,7 +358,7 @@
   background: var(--color-bg-container);
   /* La ficha se despega del lienzo: es una pieza de lectura, no una zona más
      del formulario. */
-  box-shadow: var(--shadow-elevation-2);
+  box-shadow: var(--shadow-elevation-3);
   overflow: hidden;
 }
 

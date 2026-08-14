@@ -28,17 +28,23 @@ export class GetMatriculaContextoController {
         req.query.plan_estudio_id != null && req.query.plan_estudio_id !== ''
           ? parseInt(req.query.plan_estudio_id, 10)
           : null;
+      const excluirInscripcionId =
+        req.query.excluir_inscripcion_id != null && req.query.excluir_inscripcion_id !== ''
+          ? parseInt(req.query.excluir_inscripcion_id, 10)
+          : null;
 
       this.logger.info('[Inscripciones] Request de contexto de matrícula', {
         estudianteId,
         carreraId,
         planEstudioId,
+        excluirInscripcionId,
       });
 
       const contexto = await this.getMatriculaContextoUseCase.execute({
         estudianteId,
         carreraId,
         planEstudioId,
+        excluirInscripcionId,
       });
 
       return this.responseFormatter.retrieved(

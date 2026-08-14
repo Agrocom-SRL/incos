@@ -86,14 +86,6 @@ const ParaleloCard = ({ paralelo }) => {
           {descripcion ? <p className="paralelo-card__desc">{descripcion}</p> : null}
         </div>
         <div className="paralelo-card__pills">
-          <StatusPill
-            label={
-              <span className="paralelo-card__elegido">
-                <CheckCircleFilled aria-hidden /> Elegido
-              </span>
-            }
-            className="cfg-materia-pill cfg-materia-pill--primary paralelo-card__pill-elegido"
-          />
           {turno ? (
             <StatusPill
               label={

@@ -15,7 +15,7 @@
 .list-item {
   position: relative;
   overflow: hidden;
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-md);
   background-color: var(--color-bg-container);
 
   border: 1.5px solid var(--color-border);

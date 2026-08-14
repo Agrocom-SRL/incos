@@ -123,6 +123,12 @@ fricción actual: el wizard deja de llamar `GET /materias`
 - `carrera_id` requerido solo si el estudiante no tiene carrera fija.
 - `plan_estudio_id` opcional; default = plan del estudiante (derivado del
   kardex si tiene historial) o plan vigente de la carrera.
+- `excluir_inscripcion_id` opcional (2026-08-14, modo edición): la inscripción
+  que se está editando NO cuenta para `esNuevoSistema` ni
+  `yaMatriculadoGestionActual` — sin excluirla, editar la única inscripción de
+  un estudiante lo volvía "con historial digital" y el wizard omitía los pasos
+  «Carrera y plan» e «Historial de notas». El frontend lo envía solo en edición
+  (`useMatriculaWizardContexto` ← `editData.inscripcionId`).
 - Use case nuevo `GetMatriculaContextoUseCase` compone repos existentes
   (StudyPlan, Periodo/AsignaturaPlan, Prerrequisito, HistorialAcademico
   [vista 141], GestionPlan [vista 56], Traspaso). **Sin vistas SQL nuevas.**
