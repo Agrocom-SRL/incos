@@ -212,6 +212,39 @@ moderación (hints como `Typography.Text type="secondary"`, estados con pills y
   sugerencias.
 - La fila seleccionada queda resaltada; se elimina el Alert de selección.
 
+#### B1.1 Rediseño de la lista de resultados (2026-08-14)
+
+Segunda pasada sobre el mismo paso: la lista pasa de «filas grises con icono» a
+un selector de persona con estados explícitos. Todo con tokens del theme (cero
+hex/px de color) y sin Alerts.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Átomo | `components/atoms/ListItem.jsx` + `styles/components/atoms/list-item.css` | props `extra` y `blocked`; rol `button` + teclado (Enter/Espacio) + `focus-visible`; selección con fondo primario **suave**, barra de acento y check (sustituye al bloque verde con texto blanco); hover con elevación; `prefers-reduced-motion` |
+| Molécula | `components/molecules/DataList.jsx` + `styles/…/data-list.css` | cabecera con contador (`headerExtra`), `groups` (bloques dentro de la lista), skeleton de filas en carga, estado vacío con **título + qué hacer + acción**, `status="error"`, `getItemKey`, variante `data-list--scroll` |
+| Renderer | `molecules/FormSection/components/FieldRenderer.jsx` | convierte los datos planos del enricher (`{count, hint}`, `onRetry`) en UI; pasa `className` |
+| Config | `config/steps/step1BuscarEstudiante.jsx` + `styles/buscar-estudiante.css` | fila con avatar de iniciales, nombre + pill de estado, meta (C.I. · código · carrera · motivo de bloqueo) y pista «Seleccionar» al apuntar |
+| Enricher | `hooks/features/enrichers/studentEnrichers.js` | cabecera por modo, agrupación «Disponibles» / «Ya matriculados», textos de vacío/error diferenciados y reintento |
+| Hook | `hooks/features/useInscripcionNuevaStudentSearch.js` | expone `searchTerm` y `retry`; ordena la lista visible (matriculables primero y, dentro, los nuevos) |
+
+Estados cubiertos por la lista:
+
+| Estado | Qué muestra |
+|---|---|
+| Sugerencias iniciales | Cabecera «Estudiantes nuevos sin matrícula» + contador + «Registro más reciente primero» (sin repetir la pill en cada fila) |
+| Resultados de búsqueda | Cabecera «Resultados de la búsqueda» + contador + reparto disponibles / ya matriculados; pill `--info` «Nuevo en el sistema» |
+| Estudiante ya matriculado | Fila `blocked`: atenuada, pill `--warning` «Ya matriculado · año», motivo en la meta y «No disponible» a la derecha; el click sigue explicando el bloqueo con `message.error` |
+| Sin resultados | Empty con «Sin resultados para «término»» + cómo reintentar |
+| Sin sugerencias | Empty con «No hay estudiantes nuevos sin matrícula» + invitación a buscar |
+| Error | Empty en tono error + botón «Reintentar» (repite la última carga) |
+| Cargando | Skeleton de 3 filas (no spinner centrado) |
+
+Backend acompañante: `StudentRepository.buscarParaInscripcion` prioriza en el
+`ORDER BY` 1) sin matrícula en la gestión, 2) `total_inscripciones = 0`, 3) más
+reciente; y `SearchStudentsForInscripcionUseCase` arma `nombreCompleto` como
+`APELLIDO_PATERNO APELLIDO_MATERNO NOMBRES` (regla §4b de `incos-ui-system`),
+igual que el mapper del frontend.
+
 ### B2. Franja del estudiante (organismo nuevo, reemplaza 4 Alerts)
 
 `InscripcionStudentStrip` — banda compacta visible en todos los pasos ≥ 2

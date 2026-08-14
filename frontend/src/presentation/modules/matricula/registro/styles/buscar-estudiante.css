@@ -1,0 +1,126 @@
+/* ============================================================================
+   PASO «BUSCAR ESTUDIANTE» — lista de resultados del wizard de matrícula
+   ============================================================================
+   Complementa a `list-item.css` / `data-list.css` (átomo y molécula genéricos)
+   con lo específico de la fila de estudiante: avatar de iniciales, línea de
+   metadatos y las pistas de estado (seleccionar / seleccionado / no disponible).
+   Solo tokens del theme — sin colores ni tamaños literales.
+   ============================================================================ */
+
+/* Avatar de iniciales (sustituye al icono genérico de persona) */
+.mat-buscar-est__avatar.ant-avatar {
+  background-color: var(--color-primary-bg);
+  color: var(--color-primary-active);
+  border: 1px solid var(--color-primary-border);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-strong);
+  transition:
+    background-color var(--motion-duration-fast) var(--motion-ease-out),
+    color var(--motion-duration-fast) var(--motion-ease-out);
+}
+
+.list-item.active .mat-buscar-est__avatar.ant-avatar {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  border-color: var(--color-primary);
+}
+
+.list-item--blocked .mat-buscar-est__avatar.ant-avatar {
+  background-color: var(--color-fill-quaternary);
+  color: var(--color-text-tertiary);
+  border-color: var(--color-border);
+}
+
+/* Nombre del estudiante */
+.mat-buscar-est__nombre {
+  font-weight: var(--font-weight-strong);
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  letter-spacing: 0.02em;
+}
+
+.list-item.active .mat-buscar-est__nombre {
+  color: var(--color-primary-active);
+}
+
+.list-item--blocked .mat-buscar-est__nombre {
+  color: var(--color-text-secondary);
+}
+
+/* Línea de metadatos: C.I. · código · carrera · motivo de bloqueo */
+.mat-buscar-est__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs) var(--spacing-base);
+}
+
+.mat-buscar-est__meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  min-width: 0;
+}
+
+.mat-buscar-est__meta-item .anticon {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}
+
+.mat-buscar-est__meta-item .ant-typography {
+  font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Pistas de la zona derecha ─────────────────────────────────────────────── */
+
+/* Check: solo en la fila seleccionada */
+.mat-buscar-est__check {
+  display: none;
+  color: var(--color-primary);
+  font-size: var(--font-size-lg);
+}
+
+.list-item.active .mat-buscar-est__check {
+  display: inline-flex;
+}
+
+/* «Seleccionar»: aparece al apuntar o enfocar una fila elegible */
+.mat-buscar-est__hint.ant-typography {
+  font-size: var(--font-size-sm);
+  color: var(--color-primary);
+  opacity: 0;
+  transition: opacity var(--motion-duration-fast) var(--motion-ease-out);
+}
+
+.list-item--clickable:hover .mat-buscar-est__hint.ant-typography,
+.list-item--clickable:focus-visible .mat-buscar-est__hint.ant-typography {
+  opacity: 1;
+}
+
+.list-item.active .mat-buscar-est__hint.ant-typography {
+  display: none;
+}
+
+/* En dispositivos sin puntero la pista se muestra siempre (no hay hover) */
+@media (hover: none) {
+  .mat-buscar-est__hint.ant-typography {
+    opacity: 1;
+  }
+}
+
+/* Estado no elegible (ya matriculado en la gestión vigente) */
+.mat-buscar-est__bloqueo.ant-typography {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-weight: var(--font-weight-strong);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mat-buscar-est__avatar.ant-avatar,
+  .mat-buscar-est__hint.ant-typography {
+    transition: none;
+  }
+}

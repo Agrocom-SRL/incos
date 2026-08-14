@@ -86,6 +86,10 @@ export const useMatriculaWizardEnrichment = ({
         error: studentSearch.error,
         selectedStudent: studentSearch.selectedStudent,
         isShowingSuggestions: studentSearch.isShowingSuggestions,
+        // Contexto de los estados de la lista: término buscado (mensaje de «sin
+        // resultados») y reintento del estado de error.
+        searchTerm: studentSearch.searchTerm,
+        retry: studentSearch.retry,
       },
       carrerasData: {
         carreras: carrerasData.carreras,

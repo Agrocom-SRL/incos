@@ -258,8 +258,17 @@ export function injectCSSVariables() {
   root.style.setProperty('--font-weight-strong', `${allThemeTokens.fontWeightStrong}`);
 
   // ========================================
-  // TRANSICIONES
+  // TRANSICIONES / MOTION
+  // Duraciones y curvas del theme (tokens/spacing.js → motion) expuestas como
+  // CSS vars para que el CSS de componentes no declare literales `0.2s` ni
+  // `cubic-bezier(...)` sueltos (una sola fuente de verdad de motion).
   // ========================================
   root.style.setProperty('--transition-base', allThemeTokens.motionDurationMid);
-  
+  root.style.setProperty('--motion-duration-fast', allThemeTokens.motionDurationFast);
+  root.style.setProperty('--motion-duration-mid', allThemeTokens.motionDurationMid);
+  root.style.setProperty('--motion-duration-slow', allThemeTokens.motionDurationSlow);
+  root.style.setProperty('--motion-ease-out', allThemeTokens.motionEaseOut);
+  root.style.setProperty('--motion-ease-in-out', allThemeTokens.motionEaseInOut);
+  root.style.setProperty('--motion-ease-in', allThemeTokens.motionEaseIn);
+
 }

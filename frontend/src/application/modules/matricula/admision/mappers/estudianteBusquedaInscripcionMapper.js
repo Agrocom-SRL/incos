@@ -10,18 +10,28 @@ import { buildPersonDisplayData } from '@application/utils/formatters';
 export const estudianteBusquedaInscripcionMapper = (estudianteBackend) => {
   if (!estudianteBackend) return null;
 
-  const { ciCompleto } = buildPersonDisplayData({
-    ci: estudianteBackend.ci,
-    expedicion: estudianteBackend.expedicion,
-    nombres: estudianteBackend.nombres,
-    apellidoPaterno: estudianteBackend.apellidoPaterno,
-    apellidoMaterno: estudianteBackend.apellidoMaterno,
-  });
+  const { ciCompleto, nombreCompleto } = buildPersonDisplayData(
+    {
+      ci: estudianteBackend.ci,
+      expedicion: estudianteBackend.expedicion,
+      nombres: estudianteBackend.nombres,
+      apellidoPaterno: estudianteBackend.apellidoPaterno,
+      apellidoMaterno: estudianteBackend.apellidoMaterno,
+    },
+    // Sin partes de nombre se deja vacío para poder caer al valor del backend
+    // (que a su vez usa el código de estudiante como último recurso).
+    '',
+  );
 
   return {
     id: estudianteBackend.id,
     codigoEstudiante: estudianteBackend.codigoEstudiante,
-    nombreCompleto: estudianteBackend.nombreCompleto,
+    // Orden canónico en colecciones (APELLIDOS NOMBRES): se recalcula con el
+    // helper en vez de arrastrar el nombre ya concatenado del backend.
+    nombreCompleto: nombreCompleto || estudianteBackend.nombreCompleto,
+    nombres: estudianteBackend.nombres ?? null,
+    apellidoPaterno: estudianteBackend.apellidoPaterno ?? null,
+    apellidoMaterno: estudianteBackend.apellidoMaterno ?? null,
     ciCompleto,
     emailPersonal: estudianteBackend.emailPersonal ?? null,
     celular: estudianteBackend.celular ?? null,

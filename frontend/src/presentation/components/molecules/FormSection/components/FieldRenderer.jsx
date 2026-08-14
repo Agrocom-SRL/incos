@@ -15,11 +15,40 @@
  * aplicando el principio de Single Responsibility.
  */
 
-import { Col } from 'antd';
+import { Col, Button } from 'antd';
+import { ReloadOutlined } from '@ant-design/icons';
 import { FormField, FormSubsection, DocumentoItem, DataList, DataCards, ActivityList } from '@molecules';
 import { TimetableCalendar } from '@organisms';
 import { isSubsection, isList, isDocumento, isCards, isActivity, isTimetable } from '../utils/fieldTypes';
 import { fieldRowKey } from '../utils/fieldColumns';
+
+/**
+ * Contexto de la cabecera de un campo `list`: el enricher (capa de aplicación)
+ * entrega datos planos `{ count, hint }` y aquí se convierten en UI.
+ *
+ * @param {{count?: number, hint?: string}|ReactNode|null} headerExtra
+ * @returns {ReactNode|null}
+ */
+const buildListHeaderExtra = (headerExtra) => {
+  if (!headerExtra || typeof headerExtra !== 'object') return headerExtra ?? null;
+  if (headerExtra.count == null && !headerExtra.hint) return null;
+  return (
+    <>
+      {headerExtra.count != null ? (
+        <span className="data-list__count">{headerExtra.count}</span>
+      ) : null}
+      {headerExtra.hint ? <span>{headerExtra.hint}</span> : null}
+    </>
+  );
+};
+
+/** Acción de reintento del estado vacío cuando la carga del campo `list` falló. */
+const buildListRetryAction = (onRetry) =>
+  typeof onRetry === 'function' ? (
+    <Button size="small" icon={<ReloadOutlined />} onClick={onRetry}>
+      Reintentar
+    </Button>
+  ) : null;
 
 /**
  * Renderiza un campo según su tipo
@@ -94,14 +123,20 @@ const FieldRenderer = ({
       <Col key={fieldRowKey(field, index)} {...columns}>
         <DataList
           data={field.items}
+          groups={field.groups}
           loading={field.loading}
+          emptyTitle={field.emptyTitle}
           emptyMessage={field.emptyMessage}
+          emptyAction={buildListRetryAction(field.onRetry)}
+          status={field.status}
           renderItem={field.renderItem}
           onSelect={field.onSelect}
           selectedItem={field.selectedItem}
           isSelected={field.isSelected}
           loadingText={field.loadingText}
           header={field.header}
+          headerExtra={buildListHeaderExtra(field.headerExtra)}
+          className={field.className || ''}
         />
       </Col>
     );

@@ -1,9 +1,9 @@
 /* ============================================================================
    DATA LIST (Componente Molécula)
    ============================================================================
-   Estilos para lista de datos genérica
-   Los colores base vienen del tema de Ant Design (List componentConfig)
-   Variables CSS adicionales para layout y espaciado
+   Lista de datos genérica (cabecera + items + estados vacío/carga/error).
+   Todos los valores salen de tokens del theme (root.js): color, espaciado,
+   radio, tipografía y motion. Cero literales de color/px aquí.
    ============================================================================ */
 
 .data-list {
@@ -13,15 +13,22 @@
   min-height: 0;
 }
 
-/* No hay estilos de Ant Design List que resetear - usamos implementación propia */
-
-/* Cabecera de bloque de la lista (p. ej. «Estudiantes nuevos sin matrícula»
-   en el paso Buscar del wizard de matrícula). Solo tokens del tema. */
-.data-list__header {
-  display: block;
-  margin-bottom: var(--spacing-xs);
+/* ── Cabecera de bloque ─────────────────────────────────────────────────────
+   Título del bloque (p. ej. «Estudiantes nuevos sin matrícula») a la izquierda
+   y contexto a la derecha (contador de resultados, criterio de orden). */
+.data-list__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  margin-bottom: var(--spacing-sm);
   padding-bottom: var(--spacing-xs);
   border-bottom: 1px solid var(--color-border-secondary);
+}
+
+.data-list__header {
+  display: block;
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-strong);
   letter-spacing: 0.4px;
@@ -29,9 +36,118 @@
   color: var(--color-text-secondary);
 }
 
-/* Contenedor de loading - usando Flex de Ant Design */
+.data-list__head-extra {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}
+
+/* Contador de resultados dentro de la cabecera */
+.data-list__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--spacing-xs);
+  min-width: var(--control-height-sm);
+  border-radius: var(--border-radius-lg);
+  background-color: var(--color-primary-bg);
+  border: 1px solid var(--color-primary-border);
+  color: var(--color-primary-active);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Contenedor de items ──────────────────────────────────────────────────── */
+.data-list__items {
+  /* Respiro lateral para que la elevación del item en hover no se recorte */
+  padding: var(--border-radius-xs) var(--border-radius-xs) 0;
+}
+
+/* Variante con scroll propio (`className="data-list--scroll"`): con muchos
+   resultados la lista scrollea dentro de sí misma para no alejar los botones de
+   navegación. Solo para consumidores que no acotan ya la altura por fuera. */
+.data-list--scroll .data-list__items {
+  max-height: calc(var(--control-height) * 9);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+/* Agrupación opcional dentro de la lista (p. ej. disponibles / no disponibles) */
+.data-list__group + .data-list__group {
+  margin-top: var(--spacing-sm);
+}
+
+.data-list__group-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+  margin-bottom: var(--spacing-xs);
+}
+
+.data-list__group-title {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-strong);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+.data-list__group-hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+/* ── Estado de carga (skeleton de filas) ───────────────────────────────────── */
+.data-list__skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.data-list__skeleton-row {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--border-radius-lg);
+  background-color: var(--color-bg-container);
+}
+
+/* Contenedor de loading legacy (Spinner) — se conserva para otros consumidores */
 .data-list-loading {
   padding: var(--spacing-xl);
+}
+
+/* ── Estado vacío / error ──────────────────────────────────────────────────── */
+.data-list__empty {
+  padding: var(--spacing-lg) var(--spacing-md);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--border-radius-lg);
+  background-color: var(--color-bg-layout);
+}
+
+.data-list__empty .ant-empty {
+  margin: 0;
+}
+
+.data-list__empty-title {
+  font-size: var(--font-size-base);
+}
+
+.data-list__empty-desc {
+  font-size: var(--font-size-sm);
+}
+
+.data-list__empty--error {
+  border-color: var(--color-error-border);
+  background-color: var(--color-error-bg);
+}
+
+.data-list__empty--error .data-list__empty-title {
+  color: var(--color-error-active);
 }
 
 /* SelectableDataList: fila con checkbox + ListItem */
@@ -49,22 +165,22 @@
 }
 
 .selectable-data-list__select-all {
-  margin-bottom: var(--spacing-sm, 8px);
-  padding-bottom: var(--spacing-xs, 4px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  margin-bottom: var(--spacing-sm);
+  padding-bottom: var(--spacing-xs);
+  border-bottom: 1px solid var(--color-border-secondary);
 }
 
 /* Checkbox "Marcar todos" más visible: tamaño mayor y borde claro */
 .selectable-data-list__select-all .ant-checkbox-wrapper {
-  font-size: 0.9375rem;
-  font-weight: 500;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-strong);
 }
 
 .selectable-data-list__select-all .ant-checkbox-inner {
-  width: 18px;
-  height: 18px;
+  width: var(--spacing-base);
+  height: var(--spacing-base);
   border-width: 2px;
-  border-color: rgba(0, 0, 0, 0.35);
+  border-color: var(--color-border);
 }
 
 .selectable-data-list__select-all .ant-checkbox-checked .ant-checkbox-inner {

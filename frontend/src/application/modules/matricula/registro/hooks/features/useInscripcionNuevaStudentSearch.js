@@ -1,28 +1,48 @@
 /**
  * Hook: useInscripcionNuevaStudentSearch
- * 
- * Single Responsibility: Orquestar la búsqueda y selección de estudiantes para el wizard de inscripción
- * 
+ *
+ * Single Responsibility: Orquestar la búsqueda y selección de estudiantes para
+ * el wizard de inscripción.
+ *
  * Clean Architecture:
- * - Application Layer: Hook feature que encapsula la dependencia del módulo de estudiantes
- * - Usa hooks de API del módulo de estudiantes (cross-module dependency)
- * 
- * Este hook:
- * - Encapsula el uso de useSearchStudent del módulo de estudiantes
- * - Maneja la selección del estudiante (guarda el ID para usar en step2)
- * - Agrega lógica específica para el wizard de inscripciones si es necesario
- * - Expone una interfaz específica para el contexto de inscripciones
- * 
- * Ventajas:
- * - Encapsula la dependencia entre módulos
- * - Permite agregar lógica específica de inscripciones sin modificar el hook genérico
- * - Facilita el testing y mantenimiento
- * - Separa la lógica del Provider (Provider solo orquesta)
+ * - Application Layer: hook feature que encapsula la dependencia del módulo de
+ *   estudiantes (useSearchStudentsForInscripcion / useGetStudentById).
+ *
+ * Comportamiento del paso Buscar (plan matricula-wizard-rediseno §B1):
+ * - Estado inicial (solo entrada desde la lista, sin studentId): se cargan
+ *   sugerencias `solo_nuevos=1&limit=10` — estudiantes sin ninguna matrícula —
+ *   y se muestran en la misma lista de resultados (isShowingSuggestions).
+ * - Con un término de ≥2 caracteres se pasa a la búsqueda normal; al limpiar
+ *   el input vuelven las sugerencias.
+ * - Seleccionar a alguien ya matriculado en la gestión vigente se bloquea con
+ *   un message.error (sin Alerts fijos).
  */
 
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import { App } from 'antd';
 import { useSearchStudentsForInscripcion, useGetStudentById } from '@application-matricula/admision/hooks/api';
 import { buildPersonDisplayData } from '@application/utils/formatters';
+
+/** Cantidad de sugerencias iniciales (estudiantes nuevos sin matrícula). */
+const SUGERENCIAS_LIMIT = 10;
+
+/** Longitud mínima del término para pasar de sugerencias a búsqueda normal. */
+const MIN_SEARCH_LENGTH = 2;
+
+/**
+ * Prioridad de la lista visible (misma regla que el ORDER BY del backend, aplicada
+ * también en cliente para que el orden no dependa del origen de los datos):
+ * 1) quien puede matricularse antes que quien ya tiene matrícula en la gestión,
+ * 2) dentro de cada bloque, los nuevos en el sistema (sin ninguna inscripción) primero.
+ */
+const ordenarPorPrioridadMatricula = (students) => {
+  if (!Array.isArray(students) || students.length < 2) return students || [];
+  return [...students].sort((a, b) => {
+    const matriculado = Number(!!a.yaMatriculadoGestionActual) - Number(!!b.yaMatriculadoGestionActual);
+    if (matriculado !== 0) return matriculado;
+    return Number(b.esNuevoSistema === true) - Number(a.esNuevoSistema === true);
+  });
+};
 
 /** Mensaje de bloqueo cuando se intenta seleccionar un estudiante ya matriculado en la gestión vigente. */
 const buildYaMatriculadoMessage = (student) => {
@@ -32,17 +52,28 @@ const buildYaMatriculadoMessage = (student) => {
 
 /**
  * Hook para buscar y seleccionar estudiantes en el contexto de inscripción nueva
- * 
+ *
  * @param {Object} options - Opciones del hook
  * @param {string|number|null} options.studentId - ID del estudiante para cargar automáticamente (opcional)
- * @returns {Object} Objeto con students, loading, error, searchStudent, refetch, selectedStudent, onSelectStudent
+ * @returns {Object} students, loading, error, searchStudent, refetch, retry, searchTerm,
+ *   selectedStudent, onSelectStudent, isShowingSuggestions, suggestionsEnabled
  */
 export const useInscripcionNuevaStudentSearch = (options = {}) => {
   const { studentId = null } = options;
-  
+  const { message } = App.useApp();
+
   // Búsqueda de estudiantes para el wizard de inscripción: no excluye a los ya
   // matriculados en la gestión vigente, los anota con yaMatriculadoGestionActual.
-  const { students, loading, error, searchStudent, refetch } = useSearchStudentsForInscripcion();
+  const { students, loading, error, searchStudent: apiSearchStudent, refetch } =
+    useSearchStudentsForInscripcion();
+
+  // Instancia independiente para las sugerencias iniciales (solo_nuevos=1).
+  const {
+    students: suggestions,
+    loading: suggestionsLoading,
+    error: suggestionsError,
+    searchStudent: fetchSuggestions,
+  } = useSearchStudentsForInscripcion();
 
   // Hook para obtener estudiante por ID (si se proporciona studentId)
   const { student: studentById, loading: loadingById, getStudentById } = useGetStudentById();
@@ -50,14 +81,35 @@ export const useInscripcionNuevaStudentSearch = (options = {}) => {
   // Estado para el estudiante seleccionado (se usará en step2 para cargar datos académicos)
   const [selectedStudent, setSelectedStudent] = useState(null);
 
-  // Mensaje de bloqueo cuando se intenta seleccionar a alguien ya matriculado en la
-  // gestión vigente (no se permite avanzar el wizard con ese estudiante).
-  const [selectionBlockedMessage, setSelectionBlockedMessage] = useState(null);
+  // Término de la última búsqueda ejecutada: gobierna sugerencias vs. resultados.
+  const [searchTerm, setSearchTerm] = useState('');
 
-  // Nueva búsqueda (cambia la lista de resultados) → limpiar un aviso de bloqueo previo.
+  // Sugerencias solo cuando la entrada es desde la lista (sin studentId del connector).
+  const suggestionsEnabled = !studentId;
+  const isShowingSuggestions = suggestionsEnabled && searchTerm.trim().length < MIN_SEARCH_LENGTH;
+
+  // Carga inicial de sugerencias (una sola vez al montar, si aplica).
+  const suggestionsLoadedRef = useRef(false);
   useEffect(() => {
-    setSelectionBlockedMessage(null);
-  }, [students]);
+    if (!suggestionsEnabled || suggestionsLoadedRef.current) return;
+    suggestionsLoadedRef.current = true;
+    fetchSuggestions('', { soloNuevos: true, limit: SUGERENCIAS_LIMIT });
+  }, [suggestionsEnabled, fetchSuggestions]);
+
+  /**
+   * Ejecuta la búsqueda del paso Buscar. Con término < 2 caracteres (incluye
+   * limpiar el input) no llama a la API y vuelve a mostrar las sugerencias.
+   */
+  const searchStudent = useCallback(
+    (value) => {
+      const term = String(value ?? '').trim();
+      setSearchTerm(term);
+      if (term.length >= MIN_SEARCH_LENGTH) {
+        apiSearchStudent(term);
+      }
+    },
+    [apiSearchStudent],
+  );
 
   // Cargar estudiante automáticamente si se proporciona studentId
   useEffect(() => {
@@ -68,7 +120,7 @@ export const useInscripcionNuevaStudentSearch = (options = {}) => {
       }
     }
   }, [studentId, getStudentById, selectedStudent]);
-  
+
   // Cuando se carga el estudiante por ID, seleccionarlo con datos académicos (tipoAdmision, carrera)
   useEffect(() => {
     if (studentById && studentId) {
@@ -108,6 +160,10 @@ export const useInscripcionNuevaStudentSearch = (options = {}) => {
           tipoAdmision,
           carreraNombre: academicData?.careerName ?? academicData?.carreraNombre ?? null,
           traspasoAnioCursado,
+          // El detalle del estudiante no informa inscripciones previas; el dato
+          // llega después con el contexto de matrícula (esNuevoSistema=null = desconocido).
+          esNuevoSistema: null,
+          totalInscripciones: null,
         });
       }
     }
@@ -149,18 +205,17 @@ export const useInscripcionNuevaStudentSearch = (options = {}) => {
   /**
    * Función para manejar la selección de un estudiante
    * Guarda el ID y datos básicos del estudiante para usarlos en step2
-   * 
+   *
    * @param {Object} student - Estudiante seleccionado (con id, codigoEstudiante, nombreCompleto, ciCompleto)
    */
   const onSelectStudent = useCallback((student) => {
     if (student && student.id) {
       // Ya matriculado en la gestión vigente: bloquear la selección (no avanzar el
-      // wizard con este estudiante) y avisar en vez de guardarlo como seleccionado.
+      // wizard con este estudiante) y avisar sin convertirlo en un Alert fijo.
       if (student.yaMatriculadoGestionActual) {
-        setSelectionBlockedMessage(buildYaMatriculadoMessage(student));
+        message.error(buildYaMatriculadoMessage(student));
         return;
       }
-      setSelectionBlockedMessage(null);
       setSelectedStudent(prev => {
         if (prev?.id === student.id) {
           return prev;
@@ -184,6 +239,9 @@ export const useInscripcionNuevaStudentSearch = (options = {}) => {
           carreraId: careerId ?? null,
           tipoAdmision,
           carreraNombre: student.carreraNombre ?? student.careerName ?? null,
+          // Flags de la vista 153 ampliada (null = dato aún no disponible).
+          esNuevoSistema: student.esNuevoSistema ?? null,
+          totalInscripciones: student.totalInscripciones ?? null,
         };
       });
       // Cargar datos completos (académicos) si el estudiante no trae carrera/tipoAdmision
@@ -196,43 +254,62 @@ export const useInscripcionNuevaStudentSearch = (options = {}) => {
         getStudentById(student.id);
       }
     }
-  }, [getStudentById]);
+  }, [getStudentById, message]);
 
-  // MANTENER REFERENCIA ESTABLE
-  // Comparar valores, no solo referencias, para evitar recálculos innecesarios
-  const prevResultRef = useRef(null);
-  
-  // Combinar estados de loading (búsqueda o carga por ID)
-  const combinedLoading = loading || loadingById;
-  
-  return useMemo(() => {
-    const current = {
-      students,
+  /**
+   * Reintento del estado de error de la lista: repite la última carga real
+   * (sugerencias iniciales o búsqueda por término), sin tocar el input.
+   */
+  const retry = useCallback(() => {
+    if (isShowingSuggestions) {
+      fetchSuggestions('', { soloNuevos: true, limit: SUGERENCIAS_LIMIT });
+      return;
+    }
+    const term = searchTerm.trim();
+    if (term.length >= MIN_SEARCH_LENGTH) {
+      apiSearchStudent(term);
+    }
+  }, [isShowingSuggestions, fetchSuggestions, searchTerm, apiSearchStudent]);
+
+  // Lista visible del paso: sugerencias iniciales o resultados de la búsqueda,
+  // siempre con los matriculables (y dentro de ellos, los nuevos) al principio.
+  const visibleStudents = useMemo(
+    () => ordenarPorPrioridadMatricula(isShowingSuggestions ? suggestions : students),
+    [isShowingSuggestions, suggestions, students],
+  );
+  const visibleError = isShowingSuggestions ? suggestionsError : error;
+
+  // Combinar estados de loading (búsqueda, sugerencias o carga por ID)
+  const combinedLoading = (isShowingSuggestions ? suggestionsLoading : loading) || loadingById;
+
+  // Referencia estable: useMemo basta — setSelectedStudent ya conserva la
+  // identidad del objeto cuando el id no cambia (guard interno en el setter).
+  return useMemo(
+    () => ({
+      students: visibleStudents,
       loading: combinedLoading,
-      error,
+      error: visibleError,
       searchStudent,
       refetch,
+      retry,
+      searchTerm,
       selectedStudent,
       onSelectStudent,
-      selectionBlockedMessage,
-    };
-
-    const prev = prevResultRef.current;
-
-    // Comparar valores, no referencias
-    if (prev &&
-        prev.loading === current.loading &&
-        prev.error === current.error &&
-        prev.searchStudent === current.searchStudent &&
-        prev.refetch === current.refetch &&
-        prev.students === current.students &&
-        prev.selectedStudent?.id === current.selectedStudent?.id &&
-        prev.onSelectStudent === current.onSelectStudent &&
-        prev.selectionBlockedMessage === current.selectionBlockedMessage) {
-      return prev;
-    }
-
-    prevResultRef.current = current;
-    return current;
-  }, [students, combinedLoading, error, searchStudent, refetch, selectedStudent, onSelectStudent, selectionBlockedMessage]);
+      isShowingSuggestions,
+      suggestionsEnabled,
+    }),
+    [
+      visibleStudents,
+      combinedLoading,
+      visibleError,
+      searchStudent,
+      refetch,
+      retry,
+      searchTerm,
+      selectedStudent,
+      onSelectStudent,
+      isShowingSuggestions,
+      suggestionsEnabled,
+    ],
+  );
 };

@@ -52,8 +52,10 @@ export class SearchStudentsForInscripcionUseCase {
     const nombres = row.nombres ?? '';
     const ap1 = row.apellido_paterno ?? '';
     const ap2 = row.apellido_materno ?? '';
+    // Orden canónico de persona en colecciones: APELLIDO_PATERNO APELLIDO_MATERNO NOMBRES
+    // (mismo criterio que buildFullName en el frontend y que las vistas de listado).
     const nombreCompleto =
-      [nombres, ap1, ap2].filter((x) => String(x).trim()).join(' ').trim() || row.codigo_estudiante;
+      [ap1, ap2, nombres].filter((x) => String(x).trim()).join(' ').trim() || row.codigo_estudiante;
 
     const totalInscripciones =
       row.total_inscripciones != null ? Number(row.total_inscripciones) : 0;
