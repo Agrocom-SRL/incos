@@ -303,7 +303,17 @@ con acento **neutro institucional** (tokens `--ant-color-primary`/verde, sin
   `Checkbox` «marcar todo» + nombre («PRIMER AÑO») + subtítulo de estado del
   periodo cuando aplique («Convalidado por traspaso», «Bloqueado: primero
   concluya periodos anteriores», «Su periodo actual»).
-- Tabla por periodo: `[check] CÓDIGO | ASIGNATURA | HORAS | PRE REQ.`.
+- Tabla por periodo: `[check] CÓDIGO | ASIGNATURA | PRE REQ.` (ajuste
+  2026-08-14: la columna **HORAS se retira** — no interviene en la elección de
+  materias; su ancho pasa a ASIGNATURA/PRE REQ.). Densidad: celdas con
+  `--spacing-sm`, y franja de subtítulos de columna + banda del periodo con más
+  aire vertical (`calc(var(--spacing-xs) * 3)`). **Altura de fila uniforme:**
+  el nombre de la asignatura vive en `.materias-planilla__nombre-box`, una caja
+  de exactamente dos líneas (`line-clamp: 2` + `min-height` de 2 líneas) — los
+  nombres cortos reservan el alto y los largos se recortan con puntos
+  suspensivos (nombre completo en el `title`), para que las tres columnas de
+  periodos queden simétricas. Filas marcadas: la cuadrícula usa
+  `var(--color-border)` para no perderse sobre el fondo primario suave.
   Estados de fila:
   - **aprobada** (kardex): check verde fijo + nota, fila atenuada, no
     clickeable, tooltip «Aprobada en gestión AAAA (nota N)».

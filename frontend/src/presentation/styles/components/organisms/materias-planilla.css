@@ -4,7 +4,7 @@
    Planilla seleccionable estilo documento de plan de estudios (adaptación de
    plan-documento.css) con acento NEUTRO institucional: cabecera-banda por
    periodo en color primario del theme (sin buildPlanDocumentoThemeVars ni
-   color de carrera), tabla [check] CÓDIGO | ASIGNATURA | HORAS | PRE REQ. con
+   color de carrera), tabla [check] CÓDIGO | ASIGNATURA | PRE REQ. con
    table-layout: fixed y fila clickeable completa.
 
    SOLO tokens del tema (var(--…)) — dark-mode-safe. El colapso 3 → 1 columnas
@@ -16,12 +16,12 @@
    ============================================================================ */
 
 .materias-planilla {
-  /* Proporciones de columnas de la tabla (estructura, patrón plan-documento). */
-  --materias-planilla-col-check: 12%;
-  --materias-planilla-col-codigo: 17%;
-  --materias-planilla-col-nombre: 41%;
-  --materias-planilla-col-horas: 12%;
-  --materias-planilla-col-prereq: 18%;
+  /* Proporciones de columnas de la tabla (estructura, patrón plan-documento).
+     Sin columna de horas: el ancho liberado va a ASIGNATURA y PRE REQ. */
+  --materias-planilla-col-check: 11%;
+  --materias-planilla-col-codigo: 20%;
+  --materias-planilla-col-nombre: 49%;
+  --materias-planilla-col-prereq: 20%;
   container-type: inline-size;
   display: flex;
   flex-direction: column;
@@ -71,7 +71,7 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-base);
+  padding: calc(var(--spacing-xs) * 3) var(--spacing-base);
   background: var(--color-primary);
   color: var(--color-white);
 }
@@ -81,15 +81,6 @@
   font-weight: var(--font-weight-strong);
   letter-spacing: 0.4px;
   line-height: var(--line-height-sm);
-}
-
-.materias-planilla__year-subtitle {
-  margin-left: auto;
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-strong);
-  letter-spacing: 0.4px;
-  opacity: 0.85;
-  text-align: right;
 }
 
 /* ---- Tabla de asignaturas ---- */
@@ -119,22 +110,20 @@
   width: var(--materias-planilla-col-nombre);
 }
 
-.materias-planilla__col-horas {
-  width: var(--materias-planilla-col-horas);
-}
-
 .materias-planilla__col-prereq {
   width: var(--materias-planilla-col-prereq);
 }
 
 .materias-planilla__table th,
 .materias-planilla__table td {
-  padding: var(--spacing-xs);
+  padding: var(--spacing-sm);
   border: 1px solid var(--color-border-secondary);
   vertical-align: middle;
 }
 
+/* Franja de subtítulos de columna: más aire vertical que las filas de datos. */
 .materias-planilla__table thead th {
+  padding: calc(var(--spacing-xs) * 2) var(--spacing-sm);
   background: var(--color-bg-layout);
   color: var(--color-text-secondary);
   font-size: var(--font-size-xxs);
@@ -165,6 +154,13 @@
   background: var(--color-primary-bg);
 }
 
+/* Sobre el fondo primario suave el borde secundario se pierde: en las filas
+   marcadas (y al «marcar todo») la cuadrícula pasa al gris de borde normal. */
+.materias-planilla__row--seleccionada > td,
+.materias-planilla__row--fija > td {
+  border-color: var(--color-border);
+}
+
 .materias-planilla__row--aprobada,
 .materias-planilla__row--bloqueada-periodo,
 .materias-planilla__row--bloqueada-prerrequisito {
@@ -190,7 +186,6 @@
 }
 
 .materias-planilla__td-codigo,
-.materias-planilla__td-horas,
 .materias-planilla__td-prereq {
   text-align: center;
   white-space: nowrap;
@@ -205,6 +200,28 @@
   text-align: left;
   line-height: var(--line-height-sm);
   overflow-wrap: anywhere;
+}
+
+/* Altura uniforme de fila: el nombre (con su nota/pill) ocupa SIEMPRE el alto
+   de dos líneas — reserva el espacio cuando el nombre es corto y recorta con
+   puntos suspensivos cuando es largo, para que las tres columnas de periodos
+   queden simétricas. El nombre completo sigue disponible en el `title`.
+   La caja externa centra verticalmente (los nombres de una línea quedan a media
+   altura) y la interna aplica el recorte a dos líneas. */
+.materias-planilla__nombre-box {
+  display: flex;
+  align-items: center;
+  min-height: calc(var(--font-size-sm) * var(--line-height-sm) * 2);
+  line-height: var(--line-height-sm);
+}
+
+.materias-planilla__nombre-clamp {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  width: 100%;
 }
 
 .materias-planilla__nombre-texto {

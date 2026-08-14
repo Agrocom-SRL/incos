@@ -6,7 +6,8 @@
  * (PlanEstudioDocumentoView / plan-documento.css) con acento NEUTRO
  * institucional (tokens del theme, sin color de carrera): grid de periodos en
  * 3 columnas colapsable, cabecera-banda por periodo con «marcar todo» y tabla
- * [check] CÓDIGO | ASIGNATURA | HORAS | PRE REQ. con fila clickeable completa.
+ * [check] CÓDIGO | ASIGNATURA | PRE REQ. con fila clickeable completa (la carga
+ * horaria no se muestra aquí: no interviene en la elección de materias).
  *
  * Las reglas por perfil (NUEVO/ANTIGUO/TRASPASO/TRANSITABILIDAD, kardex,
  * prerrequisitos, salto máximo, nivelación) NO viven aquí: el modelo lo
@@ -73,15 +74,23 @@ function PlanillaRow({ row, onToggle }) {
       </td>
       <td className="materias-planilla__td-codigo">{row.sigla ?? '—'}</td>
       <td className="materias-planilla__td-nombre">
-        <span className="materias-planilla__nombre-texto">{row.nombre ?? '—'}</span>
-        {row.estado === PLANILLA_ROW_ESTADOS.APROBADA && row.notaFinal != null ? (
-          <span className="materias-planilla__nota" aria-label={`Nota ${row.notaFinal}`}>
-            {row.notaFinal}
+        {/* Caja de dos líneas exactas (altura fija de fila): los nombres largos
+            se recortan y los de una línea quedan centrados verticalmente.
+            El nombre completo queda en el title. */}
+        <span className="materias-planilla__nombre-box">
+          <span className="materias-planilla__nombre-clamp">
+            <span className="materias-planilla__nombre-texto" title={row.nombre ?? undefined}>
+              {row.nombre ?? '—'}
+            </span>
+            {row.estado === PLANILLA_ROW_ESTADOS.APROBADA && row.notaFinal != null ? (
+              <span className="materias-planilla__nota" aria-label={`Nota ${row.notaFinal}`}>
+                {row.notaFinal}
+              </span>
+            ) : null}
+            {tag ? <StatusPill label={tag.label} className={tag.className} /> : null}
           </span>
-        ) : null}
-        {tag ? <StatusPill label={tag.label} className={tag.className} /> : null}
+        </span>
       </td>
-      <td className="materias-planilla__td-horas">{row.horasSemanales ?? '—'}</td>
       <td className="materias-planilla__td-prereq">{row.prerrequisitoSigla ?? '—'}</td>
     </tr>
   );
@@ -116,9 +125,6 @@ function PlanillaPeriodo({ periodo, readOnly, onToggleRow, onToggleAll }) {
         <span className="materias-planilla__year-title">
           {String(periodo.nombre ?? '').toUpperCase()}
         </span>
-        {periodo.subtitulo ? (
-          <span className="materias-planilla__year-subtitle">{periodo.subtitulo}</span>
-        ) : null}
       </header>
       <div className="materias-planilla__year-body">
         <table className="materias-planilla__table">
@@ -126,7 +132,6 @@ function PlanillaPeriodo({ periodo, readOnly, onToggleRow, onToggleAll }) {
             <col className="materias-planilla__col-check" />
             <col className="materias-planilla__col-codigo" />
             <col className="materias-planilla__col-nombre" />
-            <col className="materias-planilla__col-horas" />
             <col className="materias-planilla__col-prereq" />
           </colgroup>
           <thead>
@@ -134,14 +139,13 @@ function PlanillaPeriodo({ periodo, readOnly, onToggleRow, onToggleAll }) {
               <th aria-label="Marcar" />
               <th>CÓDIGO</th>
               <th>ASIGNATURA</th>
-              <th>HORAS</th>
               <th>PRE REQ.</th>
             </tr>
           </thead>
           <tbody>
             {periodo.rows.length === 0 ? (
               <tr className="materias-planilla__row materias-planilla__row--placeholder">
-                <td colSpan={5} className="materias-planilla__td-vacio">
+                <td colSpan={4} className="materias-planilla__td-vacio">
                   Sin asignaturas en este periodo.
                 </td>
               </tr>

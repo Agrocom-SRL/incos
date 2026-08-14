@@ -33,7 +33,12 @@ export const PLANILLA_ROW_ESTADOS = {
   NORMAL: 'normal',
 };
 
-/** Motivos de deshabilitación de un periodo completo (subtítulo de cabecera). */
+/**
+ * Motivo del estado de un periodo completo. YA NO se pinta en la cabecera del
+ * año de la planilla (2026-08-14): el periodo bloqueado se entiende por su
+ * atenuación y por el tooltip de cada fila. El modelo lo sigue exponiendo en
+ * `periodo.subtitulo` por si otra pantalla necesita explicarlo.
+ */
 export const PERIODO_SUBTITULOS = {
   ACTUAL: 'Su periodo actual',
   DISPONIBLE: 'Disponible',
