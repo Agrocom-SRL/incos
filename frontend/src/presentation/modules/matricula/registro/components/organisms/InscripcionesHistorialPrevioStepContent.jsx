@@ -1,10 +1,14 @@
 /**
  * Paso dedicado: historial de notas (tabla historial_previo).
  * Cabecera de sección estándar (FormWorkspaceSection, sin Card).
+ *
+ * Las filas salen del contexto de matrícula (todos los periodos anteriores al
+ * mínimo seleccionado + los bloqueados por traspaso, §4-C4); sin filas se
+ * muestra un estado vacío discreto (sin Alert fijo).
  */
 
 import React from 'react';
-import { Alert } from 'antd';
+import { Empty } from 'antd';
 import { FormWorkspaceSection } from '@organisms';
 import HistorialPrevioNotasSection from './HistorialPrevioNotasSection';
 
@@ -27,11 +31,9 @@ const InscripcionesHistorialPrevioStepContent = ({
           invalidGradeKeys={historialPrevioData.invalidGradeKeys}
         />
       ) : (
-        <Alert
-          type="info"
-          showIcon
-          title="Sin materias en el historial de notas"
-          description="No hay materias de periodos anteriores pendientes para los periodos seleccionados. Puede finalizar la inscripción si el resto del formulario está completo."
+        <Empty
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+          description="No hay materias de periodos anteriores para registrar. Puede finalizar la inscripción si el resto del formulario está completo."
         />
       )}
     </FormWorkspaceSection>

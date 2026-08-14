@@ -22,6 +22,8 @@ export const typography = {
   fontSizeSM: 14,
   // Tamaño extra pequeño (tags, badges, elementos muy pequeños)
   fontSizeXS: 12,
+  // Tamaño mínimo (sobreimpresos small-caps, p. ej. código de carrera en tarjetas)
+  fontSizeXXS: 11,
   // Tamaño grande (texto destacado)
   fontSizeLG: 18,
   // Tamaño extra grande (texto muy destacado)

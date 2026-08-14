@@ -12,6 +12,8 @@ export const useMatriculaWizardPageWizardInit = ({
   form,
   wizardStepMeta,
 }) => {
+  // Índices dinámicos: «carrera» e «historial» pueden ser null (paso excluido
+  // para estudiantes con historial digital). Nunca usar números mágicos aquí.
   const indices = wizardStepMeta?.indices ?? {
     buscar: 0,
     carrera: 1,
@@ -34,7 +36,8 @@ export const useMatriculaWizardPageWizardInit = ({
     if (hasStudent && carrerasData?.selectedCarrera) {
       return isNuevoEstudiante ? indices.paralelo : indices.periodo;
     }
-    if (hasStudent) return indices.carrera;
+    // Sin paso Carrera (estudiante con historial digital) se salta directo a Periodo.
+    if (hasStudent) return indices.carrera ?? indices.periodo;
     return indices.buscar;
   }, [
     editData,

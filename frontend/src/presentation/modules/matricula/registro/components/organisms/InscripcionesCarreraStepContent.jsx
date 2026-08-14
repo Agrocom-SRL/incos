@@ -1,23 +1,35 @@
 /**
- * InscripcionesCarreraStepContent - Contenido completo del paso "Seleccionar carrera" (step 1)
+ * InscripcionesCarreraStepContent - Contenido del paso «Carrera y plan».
  *
- * Responsabilidad del módulo inscripciones: sección plana (FormWorkspaceSection, sin Card)
- * con fila de dos alertas + selección de carrera. El WizardForm genérico solo invoca
- * renderSectionContent; no conoce esta UI.
+ * Solo se muestra a estudiantes nuevos en el sistema (con historial digital el
+ * paso se excluye del array de pasos). Sin Alerts: los datos del estudiante los
+ * muestra la franja InscripcionStudentStrip y los avisos van como texto
+ * secundario discreto.
+ *
+ * - Carrera: picker de tarjetas del design system (@organisms/CarreraCardPicker)
+ *   dentro de un Form.Item `carrera`. Estudiante con carrera fija → la suya
+ *   seleccionada y las demás con overlay «No disponible»; sin carrera → libre.
+ * - Plan: selector debajo (InscripcionesPlanSelectorSection) solo si la carrera
+ *   tiene más de un plan habilitado y el tipo de admisión elige plan.
  *
  * @param {Object} form - Instancia del formulario
- * @param {Object} section - Config de la sección (title, description, fields enriquecidos)
- * @param {Array} carreras - Lista de carreras
+ * @param {Object} section - Config de la sección (title, description)
+ * @param {Array} carreras - Catálogo de carreras
  * @param {boolean} carrerasLoading
  * @param {string} carrerasError
  * @param {Object} selectedStudent - Estudiante seleccionado (tipoAdmision, careerId)
- * @param {Function} onCarreraChange
+ * @param {Function} onCarreraChange - (carrera) => void
+ * @param {boolean} readOnly - Modo edición / carrera fija por traspaso (picker sin interacción)
+ * @param {boolean} isEditMode - true en edición (texto secundario «Modo edición»)
+ * @param {Object} planData - Estado del contexto de matrícula (useMatriculaWizardContexto)
  */
 
 import React from 'react';
-import { Row, Col, Alert, Flex } from 'antd';
-import { FormWorkspaceSection } from '@organisms';
-import InscripcionesCarreraSelectionSection from './InscripcionesCarreraSelectionSection';
+import { Flex, Form, Typography } from 'antd';
+import { FormWorkspaceSection, CarreraCardPicker } from '@organisms';
+import InscripcionesPlanSelectorSection from './InscripcionesPlanSelectorSection';
+
+const { Text } = Typography;
 
 const InscripcionesCarreraStepContent = ({
   form,
@@ -28,75 +40,68 @@ const InscripcionesCarreraStepContent = ({
   selectedStudent = null,
   onCarreraChange,
   readOnly = false,
+  isEditMode = false,
+  planData = null,
 }) => {
-  const esAntiguo = selectedStudent?.tipoAdmision === 'ANTIGUO';
-  const estudianteField = section?.fields?.find((f) => f.name === 'estudianteSeleccionado');
-  // En modo edición (readOnly) no se puede cambiar estudiante ni carrera
-  const disabledCareerIds = readOnly && carreras.length
-    ? carreras.map((c) => c.id)
-    : esAntiguo && selectedStudent?.careerId
+  // Carrera fija (ANTIGUO con carrera asignada, TRASPASO, TRANSITABILIDAD):
+  // la suya queda seleccionada y las demás con overlay «No disponible».
+  const fixedCareerId =
+    selectedStudent?.careerId ?? selectedStudent?.carreraId ?? null;
+  const disabledIds =
+    fixedCareerId != null && carreras.length
       ? carreras
           .map((c) => c.id)
-          .filter(
-            (id) => id !== selectedStudent.careerId && id !== Number(selectedStudent.careerId)
-          )
+          .filter((id) => Number(id) !== Number(fixedCareerId))
       : null;
 
-  // Fijar valor de carrera en el form cuando es estudiante antiguo (para submit)
+  // Fijar el valor del form cuando la carrera viene dada (para validación y submit)
+  // y propagar la selección al estado del wizard (dispara el contexto de matrícula).
   React.useEffect(() => {
-    if (form && esAntiguo && selectedStudent?.careerId != null) {
-      form.setFieldsValue({ carrera: selectedStudent.careerId });
+    if (!form || fixedCareerId == null) return;
+    if (Number(form.getFieldValue('carrera')) !== Number(fixedCareerId)) {
+      form.setFieldsValue({ carrera: fixedCareerId });
     }
-  }, [form, esAntiguo, selectedStudent?.careerId]);
+    onCarreraChange?.({ id: Number(fixedCareerId) });
+  }, [form, fixedCareerId, onCarreraChange]);
+
+  const handlePickerChange = (carreraId) => {
+    const carrera = carreras.find((c) => Number(c.id) === Number(carreraId));
+    onCarreraChange?.(carrera ?? { id: carreraId });
+  };
 
   return (
     <FormWorkspaceSection title={section?.title} description={section?.description} fields={[]}>
       <Flex vertical gap="large">
-        <Row gutter={[24, 16]}>
-          <Col xs={24} md={12}>
-            {estudianteField && !estudianteField.hidden && (
-              <Alert
-                title={estudianteField.message}
-                description={estudianteField.description}
-                type={estudianteField.alertType || 'success'}
-                showIcon
-              />
-            )}
-          </Col>
-          <Col xs={24} md={12}>
-            {readOnly ? (
-              <Alert
-                title="Modo edición"
-                description="El estudiante y la carrera no se modifican aquí. Puede cambiar periodo, materias y paralelo en los siguientes pasos."
-                type="info"
-                showIcon
-              />
-            ) : esAntiguo ? (
-              <Alert
-                title="Estudiante antiguo"
-                description="La carrera ya está asignada según sus datos académicos y no puede modificarse."
-                type="info"
-                showIcon
-              />
-            ) : (
-              <Alert
-                title="Estudiante nuevo"
-                description="Seleccione la carrera en la que inscribirá al estudiante. Se usará la gestión académica vigente."
-                type="info"
-                showIcon
-              />
-            )}
-          </Col>
-        </Row>
-        <InscripcionesCarreraSelectionSection
-          form={form}
-          carreras={carreras}
-          loading={carrerasLoading}
-          error={carrerasError}
-          onCarreraChange={onCarreraChange ?? (() => {})}
-          embedded
-          disabledCareerIds={disabledCareerIds}
-          initialCareerId={selectedStudent?.careerId ?? undefined}
+        {isEditMode ? (
+          <Text type="secondary">
+            Modo edición: el estudiante y la carrera no se modifican aquí. Puede cambiar periodo,
+            materias y paralelo en los siguientes pasos.
+          </Text>
+        ) : null}
+
+        <Form.Item
+          name="carrera"
+          rules={[{ required: true, message: 'Seleccione una carrera para continuar.' }]}
+          className="cfg-paralelo-carrera-form-item"
+        >
+          <CarreraCardPicker
+            carreras={carreras}
+            loading={carrerasLoading}
+            error={carrerasError}
+            disabledIds={disabledIds}
+            readOnly={readOnly}
+            onChange={handlePickerChange}
+          />
+        </Form.Item>
+
+        <InscripcionesPlanSelectorSection
+          planes={planData?.planes ?? []}
+          mostrarSelector={!!planData?.mostrarSelectorPlan}
+          planResuelto={planData?.contexto?.plan ?? null}
+          value={planData?.planSeleccionadoId ?? null}
+          onChange={planData?.onSelectPlan}
+          loading={!!planData?.contextoLoading}
+          error={planData?.contextoError ?? null}
         />
       </Flex>
     </FormWorkspaceSection>

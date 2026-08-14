@@ -1,0 +1,157 @@
+/* ============================================================================
+   CARRERA CARD PICKER (Organismo compartido del design system)
+   ============================================================================
+   Selección visual de carrera en tarjetas (imagen + color institucional).
+   Generalizado desde `.cfg-paralelo-carrera-picker__*` (academico-form-page.css)
+   con nombre neutro: lo consumen ParaleloCarreraPicker (wrapper), el registro
+   de estudiantes y el paso «Carrera y plan» del wizard de matrícula.
+
+   Solo tokens del tema (var(--…)). El color de acento por carrera es color de
+   negocio dinámico y llega sanitizado por style inline (excepción documentada
+   en incos-ui-system §1). El scrim sobre la imagen usa el mismo velo oscuro en
+   ambos temas (garantiza contraste del texto blanco sobre cualquier fotografía).
+   ============================================================================ */
+
+.carrera-card-picker__loading {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-xl) var(--spacing-base);
+}
+
+.carrera-card-picker__loading-nest {
+  min-height: var(--control-height-lg);
+  /* Espaciador estructural del Spin nest (caja invisible, no tipografía/espaciado del DS) */
+  min-width: 120px;
+}
+
+.carrera-card-picker {
+  display: block;
+  width: 100%;
+}
+
+/* Mismo grid que el ParaleloCarreraPicker original: todas las carreras en una
+   fila (una columna por carrera), sin ancho mínimo que provoque salto de fila. */
+.carrera-card-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: var(--spacing-base);
+  width: 100%;
+}
+
+.carrera-card-picker .ant-radio-button-wrapper {
+  height: auto !important;
+  line-height: normal !important;
+  padding: 0 !important;
+  border-radius: var(--border-radius-lg) !important;
+  overflow: hidden;
+}
+
+.carrera-card-picker .ant-radio-button-wrapper::before {
+  display: none !important;
+}
+
+.carrera-card-picker__card {
+  display: block;
+  width: 100% !important;
+  height: auto !important;
+  padding: 0 !important;
+  border-radius: var(--border-radius-lg) !important;
+  overflow: hidden;
+}
+
+.carrera-card-picker__card--selected {
+  border-width: 3px !important;
+}
+
+/* Solo lectura (edición / carrera fija por traspaso): la selección queda
+   visible pero el grupo no responde a interacción. */
+.carrera-card-picker--readonly .ant-radio-button-wrapper {
+  cursor: default;
+  pointer-events: none;
+}
+
+.carrera-card-picker__media {
+  position: relative;
+  width: 100%;
+  height: var(--carrera-card-media-height);
+  overflow: hidden;
+}
+
+.carrera-card-picker__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.carrera-card-picker__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: var(--carrera-card-overlay-pad);
+  /* Scrim fijo sobre fotografía: mismo velo en light y dark para asegurar
+     contraste AA del texto blanco sobre cualquier imagen. */
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.75) 0%, transparent 55%);
+  color: var(--color-white);
+}
+
+.carrera-card-picker__codigo {
+  font-size: var(--font-size-xxs);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+.carrera-card-picker__nombre {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-strong);
+  line-height: 1.3;
+}
+
+.carrera-card-picker__fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  height: 100%;
+  padding: var(--spacing-base);
+  text-align: center;
+}
+
+.carrera-card-picker__initial {
+  font-size: var(--font-size-heading-1);
+  font-weight: var(--font-weight-strong);
+  line-height: 1;
+}
+
+/* Carrera no seleccionable (estudiante con carrera fija): overlay con etiqueta
+   «No disponible». El velo usa el fondo del contenedor del tema (dark-safe). */
+.carrera-card-picker__card--unavailable {
+  cursor: not-allowed;
+}
+
+.carrera-card-picker__unavailable-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--color-bg-container) 62%, transparent);
+  backdrop-filter: grayscale(1);
+}
+
+.carrera-card-picker__unavailable-label {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-container);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-strong);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}

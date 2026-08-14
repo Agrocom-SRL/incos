@@ -195,6 +195,12 @@ export function injectCSSVariables() {
   root.style.setProperty('--control-height', `${allThemeTokens.controlHeight}px`);
   root.style.setProperty('--control-height-sm', `${allThemeTokens.controlHeightSM}px`);
 
+  root.style.setProperty('--control-height-lg', `${allThemeTokens.controlHeightLG}px`);
+
+  // Pickers de tarjetas del design system (CarreraCardPicker)
+  root.style.setProperty('--carrera-card-media-height', `${allThemeTokens.carreraCardMediaHeight}px`);
+  root.style.setProperty('--carrera-card-overlay-pad', `${allThemeTokens.carreraCardOverlayPadding}px`);
+
   // ========================================
   // LOGO - Tamaños
   // ========================================
@@ -242,7 +248,10 @@ export function injectCSSVariables() {
   root.style.setProperty('--font-size-base', `${allThemeTokens.fontSize}px`);
   root.style.setProperty('--font-size-sm', `${allThemeTokens.fontSizeSM}px`);
   root.style.setProperty('--font-size-xs', `${allThemeTokens.fontSizeXS}px`);
+  root.style.setProperty('--font-size-xxs', `${allThemeTokens.fontSizeXXS}px`);
   root.style.setProperty('--font-size-lg', `${allThemeTokens.fontSizeLG}px`);
+  // Display grande (inicial de las tarjetas de carrera del design system)
+  root.style.setProperty('--font-size-heading-1', `${allThemeTokens.fontSizeHeading1}px`);
   root.style.setProperty('--line-height-normal', `${allThemeTokens.lineHeight}`);
   root.style.setProperty('--line-height-sm', `${allThemeTokens.lineHeightSM}`);
   root.style.setProperty('--line-height-lg', `${allThemeTokens.lineHeightLG}`);

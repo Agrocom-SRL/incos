@@ -1,10 +1,19 @@
 /**
  * Tabla editable de historial de notas (historial_previo).
+ *
+ * Estados por fila (§4-C4): CONVALIDADO por defecto (sin nota) y APROBADO con
+ * nota 0-100; al cambiar a Aprobado la nota se precarga con la nota mínima de
+ * aprobación del contexto de matrícula.
  */
 
 import React from 'react';
 import { InputNumber, Segmented, Table, Typography } from 'antd';
 import '@matricula/registro/theme/historial-notas.css';
+
+const STATUS_LABELS = {
+  APROBADO: 'Aprobado',
+  CONVALIDADO: 'Convalidado',
+};
 
 const HistorialPrevioNotasSection = ({
   rows = [],
@@ -49,12 +58,12 @@ const HistorialPrevioNotasSection = ({
       width: 220,
       render: (_, record) =>
         readOnly ? (
-          record.status === 'CONVALIDADO' ? 'Convalidado' : 'Aprobado'
+          STATUS_LABELS[record.status] ?? STATUS_LABELS.CONVALIDADO
         ) : (
           <Segmented
             size="small"
             className={`historial-estado-segmented historial-estado-segmented--${
-              record.status === 'CONVALIDADO' ? 'convalidado' : 'aprobado'
+              record.status === 'APROBADO' ? 'aprobado' : 'convalidado'
             }`}
             value={record.status}
             options={[
@@ -70,9 +79,9 @@ const HistorialPrevioNotasSection = ({
       key: 'nota',
       width: 120,
       render: (_, record) => {
-        if (record.status === 'CONVALIDADO') {
+        if (record.status !== 'APROBADO') {
           return (
-            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+            <Typography.Text type="secondary" className="historial-nota-no-aplica">
               No aplica
             </Typography.Text>
           );
@@ -99,9 +108,9 @@ const HistorialPrevioNotasSection = ({
 
   return (
     <div className="step-historial-notas-table">
-      <Typography.Paragraph type="secondary" style={{ marginBottom: 12 }}>
-        Indique si cada materia fue <strong>aprobada</strong> (con nota) o{' '}
-        <strong>convalidada</strong> (sin nota).
+      <Typography.Paragraph type="secondary" className="historial-notas-descripcion">
+        Las materias de periodos anteriores inician como <strong>convalidadas</strong> (sin
+        nota); cambie a <strong>aprobada</strong> las que tienen nota y ajústela si corresponde.
       </Typography.Paragraph>
       <Table
         size="small"

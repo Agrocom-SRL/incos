@@ -1,35 +1,38 @@
 /**
  * Callbacks del wizard y enriquecimiento de pasos.
+ *
+ * Tras el rediseño (§4-C1) solo quedan enrichers para el paso Buscar
+ * (studentEnrichers) y el paso Paralelo (paraleloEnrichers): los pasos
+ * «Carrera y plan» y «Periodo y materias» los construye renderSectionContent
+ * con organismos propios (CarreraCardPicker, MateriasPlanillaSelector).
  */
 
 import { useMemo, useCallback } from 'react';
 import { useEnrichWizardSteps } from '@application-utils/hooks';
 import { createInscripcionNuevaWizardSteps } from '@matricula/registro/config';
-import { requiereHistorialPrevio } from '@application-matricula/registro/utils/historialPrevioHelpers';
 import { resolveMatriculaWizardStepMeta } from '@application-matricula/registro/utils/matriculaWizardStepConfig';
 import { matriculaWizardEnrichers } from '../../features/enrichers/wizardEnrichers';
 import { step0EnrichmentStrategy } from './step0EnrichmentStrategy';
 
 export const useMatriculaWizardEnrichment = ({
   tipoAdmision = null,
+  // true/false desde vista 153 ampliada o contexto-matricula; null = sin dato
+  // → los pasos dinámicos preservan el comportamiento histórico.
+  esNuevoSistema = null,
+  hasPreselectedStudent = false,
   studentSearch,
   carrerasData,
   periodosData,
   paralelosData,
-  materiasData,
-  materiasByPeriodsData,
   carreraIdForParalelos,
-  selectedMateriaIdsByPeriod,
-  handleToggleMaterias,
-  historialPrevioData,
 }) => {
   const handleSearchStudent = useCallback(
     (value) => {
-      if (value?.trim() && studentSearch.searchStudent) {
-        studentSearch.searchStudent(value.trim());
-      }
+      // Pasar también el término vacío: el hook de búsqueda lo usa para volver
+      // a las sugerencias iniciales («Estudiantes nuevos sin matrícula»).
+      studentSearch.searchStudent?.(value ?? '');
     },
-    [studentSearch.searchStudent],
+    [studentSearch],
   );
 
   const handleSelectStudent = useCallback(
@@ -38,7 +41,7 @@ export const useMatriculaWizardEnrichment = ({
         studentSearch.onSelectStudent(student);
       }
     },
-    [studentSearch.onSelectStudent],
+    [studentSearch],
   );
 
   const handleSelectCarrera = useCallback(
@@ -48,26 +51,7 @@ export const useMatriculaWizardEnrichment = ({
         carrerasData.onSelectCarrera(carrera);
       }
     },
-    [carrerasData.carreras, carrerasData.onSelectCarrera],
-  );
-
-  const handleSelectPeriod = useCallback(
-    (value) => {
-      const period = periodosData.periodos?.find((p) => p.id === value || p.id === Number(value));
-      if (period && periodosData.onSelectPeriod) {
-        periodosData.onSelectPeriod(period);
-      }
-    },
-    [periodosData.periodos, periodosData.onSelectPeriod],
-  );
-
-  const handleTogglePeriods = useCallback(
-    (checkedIds) => {
-      if (periodosData.onTogglePeriods) {
-        periodosData.onTogglePeriods(checkedIds);
-      }
-    },
-    [periodosData.onTogglePeriods],
+    [carrerasData],
   );
 
   const handleSelectParalelo = useCallback(
@@ -76,27 +60,15 @@ export const useMatriculaWizardEnrichment = ({
         paralelosData.onSelectParalelo(paralelo);
       }
     },
-    [paralelosData.onSelectParalelo],
-  );
-
-  const handleSelectMateria = useCallback(
-    (materia) => {
-      if (materia && materiasData.onSelectMateria) {
-        materiasData.onSelectMateria(materia);
-      }
-    },
-    [materiasData.onSelectMateria],
+    [paralelosData],
   );
 
   const enrichContext = useMemo(
     () => ({
       onSearchStudent: handleSearchStudent,
       onSelectStudent: handleSelectStudent,
-      onSelectPeriod: handleSelectPeriod,
-      onTogglePeriods: handleTogglePeriods,
       onSelectCarrera: handleSelectCarrera,
       onSelectParalelo: handleSelectParalelo,
-      onSelectMateria: handleSelectMateria,
       carreraIdForParalelos: carreraIdForParalelos ?? null,
       periodosData: {
         periodos: periodosData.periodos,
@@ -107,12 +79,13 @@ export const useMatriculaWizardEnrichment = ({
         selectedPeriodIds: periodosData.selectedPeriodIds || [],
         periodosDisabledByTraspaso: periodosData.periodosDisabledByTraspaso ?? null,
       },
+      hasPreselectedStudent,
       studentSearch: {
         students: studentSearch.students,
         loading: studentSearch.loading,
         error: studentSearch.error,
         selectedStudent: studentSearch.selectedStudent,
-        selectionBlockedMessage: studentSearch.selectionBlockedMessage,
+        isShowingSuggestions: studentSearch.isShowingSuggestions,
       },
       carrerasData: {
         carreras: carrerasData.carreras,
@@ -127,50 +100,31 @@ export const useMatriculaWizardEnrichment = ({
         selectedParalelo: paralelosData.selectedParalelo,
         selectedParalelosByPeriod: paralelosData.selectedParalelosByPeriod ?? {},
       },
-      materiasData: {
-        materias: materiasData.materias,
-        loading: materiasData.loading,
-        error: materiasData.error,
-        selectedMateria: materiasData.selectedMateria,
-      },
-      materiasByPeriodsData: {
-        materiasByPeriod: materiasByPeriodsData.materiasByPeriod,
-        loading: materiasByPeriodsData.loading,
-        error: materiasByPeriodsData.error,
-      },
-      selectedMateriaIdsByPeriod,
-      onToggleMaterias: handleToggleMaterias,
-      historialPrevioData,
     }),
     [
       handleSearchStudent,
       handleSelectStudent,
-      handleSelectPeriod,
-      handleTogglePeriods,
       handleSelectCarrera,
       handleSelectParalelo,
-      handleSelectMateria,
+      hasPreselectedStudent,
       carreraIdForParalelos,
       periodosData,
       studentSearch,
       carrerasData,
       paralelosData,
-      materiasData,
-      materiasByPeriodsData,
-      selectedMateriaIdsByPeriod,
-      handleToggleMaterias,
-      historialPrevioData,
     ],
   );
 
-  const wizardStepsBase = useMemo(
-    () => createInscripcionNuevaWizardSteps(requiereHistorialPrevio(tipoAdmision)),
-    [tipoAdmision],
+  // Meta de pasos dinámicos (§2 del plan): con historial digital se excluyen
+  // «Carrera y plan» e «Historial de notas»; los índices salen del orden del array.
+  const wizardStepMeta = useMemo(
+    () => resolveMatriculaWizardStepMeta(tipoAdmision, { esNuevoSistema }),
+    [tipoAdmision, esNuevoSistema],
   );
 
-  const wizardStepMeta = useMemo(
-    () => resolveMatriculaWizardStepMeta(tipoAdmision),
-    [tipoAdmision],
+  const wizardStepsBase = useMemo(
+    () => createInscripcionNuevaWizardSteps(wizardStepMeta),
+    [wizardStepMeta],
   );
 
   const enrichedWizardSteps = useEnrichWizardSteps(

@@ -2,11 +2,10 @@
  * Validaciones al avanzar pasos del wizard de matrícula.
  */
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { App } from 'antd';
 
 export const useMatriculaWizardPageWizardValidation = ({
-  isNuevoEstudiante,
   studentSearch,
   editData,
   carrerasData,
@@ -17,12 +16,18 @@ export const useMatriculaWizardPageWizardValidation = ({
   wizardStepMeta,
 }) => {
   const { message } = App.useApp();
-  const stepNumbers = wizardStepMeta?.stepNumbers ?? {
-    carrera: 2,
-    periodo: 3,
-    paralelo: 4,
-    historial: null,
-  };
+  // stepNumbers dinámicos (1-based): «carrera»/«historial» pueden ser null si el
+  // paso está excluido; cada regla se guarda con null-check antes de comparar.
+  const stepNumbers = useMemo(
+    () =>
+      wizardStepMeta?.stepNumbers ?? {
+        carrera: 2,
+        periodo: 3,
+        paralelo: 4,
+        historial: null,
+      },
+    [wizardStepMeta?.stepNumbers],
+  );
 
   const handleValidateBeforeNext = useCallback(
     (stepNumber, formInstance) => {
@@ -35,7 +40,7 @@ export const useMatriculaWizardPageWizardValidation = ({
           return;
         }
 
-        if (stepNumber === stepNumbers.carrera) {
+        if (stepNumbers.carrera != null && stepNumber === stepNumbers.carrera) {
           const carreraId =
             formInstance?.getFieldValue('carrera') ?? carrerasData?.selectedCarrera?.id;
           if (!carreraId) {
@@ -47,30 +52,17 @@ export const useMatriculaWizardPageWizardValidation = ({
           return;
         }
 
+        // Paso «Periodo y materias»: los periodos se derivan de las materias
+        // marcadas en la planilla, así que basta con exigir ≥1 materia en total.
         if (stepNumber === stepNumbers.periodo) {
-          const selectedPeriodIds = periodosData?.selectedPeriodIds ?? [];
-          if (!selectedPeriodIds.length) {
-            message.error('Por favor seleccione al menos un periodo académico antes de continuar.');
-            reject(new Error('Periodos no seleccionados'));
+          const totalMaterias = Object.values(selectedMateriaIdsByPeriod ?? {}).reduce(
+            (acc, ids) => acc + (Array.isArray(ids) ? ids.length : 0),
+            0,
+          );
+          if (totalMaterias === 0) {
+            message.error('Marque al menos una materia de la planilla antes de continuar.');
+            reject(new Error('Materias no seleccionadas'));
             return;
-          }
-
-          if (!isNuevoEstudiante) {
-            const periodosSinMaterias = selectedPeriodIds.filter((periodId) => {
-              const materiasDelPeriodo = selectedMateriaIdsByPeriod?.[periodId] ?? [];
-              return materiasDelPeriodo.length === 0;
-            });
-            if (periodosSinMaterias.length > 0) {
-              const periodosNombres = periodosSinMaterias
-                .map((pid) => {
-                  const periodo = periodosData?.periodos?.find((p) => p.id === pid);
-                  return periodo?.nombre ?? `Periodo ${pid}`;
-                })
-                .join(', ');
-              message.error(`Por favor seleccione al menos una materia para: ${periodosNombres}`);
-              reject(new Error('Materias no seleccionadas'));
-              return;
-            }
           }
           resolve();
           return;
@@ -157,7 +149,6 @@ export const useMatriculaWizardPageWizardValidation = ({
       paralelosData?.selectedParalelosByPeriod,
       paralelosData?.loading,
       paralelosData?.paralelos,
-      isNuevoEstudiante,
       historialPrevioData,
       message,
     ],

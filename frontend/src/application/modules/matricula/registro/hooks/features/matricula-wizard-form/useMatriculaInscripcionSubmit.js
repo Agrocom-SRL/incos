@@ -16,7 +16,7 @@ import {
 import { buildInscripcionPayload } from '@application-matricula/registro/utils/buildInscripcionPayload';
 import { resolveInscripcionApiUserMessage } from '@application-matricula/registro/utils/inscripcionApiErrors';
 
-export const useMatriculaInscripcionSubmit = (mode = 'nuevo', options = {}, getFormValues) => {
+export const useMatriculaInscripcionSubmit = (_mode = 'nuevo', options = {}, getFormValues) => {
   const {
     selectedStudent,
     selectedParalelo,
@@ -24,6 +24,7 @@ export const useMatriculaInscripcionSubmit = (mode = 'nuevo', options = {}, getF
     selectedPeriodIds = [],
     selectedParalelosByPeriod = {},
     selectedMateriaIdsByPeriod = {},
+    planEstudioId = null,
     inscripcionId = null,
     buildPriorHistory = null,
     validatePriorHistory = null,
@@ -148,6 +149,7 @@ export const useMatriculaInscripcionSubmit = (mode = 'nuevo', options = {}, getF
         buildPriorHistory,
         soloHistorial: validation.soloHistorial,
         parallelId,
+        planEstudioId,
       });
 
       const result = isEditMode
@@ -183,6 +185,7 @@ export const useMatriculaInscripcionSubmit = (mode = 'nuevo', options = {}, getF
       selectedPeriodIds,
       selectedParalelosByPeriod,
       selectedMateriaIdsByPeriod,
+      planEstudioId,
       isEditMode,
       inscripcionId,
       completarSoloHistorialPrevio,

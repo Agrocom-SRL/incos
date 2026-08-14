@@ -6,10 +6,11 @@
  * - Application Layer: Registro de dependencias del módulo de inscripciones
  */
 
-import { 
+import {
   CrearInscripcionUseCase,
   ActualizarInscripcionUseCase,
   ObtenerInscripcionPorIdUseCase,
+  ObtenerContextoMatriculaUseCase,
   ObtenerTodasInscripcionesUseCase,
   EliminarInscripcionUseCase,
   GuardarHistorialPrevioInscripcionUseCase,
@@ -39,6 +40,10 @@ export function registerInscripcionesModule(factory) {
 
   factory.obtenerInscripcionPorId = () => {
     return new ObtenerInscripcionPorIdUseCase(inscripcionRepository);
+  };
+
+  factory.obtenerContextoMatricula = () => {
+    return new ObtenerContextoMatriculaUseCase(inscripcionRepository);
   };
 
   factory.obtenerTodasInscripciones = () => {

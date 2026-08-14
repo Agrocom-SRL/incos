@@ -1,286 +1,145 @@
 /* ============================================================================
-   STEP 2 - Periodo y materias (Material Design inspired)
+   PASO «PARALELO» — cards de paralelo por periodo (wizard de matrícula)
    ============================================================================
-   Elevation, surfaces, typography hierarchy, chips
+   Rediseño §4-C2 con tokens del design system (dark-safe, sin hex sueltos):
+   tarjeta elevada con hover motivado, pill de turno (StatusPill, colores por
+   token en el JSX) y tiles de totales Total / Hombres / Mujeres. El estado
+   seleccionado usa el acento primario (borde + tinte), no el relleno sólido.
+
+   La selección de periodo/materias vive ahora en la planilla
+   (materias-planilla.css); los estilos del checkboxGroup legacy se retiraron.
    ============================================================================ */
 
-/* ---- Contenedores de sección (materias y paralelos) ---- */
-/* Superficie de tarjetas: gris muy suave para que destaquen sobre fondo blanco/gris claro */
-.step2-materias-list {
-  --step2-elevation-1: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
-  --step2-elevation-2: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
-  --step2-surface: #f5f6f8;
-  --step2-surface-border: rgba(0, 0, 0, 0.1);
-  --step2-radius: 12px;
-  --step2-radius-sm: 8px;
-  padding: 4px 0;
+/* ---- Tarjeta contenedora (DataCards) ---- */
+
+.step2-paralelos-cards .data-cards__card {
+  border-radius: var(--border-radius-lg) !important;
+  border: 1px solid var(--color-border-secondary) !important;
+  background: var(--color-bg-container) !important;
+  box-shadow: var(--shadow-elevation-1) !important;
+  transition:
+    box-shadow var(--transition-base) ease,
+    transform var(--transition-base) ease,
+    border-color var(--transition-base) ease !important;
 }
 
-.step2-paralelos-cards {
-  --step2-elevation-1: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
-  --step2-elevation-2: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
-  --step2-elevation-hover: 0 12px 24px -8px rgba(0, 0, 0, 0.15), 0 4px 8px -4px rgba(0, 0, 0, 0.08);
-  --step2-surface: #f5f6f8;
-  --step2-surface-border: rgba(0, 0, 0, 0.1);
-  --step2-radius: 12px;
-  --step2-radius-sm: 8px;
+.step2-paralelos-cards .data-cards__card .ant-card-body {
+  padding: var(--spacing-base) !important;
+  border-radius: var(--border-radius-lg);
+  background: transparent !important;
 }
 
-/* Lista de materias: tarjetas con superficie gris y borde visible */
-.step2-materias-list .activity-list {
-  gap: 12px !important;
+.step2-paralelos-cards .data-cards__card:hover {
+  box-shadow: var(--shadow-elevation-2) !important;
+  border-color: var(--color-primary-border) !important;
+  transform: translateY(-2px);
 }
 
-.step2-materias-list .activity-item {
-  background: var(--step2-surface) !important;
-  border: 1px solid var(--step2-surface-border) !important;
-  border-radius: var(--step2-radius);
-  padding: 14px 16px !important;
-  box-shadow: var(--step2-elevation-1);
-  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+/* Tarjeta seleccionada: acento primario (borde + tinte suave, texto legible). */
+.step2-paralelos-cards .data-cards__card--active {
+  border-color: var(--color-primary) !important;
+  background: var(--color-primary-bg) !important;
+  box-shadow:
+    0 0 0 2px var(--color-primary-border),
+    var(--shadow-elevation-1) !important;
 }
 
-.step2-materias-list .activity-item:hover {
-  box-shadow: var(--step2-elevation-2);
-  border-color: rgba(0, 0, 0, 0.14) !important;
+.step2-paralelos-cards .data-cards__card--active .ant-card,
+.step2-paralelos-cards .data-cards__card--active .ant-card-body {
+  background: transparent !important;
 }
 
-/* ---- Tarjeta de paralelo (Material card) ---- */
+/* ---- Contenido de la tarjeta ---- */
+
 .step2-paralelo-card {
   width: 100%;
   min-height: 100%;
   display: flex;
   flex-direction: column;
-  padding: 0;
 }
 
 .step2-paralelo-card__header {
-  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
 }
 
 .step2-paralelo-card__title {
   margin: 0 !important;
-  font-size: 1.125rem !important;
-  font-weight: 600 !important;
-  letter-spacing: -0.01em;
-  line-height: 1.35 !important;
-  color: rgba(0, 0, 0, 0.87) !important;
+  font-size: var(--font-size-lg) !important;
+  font-weight: var(--font-weight-strong) !important;
+  line-height: var(--line-height-sm) !important;
+  color: var(--color-text) !important;
 }
 
 .step2-paralelo-card__meta {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.step2-paralelo-card__chip {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 10px;
-  border-radius: 16px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  line-height: 1.25;
-  background: rgba(0, 0, 0, 0.06);
-  color: rgba(0, 0, 0, 0.72);
-}
-
-.step2-paralelo-card__chip--turno {
-  background: rgba(24, 144, 255, 0.12);
-  color: #1890ff;
+  gap: var(--spacing-xs);
 }
 
 .step2-paralelo-card__desc {
-  font-size: 0.8125rem;
-  color: rgba(0, 0, 0, 0.6);
-  line-height: 1.4;
-  margin-top: 8px;
+  margin: 0 0 var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-sm);
 }
 
 .step2-paralelo-card__divider {
   height: 1px;
-  background: rgba(0, 0, 0, 0.08);
-  margin: 12px 0;
+  background: var(--color-border-secondary);
+  margin: var(--spacing-sm) 0;
   border: none;
 }
+
+/* ---- Totales de inscritos ---- */
 
 .step2-paralelo-card__stats {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 12px;
+  gap: var(--spacing-sm);
 }
 
 .step2-paralelo-card__stat {
   flex: 1;
-  min-width: 70px;
-  padding: 10px 12px;
-  border-radius: var(--step2-radius-sm);
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  min-width: 0;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius);
+  background: var(--color-bg-layout);
+  border: 1px solid var(--color-border-secondary);
   text-align: center;
-  transition: background 0.2s ease;
+}
+
+.step2-paralelos-cards .data-cards__card--active .step2-paralelo-card__stat {
+  background: var(--color-bg-container);
+  border-color: var(--color-primary-border);
 }
 
 .step2-paralelo-card__stat-label {
   display: block;
-  font-size: 0.6875rem;
-  font-weight: 600;
+  font-size: var(--font-size-xxs);
+  font-weight: var(--font-weight-strong);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: rgba(0, 0, 0, 0.5);
-  margin-bottom: 4px;
+  letter-spacing: 0.4px;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-xs);
 }
 
 .step2-paralelo-card__stat-value {
-  font-size: 1.25rem;
-  font-weight: 700;
-  line-height: 1.2;
-  color: rgba(0, 0, 0, 0.87);
-}
-
-.step2-paralelo-card__stat--total .step2-paralelo-card__stat-value {
-  color: rgba(0, 0, 0, 0.87);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-strong);
+  line-height: var(--line-height-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
 }
 
 .step2-paralelo-card__stat--hombres .step2-paralelo-card__stat-value {
-  color: #1890ff;
+  color: var(--color-info-active);
 }
 
 .step2-paralelo-card__stat--mujeres .step2-paralelo-card__stat-value {
-  color: #eb2f96;
-}
-
-/* Tarjeta de paralelo: superficie gris y borde visible para contraste con el fondo */
-.step2-paralelos-cards .data-cards__card .ant-card-body {
-  padding: 20px !important;
-  border-radius: var(--step2-radius);
-  background: var(--step2-surface) !important;
-}
-
-.step2-paralelos-cards .data-cards__card {
-  border-radius: var(--step2-radius) !important;
-  border: 1px solid var(--step2-surface-border) !important;
-  box-shadow: var(--step2-elevation-1) !important;
-  background: var(--step2-surface) !important;
-  transition: box-shadow 0.25s ease, transform 0.2s ease, border-color 0.2s ease !important;
-}
-
-.step2-paralelos-cards .data-cards__card:hover {
-  box-shadow: var(--step2-elevation-hover) !important;
-  border-color: rgba(0, 0, 0, 0.16) !important;
-}
-
-/* Tarjeta seleccionada: fondo y borde en color primario */
-.step2-paralelos-cards .data-cards__card--active {
-  border-color: var(--color-primary, #1890ff) !important;
-  background: var(--color-primary, #1890ff) !important;
-  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.25), var(--step2-elevation-2) !important;
-}
-
-.step2-paralelos-cards .data-cards__card--active .ant-card {
-  background: var(--color-primary, #1890ff) !important;
-}
-
-.step2-paralelos-cards .data-cards__card--active .ant-card-body {
-  background: var(--color-primary, #1890ff) !important;
-}
-
-/* Tarjeta activa: mantener legibilidad de chips y stats */
-.step2-paralelos-cards .data-cards__card--active .step2-paralelo-card__title {
-  color: #fff !important;
-}
-
-.step2-paralelos-cards .data-cards__card--active .step2-paralelo-card__chip {
-  background: rgba(255, 255, 255, 0.25);
-  color: #fff;
-}
-
-.step2-paralelos-cards .data-cards__card--active .step2-paralelo-card__chip--turno {
-  background: rgba(255, 255, 255, 0.3);
-  color: #fff;
-}
-
-.step2-paralelos-cards .data-cards__card--active .step2-paralelo-card__desc {
-  color: rgba(255, 255, 255, 0.85);
-}
-
-.step2-paralelos-cards .data-cards__card--active .step2-paralelo-card__divider {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.step2-paralelos-cards .data-cards__card--active .step2-paralelo-card__stat {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.step2-paralelos-cards .data-cards__card--active .step2-paralelo-card__stat-label {
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.step2-paralelos-cards .data-cards__card--active .step2-paralelo-card__stat-value {
-  color: #fff !important;
-}
-
-.step2-paralelos-cards .data-cards__card--active .step2-paralelo-card__stat--hombres .step2-paralelo-card__stat-value {
-  color: #bae7ff !important;
-}
-
-.step2-paralelos-cards .data-cards__card--active .step2-paralelo-card__stat--mujeres .step2-paralelo-card__stat-value {
-  color: #ffadd2 !important;
-}
-
-/* ---- Periodo: radio group horizontal (botones) ---- */
-.step2-periodo-radio .field-radio.ant-radio-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.step2-periodo-radio .ant-radio-button-wrapper {
-  border-radius: 8px;
-}
-
-/* ---- Periodo como checkbox group (multi-select, estilo botón) ---- */
-.step2-periodo-checkbox.field-checkbox-group--button .ant-checkbox-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.step2-periodo-checkbox.field-checkbox-group--button .ant-checkbox-wrapper {
-  margin-inline-start: 0;
-  padding: 4px 12px;
-  border: 1px solid #d9d9d9;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-}
-
-.step2-periodo-checkbox.field-checkbox-group--button .ant-checkbox-wrapper:hover {
-  border-color: var(--ant-color-primary-hover, #4096ff);
-  color: var(--ant-color-primary, #1677ff);
-}
-
-.step2-periodo-checkbox.field-checkbox-group--button .ant-checkbox-wrapper.ant-checkbox-wrapper-checked {
-  border-color: var(--ant-color-primary, #1677ff);
-  background-color: var(--ant-color-primary-bg, #e6f4ff);
-  color: var(--ant-color-primary, #1677ff);
-}
-
-/* Periodos deshabilitados por traspaso (año ya cursado en institución de origen).
-   La clase está en un span que envuelve cada checkbox para garantizar que se aplique. */
-.step2-periodo-checkbox .periodo-academico--disabled {
-  display: inline-block;
-  opacity: 0.6;
-  cursor: not-allowed;
-  pointer-events: none;
-}
-.step2-periodo-checkbox .periodo-academico--disabled .ant-checkbox-wrapper {
-  cursor: not-allowed;
-  pointer-events: none;
-}
-.step2-periodo-checkbox .periodo-academico--disabled .ant-checkbox-label {
-  color: var(--text-500, #6b7280);
-  text-decoration: line-through;
+  color: var(--color-accent-active);
 }

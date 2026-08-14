@@ -7,6 +7,7 @@ import {
   createEnrollmentValidator,
   updateEnrollmentValidator,
   updateEnrollmentPriorHistoryValidator,
+  contextoMatriculaValidator,
 } from '../validators/inscripciones/index.js';
 
 /**
@@ -66,6 +67,23 @@ export function buildInscripcionesRouter({ controllers, middlewares }) {
         createEnrollmentValidator, // 1. Validator primero
         validateRequest,            // 2. Middleware que procesa errores
         (req, res, next) => controllers.createEnrollmentController.handle(req, res, next)  // 3. Controller al final
+    );
+
+    /**
+     * GET /api/v1/inscripciones/contexto-matricula
+     * Contexto de matrícula para el wizard de inscripción (rediseño 2026-08):
+     * estudiante + gestión vigente + carrera + planes habilitados + plan
+     * resuelto + periodos/asignaturas anotados con el kardex (vista 141).
+     * Query: estudiante_id (req.), carrera_id (opcional), plan_estudio_id (opcional)
+     * Permiso: matricula.inscribir CREAR (cero permisos nuevos).
+     * IMPORTANTE: registrada ANTES de las rutas /:id para no colisionar.
+     */
+    router.get(
+        '/contexto-matricula',
+        ...crearInscripcion,
+        contextoMatriculaValidator,
+        validateRequest,
+        (req, res, next) => controllers.getMatriculaContextoController.handle(req, res, next)
     );
 
     /**

@@ -9,6 +9,7 @@ export { GenerateFormularioInscripcionController } from './generate-formulario.c
 export { UpdateEnrollmentController } from './inscripciones/update.controller.js';
 export { UpdateEnrollmentPriorHistoryController } from './inscripciones/update-prior-history.controller.js';
 export { ActivarCursadoMatriculaController } from './inscripciones/activar-cursado.controller.js';
+export { GetMatriculaContextoController } from './inscripciones/get-contexto-matricula.controller.js';
 
 // ============================================
 // CONTROLLERS FUTUROS - MATERIAS INSCRITAS

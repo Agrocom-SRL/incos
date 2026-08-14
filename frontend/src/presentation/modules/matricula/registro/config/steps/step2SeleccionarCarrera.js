@@ -1,41 +1,24 @@
 /**
- * step2SeleccionarCarrera - Paso 2 del wizard de inscripción (Paso visual 2)
+ * step2SeleccionarCarrera - Paso «Carrera y plan» del wizard de inscripción.
  *
- * Orden del wizard visual: 1=Buscar estudiante, 2=Carrera, 3=Periodo y materias, 4=Paralelo.
- * Si el estudiante es nuevo se usa la gestión vigente; si es antiguo la gestión
- * se recupera de sus datos académicos.
+ * Solo se muestra a estudiantes NUEVOS EN EL SISTEMA (sin historial digital);
+ * con historial, carrera y plan se resuelven del kardex y el paso se excluye
+ * del array de pasos (matriculaWizardStepConfig).
+ *
+ * Los controles (picker de tarjetas de carrera + selector de plan) los renderiza
+ * InscripcionesCarreraStepContent vía renderSectionContent; esta config solo
+ * aporta título y descripción de la sección (sin Alerts fijos).
  */
 
 const CARRERA_HEADER = {
-  title: 'Carrera',
+  title: 'Carrera y plan de estudio',
   description:
-    'Los estudiantes nuevos eligen carrera; los antiguos mantienen la carrera asignada en sus datos académicos.',
+    'Seleccione la carrera del estudiante. Si la carrera tiene más de un plan habilitado en la gestión, elija también el plan de estudio; con un solo plan se usa el vigente automáticamente.',
 };
-
-const CARRERA_FIELDS = [
-  {
-    name: 'estudianteSeleccionado',
-    type: 'alert',
-    label: '',
-    message: 'Estudiante seleccionado',
-    description: '',
-    alertType: 'success',
-    span: 24,
-    required: false,
-  },
-  {
-    name: 'carrera',
-    type: 'select',
-    label: 'Carrera',
-    placeholder: 'Seleccione una carrera',
-    required: true,
-    span: 12,
-  },
-];
 
 export const getStep2Fields = () => ({
   carrera: {
     ...CARRERA_HEADER,
-    fields: CARRERA_FIELDS,
+    fields: [],
   },
 });

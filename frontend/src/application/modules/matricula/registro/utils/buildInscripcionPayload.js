@@ -10,11 +10,11 @@ export const buildInscripcionPayload = ({
   selectedPeriodIds = [],
   selectedParalelosByPeriod = {},
   selectedMateriaIdsByPeriod = {},
-  selectedParalelo,
   hasSelectionByPeriod,
   buildPriorHistory,
   soloHistorial,
   parallelId,
+  planEstudioId = null,
 }) => {
   const periodoId = selectedPeriod?.id ?? formValues.periodo_id ?? formValues.periodo;
   const enrollmentTypeForApi = formValues.enrollment_type || tipoAdmision || 'NUEVO';
@@ -25,6 +25,13 @@ export const buildInscripcionPayload = ({
     enrollment_type: enrollmentTypeForApi,
     observations: formValues.observations || null,
   };
+
+  // Plan efectivo del contexto de matrícula (elección del selector o plan
+  // resuelto por el backend). dataKey plan_estudio_id == dataFieldName del
+  // validator de create/update (§3 del plan; planes duales RN-3/RN-4).
+  if (planEstudioId != null) {
+    inscripcionData.plan_estudio_id = Number(planEstudioId);
+  }
 
   if (buildPriorHistory) {
     const priorHistory = buildPriorHistory();

@@ -1,8 +1,10 @@
 /**
- * step1BuscarEstudiante - Paso 1 del wizard de inscripción (Paso visual 1)
+ * step1BuscarEstudiante - Paso «Buscar estudiante» del wizard de inscripción.
  *
- * Orden del wizard visual: 1=Buscar estudiante, 2=Carrera, 3=Periodo y materias, 4=Paralelo.
- * Single Responsibility: Definir los campos del paso "Buscar estudiante".
+ * Single Responsibility: Definir los campos del paso (input de búsqueda a ancho
+ * completo + lista de resultados). Sin Alerts fijos: las instrucciones viven en
+ * la descripción de la sección y en el placeholder; el estado inicial muestra
+ * las sugerencias «Estudiantes nuevos sin matrícula» (enricher de la lista).
  */
 
 import { UserOutlined } from '@ant-design/icons';
@@ -12,7 +14,7 @@ import { StatusPill, Text } from '@atoms';
 const BUSCAR_ESTUDIANTE_HEADER = {
   title: 'Datos del estudiante',
   description:
-    'Puede buscar por cédula de identidad, código de estudiante, nombres o apellidos.',
+    'Busque por cédula de identidad, código de estudiante, nombres o apellidos y seleccione al estudiante en la lista. Al inicio se muestran los estudiantes nuevos sin matrícula.',
 };
 
 const BUSCAR_ESTUDIANTE_FIELDS = [
@@ -20,20 +22,10 @@ const BUSCAR_ESTUDIANTE_FIELDS = [
     name: 'buscarEstudiante',
     type: 'search',
     label: 'Buscar estudiante',
-    placeholder: 'Ej: 1234567, EST-2025-0001, Juan Pérez, etc.',
+    placeholder: 'Busque por C.I., código, nombres o apellidos',
     required: true,
-    span: 12,
+    span: 24,
     allowClear: true,
-  },
-  {
-    name: 'infoBusqueda',
-    type: 'alert',
-    label: '',
-    message: 'Instrucciones de búsqueda',
-    description: 'Puede buscar estudiantes por: Cédula de Identidad (CI), Código de estudiante, Nombres, Apellido paterno o Apellido materno. Una vez encontrado el estudiante, se mostrarán sus datos académicos y podrá continuar al siguiente paso.',
-    alertType: 'info',
-    span: 12,
-    required: false,
   },
   {
     name: 'resultadosEstudiantes',
@@ -48,15 +40,22 @@ const BUSCAR_ESTUDIANTE_FIELDS = [
       if (student.codigoEstudiante) data.push(`Código: ${student.codigoEstudiante}`);
       const caption = data.length > 0 ? data.join(' | ') : null;
       const yaMatriculado = !!student.yaMatriculadoGestionActual;
+      const esNuevoSistema = student.esNuevoSistema === true;
       return {
         avatar: <UserOutlined />,
         title: (
-          <Flex align="center" gap={8}>
+          <Flex align="center" gap={8} wrap>
             <span>{student.nombreCompleto || 'Sin nombre'}</span>
             {yaMatriculado ? (
               <StatusPill
                 label={`Ya matriculado${student.gestionActualAnio ? ` (${student.gestionActualAnio})` : ''}`}
                 className="cfg-materia-pill cfg-materia-pill--danger"
+              />
+            ) : null}
+            {!yaMatriculado && esNuevoSistema ? (
+              <StatusPill
+                label="Nuevo en el sistema"
+                className="cfg-materia-pill cfg-materia-pill--info"
               />
             ) : null}
           </Flex>
@@ -67,7 +66,7 @@ const BUSCAR_ESTUDIANTE_FIELDS = [
   },
 ];
 
-/** Retorna la configuración del paso 1: Buscar estudiante */
+/** Retorna la configuración del paso: Buscar estudiante */
 export const getStep1Fields = () => ({
   buscarEstudiante: {
     ...BUSCAR_ESTUDIANTE_HEADER,

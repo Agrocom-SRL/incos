@@ -4,6 +4,10 @@
  * buscar sin saber si el estudiante ya está inscrito); solo los prioriza al
  * final y anota el flag yaMatriculadoGestionActual para que el frontend
  * bloquee la selección con un aviso.
+ *
+ * Modo soloNuevos: devuelve únicamente estudiantes con total_inscripciones = 0
+ * (nuevos en el sistema, vista 153), orden created_at DESC, sin exigir término
+ * de búsqueda — es la muestra inicial del paso «Buscar» del wizard.
  */
 
 export class SearchStudentsForInscripcionUseCase {
@@ -20,12 +24,18 @@ export class SearchStudentsForInscripcionUseCase {
   }
 
   /**
-   * @param {{ q?: string, limit?: number, preliminar?: boolean }} input
+   * @param {{ q?: string, limit?: number, preliminar?: boolean, soloNuevos?: boolean }} input
    * @returns {Promise<Array<Object>>}
    */
-  async execute({ q, limit = 50, preliminar = false }) {
+  async execute({ q, limit = 50, preliminar = false, soloNuevos = false }) {
     let rows;
-    if (preliminar) {
+    if (soloNuevos) {
+      rows = await this.studentRepository.buscarParaInscripcion({
+        soloNuevos: true,
+        q: String(q ?? '').trim(),
+        limit,
+      });
+    } else if (preliminar) {
       rows = await this.studentRepository.buscarParaInscripcion({ preliminar: true, limit });
     } else {
       const term = String(q ?? '').trim();
@@ -45,6 +55,9 @@ export class SearchStudentsForInscripcionUseCase {
     const nombreCompleto =
       [nombres, ap1, ap2].filter((x) => String(x).trim()).join(' ').trim() || row.codigo_estudiante;
 
+    const totalInscripciones =
+      row.total_inscripciones != null ? Number(row.total_inscripciones) : 0;
+
     return {
       id: row.id,
       codigoEstudiante: row.codigo_estudiante,
@@ -59,6 +72,10 @@ export class SearchStudentsForInscripcionUseCase {
       expedicion: row.expedicion ?? null,
       carreraNombre: row.carrera_nombre ?? null,
       carreraCodigo: row.carrera_codigo ?? null,
+      carreraId: row.carrera_id ?? null,
+      tipoAdmision: row.tipo_admision ?? null,
+      esNuevoSistema: totalInscripciones === 0,
+      totalInscripciones,
       createdAt: row.created_at ?? null,
       yaMatriculadoGestionActual: row.inscripcion_gestion_actual_id != null,
       inscripcionGestionActualId: row.inscripcion_gestion_actual_id ?? null,

@@ -1,36 +1,23 @@
-import { buildStep0StudentDescription } from '../../features/enrichers/studentEnrichers';
-
 /**
- * Step 0: estudiante pre-seleccionado → alerta en lugar del buscador.
+ * Step 0 (Buscar estudiante) con estudiante PRE-SELECCIONADO desde el connector
+ * (entrada por detalle del estudiante o modo edición): el buscador no aplica y
+ * el paso queda reducido a título/descrición — los datos del estudiante los
+ * muestra la franja InscripcionStudentStrip (encima del wizard), sin Alerts.
  */
 export const step0EnrichmentStrategy = (step, stepIndex, _enrichers, context) => {
   const selectedStudent = context?.studentSearch?.selectedStudent;
-  if (stepIndex !== 0 || !selectedStudent?.id) return null;
-  const carreraNombre =
-    selectedStudent.carreraNombre ||
-    context?.carrerasData?.carreras?.find((c) => c.id === selectedStudent.careerId)?.nombre;
-  const description = buildStep0StudentDescription({ ...selectedStudent, carreraNombre });
+  if (stepIndex !== 0 || !context?.hasPreselectedStudent || !selectedStudent?.id) return null;
   return {
     ...step,
     title: 'Estudiante a inscribir',
+    formTitle: 'Estudiante a inscribir',
     description:
-      'El estudiante ya está seleccionado; verifique sus datos y continúe con la inscripción.',
+      'El estudiante ya está seleccionado; verifique sus datos en la franja superior y continúe con la inscripción.',
     config: {
       buscarEstudiante: {
         title: 'Estudiante a inscribir',
-        description: 'Verifique los datos del estudiante antes de continuar con la carrera.',
-        fields: [
-          {
-            name: 'estudianteSeleccionado',
-            type: 'alert',
-            label: '',
-            message: 'Estudiante a inscribir',
-            description,
-            alertType: 'success',
-            span: 24,
-            required: false,
-          },
-        ],
+        description: 'Verifique los datos del estudiante antes de continuar.',
+        fields: [],
       },
     },
   };

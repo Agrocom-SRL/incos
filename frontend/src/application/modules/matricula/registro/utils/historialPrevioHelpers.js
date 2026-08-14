@@ -4,10 +4,30 @@
 
 const TIPOS_CON_HISTORIAL = ['ANTIGUO', 'TRASPASO', 'TRANSITABILIDAD'];
 
+/** Fallback local si el contexto aún no informa la nota mínima de aprobación. */
 export const DEFAULT_NOTA_HISTORIAL = 61;
 export const HISTORIAL_ESTADOS = ['APROBADO', 'CONVALIDADO'];
 
-export function requiereHistorialPrevio(tipoAdmision) {
+/**
+ * Nota que se precarga al cambiar una fila a APROBADO (§4-C4): la nota mínima
+ * de aprobación que informa el contexto de matrícula, con fallback local.
+ */
+export function resolveDefaultNotaHistorial(contexto = null) {
+  const nota = Number(contexto?.notaMinimaAprobacion);
+  return Number.isFinite(nota) && nota > 0 ? nota : DEFAULT_NOTA_HISTORIAL;
+}
+
+/**
+ * Determina si el wizard debe pedir el historial de notas al inscribir.
+ *
+ * @param {string|null} tipoAdmision - NUEVO | ANTIGUO | TRASPASO | TRANSITABILIDAD
+ * @param {boolean|null} [esNuevoSistema] - true = 0 inscripciones en el sistema (vista 153
+ *   ampliada / contexto-matricula). Con historial digital (false) el paso se omite:
+ *   las notas ya viven en el kardex. Si el dato no está (null/undefined) se preserva
+ *   el comportamiento histórico: decidir solo por tipo de admisión.
+ */
+export function requiereHistorialPrevio(tipoAdmision, esNuevoSistema = null) {
+  if (esNuevoSistema === false) return false;
   return TIPOS_CON_HISTORIAL.includes(String(tipoAdmision ?? '').toUpperCase());
 }
 
@@ -49,23 +69,19 @@ export function computeConcludedPeriods({
     .map((p) => {
       const numero = Number(p.numero ?? 0);
       let include = false;
-      let status = 'APROBADO';
+      // Default por fila (§4-C4): CONVALIDADO; el usuario cambia a APROBADO
+      // cuando corresponde y ahí se precarga la nota mínima de aprobación.
+      const status = 'CONVALIDADO';
 
       if (tipo === 'TRASPASO') {
-        if (periodosDisabledByTraspaso?.[numero] === true) {
-          include = true;
-          status = 'CONVALIDADO';
-        }
-      } else if (tipo === 'TRANSITABILIDAD') {
-        if (minSelectedNumero != null && numero < minSelectedNumero) {
-          include = true;
-          status = 'CONVALIDADO';
-        }
-      } else if (tipo === 'ANTIGUO') {
-        if (minSelectedNumero != null && numero < minSelectedNumero) {
-          include = true;
-          status = 'APROBADO';
-        }
+        // Unión (§4-C4): periodos bloqueados por anio_cursado + los demás
+        // periodos anteriores al mínimo seleccionado — p. ej. traspaso PRIMERO
+        // inscribiendo 3.º también registra el 2.º.
+        include =
+          periodosDisabledByTraspaso?.[numero] === true ||
+          (minSelectedNumero != null && numero < minSelectedNumero);
+      } else if (tipo === 'TRANSITABILIDAD' || tipo === 'ANTIGUO') {
+        include = minSelectedNumero != null && numero < minSelectedNumero;
       }
 
       if (!include) return null;
@@ -89,8 +105,8 @@ export function parseHistorialPrevioRowKey(key) {
 }
 
 export function resolveRowStatus(statusByKey, key, defaultStatus) {
-  const s = statusByKey?.[key] ?? defaultStatus ?? 'APROBADO';
-  return String(s).toUpperCase() === 'CONVALIDADO' ? 'CONVALIDADO' : 'APROBADO';
+  const s = String(statusByKey?.[key] ?? defaultStatus ?? 'CONVALIDADO').toUpperCase();
+  return HISTORIAL_ESTADOS.includes(s) ? s : 'CONVALIDADO';
 }
 
 export function buildHistorialPrevioRows(
@@ -215,7 +231,8 @@ export function validateHistorialPrevioGrades(
   let missing = 0;
 
   for (const row of rows) {
-    if (row.status === 'CONVALIDADO') continue;
+    // Nota 0-100 solo en APROBADO; CONVALIDADO va sin nota (§4-C4).
+    if (row.status !== 'APROBADO') continue;
 
     const nota = row.nota;
     if (nota == null || nota === '') {

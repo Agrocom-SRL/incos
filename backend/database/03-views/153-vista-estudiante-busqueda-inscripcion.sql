@@ -8,6 +8,15 @@
 -- estudiante ya está matriculado). El backend prioriza en el ORDER BY a los NO
 -- matriculados (mismo patrón que vista_estudiante_busqueda_registro_aporte, 39).
 --
+-- 2026-08-13 (ajuste aditivo, rediseño wizard matrícula): se exponen
+-- datos_academicos_id, carrera_id y tipo_admision (fila académica activa más
+-- reciente del estudiante) y total_inscripciones (COUNT de inscripciones
+-- activas del estudiante en CUALQUIER gestión, subconsulta agregada por
+-- estudiante para no multiplicar filas). total_inscripciones = 0 identifica a
+-- los estudiantes completamente nuevos en el sistema (modo solo_nuevos del
+-- endpoint GET /estudiantes/buscar-para-inscripcion). Consumidores previos
+-- (StudentRepository.buscarParaInscripcion) no se ven afectados.
+--
 -- Dependencias (orden sugerido):
 -- 1. 15-vista-estudiante-datos-personales.sql
 -- 2. 38-vista-base-estudiante-carrera-reciente.sql
@@ -36,11 +45,39 @@ SELECT
   v.activo,
   cr.carrera_nombre,
   cr.carrera_codigo,
+  eda.id AS datos_academicos_id,
+  eda.carrera_id AS carrera_id,
+  eda.tipo_admision AS tipo_admision,
+  COALESCE(tot.total_inscripciones, 0) AS total_inscripciones,
   ig.inscripcion_id AS inscripcion_gestion_actual_id,
   ig.gestion_anio AS inscripcion_gestion_actual_anio,
   ig.gestion_nombre AS inscripcion_gestion_actual_nombre
 FROM vista_estudiante_datos_personales v
 LEFT JOIN vista_base_estudiante_carrera_reciente cr ON cr.estudiante_id = v.id
+-- Fila académica activa más reciente por estudiante (1 fila, no multiplica)
+LEFT JOIN (
+  SELECT
+    eda2.estudiante_id,
+    MAX(eda2.id) AS datos_academicos_id
+  FROM estudiantes_datos_academicos eda2
+  WHERE eda2.deleted_at IS NULL
+    AND eda2.activo = TRUE
+  GROUP BY eda2.estudiante_id
+) eda_ult ON eda_ult.estudiante_id = v.id
+LEFT JOIN estudiantes_datos_academicos eda ON eda.id = eda_ult.datos_academicos_id
+-- Total de inscripciones activas del estudiante en CUALQUIER gestión
+-- (agregada por estudiante: 1 fila por estudiante, no multiplica)
+LEFT JOIN (
+  SELECT
+    eda3.estudiante_id,
+    COUNT(*) AS total_inscripciones
+  FROM inscripciones i2
+  INNER JOIN estudiantes_datos_academicos eda3 ON eda3.id = i2.datos_academicos_id
+  WHERE i2.activo = TRUE
+    AND i2.deleted_at IS NULL
+    AND eda3.deleted_at IS NULL
+  GROUP BY eda3.estudiante_id
+) tot ON tot.estudiante_id = v.id
 LEFT JOIN (
   SELECT
     eda.estudiante_id,

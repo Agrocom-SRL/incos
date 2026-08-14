@@ -1,5 +1,9 @@
 /* Historial de notas — switcher Aprobado / Convalidado */
 
+.step-historial-notas-table .historial-notas-descripcion.ant-typography {
+  margin-bottom: var(--spacing-sm);
+}
+
 .step-historial-notas-table .historial-estado-segmented {
   width: 100%;
   max-width: 220px;
@@ -32,20 +36,14 @@
   box-shadow: 0 1px 4px rgba(250, 173, 20, 0.35);
 }
 
+.step-historial-notas-table .historial-nota-no-aplica {
+  font-size: var(--font-size-xs);
+}
+
 .step-historial-notas-table .historial-nota-input--error.ant-input-number {
   border-color: var(--ant-color-error, #ff4d4f) !important;
   box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.12);
 }
 
-.step-periodo-materias-section--invalid .step2-materias-block {
-  outline: 2px solid var(--ant-color-error, #ff4d4f);
-  outline-offset: 4px;
-  border-radius: 8px;
-  padding: 8px;
-}
-
-.step-periodo-materias-section--invalid .step2-materias-invalid-hint {
-  color: var(--ant-color-error, #ff4d4f);
-  font-size: 13px;
-  margin-bottom: 12px;
-}
+/* El marcado de paso inválido de «Periodo y materias» vive ahora en
+   materias-planilla.css (.materias-planilla--invalid). */

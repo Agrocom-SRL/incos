@@ -99,6 +99,15 @@ export const createEnrollmentValidator = [
     .isIn(['NUEVO', 'ANTIGUO', 'TRASPASO', 'TRANSITABILIDAD'])
     .withMessage('El tipo de inscripción debe ser uno de: NUEVO, ANTIGUO, TRASPASO, TRANSITABILIDAD'),
 
+  // Plan de estudios elegido (planes duales): opcional; solo surte efecto en la
+  // primera inscripción de un estudiante sin historial (RN-2/RN-3). La regla de
+  // resolución vive en CreateEnrollmentUseCase (enrollmentBusinessRules).
+  body('plan_estudio_id')
+    .optional({ nullable: true, values: 'null' })
+    .isInt({ min: 1 })
+    .withMessage('El ID del plan de estudios debe ser un número entero mayor a 0')
+    .toInt(),
+
   // NOTA: enrollment_date NO se valida aquí porque el backend lo genera automáticamente
   // en CreateEnrollmentUseCase._createEnrollment() usando la fecha actual
 

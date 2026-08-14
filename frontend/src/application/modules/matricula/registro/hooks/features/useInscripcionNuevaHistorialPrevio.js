@@ -9,7 +9,7 @@ import {
   buildPriorHistoryPayload,
   validateHistorialPrevioGrades,
   historialPrevioRowKey,
-  DEFAULT_NOTA_HISTORIAL,
+  resolveDefaultNotaHistorial,
   requiereHistorialPrevio,
   seedHistorialFromPriorEnrollmentHistories,
   resolveRowStatus,
@@ -17,11 +17,17 @@ import {
 
 export const useInscripcionNuevaHistorialPrevio = ({
   tipoAdmision = null,
+  // true = 0 inscripciones en el sistema; false = con historial digital (el paso
+  // se omite); null = dato no disponible → comportamiento histórico por tipo.
+  esNuevoSistema = null,
   periodos = [],
   selectedPeriodIds = [],
   periodosDisabledByTraspaso = null,
   materiasByPeriod = {},
   materiasLoading = false,
+  // Contexto de matrícula (§4-C4): nota mínima de aprobación que se precarga
+  // al cambiar una fila a APROBADO (fallback local si aún no llega).
+  contexto = null,
   initialPriorHistories = null,
   isEditMode = false,
 }) => {
@@ -35,7 +41,7 @@ export const useInscripcionNuevaHistorialPrevio = ({
   const [invalidGradeKeys, setInvalidGradeKeys] = useState([]);
   const initializedRef = useRef(new Set());
 
-  const needsHistorial = requiereHistorialPrevio(tipoAdmision);
+  const needsHistorial = requiereHistorialPrevio(tipoAdmision, esNuevoSistema);
 
   const concludedPeriods = useMemo(
     () =>
@@ -47,6 +53,9 @@ export const useInscripcionNuevaHistorialPrevio = ({
       }),
     [tipoAdmision, periodos, selectedPeriodIds, periodosDisabledByTraspaso]
   );
+
+  // Nota precargada al marcar APROBADO: contexto.notaMinimaAprobacion (fallback local).
+  const defaultNota = resolveDefaultNotaHistorial(contexto);
 
   const rows = useMemo(
     () => buildHistorialPrevioRows(concludedPeriods, materiasByPeriod, gradesByKey, statusByKey),
@@ -103,13 +112,13 @@ export const useInscripcionNuevaHistorialPrevio = ({
             next = { ...prev };
             changed = true;
           }
-          next[key] = DEFAULT_NOTA_HISTORIAL;
+          next[key] = defaultNota;
           initializedRef.current.add(initKey);
         }
       }
       return changed ? next : prev;
     });
-  }, [needsHistorial, materiasLoading, concludedPeriods, materiasByPeriod, statusByKey]);
+  }, [needsHistorial, materiasLoading, concludedPeriods, materiasByPeriod, statusByKey, defaultNota]);
 
   // Estado por defecto de cada fila nueva (ajuste durante render con
   // comparación de prev, sin setState en effect).
@@ -175,26 +184,31 @@ export const useInscripcionNuevaHistorialPrevio = ({
     });
   }, []);
 
-  const setStatus = useCallback((key, value) => {
-    const status = String(value).toUpperCase() === 'CONVALIDADO' ? 'CONVALIDADO' : 'APROBADO';
-    setStatusByKey((prev) => {
-      if (prev[key] === status) return prev;
-      return { ...prev, [key]: status };
-    });
-    if (status === 'CONVALIDADO') {
-      setGradesByKey((prev) => {
-        if (prev[key] == null) return prev;
-        const next = { ...prev };
-        delete next[key];
-        return next;
+  const setStatus = useCallback(
+    (key, value) => {
+      const status = String(value).toUpperCase() === 'APROBADO' ? 'APROBADO' : 'CONVALIDADO';
+      setStatusByKey((prev) => {
+        if (prev[key] === status) return prev;
+        return { ...prev, [key]: status };
       });
-    } else {
-      setGradesByKey((prev) => {
-        if (prev[key] != null && prev[key] !== '') return prev;
-        return { ...prev, [key]: DEFAULT_NOTA_HISTORIAL };
-      });
-    }
-  }, []);
+      if (status === 'APROBADO') {
+        // Precarga la nota mínima de aprobación del contexto (§4-C4).
+        setGradesByKey((prev) => {
+          if (prev[key] != null && prev[key] !== '') return prev;
+          return { ...prev, [key]: defaultNota };
+        });
+      } else {
+        // CONVALIDADO va sin nota.
+        setGradesByKey((prev) => {
+          if (prev[key] == null) return prev;
+          const next = { ...prev };
+          delete next[key];
+          return next;
+        });
+      }
+    },
+    [defaultNota]
+  );
 
   const buildPayload = useCallback(
     () => buildPriorHistoryPayload(gradesByKey, statusByKey, concludedPeriods, materiasByPeriod),

@@ -33,6 +33,7 @@ export { useMatriculaListPage } from './state/matricula-list';
 // Exporta directamente desde los archivos (sin index.js intermedio)
 export { useInscripcionesApi } from './api/useInscripcionesApi';
 export { useGetInscripcionById } from './api/useGetInscripcionById';
+export { useGetMatriculaContexto } from './api/useGetMatriculaContexto';
 export { useCreateInscripcion } from './api/useCreateInscripcion';
 export { useUpdateInscripcion } from './api/useUpdateInscripcion';
 export { useDeleteInscripcion } from './api/useDeleteInscripcion';
@@ -48,9 +49,6 @@ export { useInscripcionNuevaStudentSearch } from './features/useInscripcionNueva
 export { useInscripcionNuevaCarreras } from './features/useInscripcionNuevaCarreras';
 export { useInscripcionNuevaPeriodos } from './features/useInscripcionNuevaPeriodos';
 export { useInscripcionNuevaParalelos } from './features/useInscripcionNuevaParalelos';
-export { useInscripcionNuevaParaleloHorarios } from './features/useInscripcionNuevaParaleloHorarios';
-export { useInscripcionNuevaMaterias } from './features/useInscripcionNuevaMaterias';
-export { useInscripcionNuevaMateriasByPeriods } from './features/useInscripcionNuevaMateriasByPeriods';
 export { useInscripcionNuevaHistorialPrevio } from './features/useInscripcionNuevaHistorialPrevio';
 export { useGenerateBoletaInscripcion } from './features/useGenerateBoletaInscripcion';
 export { useExportListaInscritosPorCarreraExcel } from './features/useExportListaInscritosPorCarreraExcel';

@@ -39,9 +39,9 @@
 import { Empty, Flex, Space } from 'antd';
 import { Spinner, ListItem } from '@atoms';
 
-const DataList = ({ 
-    data = [], 
-    loading = false, 
+const DataList = ({
+    data = [],
+    loading = false,
     emptyMessage = 'No se encontraron datos',
     renderItem,
     onSelect = null,
@@ -50,6 +50,9 @@ const DataList = ({
     loadingText = 'Cargando...',
     listProps = {},
     className = '',
+    // Cabecera de bloque opcional (string o ReactNode) sobre los items,
+    // p. ej. «Estudiantes nuevos sin matrícula» en el wizard de matrícula.
+    header = null,
 }) => {
     // Si está cargando, mostrar spinner
     if (loading) {
@@ -83,6 +86,7 @@ const DataList = ({
             className={listClassName}
             gap={0}
         >
+            {header ? <span className="data-list__header">{header}</span> : null}
             <Space orientation="vertical" size={0} style={{ width: '100%' }}>
                 {data.map((item, index) => {
                     // renderItem del config retorna { avatar, title, caption } que son los props que ListItem espera

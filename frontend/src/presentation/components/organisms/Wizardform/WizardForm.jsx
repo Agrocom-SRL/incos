@@ -49,6 +49,7 @@ const WizardForm = React.forwardRef(({
   onBeforeNextStep, // (stepNumber, form) => void - stepNumber es 1-based (1, 2, 3...). Llamado tras validar y antes de next()
   onBeforePrevStep, // (stepNumber, form) => void - stepNumber es 1-based. Llamado antes de prev(), p. ej. para restaurar valores
   onValidationError, // (error) => void - opcional, se llama cuando falla la validación antes de "Siguiente" (útil para log o mensaje)
+  onStepChange, // (stepIndex) => void - opcional, notifica el paso visible (0-based) al montarse y en cada navegación
   resolveOptions = () => [],
   minAge = null,
   conditionalLoaders = {},
@@ -101,6 +102,13 @@ const WizardForm = React.forwardRef(({
   React.useEffect(() => {
     setMaxStepReached((prevMax) => Math.max(prevMax, currentStep, initialStep));
   }, [currentStep, initialStep]);
+
+  // Notificar el paso visible al padre (ej. franja del estudiante en matrícula)
+  React.useEffect(() => {
+    if (typeof onStepChange === 'function') {
+      onStepChange(currentStep);
+    }
+  }, [currentStep, onStepChange]);
 
   // Notificar cambios en valores del formulario al componente padre
   React.useEffect(() => {

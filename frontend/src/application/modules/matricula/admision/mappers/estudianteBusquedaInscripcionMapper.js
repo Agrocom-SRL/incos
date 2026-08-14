@@ -31,6 +31,14 @@ export const estudianteBusquedaInscripcionMapper = (estudianteBackend) => {
     yaMatriculadoGestionActual: !!estudianteBackend.yaMatriculadoGestionActual,
     gestionActualAnio: estudianteBackend.gestionActualAnio ?? null,
     gestionActualNombre: estudianteBackend.gestionActualNombre ?? null,
+    // Campos de la vista 153 ampliada (contrato §3-A2). Se preservan como null
+    // cuando el backend aún no los envía para que los flags derivados
+    // (esNuevoSistema/tieneHistorialSistema) degraden al comportamiento actual.
+    carreraId: estudianteBackend.carreraId ?? null,
+    tipoAdmision: estudianteBackend.tipoAdmision ?? null,
+    esNuevoSistema:
+      estudianteBackend.esNuevoSistema != null ? !!estudianteBackend.esNuevoSistema : null,
+    totalInscripciones: estudianteBackend.totalInscripciones ?? null,
   };
 };
 

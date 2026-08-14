@@ -18,18 +18,19 @@
  */
 
 import { useMemo } from 'react';
-import { createInscripcionNuevaWizardSteps } from '@matricula/registro/config';
-import { requiereHistorialPrevio } from '@application-matricula/registro/utils/historialPrevioHelpers';
 
 /**
  * Hook para obtener todos los datos específicos de la página de inscripción nueva
- * 
+ *
+ * Nota: los pasos del wizard NO se construyen aquí; salen de
+ * useMatriculaWizardEnrichment (meta dinámica + enrichers).
+ *
  * @param {Object} options - Opciones para personalizar el comportamiento
  * @param {string} options.mode - Modo de la página (puede ser 'nuevo', 'editar', etc.)
  * @returns {Object} Objeto con todos los datos de la página
  */
 export const useInscripcionNuevaPageData = (options = {}) => {
-    const { mode = 'nuevo', tipoAdmision = null } = options;
+    const { mode = 'nuevo' } = options;
 
     // Título de la página (puede ser dinámico según parámetros)
     const pageTitle = useMemo(() => {
@@ -48,18 +49,12 @@ export const useInscripcionNuevaPageData = (options = {}) => {
         { title: pageTitle },
     ], [pageTitle]);
 
-    // Configuración de steps del wizard
-    const wizardSteps = useMemo(() => {
-        return createInscripcionNuevaWizardSteps(requiereHistorialPrevio(tipoAdmision));
-    }, [tipoAdmision]);
-
     // Memoizar el objeto retornado para mantener referencia estable
     // Esto permite que el useMemo del Provider sea más efectivo
     return useMemo(() => {
         return {
             pageTitle,
             breadcrumbItems,
-            wizardSteps,
         };
-    }, [pageTitle, breadcrumbItems, wizardSteps]);
+    }, [pageTitle, breadcrumbItems]);
 };

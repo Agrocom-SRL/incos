@@ -101,6 +101,7 @@ const FieldRenderer = ({
           selectedItem={field.selectedItem}
           isSelected={field.isSelected}
           loadingText={field.loadingText}
+          header={field.header}
         />
       </Col>
     );

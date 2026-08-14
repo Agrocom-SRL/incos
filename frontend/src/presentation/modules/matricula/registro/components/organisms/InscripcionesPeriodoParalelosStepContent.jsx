@@ -7,13 +7,20 @@
  */
 
 import React from 'react';
-import { Row, Col, Typography } from 'antd';
+import { Row, Col } from 'antd';
 import { FormWorkspaceSection } from '@organisms';
 import { DataCards } from '@molecules';
-
-const { Title } = Typography;
+import { StatusPill } from '@atoms';
 
 const ROW_SPAN = 24;
+
+/** Pill de turno diferenciada por color de token (§4-C2): mañana dorado, tarde azul, noche violeta. */
+const TURNO_PILL_CLASSES = {
+  MAÑANA: 'cfg-materia-pill cfg-materia-pill--warning',
+  MANANA: 'cfg-materia-pill cfg-materia-pill--warning',
+  TARDE: 'cfg-materia-pill cfg-materia-pill--info',
+  NOCHE: 'cfg-materia-pill cfg-materia-pill--accent',
+};
 
 /** Estadísticas del paralelo (backend puede enviar estadisticas o campos planos) */
 function getParaleloStats(paralelo) {
@@ -25,22 +32,24 @@ function getParaleloStats(paralelo) {
   };
 }
 
-/** Render por defecto de la tarjeta de paralelo: título, turno, estadísticas */
+/** Render por defecto de la tarjeta de paralelo: título, pill de turno, estadísticas */
 function defaultRenderParaleloCard(paralelo) {
   if (!paralelo) return null;
   const nombre = paralelo.nombre ?? paralelo.codigo ?? `Paralelo ${paralelo.id}`;
-  const turno = paralelo.turno ?? '';
+  const turno = String(paralelo.turno ?? '').trim();
+  const turnoPillClass =
+    TURNO_PILL_CLASSES[turno.toUpperCase()] ?? 'cfg-materia-pill cfg-materia-pill--default';
   const desc = paralelo.descripcion ?? '';
   const stats = getParaleloStats(paralelo);
   return (
     <div className="step2-paralelo-card">
       <div className="step2-paralelo-card__header">
         <h4 className="step2-paralelo-card__title">{nombre}</h4>
-        <div className="step2-paralelo-card__meta">
-          {turno && (
-            <span className="step2-paralelo-card__chip step2-paralelo-card__chip--turno">{turno}</span>
-          )}
-        </div>
+        {turno ? (
+          <div className="step2-paralelo-card__meta">
+            <StatusPill label={turno} className={turnoPillClass} />
+          </div>
+        ) : null}
       </div>
       {desc && <p className="step2-paralelo-card__desc">{desc}</p>}
       <hr className="step2-paralelo-card__divider" />
@@ -132,9 +141,6 @@ const InscripcionesPeriodoParalelosStepContent = ({
       >
         {selectedPeriodIds.length > 0 && (
           <>
-            <Title level={5} className="step2-paralelos-columns-title">
-              Paralelos por periodo
-            </Title>
             <Row
               gutter={0}
               className={`step2-paralelos-columns ${isThreeColumns ? 'step2-paralelos-columns--three' : ''}`}

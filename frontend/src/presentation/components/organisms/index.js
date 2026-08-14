@@ -13,3 +13,4 @@ export { default as CoordinacionDocentesView } from './CoordinacionDocentesView'
 export { default as CursosDocenteView } from './CursosDocenteView';
 export { default as CfgFormWorkspace, CfgFormFieldGrid, cfgFormColProps } from './CfgFormWorkspace';
 export { default as FormWorkspaceSection } from './FormWorkspaceSection';
+export { default as CarreraCardPicker } from './CarreraCardPicker';

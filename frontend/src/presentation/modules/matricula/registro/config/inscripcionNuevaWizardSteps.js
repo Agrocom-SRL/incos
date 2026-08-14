@@ -1,12 +1,13 @@
 /**
  * inscripcionNuevaWizardSteps - Configuración del wizard de inscripción
  *
- * Orden (stepIndex 0-based):
- * - 0: Buscar estudiante
- * - 1: Carrera
- * - 2: Periodo y materias
- * - 3: Paralelo
- * - 4: Historial de notas (solo ANTIGUO, TRASPASO, TRANSITABILIDAD) — último paso antes de finalizar
+ * El array de pasos es dinámico y sigue el ORDEN de la meta
+ * (matriculaWizardStepConfig.createMatriculaWizardStepMeta):
+ * - Buscar estudiante (siempre)
+ * - Carrera y plan (solo estudiantes nuevos en el sistema)
+ * - Periodo y materias (siempre)
+ * - Paralelo (siempre)
+ * - Historial de notas (ANTIGUO/TRASPASO/TRANSITABILIDAD sin historial digital)
  */
 
 import { WIZARD_SECTION_HISTORIAL } from '@application-matricula/registro/utils/matriculaWizardStepConfig';
@@ -16,7 +17,7 @@ import { getStep3Fields } from './steps/step3PeriodoYMaterias.jsx';
 import { getStep4Fields } from './steps/step4Paralelo.js';
 import { getStepHistorialPrevioFields } from './steps/step5HistorialPrevio.js';
 
-const STEP0_HEADER = {
+const STEP_BUSCAR_HEADER = {
   title: 'Buscar estudiante',
   formTitle: 'Información del estudiante',
   description:
@@ -24,15 +25,15 @@ const STEP0_HEADER = {
   sections: ['buscarEstudiante'],
 };
 
-const STEP1_HEADER = {
-  title: 'Seleccionar carrera',
-  formTitle: 'Selección de carrera',
+const STEP_CARRERA_HEADER = {
+  title: 'Carrera y plan',
+  formTitle: 'Carrera y plan de estudio',
   description:
-    'Confirme la carrera en la que se inscribirá el estudiante; la gestión académica se asigna automáticamente.',
+    'Confirme la carrera en la que se inscribirá el estudiante y, si la carrera tiene más de un plan habilitado, elija el plan de estudio; la gestión académica se asigna automáticamente.',
   sections: ['carrera'],
 };
 
-const STEP2_HEADER = {
+const STEP_PERIODO_HEADER = {
   title: 'Periodo y materias',
   formTitle: 'Periodo y materias',
   description:
@@ -40,7 +41,7 @@ const STEP2_HEADER = {
   sections: ['periodoYMaterias'],
 };
 
-const STEP3_HEADER = {
+const STEP_PARALELO_HEADER = {
   title: 'Paralelo',
   formTitle: 'Selección de paralelo',
   description:
@@ -56,18 +57,21 @@ const STEP_HISTORIAL_HEADER = {
   sections: [WIZARD_SECTION_HISTORIAL],
 };
 
+/** Config de cada paso por clave de la meta (mismo vocabulario que indices/stepNumbers). */
+const STEP_BUILDERS = {
+  buscar: () => ({ ...STEP_BUSCAR_HEADER, config: getStep1Fields() }),
+  carrera: () => ({ ...STEP_CARRERA_HEADER, config: getStep2Fields() }),
+  periodo: () => ({ ...STEP_PERIODO_HEADER, config: getStep3Fields() }),
+  paralelo: () => ({ ...STEP_PARALELO_HEADER, config: getStep4Fields() }),
+  historial: () => ({ ...STEP_HISTORIAL_HEADER, config: getStepHistorialPrevioFields() }),
+};
+
 /**
- * @param {boolean} [includeHistorialPrevio=false] - Paso extra para antiguo / traspaso / transitabilidad
+ * @param {Object} stepMeta - Meta de createMatriculaWizardStepMeta (usa stepMeta.order)
  */
-export const createInscripcionNuevaWizardSteps = (includeHistorialPrevio = false) => {
-  const steps = [
-    { ...STEP0_HEADER, config: getStep1Fields() },
-    { ...STEP1_HEADER, config: getStep2Fields() },
-    { ...STEP2_HEADER, config: getStep3Fields() },
-    { ...STEP3_HEADER, config: getStep4Fields() },
-  ];
-  if (includeHistorialPrevio) {
-    steps.push({ ...STEP_HISTORIAL_HEADER, config: getStepHistorialPrevioFields() });
-  }
-  return steps;
+export const createInscripcionNuevaWizardSteps = (stepMeta) => {
+  const order = Array.isArray(stepMeta?.order)
+    ? stepMeta.order
+    : ['buscar', 'carrera', 'periodo', 'paralelo'];
+  return order.map((key) => STEP_BUILDERS[key]()).filter(Boolean);
 };

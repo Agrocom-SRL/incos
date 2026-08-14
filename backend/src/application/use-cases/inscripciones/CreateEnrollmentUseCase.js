@@ -9,6 +9,11 @@ import {
 } from '../../../domain/constants/inscripciones.constants.js';
 import { parsePriorHistoryItem } from './priorHistoryItemValidation.js';
 import { activarCursadoInscripcion } from '../../utils/activarCursadoInscripcion.js';
+import {
+  cargarEstructuraPlan,
+  resolverPlanEstudioInscripcion,
+  validarReglasInscripcion,
+} from './enrollmentBusinessRules.js';
 
 /**
  * Use Case: CreateEnrollmentUseCase
@@ -100,6 +105,11 @@ export class CreateEnrollmentUseCase {
     contributionPaymentRepository,
     priorEnrollmentHistoryRepository,
     subjectEnrollmentBimesterRepository,
+    periodRepository,
+    subjectRepository,
+    prerequisiteRepository,
+    transferRepository,
+    historialAcademicoRepository,
     logger,
   }) {
     this.enrollmentRepository = enrollmentRepository;
@@ -126,6 +136,11 @@ export class CreateEnrollmentUseCase {
     this.contributionPaymentRepository = contributionPaymentRepository;
     this.priorEnrollmentHistoryRepository = priorEnrollmentHistoryRepository;
     this.subjectEnrollmentBimesterRepository = subjectEnrollmentBimesterRepository;
+    this.periodRepository = periodRepository;
+    this.subjectRepository = subjectRepository;
+    this.prerequisiteRepository = prerequisiteRepository;
+    this.transferRepository = transferRepository;
+    this.historialAcademicoRepository = historialAcademicoRepository;
     this.logger = logger;
   }
 
@@ -158,6 +173,7 @@ export class CreateEnrollmentUseCase {
       parallelIdsByPeriod,
       materiaIdsByPeriod,
       enrollmentType = TIPOS_INSCRIPCION.NUEVO,
+      requestedPlanId = null,
       observations,
       priorHistory = null,
     } = data;
@@ -186,6 +202,10 @@ export class CreateEnrollmentUseCase {
       const student = await this._validateStudent(studentId);
       const management = await this._getCurrentManagement();
 
+      // Kardex del estudiante (vista 141): resolución de plan (planes duales) +
+      // validaciones de prerrequisitos/periodo/salto/duplicados.
+      const historialFilas = await this._getHistorialFilas(student.id);
+
       // Si la gestión vigente ya está "en activación" (cursado iniciado), las
       // matrículas nuevas nacen en CURSANDO con sus bimestres abiertos, no en INSCRITO.
       const gestionIniciada = this.subjectEnrollmentRepository
@@ -199,7 +219,9 @@ export class CreateEnrollmentUseCase {
           parallelIdsByPeriod,
           materiaIdsByPeriod,
           student,
-          management
+          management,
+          requestedPlanId,
+          historialFilas
         );
         if (resolved && resolved.length > 0) {
           teacherAssignmentIds = resolved;
@@ -213,7 +235,9 @@ export class CreateEnrollmentUseCase {
             parallelIdsByPeriod,
             materiaIdsByPeriod,
             student,
-            management
+            management,
+            requestedPlanId,
+            historialFilas
           );
           if (offerRowsFromSelection.length > 0) {
             this.logger.info('[Inscripciones] Oferta de curso resuelta desde selección por periodo', {
@@ -244,12 +268,22 @@ export class CreateEnrollmentUseCase {
           parallel,
           management
         );
-        const { managementPlan } = await this._getStudyPlanAndManagementPlan(
+        const { studyPlan, managementPlan } = await this._getStudyPlanAndManagementPlan(
           studentAcademicData,
-          management
+          management,
+          requestedPlanId,
+          historialFilas
         );
         await this._validateNoExistingEnrollment(studentAcademicData, management);
         await this._validatePaymentExists(student, management);
+        await this._validarReglasNegocio({
+          student,
+          studyPlan,
+          offerRows: offerRowsFromSelection,
+          enrollmentType,
+          priorHistory,
+          historialFilas,
+        });
         const enrollment = await this._createEnrollment(
           studentAcademicData,
           management,
@@ -296,9 +330,11 @@ export class CreateEnrollmentUseCase {
           parallel,
           management
         );
-        const { managementPlan } = await this._getStudyPlanAndManagementPlan(
+        const { studyPlan, managementPlan } = await this._getStudyPlanAndManagementPlan(
           studentAcademicData,
-          management
+          management,
+          requestedPlanId,
+          historialFilas
         );
 
         // Validar y resolver todas las asignaciones docentes (pueden ser de diferentes paralelos/periodos)
@@ -309,13 +345,21 @@ export class CreateEnrollmentUseCase {
         );
         await this._validateNoExistingEnrollment(studentAcademicData, management);
         await this._validatePaymentExists(student, management);
+        const offerRows = await this._offerRowsFromTeacherAssignments(teacherAssignments);
+        await this._validarReglasNegocio({
+          student,
+          studyPlan,
+          offerRows,
+          enrollmentType,
+          priorHistory,
+          historialFilas,
+        });
         const enrollment = await this._createEnrollment(
           studentAcademicData,
           management,
           enrollmentType,
           observations
         );
-        const offerRows = await this._offerRowsFromTeacherAssignments(teacherAssignments);
         const subjectEnrollments = await this._createsubjectEnrollments(
           enrollment,
           offerRows,
@@ -355,9 +399,11 @@ export class CreateEnrollmentUseCase {
         parallel,
         management
       );
-      const { managementPlan } = await this._getStudyPlanAndManagementPlan(
+      const { studyPlan, managementPlan } = await this._getStudyPlanAndManagementPlan(
         studentAcademicData,
-        management
+        management,
+        requestedPlanId,
+        historialFilas
       );
       await this._validateNoExistingEnrollment(studentAcademicData, management);
       await this._validatePaymentExists(student, management);
@@ -365,6 +411,14 @@ export class CreateEnrollmentUseCase {
         parallel,
         managementPlan
       );
+      await this._validarReglasNegocio({
+        student,
+        studyPlan,
+        offerRows: teacherAssignments,
+        enrollmentType,
+        priorHistory,
+        historialFilas,
+      });
       const enrollment = await this._createEnrollment(
         studentAcademicData,
         management,
@@ -683,58 +737,159 @@ export class CreateEnrollmentUseCase {
   }
 
   /**
-   * Obtiene el plan de estudios y el plan habilitado para la gestión
+   * Obtiene el plan de estudios y el plan habilitado para la gestión, según la
+   * regla de resolución de planes duales (enrollmentBusinessRules):
+   * con historial en el sistema el plan derivado del kardex MANDA (RN-3);
+   * plan_estudio_id pedido se valida (activo, de la carrera, con gestion_plan
+   * activo); fallback: plan vigente actual de la carrera.
+   *
+   * NO persiste el plan en datos académicos.
+   * TODO planes-duales bloque A: persistir plan_estudio_id en
+   * estudiantes_datos_academicos cuando se apruebe el DDL
+   * (docs/plan/planes-duales-matricula-plan-desarrollo.md §e).
+   *
    * @private
    * @param {Object} studentAcademicData - Entidad StudentAcademicData
    * @param {Object} management - Entidad Management
+   * @param {number|null} [requestedPlanId] - plan_estudio_id del payload
+   * @param {Array<Object>} [historialFilas] - Filas de vista 141 del estudiante
    * @returns {Promise<{studyPlan: Object, managementPlan: Object}>}
-   * @throws {NotFoundError} Si no se encuentra el plan de estudios o el plan habilitado
+   * @throws {NotFoundError|ValidationError}
    */
-  async _getStudyPlanAndManagementPlan(studentAcademicData, management) {
-    // Obtener plan de estudios vigente de la carrera
-    const studyPlansResult = await this.studyPlanRepository.findAll(
-      { careerId: studentAcademicData.careerId, active: true },
-      null,
-      { orderBy: 'vigente', orderDirection: 'DESC' }
-    );
-    const studyPlan = studyPlansResult.studyPlans?.[0];
-
-    if (!studyPlan) {
-      throw new NotFoundError(
-        `Plan de estudios vigente para la carrera con ID ${studentAcademicData.careerId}`
-      );
-    }
-
-    this.logger.info('[Inscripciones] Plan de estudios encontrado', {
-      studyPlanId: studyPlan.id,
-      careerId: studentAcademicData.careerId,
+  async _getStudyPlanAndManagementPlan(
+    studentAcademicData,
+    management,
+    requestedPlanId = null,
+    historialFilas = []
+  ) {
+    const { studyPlan, managementPlan, origenPlan } = await resolverPlanEstudioInscripcion({
+      requestedPlanId,
+      careerId: studentAcademicData.careerId ?? studentAcademicData.carreraId,
+      management,
+      historialFilas,
+      preferKardexOverRequested: true,
+      studyPlanRepository: this.studyPlanRepository,
+      managementPlanRepository: this.managementPlanRepository,
+      logger: this.logger,
     });
 
-    // Obtener plan habilitado para la gestión
-    const managementPlanResult = await this.managementPlanRepository.findAll(
-      {
-        managementId: management.id,
-        studyPlanId: studyPlan.id,
-        active: true,
-      },
-      null,
-      null
-    );
-    const managementPlan = managementPlanResult.managementPlans?.[0];
-
-    if (!managementPlan) {
-      throw new NotFoundError(
-        `Plan habilitado para la gestión ${management.year} y plan de estudios ${studyPlan.id}`
-      );
-    }
-
-    this.logger.info('[Inscripciones] Plan habilitado encontrado', {
+    this.logger.info('[Inscripciones] Plan de estudios y plan habilitado resueltos', {
+      studyPlanId: studyPlan.id,
       managementPlanId: managementPlan.id,
       managementId: management.id,
-      studyPlanId: studyPlan.id,
+      origenPlan,
     });
 
     return { studyPlan, managementPlan };
+  }
+
+  /**
+   * Filas del kardex del estudiante (vista 141). Devuelve [] si el repositorio
+   * no está inyectado (compatibilidad con instancias parciales en tests).
+   * @private
+   */
+  async _getHistorialFilas(studentId) {
+    if (!this.historialAcademicoRepository) return [];
+    return this.historialAcademicoRepository.listarFilasHistorialPorEstudiante(studentId);
+  }
+
+  /**
+   * COUNT de inscripciones activas del estudiante en CUALQUIER gestión
+   * (a través de todas sus filas de datos académicos, incluidas inactivas).
+   * @private
+   */
+  async _contarInscripcionesActivas(studentId) {
+    const edaTodos = await this.studentAcademicDataRepository.findAll(
+      { studentId, includeInactive: true },
+      null,
+      null
+    );
+    const conteos = await Promise.all(
+      (edaTodos.studentAcademicData ?? []).map((eda) =>
+        this.enrollmentRepository.count({ academicDataId: eda.id })
+      )
+    );
+    return conteos.reduce((acc, n) => acc + (Number(n) || 0), 0);
+  }
+
+  /**
+   * anio_cursado (PRIMERO/SEGUNDO) del traspaso activo más reciente del estudiante.
+   * @private
+   */
+  async _getTraspasoAnioCursado(studentId) {
+    if (!this.transferRepository) return null;
+    const result = await this.transferRepository.findAll({ studentId }, null, null);
+    const transfers = result.transfers ?? [];
+    if (transfers.length === 0) return null;
+    const ultimo = transfers[transfers.length - 1];
+    const plain = ultimo.toPlainObject ? ultimo.toPlainObject() : ultimo;
+    return plain.anioCursado ?? plain.anio_cursado ?? null;
+  }
+
+  /**
+   * Aplica las reglas de negocio 2-5 del rediseño del wizard (prerrequisitos,
+   * periodo por tipo, salto máximo, duplicado de aprobadas) sobre las
+   * asignaturas del plan resueltas desde la oferta — en los 3 modos de
+   * inscripción. Lanza UNA ValidationError con todos los incumplimientos.
+   * @private
+   * @param {Object} params
+   * @param {Object} params.student - Entidad Student
+   * @param {Object} params.studyPlan - Plan de estudios resuelto
+   * @param {Array<{offerCourseId: number, curriculumSubjectId: number|null}>} params.offerRows
+   * @param {string} params.enrollmentType
+   * @param {Array|null} params.priorHistory - prior_history del payload
+   * @param {Array<Object>} params.historialFilas - Filas de vista 141
+   */
+  async _validarReglasNegocio({
+    student,
+    studyPlan,
+    offerRows,
+    enrollmentType,
+    priorHistory,
+    historialFilas,
+  }) {
+    if (!this.periodRepository || !this.prerequisiteRepository || !this.subjectRepository) {
+      // Dependencias de reglas no inyectadas (instancia parcial): no validar.
+      this.logger.warn(
+        '[Inscripciones] Validaciones de negocio omitidas: faltan repositorios de plan (period/prerequisite/subject)'
+      );
+      return;
+    }
+
+    const curriculumSubjectIds = (offerRows ?? [])
+      .map((row) => row.curriculumSubjectId)
+      .filter((id) => id != null);
+    if (curriculumSubjectIds.length === 0) return;
+
+    const [totalInscripciones, traspasoAnioCursado, estructura] = await Promise.all([
+      this._contarInscripcionesActivas(student.id),
+      this._getTraspasoAnioCursado(student.id),
+      cargarEstructuraPlan({
+        studyPlanId: studyPlan.id,
+        periodRepository: this.periodRepository,
+        planSubjectRepository: this.planSubjectRepository,
+        subjectRepository: this.subjectRepository,
+        prerequisiteRepository: this.prerequisiteRepository,
+      }),
+    ]);
+
+    validarReglasInscripcion({
+      curriculumSubjectIds,
+      enrollmentType,
+      esNuevoSistema: totalInscripciones === 0,
+      traspasoAnioCursado,
+      historialFilas,
+      priorHistoryItems: Array.isArray(priorHistory) ? priorHistory : null,
+      estructura,
+    });
+
+    this.logger.info('[Inscripciones] Reglas de negocio de matrícula validadas', {
+      studentId: student.id,
+      studyPlanId: studyPlan.id,
+      materias: curriculumSubjectIds.length,
+      esNuevoSistema: totalInscripciones === 0,
+      enrollmentType,
+    });
   }
 
   /**
@@ -822,9 +977,18 @@ export class CreateEnrollmentUseCase {
    * @param {Object} materiaIdsByPeriod - { [periodId]: [materiaId, ...] }
    * @param {Object} student - Entidad Student
    * @param {Object} management - Entidad Management
+   * @param {number|null} [requestedPlanId] - plan_estudio_id del payload (planes duales)
+   * @param {Array<Object>} [historialFilas] - Filas de vista 141 del estudiante
    * @returns {Promise<number[]>} Array de IDs de asignaciones docentes
    */
-  async _resolveTeacherAssignmentIdsFromSelection(parallelIdsByPeriod, materiaIdsByPeriod, student, management) {
+  async _resolveTeacherAssignmentIdsFromSelection(
+    parallelIdsByPeriod,
+    materiaIdsByPeriod,
+    student,
+    management,
+    requestedPlanId = null,
+    historialFilas = []
+  ) {
     const periodIds = Object.keys(materiaIdsByPeriod).filter(
       (k) => Array.isArray(materiaIdsByPeriod[k]) && materiaIdsByPeriod[k].length > 0
     );
@@ -838,7 +1002,12 @@ export class CreateEnrollmentUseCase {
     if (!parallel) return [];
 
     const studentAcademicData = await this._getOrCreateStudentAcademicData(student, parallel, management);
-    const { managementPlan } = await this._getStudyPlanAndManagementPlan(studentAcademicData, management);
+    const { managementPlan } = await this._getStudyPlanAndManagementPlan(
+      studentAcademicData,
+      management,
+      requestedPlanId,
+      historialFilas
+    );
     const managementPlanId = managementPlan.id;
 
     const assignmentIds = [];
@@ -899,7 +1068,14 @@ export class CreateEnrollmentUseCase {
    *
    * @private
    */
-  async _resolveOfferRowsFromSelection(parallelIdsByPeriod, materiaIdsByPeriod, student, management) {
+  async _resolveOfferRowsFromSelection(
+    parallelIdsByPeriod,
+    materiaIdsByPeriod,
+    student,
+    management,
+    requestedPlanId = null,
+    historialFilas = []
+  ) {
     const periodIds = Object.keys(materiaIdsByPeriod).filter(
       (k) => Array.isArray(materiaIdsByPeriod[k]) && materiaIdsByPeriod[k].length > 0
     );
@@ -913,7 +1089,12 @@ export class CreateEnrollmentUseCase {
     if (!parallel) return [];
 
     const studentAcademicData = await this._getOrCreateStudentAcademicData(student, parallel, management);
-    const { managementPlan } = await this._getStudyPlanAndManagementPlan(studentAcademicData, management);
+    const { managementPlan } = await this._getStudyPlanAndManagementPlan(
+      studentAcademicData,
+      management,
+      requestedPlanId,
+      historialFilas
+    );
     const managementPlanId = managementPlan.id;
 
     const rows = [];

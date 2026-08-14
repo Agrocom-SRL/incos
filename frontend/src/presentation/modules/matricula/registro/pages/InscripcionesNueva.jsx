@@ -5,9 +5,13 @@
  * Shell de página igual al registro de estudiantes (EstudiantesRegister):
  * PageHeaderArea + PageHeader + BackButton, DashboardPageShell + MainContent y
  * WizardForm variant="tabs" con navegación estricta hacia adelante.
+ *
+ * La franja InscripcionStudentStrip (encima del wizard) reemplaza a los Alerts
+ * históricos del estudiante: visible desde el paso Carrera en adelante y en el
+ * paso Buscar cuando el estudiante viene preseleccionado desde el connector.
  */
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Alert, Flex, Modal, Typography } from 'antd';
 import { DollarOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { MainContent, PageHeaderArea } from '@templates';
@@ -20,17 +24,18 @@ import {
   InscripcionesPeriodoParalelosStepContent,
   InscripcionesPeriodoMateriasStepContent,
   InscripcionesHistorialPrevioStepContent,
+  InscripcionSeleccionResumen,
+  InscripcionStudentStrip,
 } from '@matricula/registro/components/organisms';
 import { WIZARD_SECTION_HISTORIAL } from '@application-matricula/registro/utils/matriculaWizardStepConfig';
-import { requiereHistorialPrevio } from '@application-matricula/registro/utils/historialPrevioHelpers';
 import { useMatriculaWizardPage } from '@application-matricula/registro/hooks';
 import '@configuracion/academico/styles/academico-form-page.css';
 
 const { Paragraph } = Typography;
 
-// Secciones "planas" (solo fields, sin componente visual propio): buscador del paso 1
-// y resumen del paso de paralelos. Se pintan con FormWorkspaceSection (sin Card anidada).
-const FLAT_FORM_SECTION_KEYS = ['buscarEstudiante', 'resumen'];
+// Secciones "planas" (solo fields, sin componente visual propio): buscador del paso 1.
+// Se pintan con FormWorkspaceSection (sin Card anidada).
+const FLAT_FORM_SECTION_KEYS = ['buscarEstudiante'];
 
 const InscripcionesNueva = () => {
   const {
@@ -51,12 +56,13 @@ const InscripcionesNueva = () => {
     carrerasData,
     periodosData,
     paralelosData,
-    materiasByPeriodsData,
     selectedMateriaIdsByPeriod,
     onToggleMaterias,
     onSelectParalelo,
     historialPrevioData,
     onSelectCarrera,
+    tipoAdmision,
+    anioCursadoTraspaso,
     isNuevoEstudiante,
     isTraspasoOrTransitabilidad,
     initialStep,
@@ -65,6 +71,8 @@ const InscripcionesNueva = () => {
     wizardStepMeta,
     materiasStepInvalid,
     setMateriasStepInvalid,
+    matriculaContexto,
+    hasPreselectedStudent,
   } = useMatriculaWizardPage();
 
   const handleToggleMaterias = useCallback(
@@ -83,15 +91,56 @@ const InscripcionesNueva = () => {
     [materiasStepInvalid],
   );
 
-  const stepIndices = wizardStepMeta?.indices ?? {
-    carrera: 1,
-    periodo: 2,
-    paralelo: 3,
-    historial: null,
-  };
-  const needsHistorialStep = requiereHistorialPrevio(
-    studentSearch?.selectedStudent?.tipoAdmision ?? editData?.tipoAdmision,
+  // Índices dinámicos del wizard (matriz §2): «carrera»/«historial» pueden ser
+  // null cuando el paso está excluido — no usar números mágicos aquí.
+  const stepIndices = useMemo(
+    () =>
+      wizardStepMeta?.indices ?? {
+        buscar: 0,
+        carrera: 1,
+        periodo: 2,
+        paralelo: 3,
+        historial: null,
+      },
+    [wizardStepMeta?.indices],
   );
+
+  // Paso visible (0-based) notificado por el WizardForm: gobierna la franja.
+  const [currentStepIndex, setCurrentStepIndex] = useState(initialStep ?? 0);
+
+  const selectedStudent = studentSearch?.selectedStudent ?? null;
+  const contexto = matriculaContexto?.contexto ?? null;
+
+  // La planilla del paso «Periodo y materias» necesita saber si ya hay carrera
+  // (fija del estudiante o elegida en el paso Carrera) para su hint inicial.
+  const hasCarrera = Boolean(
+    contexto?.carrera?.id ??
+      carrerasData?.selectedCarrera?.id ??
+      selectedStudent?.carreraId ??
+      editData?.carreraId ??
+      null,
+  );
+
+  // Franja del estudiante: pasos posteriores a Buscar y paso Buscar con
+  // estudiante preseleccionado (reemplaza a los Alerts históricos).
+  const showStudentStrip =
+    !!selectedStudent?.id &&
+    (hasPreselectedStudent || currentStepIndex > (stepIndices.buscar ?? 0));
+
+  const stripCarreraNombre =
+    contexto?.carrera?.nombre ??
+    selectedStudent?.carreraNombre ??
+    carrerasData?.selectedCarrera?.nombre ??
+    null;
+
+  // Plan mostrado en la franja: el elegido por el usuario o el resuelto por el backend.
+  const stripPlan = useMemo(() => {
+    const planes = matriculaContexto?.planes ?? [];
+    const elegido = planes.find(
+      (p) => Number(p.id) === Number(matriculaContexto?.planSeleccionadoId),
+    );
+    return elegido ?? contexto?.plan ?? null;
+  }, [matriculaContexto?.planes, matriculaContexto?.planSeleccionadoId, contexto?.plan]);
 
   // Al fallar la validación del paso, desplazar la vista al primer campo con error.
   // Las validaciones custom (carrera/periodo/paralelo/historial) rechazan sin errorFields
@@ -108,7 +157,7 @@ const InscripcionesNueva = () => {
 
   const renderSectionContent = useCallback(
     (stepIndex, sectionKey, section, formInstance) => {
-      if (stepIndex === stepIndices.carrera && sectionKey === 'carrera') {
+      if (stepIndices.carrera != null && stepIndex === stepIndices.carrera && sectionKey === 'carrera') {
         return (
           <InscripcionesCarreraStepContent
             key={sectionKey}
@@ -117,9 +166,11 @@ const InscripcionesNueva = () => {
             carreras={carrerasData?.carreras ?? []}
             carrerasLoading={carrerasData?.loading ?? false}
             carrerasError={carrerasData?.error ?? null}
-            selectedStudent={studentSearch?.selectedStudent ?? null}
+            selectedStudent={selectedStudent}
             onCarreraChange={(carrera) => onSelectCarrera?.(carrera?.id)}
             readOnly={!!editData || isTraspasoOrTransitabilidad}
+            isEditMode={!!editData}
+            planData={matriculaContexto}
           />
         );
       }
@@ -127,18 +178,29 @@ const InscripcionesNueva = () => {
         return (
           <InscripcionesPeriodoMateriasStepContent
             key={sectionKey}
-            form={formInstance}
             section={section}
-            periodosData={periodosData}
-            materiasByPeriodsData={materiasByPeriodsData}
+            matriculaContexto={matriculaContexto}
+            tipoAdmision={tipoAdmision}
+            traspasoAnioCursado={anioCursadoTraspaso}
+            hasCarrera={hasCarrera}
             selectedMateriaIdsByPeriod={selectedMateriaIdsByPeriod}
             onToggleMaterias={handleToggleMaterias}
-            studentSearch={studentSearch}
-            resolveOptions={() => []}
             readOnly={!!editData && isNuevoEstudiante}
-            isEditModeAntiguo={!!editData && !isNuevoEstudiante}
             materiasInvalid={materiasStepInvalid}
             materiasInvalidHint={materiasInvalidHint}
+          />
+        );
+      }
+      if (stepIndex === stepIndices.paralelo && sectionKey === 'resumen') {
+        return (
+          <InscripcionSeleccionResumen
+            key={sectionKey}
+            section={section}
+            contexto={contexto}
+            tipoAdmision={tipoAdmision}
+            esNuevoSistema={matriculaContexto?.esNuevoSistema ?? null}
+            traspasoAnioCursado={anioCursadoTraspaso}
+            selectedMateriaIdsByPeriod={selectedMateriaIdsByPeriod}
           />
         );
       }
@@ -159,8 +221,7 @@ const InscripcionesNueva = () => {
       if (
         stepIndices.historial != null &&
         stepIndex === stepIndices.historial &&
-        sectionKey === WIZARD_SECTION_HISTORIAL &&
-        needsHistorialStep
+        sectionKey === WIZARD_SECTION_HISTORIAL
       ) {
         return (
           <InscripcionesHistorialPrevioStepContent
@@ -189,16 +250,19 @@ const InscripcionesNueva = () => {
     },
     [
       stepIndices,
-      needsHistorialStep,
       editData,
       isTraspasoOrTransitabilidad,
       isNuevoEstudiante,
       carrerasData,
-      studentSearch,
+      selectedStudent,
       onSelectCarrera,
+      matriculaContexto,
+      contexto,
+      tipoAdmision,
+      anioCursadoTraspaso,
+      hasCarrera,
       periodosData,
       paralelosData,
-      materiasByPeriodsData,
       selectedMateriaIdsByPeriod,
       handleToggleMaterias,
       materiasStepInvalid,
@@ -256,6 +320,15 @@ const InscripcionesNueva = () => {
               description="Esta inscripción es de tipo antiguo, traspaso o transitabilidad y aún no tiene registradas las notas de periodos anteriores. Use el paso «Historial de notas» (último del asistente) para ingresar las notas y finalizar. Puede volver a pasos anteriores si también desea ajustar periodos, materias o paralelos."
             />
           ) : null}
+          {showStudentStrip ? (
+            <InscripcionStudentStrip
+              student={selectedStudent}
+              carreraNombre={stripCarreraNombre}
+              plan={stripPlan}
+              gestion={contexto?.gestion ?? null}
+              esNuevoSistema={matriculaContexto?.esNuevoSistema ?? null}
+            />
+          ) : null}
           <WizardForm
             variant="tabs"
             steps={wizardSteps}
@@ -271,6 +344,7 @@ const InscripcionesNueva = () => {
             renderSectionContent={renderSectionContent}
             onValidateBeforeNext={handleValidateBeforeNext}
             onValidationError={onValidationError}
+            onStepChange={setCurrentStepIndex}
             strictForwardNavigation
             errorMessage={error}
           />

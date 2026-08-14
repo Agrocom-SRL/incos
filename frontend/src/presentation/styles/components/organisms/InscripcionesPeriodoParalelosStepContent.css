@@ -2,15 +2,6 @@
    InscripcionesPeriodoParalelosStepContent - Paralelos por periodo en columnas
    ============================================================================ */
 
-/* Mismo tamaño y estilo que step 3 "Materias por periodo" */
-.step2-periodo-paralelos-section .step2-paralelos-columns-title {
-  margin-top: 20px;
-  margin-bottom: 16px;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: rgba(0, 0, 0, 0.85);
-}
-
 .step2-paralelos-columns {
   margin-top: 0;
 }
