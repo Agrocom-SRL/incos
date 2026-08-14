@@ -11,15 +11,15 @@
 export const getStep4Fields = () => {
   return {
     resumen: {
-      title: 'Resumen de la selección',
+      title: 'Resumen de la inscripción',
       description:
-        'Verifique las materias marcadas por periodo antes de elegir el paralelo.',
+        'Verifique los datos del estudiante y las materias marcadas en cada periodo antes de elegir el paralelo.',
       fields: [],
     },
     paralelos: {
       title: 'Paralelos por periodo',
       description:
-        'Revise el resumen por periodo y elija un paralelo —turno— para cada uno; cada tarjeta muestra la cantidad de inscritos.',
+        'Elija un paralelo —turno— para cada periodo; cada tarjeta muestra el turno y la cantidad de inscritos.',
       fields: [
         {
           name: 'listaParalelos',

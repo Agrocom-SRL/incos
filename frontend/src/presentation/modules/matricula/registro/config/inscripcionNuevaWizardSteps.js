@@ -6,8 +6,8 @@
  * - Buscar estudiante (siempre)
  * - Carrera y plan (solo estudiantes nuevos en el sistema)
  * - Periodo y materias (siempre)
- * - Paralelo (siempre)
  * - Historial de notas (ANTIGUO/TRASPASO/TRANSITABILIDAD sin historial digital)
+ * - Paralelo (siempre; cierra el asistente con el resumen de la inscripción)
  */
 
 import { WIZARD_SECTION_HISTORIAL } from '@application-matricula/registro/utils/matriculaWizardStepConfig';
@@ -53,7 +53,7 @@ const STEP_HISTORIAL_HEADER = {
   title: 'Historial de notas',
   formTitle: 'Historial de notas',
   description:
-    'Registre las notas de las materias ya cursadas para completar el historial académico del estudiante.',
+    'Registre la nota de las materias que el estudiante ya venció y no cursa en esta gestión, o márquelas como convalidadas si no cuenta con la nota.',
   sections: [WIZARD_SECTION_HISTORIAL],
 };
 

@@ -17,6 +17,10 @@ import { useInscripcionNuevaParalelos } from '../../features/useInscripcionNueva
 import { useInscripcionNuevaHistorialPrevio } from '../../features/useInscripcionNuevaHistorialPrevio';
 import { useMatriculaWizardContexto } from './useMatriculaWizardContexto';
 import { useMatriculaWizardMateriasSelection } from './useMatriculaWizardMateriasSelection';
+import {
+  buildMateriasPlanillaModel,
+  PLANILLA_ROW_ESTADOS,
+} from '@application-matricula/registro/utils/materiasPlanillaRules';
 
 export const useMatriculaWizardCatalogos = (mode, { studentId, editData }) => {
   const studentSearch = useInscripcionNuevaStudentSearch({
@@ -113,17 +117,53 @@ export const useMatriculaWizardCatalogos = (mode, { studentId, editData }) => {
     initialParallelIdsByPeriod: editData?.parallelIdsByPeriod ?? undefined,
   });
 
-  // Materias por periodo desde el contexto (mismo shape { id, sigla, nombre }
-  // que consumía el historial previo cuando llamaba a GET /materias).
+  // Modelo de la planilla (mismas reglas que el paso «Periodo y materias»):
+  // aquí solo se usa para saber qué asignaturas pueden pedir historial.
+  const planillaModel = useMemo(
+    () =>
+      buildMateriasPlanillaModel({
+        contexto,
+        seleccion: materiasSelection.selectedMateriaIdsByPeriod,
+        tipoAdmision,
+        esNuevoSistema: matriculaContexto.esNuevoSistema,
+        traspasoAnioCursado: anioCursadoTraspaso,
+      }),
+    [
+      contexto,
+      materiasSelection.selectedMateriaIdsByPeriod,
+      tipoAdmision,
+      matriculaContexto.esNuevoSistema,
+      anioCursadoTraspaso,
+    ],
+  );
+
+  // Materias por periodo candidatas a historial (mismo shape { id, sigla, nombre }
+  // que consumía el historial previo cuando llamaba a GET /materias). Quedan fuera:
+  // - las ya aprobadas/convalidadas en el kardex (no se vuelven a registrar);
+  // - las bloqueadas por prerrequisito, cuyo requisito el estudiante cursa en esta
+  //   misma gestión: no puede haberlas vencido antes, así que no se les pide nota.
   const materiasByPeriod = useMemo(() => {
     const byPeriod = {};
+    if (planillaModel) {
+      planillaModel.periodos.forEach((periodo) => {
+        byPeriod[Number(periodo.id)] = periodo.rows
+          .filter(
+            (row) =>
+              row.materiaId != null &&
+              row.estado !== PLANILLA_ROW_ESTADOS.APROBADA &&
+              row.estado !== PLANILLA_ROW_ESTADOS.BLOQUEADA_PRERREQUISITO,
+          )
+          .map((row) => ({ id: Number(row.materiaId), sigla: row.sigla, nombre: row.nombre }));
+      });
+      return byPeriod;
+    }
     (contexto?.periodos ?? []).forEach((periodo) => {
       byPeriod[Number(periodo.id)] = (periodo.asignaturas ?? [])
         .filter((a) => a?.materiaId != null)
         .map((a) => ({ id: Number(a.materiaId), sigla: a.sigla ?? null, nombre: a.nombre ?? null }));
     });
     return byPeriod;
-  }, [contexto?.periodos]);
+  }, [planillaModel, contexto?.periodos]);
 
   const historialPrevioData = useInscripcionNuevaHistorialPrevio({
     tipoAdmision,
@@ -131,6 +171,7 @@ export const useMatriculaWizardCatalogos = (mode, { studentId, editData }) => {
     periodos: periodosData.periodos ?? [],
     selectedPeriodIds: periodosData.selectedPeriodIds ?? [],
     periodosDisabledByTraspaso: periodosData.periodosDisabledByTraspaso ?? null,
+    selectedMateriaIdsByPeriod: materiasSelection.selectedMateriaIdsByPeriod,
     materiasByPeriod,
     materiasLoading: matriculaContexto.contextoLoading ?? false,
     contexto,

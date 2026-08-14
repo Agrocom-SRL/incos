@@ -60,6 +60,29 @@ export const getEnrollmentTypeColor = (type) => {
   return typeColors[type] || 'default';
 };
 
+/** Etiqueta legible del tipo de admisión/inscripción (nunca mostrar el enum crudo). */
+export const getEnrollmentTypeLabel = (type) => {
+  const labels = {
+    NUEVO: 'Admisión nueva',
+    ANTIGUO: 'Estudiante antiguo',
+    TRASPASO: 'Traspaso',
+    TRANSITABILIDAD: 'Transitabilidad',
+  };
+  return labels[String(type ?? '').toUpperCase()] ?? null;
+};
+
+/** Clase de StatusPill del tipo de admisión (mismo vocabulario que el resto de pills). */
+export const getEnrollmentTypePillClass = (type) => {
+  const variantes = {
+    NUEVO: 'success',
+    ANTIGUO: 'warning',
+    TRASPASO: 'info',
+    TRANSITABILIDAD: 'accent',
+  };
+  const variante = variantes[String(type ?? '').toUpperCase()] ?? 'default';
+  return `cfg-materia-pill cfg-materia-pill--${variante}`;
+};
+
 export const canEditEnrollmentType = (tipoInscripcion) =>
   Boolean(
     tipoInscripcion &&

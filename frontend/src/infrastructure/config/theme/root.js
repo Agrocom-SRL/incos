@@ -245,6 +245,8 @@ export function injectCSSVariables() {
   // Solo definimos variables para casos específicos de layout
   root.style.setProperty('--font-family-base', allThemeTokens.fontFamily);
   root.style.setProperty('--font-family-heading', allThemeTokens.fontFamily);
+  // Monoespaciada: siglas/códigos que se leen en columna (resumen de matrícula).
+  root.style.setProperty('--font-family-code', allThemeTokens.fontFamilyCode);
   root.style.setProperty('--font-size-base', `${allThemeTokens.fontSize}px`);
   root.style.setProperty('--font-size-sm', `${allThemeTokens.fontSizeSM}px`);
   root.style.setProperty('--font-size-xs', `${allThemeTokens.fontSizeXS}px`);

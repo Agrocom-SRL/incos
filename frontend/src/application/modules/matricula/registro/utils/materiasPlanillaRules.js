@@ -106,31 +106,40 @@ export function computePeriodoQueLeToca({ periodos = [], minPeriodoPendiente = n
 }
 
 /**
- * ¿El periodo `prereqNumero` quedará cubierto por el historial previo del
- * propio wizard? Espejo de computeConcludedPeriods (historialPrevioHelpers):
- * - TRASPASO: periodos ≤ anio_cursado (bloqueados) + periodos < mínimo
- *   seleccionado (unión §4-C4).
- * - ANTIGUO/TRANSITABILIDAD (esNuevoSistema): periodos < mínimo periodo con
- *   materias seleccionadas; al evaluar una fila se considera también su propio
- *   periodo como hipotéticamente seleccionado (regla en vivo).
+ * ¿El prerrequisito quedará cubierto por el historial de notas del propio
+ * wizard? Espejo de computeConcludedPeriods (historialPrevioHelpers), que desde
+ * 2026-08-14 razona por MATERIA:
+ * - TRASPASO: periodos ≤ anio_cursado (bloqueados) siempre cubiertos.
+ * - ANTIGUO/TRASPASO/TRANSITABILIDAD (esNuevoSistema): toda materia NO marcada
+ *   de un periodo hasta el máximo que el estudiante cursa entra al historial;
+ *   al evaluar una fila se considera su propio periodo como hipotéticamente
+ *   cursado (regla en vivo, antes de que el usuario marque nada).
+ * - Un prerrequisito MARCADO en esta gestión no está cubierto: no puede
+ *   cursarse a la vez que la materia que lo exige.
  * - tieneHistorialSistema/NUEVO: nunca (sin historial previo en el wizard).
  */
 function prereqCubiertoPorWizard({
   perfil,
   prereqNumero,
+  prereqSeleccionado,
   materiaNumero,
-  minSelectedNumero,
+  maxSelectedNumero,
 }) {
   if (perfil.esNuevoSistema !== true) return false;
-  const hipoteticoMin = Math.min(minSelectedNumero ?? materiaNumero, materiaNumero);
   if (perfil.tipoAdmision === 'TRASPASO') {
     const hasta = traspasoBloqueadoHasta(perfil.traspasoAnioCursado);
-    return (hasta != null && prereqNumero <= hasta) || prereqNumero < hipoteticoMin;
+    if (hasta != null && prereqNumero <= hasta) return true;
   }
-  if (perfil.tipoAdmision === 'ANTIGUO' || perfil.tipoAdmision === 'TRANSITABILIDAD') {
-    return prereqNumero < hipoteticoMin;
+  if (
+    perfil.tipoAdmision !== 'ANTIGUO' &&
+    perfil.tipoAdmision !== 'TRASPASO' &&
+    perfil.tipoAdmision !== 'TRANSITABILIDAD'
+  ) {
+    return false;
   }
-  return false;
+  if (prereqSeleccionado) return false;
+  const hipoteticoMax = Math.max(maxSelectedNumero ?? materiaNumero, materiaNumero);
+  return prereqNumero <= hipoteticoMax;
 }
 
 /** Normaliza la selección { periodoId: materiaIds[] } a Maps de números. */
@@ -181,7 +190,7 @@ export function buildMateriasPlanillaModel({
   for (const periodo of periodosOrdenados) {
     const numero = Number(periodo?.numero ?? 0) || 0;
     for (const asig of periodo?.asignaturas ?? []) {
-      const entry = { asig, numero };
+      const entry = { asig, numero, periodoId: Number(periodo.id) };
       const planId = toNumberOrNull(asig?.asignaturaPlanId);
       const materiaId = toNumberOrNull(asig?.materiaId);
       const sigla = String(asig?.sigla ?? '').trim().toUpperCase();
@@ -190,6 +199,13 @@ export function buildMateriasPlanillaModel({
       if (sigla && !porSigla.has(sigla)) porSigla.set(sigla, entry);
     }
   }
+
+  /** ¿La asignatura indexada está marcada en la planilla de esta gestión? */
+  const esSeleccionada = (entry) => {
+    const materiaId = toNumberOrNull(entry?.asig?.materiaId);
+    if (materiaId == null) return false;
+    return seleccionPorPeriodo.get(entry.periodoId)?.has(materiaId) === true;
+  };
 
   const resolverPrereq = (prereq) => {
     if (!prereq) return null;
@@ -295,8 +311,9 @@ export function buildMateriasPlanillaModel({
               prereqCubiertoPorWizard({
                 perfil,
                 prereqNumero: prereqEntry.numero,
+                prereqSeleccionado: esSeleccionada(prereqEntry),
                 materiaNumero: numero,
-                minSelectedNumero,
+                maxSelectedNumero,
               })
             : true); // prerrequisito fuera del plan cargado: no se puede verificar aquí
         if (!prereqAprobado) {
@@ -493,11 +510,19 @@ export function pruneSeleccionInvalida({
 
 /**
  * Resumen de la selección para el paso Paralelo (§4-C2): por periodo con
- * materias marcadas → n.º de materias, horas semanales y tags; más los avisos
- * de nivelación (multi-periodo) y de pendientes a nivelar desmarcadas.
+ * materias marcadas → detalle de cada asignatura (sigla, nombre, horas, tag),
+ * n.º de materias, horas semanales y tags del bloque; más los totales de la
+ * inscripción y los avisos de nivelación (multi-periodo) y de pendientes a
+ * nivelar desmarcadas.
  */
 export function buildSeleccionResumen(model) {
-  if (!model) return { porPeriodo: [], multiPeriodo: false, desmarcadasNivelar: [] };
+  const vacio = {
+    porPeriodo: [],
+    totales: { materias: 0, horas: 0, periodos: 0 },
+    multiPeriodo: false,
+    desmarcadasNivelar: [],
+  };
+  if (!model) return vacio;
 
   const porPeriodo = model.periodos
     .map((periodo) => {
@@ -513,12 +538,25 @@ export function buildSeleccionResumen(model) {
         totalHoras: marcadas.reduce((acc, r) => acc + (Number(r.horasSemanales) || 0), 0),
         tieneArrastre: marcadas.some((r) => r.tag === 'arrastre'),
         tieneNivelar: marcadas.some((r) => r.tag === 'nivelar'),
+        materias: marcadas.map((r) => ({
+          key: r.key,
+          materiaId: r.materiaId,
+          sigla: r.sigla,
+          nombre: r.nombre,
+          horasSemanales: r.horasSemanales,
+          tag: r.tag,
+        })),
       };
     })
     .filter(Boolean);
 
   return {
     porPeriodo,
+    totales: {
+      materias: porPeriodo.reduce((acc, p) => acc + p.totalMaterias, 0),
+      horas: porPeriodo.reduce((acc, p) => acc + p.totalHoras, 0),
+      periodos: porPeriodo.length,
+    },
     multiPeriodo: model.flags.multiPeriodo,
     desmarcadasNivelar: model.flags.desmarcadasNivelar,
   };

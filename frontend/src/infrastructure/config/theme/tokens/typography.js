@@ -10,8 +10,11 @@ export const typography = {
   // ========================================
   // Fuente principal para toda la aplicación
   fontFamily: "'Poppins', sans-serif",
-  // Fuente monoespaciada para código (ej: <code>, <pre>)
-  fontFamilyCode: "'Courier New', monospace",
+  // Fuente monoespaciada: código (<code>, <pre>) y datos de ancho fijo que deben
+  // alinearse en columna (siglas de asignatura, C.I., códigos de estudiante).
+  // Pila del sistema: se ve moderna en macOS/Windows sin cargar una webfont.
+  fontFamilyCode:
+    "ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace",
 
   // ========================================
   // TAMAÑOS DE FUENTE - BASE

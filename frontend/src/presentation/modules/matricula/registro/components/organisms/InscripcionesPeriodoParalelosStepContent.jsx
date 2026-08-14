@@ -1,75 +1,23 @@
 /**
- * InscripcionesPeriodoParalelosStepContent - Contenido del paso "Paralelos por periodo" (step 3)
+ * InscripcionesPeriodoParalelosStepContent - Contenido del paso "Paralelos por periodo"
  *
  * Cabecera de sección estándar (FormWorkspaceSection, sin Card). Muestra por cada periodo
- * seleccionado (en step 2) una columna con los paralelos de ese periodo, con datos
- * estadísticos y turnos. La selección (carrera, periodos, materias) se recupera del paso anterior.
+ * seleccionado una columna con los paralelos de ese periodo (molécula ParaleloCard: turno
+ * con icono e inscritos por sexo). La selección (carrera, periodos, materias) se recupera
+ * de los pasos anteriores.
  */
 
 import React from 'react';
 import { Row, Col } from 'antd';
+import { CalendarOutlined } from '@ant-design/icons';
 import { FormWorkspaceSection } from '@organisms';
 import { DataCards } from '@molecules';
-import { StatusPill } from '@atoms';
+import ParaleloCard from '../molecules/ParaleloCard';
 
 const ROW_SPAN = 24;
 
-/** Pill de turno diferenciada por color de token (§4-C2): mañana dorado, tarde azul, noche violeta. */
-const TURNO_PILL_CLASSES = {
-  MAÑANA: 'cfg-materia-pill cfg-materia-pill--warning',
-  MANANA: 'cfg-materia-pill cfg-materia-pill--warning',
-  TARDE: 'cfg-materia-pill cfg-materia-pill--info',
-  NOCHE: 'cfg-materia-pill cfg-materia-pill--accent',
-};
-
-/** Estadísticas del paralelo (backend puede enviar estadisticas o campos planos) */
-function getParaleloStats(paralelo) {
-  const est = paralelo?.estadisticas ?? {};
-  return {
-    total: est.totalInscritos ?? paralelo?.totalInscritos ?? 0,
-    hombres: est.totalHombres ?? paralelo?.totalHombres ?? 0,
-    mujeres: est.totalMujeres ?? paralelo?.totalMujeres ?? 0,
-  };
-}
-
-/** Render por defecto de la tarjeta de paralelo: título, pill de turno, estadísticas */
-function defaultRenderParaleloCard(paralelo) {
-  if (!paralelo) return null;
-  const nombre = paralelo.nombre ?? paralelo.codigo ?? `Paralelo ${paralelo.id}`;
-  const turno = String(paralelo.turno ?? '').trim();
-  const turnoPillClass =
-    TURNO_PILL_CLASSES[turno.toUpperCase()] ?? 'cfg-materia-pill cfg-materia-pill--default';
-  const desc = paralelo.descripcion ?? '';
-  const stats = getParaleloStats(paralelo);
-  return (
-    <div className="step2-paralelo-card">
-      <div className="step2-paralelo-card__header">
-        <h4 className="step2-paralelo-card__title">{nombre}</h4>
-        {turno ? (
-          <div className="step2-paralelo-card__meta">
-            <StatusPill label={turno} className={turnoPillClass} />
-          </div>
-        ) : null}
-      </div>
-      {desc && <p className="step2-paralelo-card__desc">{desc}</p>}
-      <hr className="step2-paralelo-card__divider" />
-      <div className="step2-paralelo-card__stats">
-        <div className="step2-paralelo-card__stat step2-paralelo-card__stat--total">
-          <span className="step2-paralelo-card__stat-label">Total</span>
-          <span className="step2-paralelo-card__stat-value">{stats.total}</span>
-        </div>
-        <div className="step2-paralelo-card__stat step2-paralelo-card__stat--hombres">
-          <span className="step2-paralelo-card__stat-label">Hombres</span>
-          <span className="step2-paralelo-card__stat-value">{stats.hombres}</span>
-        </div>
-        <div className="step2-paralelo-card__stat step2-paralelo-card__stat--mujeres">
-          <span className="step2-paralelo-card__stat-label">Mujeres</span>
-          <span className="step2-paralelo-card__stat-value">{stats.mujeres}</span>
-        </div>
-      </div>
-    </div>
-  );
-}
+/** Render por defecto de la tarjeta de paralelo (molécula del módulo). */
+const defaultRenderParaleloCard = (paralelo) => <ParaleloCard paralelo={paralelo} />;
 
 /**
  * Agrupa paralelos por periodoId respetando el orden de selectedPeriodIds.
@@ -153,7 +101,17 @@ const InscripcionesPeriodoParalelosStepContent = ({
                     <div
                       className={`step2-paralelos-column ${index > 0 ? 'step2-paralelos-column--with-divider' : ''}`}
                     >
-                      <div className="step2-paralelos-column__header">{group.periodName}</div>
+                      <div className="step2-paralelos-column__header">
+                        <span className="step2-paralelos-column__periodo">
+                          <CalendarOutlined aria-hidden />
+                          {group.periodName}
+                        </span>
+                        <span className="step2-paralelos-column__estado">
+                          {selectedInColumn
+                            ? `Paralelo elegido: ${selectedInColumn.nombre ?? selectedInColumn.codigo ?? ''}`
+                            : 'Elija un paralelo'}
+                        </span>
+                      </div>
                       <DataCards
                         data={group.paralelos}
                         loading={loading}

@@ -13,13 +13,21 @@ import { requiereHistorialPrevio } from './historialPrevioHelpers';
 
 export const WIZARD_SECTION_HISTORIAL = 'historialPrevio';
 
-/** Orden canónico de pasos; buscar/periodo/paralelo siempre presentes. */
+/**
+ * Orden canónico de pasos; buscar/periodo/paralelo siempre presentes.
+ *
+ * «Historial de notas» va ANTES de «Paralelo» (2026-08-14): completa las
+ * materias que el estudiante NO cursa esta gestión, así que pertenece al bloque
+ * académico junto a la planilla. Además el paso Paralelo cierra el asistente con
+ * el resumen de la inscripción, y dejar un paso de captura después de ese
+ * resumen daba la impresión de que ya estaba todo completado.
+ */
 const buildStepOrder = ({ includeCarrera, includeHistorial }) => [
   'buscar',
   ...(includeCarrera ? ['carrera'] : []),
   'periodo',
-  'paralelo',
   ...(includeHistorial ? ['historial'] : []),
+  'paralelo',
 ];
 
 /**

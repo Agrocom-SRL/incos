@@ -48,11 +48,35 @@ export function isHistorialPrevioPendiente(record) {
   return estado === 'PENDIENTE';
 }
 
+/** Ids de materia marcadas en un periodo, como Set de números. */
+function selectedMateriaIdSet(selectedMateriaIdsByPeriod, periodId) {
+  const ids =
+    selectedMateriaIdsByPeriod?.[periodId] ?? selectedMateriaIdsByPeriod?.[String(periodId)] ?? [];
+  return new Set((Array.isArray(ids) ? ids : []).map(Number).filter(Number.isFinite));
+}
+
+/**
+ * Alcance del historial de notas (nivelación): periodos cuyas materias NO
+ * cursadas en esta gestión deben quedar registradas con nota o convalidación.
+ *
+ * Regla (2026-08-14): el grano es la MATERIA, no el periodo completo. Un
+ * estudiante de nivelación puede arrastrar materias de un periodo y cursar
+ * otras de uno superior, o llevar solo algunas del primero; todo lo que no
+ * lleva en esta gestión —hasta el periodo más alto que sí cursa— necesita
+ * historial. Por eso cada periodo del alcance expone `selectedMateriaIds`:
+ * las materias marcadas en la planilla se excluyen de sus filas.
+ *
+ * - Periodos anteriores al mínimo seleccionado → entran completos (nada marcado).
+ * - Periodos entre el mínimo y el máximo seleccionado (incluidos) → entran con
+ *   sus materias marcadas excluidas; si están todas marcadas no generan filas.
+ * - TRASPASO: además los periodos bloqueados por `anio_cursado`.
+ */
 export function computeConcludedPeriods({
   tipoAdmision,
   periodos = [],
   selectedPeriodIds = [],
   periodosDisabledByTraspaso = null,
+  selectedMateriaIdsByPeriod = null,
 }) {
   const tipo = String(tipoAdmision ?? '').toUpperCase();
   if (!requiereHistorialPrevio(tipo) || !periodos.length) return [];
@@ -60,39 +84,48 @@ export function computeConcludedPeriods({
   const selected = periodos.filter((p) =>
     selectedPeriodIds.some((id) => Number(id) === Number(p.id))
   );
-  const minSelectedNumero =
-    selected.length > 0
-      ? Math.min(...selected.map((p) => Number(p.numero ?? p.id) || 999))
-      : null;
+  const numerosSeleccionados = selected.map((p) => Number(p.numero ?? p.id) || 999);
+  const minSelectedNumero = numerosSeleccionados.length ? Math.min(...numerosSeleccionados) : null;
+  const maxSelectedNumero = numerosSeleccionados.length ? Math.max(...numerosSeleccionados) : null;
 
   return periodos
     .map((p) => {
       const numero = Number(p.numero ?? 0);
-      let include = false;
-      // Default por fila (§4-C4): CONVALIDADO; el usuario cambia a APROBADO
-      // cuando corresponde y ahí se precarga la nota mínima de aprobación.
-      const status = 'CONVALIDADO';
+      const bloqueadoPorTraspaso =
+        tipo === 'TRASPASO' && periodosDisabledByTraspaso?.[numero] === true;
+      // Hasta el periodo más alto que cursa: lo no marcado ahí ya está vencido.
+      const dentroDelAlcance = maxSelectedNumero != null && numero <= maxSelectedNumero;
+      if (!bloqueadoPorTraspaso && !dentroDelAlcance) return null;
 
-      if (tipo === 'TRASPASO') {
-        // Unión (§4-C4): periodos bloqueados por anio_cursado + los demás
-        // periodos anteriores al mínimo seleccionado — p. ej. traspaso PRIMERO
-        // inscribiendo 3.º también registra el 2.º.
-        include =
-          periodosDisabledByTraspaso?.[numero] === true ||
-          (minSelectedNumero != null && numero < minSelectedNumero);
-      } else if (tipo === 'TRANSITABILIDAD' || tipo === 'ANTIGUO') {
-        include = minSelectedNumero != null && numero < minSelectedNumero;
-      }
+      // Los periodos bloqueados o previos al mínimo entran completos; en los que
+      // el estudiante cursa se excluyen solo las materias que sí lleva.
+      const excluirSeleccionadas =
+        !bloqueadoPorTraspaso && minSelectedNumero != null && numero >= minSelectedNumero;
 
-      if (!include) return null;
       return {
         periodId: p.id,
         periodNumero: numero,
         periodName: p.nombre || `Periodo ${numero}`,
-        status,
+        // Default por fila (§4-C4): CONVALIDADO; el usuario cambia a APROBADO
+        // cuando corresponde y ahí se precarga la nota mínima de aprobación.
+        status: 'CONVALIDADO',
+        selectedMateriaIds: excluirSeleccionadas
+          ? [...selectedMateriaIdSet(selectedMateriaIdsByPeriod, p.id)]
+          : [],
       };
     })
     .filter(Boolean);
+}
+
+/**
+ * Materias de un periodo del alcance que SÍ piden historial: las del plan menos
+ * las que el estudiante cursa en esta gestión (`period.selectedMateriaIds`).
+ */
+export function listHistorialMateriasDePeriodo(period, materiasByPeriod) {
+  const materias =
+    materiasByPeriod?.[period?.periodId] ?? materiasByPeriod?.[String(period?.periodId)] ?? [];
+  const cursadas = new Set((period?.selectedMateriaIds ?? []).map(Number));
+  return materias.filter((materia) => materia?.id && !cursadas.has(Number(materia.id)));
 }
 
 export function historialPrevioRowKey(periodId, materiaId) {
@@ -117,9 +150,7 @@ export function buildHistorialPrevioRows(
 ) {
   const rows = [];
   for (const period of concludedPeriods) {
-    const materias = materiasByPeriod?.[period.periodId] ?? materiasByPeriod?.[String(period.periodId)] ?? [];
-    for (const materia of materias) {
-      if (!materia?.id) continue;
+    for (const materia of listHistorialMateriasDePeriodo(period, materiasByPeriod)) {
       const key = historialPrevioRowKey(period.periodId, materia.id);
       const status = resolveRowStatus(statusByKey, key, period.status);
       rows.push({

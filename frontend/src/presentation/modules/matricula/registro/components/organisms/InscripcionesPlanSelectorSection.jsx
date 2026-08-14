@@ -76,7 +76,11 @@ const InscripcionesPlanSelectorSection = ({
   loading = false,
   error = null,
 }) => {
-  if (loading) {
+  // Spin SOLO en la primera carga (aún no hay planes que mostrar). Elegir un
+  // plan vuelve a pedir el contexto: si aquí se mostrara el Spin, los radios
+  // desaparecerían y volverían en cada clic — el selector parpadeaba.
+  const sinDatos = planes.length === 0 && !planResuelto?.nombre;
+  if (loading && sinDatos) {
     return (
       <Spin tip="Cargando planes de estudio…">
         <Flex className="carrera-card-picker__loading-nest" aria-hidden />

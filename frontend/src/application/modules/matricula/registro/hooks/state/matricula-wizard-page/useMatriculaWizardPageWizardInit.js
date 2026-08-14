@@ -73,12 +73,16 @@ export const useMatriculaWizardPageWizardInit = ({
       !!studentSearch?.selectedStudent &&
       !studentSearch?.loading &&
       confirmedStudentId === selectedStudentId;
-    if (hasStudent && carrerasData?.selectedCarrera) {
-      return isNuevoEstudiante ? indices.paralelo : indices.periodo;
-    }
-    // Sin paso Carrera (estudiante con historial digital) se salta directo a Periodo.
-    if (hasStudent) return indices.carrera ?? indices.periodo;
-    return indices.buscar;
+    if (!hasStudent) return indices.buscar;
+
+    // El paso «Carrera y plan» NO se salta cuando existe (estudiante nuevo en el
+    // sistema): aunque la carrera venga fija —traspaso / transitabilidad—, ahí es
+    // donde se elige el PLAN DE ESTUDIO con el que quedará registrado. Solo se
+    // omite para quien ya tiene historial digital, que hereda plan del kardex.
+    if (indices.carrera != null) return indices.carrera;
+    return isNuevoEstudiante && carrerasData?.selectedCarrera
+      ? indices.paralelo
+      : indices.periodo;
   }, [
     editData,
     editData?.completarSoloHistorialPrevio,

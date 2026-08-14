@@ -21,6 +21,7 @@ export const useMatriculaWizardPageWizardValidation = ({
   const stepNumbers = useMemo(
     () =>
       wizardStepMeta?.stepNumbers ?? {
+        buscar: 1,
         carrera: 2,
         periodo: 3,
         paralelo: 4,
@@ -32,9 +33,17 @@ export const useMatriculaWizardPageWizardValidation = ({
   const handleValidateBeforeNext = useCallback(
     (stepNumber, formInstance) => {
       return new Promise((resolve, reject) => {
-        // Paso 1 (Buscar estudiante): no avanzar sin un estudiante seleccionado.
+        // Paso «Buscar estudiante»: la única condición para avanzar es tener un
+        // estudiante seleccionado; el input de búsqueda es una herramienta y puede
+        // quedar vacío (por eso no es un campo requerido del formulario).
         // En edición (editData) o con estudiante preseleccionado, selectedStudent ya viene poblado.
-        if (stepNumber === 1 && !editData && !studentSearch?.selectedStudent) {
+        // Con estudiante elegido se cae al fallback de validateFields() por si el
+        // paso incorporara campos requeridos propios en el futuro.
+        if (
+          stepNumber === (stepNumbers.buscar ?? 1) &&
+          !editData &&
+          !studentSearch?.selectedStudent
+        ) {
           message.error('Seleccione un estudiante de la lista de resultados antes de continuar.');
           reject(new Error('Estudiante no seleccionado'));
           return;
@@ -127,10 +136,9 @@ export const useMatriculaWizardPageWizardValidation = ({
           return;
         }
 
-        // Pasos sin regla propia (p. ej. "Buscar estudiante"): validar los campos
-        // requeridos montados del paso visible. El wizard solo monta los Form.Item del
-        // paso actual, por lo que validateFields() sin argumentos valida exactamente
-        // ese paso (con estudiante ya seleccionado la sección no tiene requeridos).
+        // Pasos sin regla propia: validar los campos requeridos montados del paso
+        // visible. El wizard solo monta los Form.Item del paso actual, por lo que
+        // validateFields() sin argumentos valida exactamente ese paso.
         if (formInstance?.validateFields) {
           formInstance.validateFields().then(resolve).catch(reject);
           return;

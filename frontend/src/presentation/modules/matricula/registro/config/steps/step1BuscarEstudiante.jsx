@@ -65,11 +65,16 @@ const buildEstadoPills = (student) => {
 
 const BUSCAR_ESTUDIANTE_FIELDS = [
   {
+    // Es una HERRAMIENTA de búsqueda, no un dato de la inscripción: no lleva
+    // `required`. El requisito real del paso es tener un estudiante seleccionado
+    // (lo valida `useMatriculaWizardPageWizardValidation`); marcar el input como
+    // obligatorio lo dejaba en error aunque la fila ya estuviera elegida, p. ej.
+    // al limpiar el término o al volver a este paso desde otro.
     name: 'buscarEstudiante',
     type: 'search',
     label: 'Buscar estudiante',
     placeholder: 'Busque por C.I., código, nombres o apellidos',
-    required: true,
+    required: false,
     span: 24,
     allowClear: true,
   },

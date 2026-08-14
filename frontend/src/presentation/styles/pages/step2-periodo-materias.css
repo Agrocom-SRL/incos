@@ -2,9 +2,10 @@
    PASO «PARALELO» — cards de paralelo por periodo (wizard de matrícula)
    ============================================================================
    Rediseño §4-C2 con tokens del design system (dark-safe, sin hex sueltos):
-   tarjeta elevada con hover motivado, pill de turno (StatusPill, colores por
-   token en el JSX) y tiles de totales Total / Hombres / Mujeres. El estado
-   seleccionado usa el acento primario (borde + tinte), no el relleno sólido.
+   tarjeta elevada con hover motivado, cabecera con la inicial del paralelo y la
+   pill de turno (icono + color por token), y banda de inscritos con iconos
+   (total / hombres / mujeres). El estado seleccionado usa el acento primario
+   (borde + tinte + marca «Seleccionado»), no el relleno sólido.
 
    La selección de periodo/materias vive ahora en la planilla
    (materias-planilla.css); los estilos del checkboxGroup legacy se retiraron.
@@ -12,11 +13,38 @@
 
 /* ---- Tarjeta contenedora (DataCards) ---- */
 
+/* Grilla de tarjetas: DOS columnas como máximo (span=12). Un paralelo suelto
+   ocupa media columna —no todo el ancho— y el máximo real observado (4 por
+   periodo) queda en 2×2. En columnas angostas (3 periodos a la vez) pasa a una
+   sola columna, medido por el ancho del contenedor, no del viewport. */
+.step2-paralelos-cards.data-cards {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+}
+
+.step2-paralelos-cards.data-cards .data-cards__card {
+  flex: initial;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  height: 100%;
+}
+
+@container (max-width: 620px) {
+  .step2-paralelos-cards.data-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
 .step2-paralelos-cards .data-cards__card {
   border-radius: var(--border-radius-lg) !important;
-  border: 1px solid var(--color-border-secondary) !important;
+  border: 1px solid var(--color-border) !important;
   background: var(--color-bg-container) !important;
-  box-shadow: var(--shadow-elevation-1) !important;
+  /* Elevación en reposo: las tarjetas deben leerse como piezas sobre el lienzo,
+     no como recuadros dibujados en él. */
+  box-shadow: var(--shadow-elevation-2) !important;
+  overflow: hidden;
   transition:
     box-shadow var(--transition-base) ease,
     transform var(--transition-base) ease,
@@ -29,19 +57,25 @@
   background: transparent !important;
 }
 
-.step2-paralelos-cards .data-cards__card:hover {
-  box-shadow: var(--shadow-elevation-2) !important;
+/* El hover solo insinúa la tarjeta NO elegida: sobre la seleccionada volvía a
+   pintar el borde primario encima de su anillo y se leía como un borde doble. */
+.step2-paralelos-cards .data-cards__card:not(.data-cards__card--active):hover {
+  box-shadow: var(--shadow-elevation-3) !important;
   border-color: var(--color-primary-border) !important;
   transform: translateY(-2px);
 }
 
-/* Tarjeta seleccionada: acento primario (borde + tinte suave, texto legible). */
-.step2-paralelos-cards .data-cards__card--active {
-  border-color: var(--color-primary) !important;
+/* Tarjeta seleccionada: acento primario (borde + tinte suave, texto legible).
+   `card.css` (legacy, compartido por otras pantallas) fuerza texto blanco sobre
+   relleno sólido en `.data-cards__card--active`; aquí se devuelve el color de
+   texto del theme para que el tinte claro siga siendo legible. */
+.step2-paralelos-cards .data-cards__card--active,
+.step2-paralelos-cards .data-cards__card--active:hover {
   background: var(--color-primary-bg) !important;
   box-shadow:
-    0 0 0 2px var(--color-primary-border),
-    var(--shadow-elevation-1) !important;
+    0 0 0 1.5px var(--color-primary-border),
+    var(--shadow-elevation-2) !important;
+  transform: none;
 }
 
 .step2-paralelos-cards .data-cards__card--active .ant-card,
@@ -49,97 +83,213 @@
   background: transparent !important;
 }
 
-/* ---- Contenido de la tarjeta ---- */
+.step2-paralelos-cards .data-cards__card--active .ant-card-body,
+.step2-paralelos-cards .data-cards__card--active .ant-card-body * {
+  color: var(--color-text) !important;
+}
 
-.step2-paralelo-card {
+.step2-paralelos-cards .data-cards__card--active .paralelo-card__desc {
+  color: var(--color-text-secondary) !important;
+}
+
+/* …salvo el tono de género (icono y rótulo), que se conserva también en la
+   tarjeta elegida: es información, no decoración. */
+.step2-paralelos-cards .data-cards__card--active [class*='cfg-genero-tone'] .anticon,
+.step2-paralelos-cards
+  .data-cards__card--active
+  [class*='cfg-genero-tone']
+  .paralelo-card__metrica-label {
+  color: var(--cfg-genero-color) !important;
+}
+
+/* ---- Contenido de la tarjeta (patrón TARJETA INFORMATIVA, prioridad 1) ----
+   Ver docs/referencia/tarjeta-informativa.md: cabecera (identidad + pills) →
+   divisor → banda de métricas con rótulo en versalitas sobre el valor. Sin
+   fondos de color: el color vive en las pills y en los acentos. */
+
+.paralelo-card {
+  --paralelo-turno-color: var(--color-border);
+  --paralelo-turno-bg: var(--color-bg-layout);
+  --paralelo-turno-fg: var(--color-text-secondary);
   width: 100%;
   min-height: 100%;
   display: flex;
   flex-direction: column;
-}
-
-.step2-paralelo-card__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-xs);
 }
 
-.step2-paralelo-card__title {
+.paralelo-card--warning {
+  --paralelo-turno-color: var(--color-warning-border);
+  --paralelo-turno-bg: var(--color-warning-bg);
+  --paralelo-turno-fg: var(--color-warning-active);
+}
+
+.paralelo-card--info {
+  --paralelo-turno-color: var(--color-info-border);
+  --paralelo-turno-bg: var(--color-info-bg);
+  --paralelo-turno-fg: var(--color-info-active);
+}
+
+.paralelo-card--accent {
+  --paralelo-turno-color: var(--color-accent-border);
+  --paralelo-turno-bg: var(--color-accent-bg);
+  --paralelo-turno-fg: var(--color-accent-active);
+}
+
+/* ---- Cabecera: inicial + identidad + pills ---- */
+
+/* Sin wrap: la identidad encoge (min-width:0) antes de que las pills bajen de
+   línea, así el turno se lee siempre en la esquina superior derecha. */
+.paralelo-card__head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  flex-wrap: nowrap;
+}
+
+/* Inicial del paralelo (A, B, C…): ancla visual, teñida con el color del turno */
+.paralelo-card__inicial {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--control-height-sm);
+  height: var(--control-height-sm);
+  border-radius: var(--border-radius);
+  background: var(--paralelo-turno-bg);
+  border: 1px solid var(--paralelo-turno-color);
+  color: var(--paralelo-turno-fg);
+  font-family: var(--font-family-code);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-strong);
+  line-height: 1;
+}
+
+/* Elegida: la inicial pasa al primario sólido (confirma la elección). */
+.step2-paralelos-cards .data-cards__card--active .paralelo-card__inicial {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-white) !important;
+}
+
+.paralelo-card__identidad {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.paralelo-card__title {
   margin: 0 !important;
+  min-width: 0;
   font-size: var(--font-size-lg) !important;
   font-weight: var(--font-weight-strong) !important;
   line-height: var(--line-height-sm) !important;
   color: var(--color-text) !important;
 }
 
-.step2-paralelo-card__meta {
+/* Dos líneas como máximo: mantiene la altura pareja entre tarjetas vecinas. */
+.paralelo-card__desc {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-sm);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.paralelo-card__pills {
+  flex: none;
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--spacing-xs);
+  margin-inline-start: auto;
+}
+
+/* Turno dentro de la pill: icono + texto */
+.paralelo-card__turno,
+.paralelo-card__elegido {
+  display: inline-flex;
   align-items: center;
   gap: var(--spacing-xs);
 }
 
-.step2-paralelo-card__desc {
-  margin: 0 0 var(--spacing-xs);
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  line-height: var(--line-height-sm);
+/* La pill «Elegido» solo existe en la tarjeta seleccionada. */
+.paralelo-card__pill-elegido {
+  display: none;
 }
 
-.step2-paralelo-card__divider {
-  height: 1px;
-  background: var(--color-border-secondary);
-  margin: var(--spacing-sm) 0;
-  border: none;
+.step2-paralelos-cards .data-cards__card--active .paralelo-card__pill-elegido {
+  display: inline-flex;
 }
 
-/* ---- Totales de inscritos ---- */
+/* ---- Banda de métricas (inscritos por sexo) ---- */
 
-.step2-paralelo-card__stats {
+.paralelo-card__metricas {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: auto;
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--color-border-secondary);
+}
+
+.paralelo-card__metrica {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-sm);
-}
-
-.step2-paralelo-card__stat {
-  flex: 1;
+  flex-direction: column;
+  gap: var(--spacing-xs);
   min-width: 0;
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border-radius: var(--border-radius);
-  background: var(--color-bg-layout);
-  border: 1px solid var(--color-border-secondary);
-  text-align: center;
+  padding-inline: var(--spacing-sm);
+  border-inline-start: 1px solid var(--color-border-secondary);
 }
 
-.step2-paralelos-cards .data-cards__card--active .step2-paralelo-card__stat {
-  background: var(--color-bg-container);
-  border-color: var(--color-primary-border);
+.paralelo-card__metrica:first-child {
+  padding-inline-start: 0;
+  border-inline-start: none;
 }
 
-.step2-paralelo-card__stat-label {
-  display: block;
+.paralelo-card__metrica-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
   font-size: var(--font-size-xxs);
   font-weight: var(--font-weight-strong);
   text-transform: uppercase;
-  letter-spacing: 0.4px;
-  color: var(--color-text-secondary);
-  margin-bottom: var(--spacing-xs);
+  letter-spacing: 0.1em;
+  color: var(--color-text-tertiary);
 }
 
-.step2-paralelo-card__stat-value {
+/* Tono de género: icono Y rótulo teñidos (azul / magenta), igual que en las
+   listas (`cfg-genero-tone`, table-cells.css). No es decorativo: es el código
+   de color con el que ya se leen los datos por sexo en todo el sistema. */
+.paralelo-card__metrica[class*='cfg-genero-tone'] .paralelo-card__metrica-label {
+  color: var(--cfg-genero-color);
+}
+
+/* El total de inscritos es el dato institucional de la tarjeta: primario. */
+.paralelo-card__metrica--total .paralelo-card__metrica-label,
+.paralelo-card__metrica--total .paralelo-card__metrica-label .anticon {
+  color: var(--color-primary);
+}
+
+/* El dato numérico manda en esta tarjeta: un escalón por encima del texto. */
+.paralelo-card__metrica-valor {
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-strong);
   line-height: var(--line-height-sm);
-  font-variant-numeric: tabular-nums;
   color: var(--color-text);
+  font-variant-numeric: tabular-nums;
 }
 
-.step2-paralelo-card__stat--hombres .step2-paralelo-card__stat-value {
-  color: var(--color-info-active);
-}
-
-.step2-paralelo-card__stat--mujeres .step2-paralelo-card__stat-value {
-  color: var(--color-accent-active);
+@media (prefers-reduced-motion: reduce) {
+  .step2-paralelos-cards .data-cards__card,
+  .step2-paralelos-cards .data-cards__card:hover {
+    transition: none !important;
+    transform: none;
+  }
 }

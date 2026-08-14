@@ -9,6 +9,7 @@ import {
   buildPriorHistoryPayload,
   validateHistorialPrevioGrades,
   historialPrevioRowKey,
+  listHistorialMateriasDePeriodo,
   resolveDefaultNotaHistorial,
   requiereHistorialPrevio,
   seedHistorialFromPriorEnrollmentHistories,
@@ -23,6 +24,10 @@ export const useInscripcionNuevaHistorialPrevio = ({
   periodos = [],
   selectedPeriodIds = [],
   periodosDisabledByTraspaso = null,
+  // Materias marcadas en la planilla: las que el estudiante cursa esta gestión
+  // quedan FUERA del historial; el resto de su periodo (y de los anteriores) sí
+  // se registra (nivelación por materia, no por periodo completo).
+  selectedMateriaIdsByPeriod = null,
   materiasByPeriod = {},
   materiasLoading = false,
   // Contexto de matrícula (§4-C4): nota mínima de aprobación que se precarga
@@ -50,8 +55,15 @@ export const useInscripcionNuevaHistorialPrevio = ({
         periodos,
         selectedPeriodIds,
         periodosDisabledByTraspaso,
+        selectedMateriaIdsByPeriod,
       }),
-    [tipoAdmision, periodos, selectedPeriodIds, periodosDisabledByTraspaso]
+    [
+      tipoAdmision,
+      periodos,
+      selectedPeriodIds,
+      periodosDisabledByTraspaso,
+      selectedMateriaIdsByPeriod,
+    ]
   );
 
   // Nota precargada al marcar APROBADO: contexto.notaMinimaAprobacion (fallback local).
@@ -88,12 +100,7 @@ export const useInscripcionNuevaHistorialPrevio = ({
       let changed = false;
 
       for (const period of concludedPeriods) {
-        const materias =
-          materiasByPeriod?.[period.periodId] ??
-          materiasByPeriod?.[String(period.periodId)] ??
-          [];
-        for (const materia of materias) {
-          if (!materia?.id) continue;
+        for (const materia of listHistorialMateriasDePeriodo(period, materiasByPeriod)) {
           const key = historialPrevioRowKey(period.periodId, materia.id);
           const initKey = `${key}`;
           if (initializedRef.current.has(initKey)) continue;
@@ -134,12 +141,7 @@ export const useInscripcionNuevaHistorialPrevio = ({
         let next = prev;
         let changed = false;
         for (const period of concludedPeriods) {
-          const materias =
-            materiasByPeriod?.[period.periodId] ??
-            materiasByPeriod?.[String(period.periodId)] ??
-            [];
-          for (const materia of materias) {
-            if (!materia?.id) continue;
+          for (const materia of listHistorialMateriasDePeriodo(period, materiasByPeriod)) {
             const key = historialPrevioRowKey(period.periodId, materia.id);
             if (prev[key] != null) continue;
             if (!changed) {

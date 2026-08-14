@@ -291,7 +291,7 @@ const InscripcionesNueva = () => {
               type="warning"
               showIcon
               title="Completar historial de notas"
-              description="Esta inscripción es de tipo antiguo, traspaso o transitabilidad y aún no tiene registradas las notas de periodos anteriores. Use el paso «Historial de notas» (último del asistente) para ingresar las notas y finalizar. Puede volver a pasos anteriores si también desea ajustar periodos, materias o paralelos."
+              description="Esta inscripción es de tipo antiguo, traspaso o transitabilidad y aún no tiene registradas las notas de las materias que no cursa esta gestión. Use el paso «Historial de notas» para ingresarlas y finalizar. Puede volver a pasos anteriores si también desea ajustar periodos, materias o paralelos."
             />
           ) : null}
           <WizardForm
