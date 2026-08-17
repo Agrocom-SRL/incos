@@ -13,6 +13,7 @@ import {
   listProyectosGradoValidator,
   exportBitacoraMensualValidator,
   createProyectoGradoValidator,
+  registrarMiModalidadGradoValidator,
   updateProyectoGradoValidator,
   asignarTutorValidator,
   transicionProyectoValidator,
@@ -98,6 +99,17 @@ export function buildProyectosGradoRouter({ controllers, middlewares }) {
   // T4 GET /mi-proyecto - Proyecto vigente del estudiante de la sesión (anti-IDOR)
   router.get('/mi-proyecto', ...proyectoDetalle, (req, res, next) =>
     controllers.getMiProyectoGradoController.handle(req, res, next)
+  );
+
+  // Fase B3 (extensión 2026-08-17) — POST /mi-proyecto: autorregistro del
+  // estudiante (individual, prerrequisito de 3er año + sin pendientes de
+  // 1º/2º; el estudiante se resuelve en servidor, anti-IDOR).
+  router.post(
+    '/mi-proyecto',
+    ...proyectoCrear,
+    registrarMiModalidadGradoValidator,
+    validateRequest,
+    (req, res, next) => controllers.registrarMiModalidadGradoController.handle(req, res, next)
   );
 
   // T5 GET /reportes/bitacora-mensual?mes=&gestionId= - PDF (vista 163)
@@ -198,12 +210,17 @@ export function buildProyectosGradoRouter({ controllers, middlewares }) {
     (req, res, next) => controllers.getProyectoGradoByIdController.handle(req, res, next)
   );
 
-  // GET /:id/formulario-modalidad/pdf - PDF del FMDG-1 (Requisito 1, extensión 2026-07-31)
+  // GET /:id/formulario-modalidad/pdf - PDF del FMDG-1 (Requisito 1, extensión
+  // 2026-07-31). Guard anti-IDOR agregado 2026-08-17 (Fase B4): recibe `:id`
+  // del cliente y, con el autorregistro del estudiante (Fase B3, EXPORTAR
+  // ahora también en seed 65 para ESTUDIANTE), sin este guard un estudiante
+  // podría descargar el FMDG-1 de OTRO estudiante cambiando el `:id`.
   router.get(
     '/:id/formulario-modalidad/pdf',
     ...proyectoExportar,
     idValidator,
     validateRequest,
+    proyectoGradoIntegranteGuard,
     (req, res, next) =>
       controllers.exportFormularioModalidadGradoPdfController.handle(req, res, next)
   );

@@ -298,6 +298,15 @@ Decisiones tomadas en el chat del 2026-08-17 (no re-preguntar):
   informativo de `ProyectoGradoFormSections.jsx` — ejecutados directo en el
   chat 2026-08-17 (sin dependencia del backend de arriba).
 
+**Fase B4b — Corrección de seguridad hecha en el chat (2026-08-17):** para que
+el estudiante descargue SU PROPIO FMDG-1 hacía falta permiso EXPORTAR sobre
+`titulacion.proyecto`, pero `GET /:id/formulario-modalidad/pdf` no tenía el
+guard anti-IDOR (`proyectoGradoIntegranteGuard`) que sí tienen los demás
+satélites que reciben `:id` del cliente — sin el guard, cualquier estudiante
+con EXPORTAR podría descargar el FMDG-1 de OTRO estudiante cambiando el id.
+Se agregó el guard a esa ruta (`proyectos-grado.routes.js`) ANTES de sumar
+`ESTUDIANTE → titulacion.proyecto → EXPORTAR` en `65-seed-permisos-tit.sql`.
+
 **Fase B5 — Verificación:** `verificador` — dataKey==dataFieldName, RBAC 3
 capas, prueba con rol ESTUDIANTE con y sin prerrequisito cumplido,
 build/lint.

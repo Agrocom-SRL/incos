@@ -8,7 +8,14 @@ import {
   ESTADOS_BITACORA_TUTORIA_VALUES,
   ESTADOS_REVISION_AVANCE_VALUES,
   TRIBUNAL_ACTA_DEFENSA_MIEMBROS,
+  RESULTADOS_DICTAMEN_TUTORIA,
 } from '../../../domain/constants/titulacion.constants.js';
+
+/** Veredicto válido del informe de suficiencia (transición a SUFICIENCIA). */
+const RESULTADOS_INFORME_SUFICIENCIA_VALUES = [
+  RESULTADOS_DICTAMEN_TUTORIA.APROBADO,
+  RESULTADOS_DICTAMEN_TUTORIA.NO_APROBADO,
+];
 
 /**
  * Validators del módulo Titulación (proyectos de grado, módulo TIT)
@@ -122,6 +129,27 @@ export const createProyectoGradoValidator = [
     .withMessage('fechaPresentacionPerfil debe ser una fecha válida (YYYY-MM-DD)'),
 ];
 
+/**
+ * POST /mi-proyecto (Fase B3, autorregistro del estudiante). Solo título,
+ * objetivos y modalidad — el estudiante NUNCA envía estudianteId/
+ * titularEstudianteId/estudianteIds (se resuelve por token en el use case).
+ */
+export const registrarMiModalidadGradoValidator = [
+  body('titulo')
+    .notEmpty()
+    .withMessage('titulo es requerido')
+    .isString()
+    .trim()
+    .isLength({ min: 5, max: 500 })
+    .withMessage('titulo debe tener entre 5 y 500 caracteres'),
+  body('objetivos').optional({ nullable: true }).isString(),
+  body('modalidadId')
+    .notEmpty()
+    .withMessage('modalidadId es requerido')
+    .isInt({ min: 1 })
+    .withMessage('modalidadId debe ser un entero positivo'),
+];
+
 export const updateProyectoGradoValidator = [
   body('titulo')
     .optional()
@@ -191,6 +219,17 @@ export const transicionProyectoValidator = [
     .trim()
     .isLength({ max: 150 })
     .withMessage('destinatario no debe superar los 150 caracteres'),
+  // Informe de suficiencia (extensión 2026-08-17): requeridos solo cuando
+  // estado === SUFICIENCIA — validación de negocio en AprobarEtapaProyectoUseCase.
+  body('aspectosFormato').optional({ nullable: true }).isString(),
+  body('contenidoProyecto').optional({ nullable: true }).isString(),
+  body('procesoTutoria').optional({ nullable: true }).isString(),
+  body('resultadoSuficiencia')
+    .optional({ nullable: true })
+    .isIn(RESULTADOS_INFORME_SUFICIENCIA_VALUES)
+    .withMessage(
+      `resultadoSuficiencia debe ser uno de: ${RESULTADOS_INFORME_SUFICIENCIA_VALUES.join(', ')}`
+    ),
 ];
 
 export const addIntegranteValidator = [

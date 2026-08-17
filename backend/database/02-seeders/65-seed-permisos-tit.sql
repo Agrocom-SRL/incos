@@ -14,8 +14,9 @@
 -- (gestión administrativa de titulación y pasantías + lectura de alertas),
 -- DOCENTE (tutor: bitácora; docente de materia: sesiones de refuerzo;
 -- supervisor: informes y seguimientos de pasantía), ESTUDIANTE (su proyecto y
--- su pasantía: detalle vía guard de pertenencia en servidor). ADMIN_SISTEMA
--- hereda por vista, no se siembra.
+-- su pasantía: detalle vía guard de pertenencia en servidor; CREAR de
+-- proyecto agregado 2026-08-17 para el autorregistro de modalidad de grado).
+-- ADMIN_SISTEMA hereda por vista, no se siembra.
 --
 -- NOTA (2026-07-31) — REVERSIÓN de la decisión "los CÓDIGOS tutorias.* y el
 -- módulo TUT no cambian": el módulo pasa de TUT a TIT y los códigos pierden
@@ -174,8 +175,16 @@ FROM (
   UNION ALL SELECT 'DOCENTE', 'titulacion.pasantia.seguimiento', 'CREAR'
   UNION ALL SELECT 'DOCENTE', 'titulacion.pasantia.seguimiento', 'EDITAR'
   -- ESTUDIANTE: su proyecto (guard de pertenencia en servidor, sin LISTAR
-  -- de proyecto → no ve el menú Titulación; entra por /tutorias/mi-proyecto)
+  -- de proyecto → no ve el menú Titulación; entra por /tutorias/mi-proyecto).
+  -- CREAR (extensión 2026-08-17, Fase B3): autorregistro de modalidad de
+  -- grado vía POST /proyectos-grado/mi-proyecto (estudianteId resuelto en
+  -- servidor, prerrequisito de 3er año validado en el use case).
+  -- EXPORTAR (extensión 2026-08-17, Fase B4): descarga de su propio FMDG-1
+  -- (GET /:id/formulario-modalidad/pdf, ahora con `proyectoGradoIntegranteGuard`
+  -- para que solo pueda descargar el de su proyecto, no el de otro estudiante).
   UNION ALL SELECT 'ESTUDIANTE', 'titulacion.proyecto', 'DETALLE'
+  UNION ALL SELECT 'ESTUDIANTE', 'titulacion.proyecto', 'CREAR'
+  UNION ALL SELECT 'ESTUDIANTE', 'titulacion.proyecto', 'EXPORTAR'
   UNION ALL SELECT 'ESTUDIANTE', 'titulacion.bitacora', 'LISTAR'
   UNION ALL SELECT 'ESTUDIANTE', 'titulacion.avance', 'LISTAR'
   UNION ALL SELECT 'ESTUDIANTE', 'titulacion.avance', 'DETALLE'

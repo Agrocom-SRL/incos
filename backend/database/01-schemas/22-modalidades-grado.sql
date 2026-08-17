@@ -103,10 +103,14 @@ CREATE TABLE proyectos_grado (
     metodologia TEXT NULL COMMENT 'Metodología a utilizar',
     
     -- Estado del proyecto
+    -- SUFICIENCIA agregada 2026-08-17 (informe de suficiencia del tutor,
+    -- previo a la predefensa): ver 05-migrations/28-migrate-titulacion-suficiencia.sql
+    -- para el ALTER de una BD ya desplegada.
     estado ENUM(
         'PERFIL',
         'APROBADO_PERFIL',
         'DESARROLLO',
+        'SUFICIENCIA',
         'PREDEFENSA',
         'APROBADO_PREDEFENSA',
         'DEFENSA',
@@ -114,11 +118,12 @@ CREATE TABLE proyectos_grado (
         'REPROBADO',
         'CANCELADO'
     ) DEFAULT 'PERFIL' COMMENT 'Estado actual del proyecto',
-    
+
     -- Fechas importantes
     fecha_presentacion_perfil DATE NULL COMMENT 'Fecha en que se presentó el perfil',
     fecha_aprobacion_perfil DATE NULL COMMENT 'Fecha en que se aprobó el perfil',
     fecha_inicio_desarrollo DATE NULL COMMENT 'Fecha de inicio del desarrollo',
+    fecha_informe_suficiencia DATE NULL COMMENT 'Fecha en que se registró el informe de suficiencia del tutor',
     fecha_presentacion_predefensa DATE NULL COMMENT 'Fecha en que se presentó para predefensa',
     fecha_aprobacion_predefensa DATE NULL COMMENT 'Fecha en que se aprobó la predefensa',
     fecha_defensa DATE NULL COMMENT 'Fecha de la defensa final',

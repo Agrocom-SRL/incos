@@ -10,6 +10,7 @@ export { GetMiProyectoGradoController } from './get-mi-proyecto-grado.controller
 export { ExportBitacoraMensualTutorController } from './export-bitacora-mensual-tutor.controller.js';
 export { GetProyectoGradoByIdController } from './get-proyecto-grado-by-id.controller.js';
 export { CreateProyectoGradoController } from './create-proyecto-grado.controller.js';
+export { RegistrarMiModalidadGradoController } from './registrar-mi-modalidad-grado.controller.js';
 export { UpdateProyectoGradoController } from './update-proyecto-grado.controller.js';
 export { DeleteProyectoGradoController } from './delete-proyecto-grado.controller.js';
 export { AsignarTutorProyectoController } from './asignar-tutor-proyecto.controller.js';

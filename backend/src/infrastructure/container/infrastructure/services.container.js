@@ -54,6 +54,7 @@ import { FichaSeguimientoClasePdfGenerator } from '../../external/pdf/docentes/F
 import { FormularioModalidadGradoPdfGenerator } from '../../external/pdf/titulacion/FormularioModalidadGradoPdfGenerator.js';
 import { AvanceTutoriaCarreraPdfGenerator } from '../../external/pdf/titulacion/AvanceTutoriaCarreraPdfGenerator.js';
 import { ActaDefensaPdfGenerator } from '../../external/pdf/titulacion/ActaDefensaPdfGenerator.js';
+import { InformeSuficienciaPdfGenerator } from '../../external/pdf/titulacion/InformeSuficienciaPdfGenerator.js';
 import { SeguimientoTutoriaDocentesExcelBuilder } from '../../external/excel/titulacion-seguimiento-docentes/SeguimientoTutoriaDocentesExcelBuilder.js';
 import { UploadsStorageAdapter } from '../../services/UploadsStorageAdapter.js';
 
@@ -253,6 +254,16 @@ export function registerServicesModule(container) {
         container,
         SERVICIOS_TOKENS.actaDefensaPdfGenerator,
         (c) => new ActaDefensaPdfGenerator({ logger: c.resolve(SERVICIOS_TOKENS.logger) })
+    );
+
+    // ============================================
+    // GENERADOR DEL MÓDULO TITULACIÓN (TIT) · extensión 2026-08-17
+    // (informe de suficiencia del tutor, transición DESARROLLO → SUFICIENCIA)
+    // ============================================
+    registerService(
+        container,
+        SERVICIOS_TOKENS.informeSuficienciaPdfGenerator,
+        (c) => new InformeSuficienciaPdfGenerator({ logger: c.resolve(SERVICIOS_TOKENS.logger) })
     );
 
     // ============================================

@@ -7,10 +7,12 @@ import {
 } from '../../../domain/constants/titulacion.constants.js';
 
 /**
- * Dictamen de tutoría (módulo TUT) — tabla `dictamenes_proyecto`.
- * Informes formales: Viabilidad Técnica (aprobación final del tutor) y
- * Designación Oficial de tutor (PDF para la DDE). El PDF generado en backend
- * se guarda en uploads y se registra aquí (nombre_archivo/ruta_archivo).
+ * Dictamen de tutoría (módulo TIT) — tabla `dictamenes_proyecto`.
+ * Informes formales: Viabilidad Técnica (aprobación final del tutor),
+ * Designación Oficial de tutor (PDF para la DDE) e Informe de Suficiencia del
+ * tutor (extensión 2026-08-17, transición DESARROLLO → SUFICIENCIA). El PDF
+ * generado en backend se guarda en uploads y se registra aquí
+ * (nombre_archivo/ruta_archivo).
  */
 export const DictamenProyecto = sequelize.define(
   'DictamenProyecto',

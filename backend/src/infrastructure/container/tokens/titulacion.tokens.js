@@ -37,6 +37,8 @@ export const TITULACION_TOKENS = {
   exportBitacoraMensualTutorPdfUseCase: 'titulacion.exportBitacoraMensualTutorPdfUseCase',
   getProyectoGradoByIdUseCase: 'titulacion.getProyectoGradoByIdUseCase',
   createProyectoGradoUseCase: 'titulacion.createProyectoGradoUseCase',
+  // Fase B3 (extensión 2026-08-17): autorregistro del estudiante
+  registrarMiModalidadGradoUseCase: 'titulacion.registrarMiModalidadGradoUseCase',
   updateProyectoGradoUseCase: 'titulacion.updateProyectoGradoUseCase',
   deleteProyectoGradoUseCase: 'titulacion.deleteProyectoGradoUseCase',
   asignarTutorProyectoUseCase: 'titulacion.asignarTutorProyectoUseCase',
@@ -86,6 +88,7 @@ export const TITULACION_TOKENS = {
   exportBitacoraMensualTutorController: 'titulacion.exportBitacoraMensualTutorController',
   getProyectoGradoByIdController: 'titulacion.getProyectoGradoByIdController',
   createProyectoGradoController: 'titulacion.createProyectoGradoController',
+  registrarMiModalidadGradoController: 'titulacion.registrarMiModalidadGradoController',
   updateProyectoGradoController: 'titulacion.updateProyectoGradoController',
   deleteProyectoGradoController: 'titulacion.deleteProyectoGradoController',
   asignarTutorProyectoController: 'titulacion.asignarTutorProyectoController',
