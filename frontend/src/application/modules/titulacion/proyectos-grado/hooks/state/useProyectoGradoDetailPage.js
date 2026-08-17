@@ -289,7 +289,7 @@ export const useProyectoGradoDetailPage = () => {
         if (result?.success) {
           notification.success({
             title: entradaId ? 'Entrada actualizada' : 'Entrada registrada',
-            description: 'La bitácora de tutoría fue actualizada.',
+            description: 'El cronograma de progreso fue actualizado.',
           });
           cerrarBitacoraDrawer();
           await refetch();

@@ -137,7 +137,7 @@ const ProyectosGradoList = () => {
                 <Paragraph type="secondary" className="cfg-academico-workspace__desc">
                   Proyectos de titulación por modalidad de grado, con su tutor, integrantes y
                   avance de tutoría. Desde la ficha de cada proyecto se gestionan integrantes,
-                  bitácora, avances y dictámenes.
+                  cronograma de progreso, avances y dictámenes.
                 </Paragraph>
               </header>
               <div className="cfg-academico-tab-panel">

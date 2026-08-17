@@ -131,7 +131,7 @@ export const createAvancesTableColumns = ({
                           key: 'revisar',
                           icon: <AuditOutlined />,
                           variant: 'warning',
-                          tooltip: 'Revisar avance (entrada de bitácora)',
+                          tooltip: 'Revisar avance (entrada del cronograma de progreso)',
                           permiso: TITULACION_PERMISOS.bitacora,
                           accion: 'CREAR',
                           onClick: () => onRevisar(record),

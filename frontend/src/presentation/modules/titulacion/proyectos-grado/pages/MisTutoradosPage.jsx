@@ -48,8 +48,8 @@ const MisTutoradosPage = () => {
             <ListPanelHeader title="Proyectos bajo su tutoría" />
             <Paragraph type="secondary" className="cfg-academico-workspace__desc">
               Proyectos de grado en los que usted figura como tutor. Registre las reuniones de
-              tutoría en la bitácora de cada proyecto; desde la ficha puede revisar avances y
-              emitir la aprobación final.
+              tutoría en el cronograma de progreso de cada proyecto; desde la ficha puede revisar
+              avances y emitir la aprobación final.
             </Paragraph>
           </header>
           {error ? (

@@ -98,12 +98,12 @@ const MiProyectoGradoPage = () => {
 
             <div className="sd-tab-body">
               <DetailInfoCard
-                title={`Bitácora de tutoría (${bitacoraEntradas.length})`}
+                title={`Cronograma de progreso (${bitacoraEntradas.length})`}
                 icon={<FileTextOutlined />}
                 cols={1}
               >
                 {bitacoraEntradas.length === 0 && !loadingBitacora ? (
-                  <Empty description="Su tutor aún no registró entradas de bitácora." />
+                  <Empty description="Su tutor aún no registró entradas de cronograma de progreso." />
                 ) : (
                   <Table
                     dataSource={bitacoraEntradas}

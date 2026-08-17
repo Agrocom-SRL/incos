@@ -80,7 +80,7 @@ export const useMisTutoradosPage = () => {
         if (result?.success) {
           notification.success({
             title: 'Entrada registrada',
-            description: `Bitácora de «${bitacoraDrawer.proyecto.titulo}» actualizada.`,
+            description: `Cronograma de progreso de «${bitacoraDrawer.proyecto.titulo}» actualizado.`,
           });
           cerrarBitacora();
           await refetch();

@@ -31,7 +31,7 @@ const REQUISITOS_TRANSICION = {
   PREDEFENSA: {
     automaticos: [
       {
-        descripcion: 'Registrar al menos una entrada de bitácora de seguimiento',
+        descripcion: 'Registrar al menos una entrada del cronograma de progreso',
         cumplido: (ctx) => (ctx.bitacoraCount ?? 0) > 0,
       },
     ],

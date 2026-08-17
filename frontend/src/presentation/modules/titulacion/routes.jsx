@@ -4,7 +4,7 @@
  * routes.jsx (patrón configuracion/routes.jsx). Raíz de menú: dominios/routes.jsx
  * → key TIT, label "Titulación" (order 9).
  *
- * Submódulos: Proyectos de grado (bitácora, avances, dictámenes; menú TIT) y
+ * Submódulos: Proyectos de grado (cronograma de progreso, avances, dictámenes; menú TIT) y
  * Pasantías (trámites de práctica laboral + catálogo de empresas; menú TIT,
  * order 2). Acompañamiento (alertas de riesgo, sesiones de refuerzo, panel)
  * se reclasificó por completo al dominio ACADÉMICO — decisión 2026-07-29,

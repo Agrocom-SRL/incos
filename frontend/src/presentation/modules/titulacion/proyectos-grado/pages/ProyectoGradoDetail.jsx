@@ -235,7 +235,7 @@ const ProyectoGradoDetail = () => {
           key: 'bitacora',
           label: (
             <DetailTabLabel icon={<FileTextOutlined />}>
-              Bitácora ({bitacora.entradas.length})
+              Cronograma de progreso ({bitacora.entradas.length})
             </DetailTabLabel>
           ),
           children: (

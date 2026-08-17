@@ -137,7 +137,7 @@ export const createMisTutoradosTableColumns = ({
               key: 'bitacora',
               icon: <FileAddOutlined />,
               variant: 'info',
-              tooltip: 'Registrar entrada de bitácora',
+              tooltip: 'Registrar entrada del cronograma de progreso',
               permiso: TITULACION_PERMISOS.bitacora,
               accion: 'CREAR',
               onClick: () => onRegistrarBitacora(record),
