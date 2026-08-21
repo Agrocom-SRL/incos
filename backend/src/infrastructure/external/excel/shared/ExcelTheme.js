@@ -43,7 +43,15 @@ export const EXCEL_COLOR = {
   danger: 'FFB91C1C', // texto de nota reprobada (rojo-700) — paridad con la pantalla
   dangerSoft: 'FFFCE8E8', // relleno muy tenue para celda reprobada (opcional)
   info: 'FF0369A1', // texto de estado "en curso" (sky-700) — paridad con cfg-materia-pill--info
-  subtitleBand: 'FF0F5132' // banda secundaria (verde oscuro) bajo el título
+  subtitleBand: 'FF0F5132', // banda secundaria (verde oscuro) bajo el título
+  // Formularios OFICIALES (Ministerio de Educación) que replican una plantilla
+  // física: texto y bordes en negro puro (no slate) y el relleno exacto de sus
+  // cabeceras, medidos en el libro físico "LIBRO LLENADO SISTEMAS 11 dic
+  // 2025": "Verde oliva, Énfasis 3" de Office aclarado al 60% (cabeceras de
+  // tabla) y en su tono base (fila de siglas de materia).
+  black: 'FF000000',
+  officialHeader: 'FFD6E3BC',
+  officialHeaderStrong: 'FF9BBB59'
 };
 
 /** Estilos de borde reutilizables. */
