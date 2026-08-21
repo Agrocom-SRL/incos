@@ -1,33 +1,33 @@
 /**
  * IncosPDFLibBase - Clase base para generadores de PDF que usan pdf-lib
- * 
+ *
  * Esta clase proporciona funcionalidad común para generadores que usan pdf-lib.
- * 
+ *
  * IMPORTANTE: Esta clase es SOLO para pdf-lib. Para pdfkit, usa IncosPDFBase.
- * 
+ *
  * Proporciona:
  * - Métodos de construcción de componentes reutilizables (específicos de pdf-lib)
  * - Utilidades para fuentes personalizadas (TTF/OTF)
  * - Utilidades de formato y posicionamiento
  * - Constantes de estilo institucional (desde IncosPDFBase)
- * 
+ *
  * Tecnología: pdf-lib (edita plantillas PDF, retorna Buffer)
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja operaciones de pdf-lib
  * - Open/Closed: Extensible mediante herencia
  * - Dependency Inversion: Usa constantes de IncosPDFBase (abstracción)
  * - No comparte métodos con IncosPDFBase (diferentes APIs)
- * 
+ *
  * Clean Architecture:
  * - Infrastructure Layer: Operaciones de bajo nivel con pdf-lib
  * - Reutilizable por múltiples generadores de documentos que usan pdf-lib
- * 
+ *
  * Diferencia con IncosPDFBase:
  * - IncosPDFBase: pdfkit (crea desde cero, escribe en disco)
  * - IncosPDFLibBase: pdf-lib (edita plantillas PDF, retorna Buffer)
  * - NO comparten métodos porque las APIs son diferentes
- * 
+ *
  * @abstract
  * @example
  * // Ejemplo: Generador que usa plantilla
@@ -73,9 +73,9 @@ export class IncosPDFLibBase {
 
     /**
      * Carga una plantilla PDF desde un archivo
-     * 
+     *
      * Útil para generadores que editan plantillas PDF existentes.
-     * 
+     *
      * @protected
      * @param {string} templateFileName - Nombre del archivo de plantilla (ej: 'Plantilla.pdf')
      *   Si se proporciona una ruta absoluta, se usa tal cual
@@ -198,7 +198,7 @@ export class IncosPDFLibBase {
         if (!fontPath) {
             // Si no existe la fuente personalizada, usar Helvetica-Bold como fallback
             if (this.logger) {
-                this.logger.warn(`[IncosPDFLibBase] Fuente no encontrada, usando Helvetica-Bold como fallback`, {
+                this.logger.warn('[IncosPDFLibBase] Fuente no encontrada, usando Helvetica-Bold como fallback', {
                     searchedNames: namesToTry,
                     searchedExtensions: extensions,
                     searchedPath: IncosPDFBase.FONTS_DIR,
@@ -242,7 +242,7 @@ export class IncosPDFLibBase {
     /**
      * Inicializa el estado interno para construcción de documentos
      * Debe llamarse al inicio de la generación para configurar página y posición inicial
-     * 
+     *
      * @protected
      * @param {PDFDocument} pdfDoc - Documento PDF
      * @param {PDFPage} page - Página donde se construirá el documento
@@ -262,9 +262,9 @@ export class IncosPDFLibBase {
 
     /**
      * Calcula la posición Y inicial para documentos con plantilla (debajo del encabezado)
-     * 
+     *
      * Método helper para calcular la posición inicial cuando se usa una plantilla con encabezado.
-     * 
+     *
      * @protected
      * @param {PDFPage} page - Página del documento
      * @returns {number} Posición Y inicial (desde abajo)
@@ -327,7 +327,7 @@ export class IncosPDFLibBase {
         }
 
         const { width: pageWidth, height: pageHeight } = this._currentPage.getSize();
-        const margins = IncosPDFBase.LAYOUT.margins;
+        const { margins } = IncosPDFBase.LAYOUT;
         const boxCfg = IncosPDFBase.LAYOUT.registrationBox || {};
         const boxWidth = boxCfg.width ?? 90;
         const borderWidth = boxCfg.borderWidth ?? 1;
@@ -430,7 +430,7 @@ export class IncosPDFLibBase {
         }
 
         const { width: pageWidth, height: pageHeight } = this._currentPage.getSize();
-        const margins = IncosPDFBase.LAYOUT.margins;
+        const { margins } = IncosPDFBase.LAYOUT;
         const boxCfg = IncosPDFBase.LAYOUT.registrationBox || {};
         const photoCfg = IncosPDFBase.LAYOUT.photoBox || {};
         const rightMargin = boxCfg.rightMargin ?? margins.right;
@@ -475,10 +475,10 @@ export class IncosPDFLibBase {
 
     /**
      * Agrega el título principal del documento
-     * 
+     *
      * Método simplificado que usa el estado interno (página y posición Y).
      * Siempre usa la fuente por defecto desde configuración (defaultTitleFont) y está centrado.
-     * 
+     *
      * @protected
      * @param {string} titleText - Texto del título
      * @param {boolean} [usePrimaryColor=true] - Si true usa color primario (verde); si false usa negro (COLORS.text)
@@ -515,10 +515,10 @@ export class IncosPDFLibBase {
 
     /**
      * Agrega un subtítulo (sección) al documento
-     * 
+     *
      * Método simplificado que usa el estado interno (página y posición Y).
      * Siempre usa la misma fuente, color y tamaño que el título, y está centrado.
-     * 
+     *
      * @protected
      * @param {string} text - Texto del subtítulo
      * @returns {Promise<void>} Actualiza el estado interno _currentY
@@ -553,7 +553,7 @@ export class IncosPDFLibBase {
 
     /**
      * Agrega un título de sección al documento
-     * 
+     *
      * Método simplificado que usa el estado interno (página y posición Y).
      * Usa fuente Helvetica-Bold, color primario, alineado a la izquierda.
      *
@@ -589,7 +589,7 @@ export class IncosPDFLibBase {
 
         // Actualizar posición Y después del título de sección
         if (compactSpacing) {
-            this._currentY = this._currentY - IncosPDFBase.LAYOUT.spacing.line;
+            this._currentY -= IncosPDFBase.LAYOUT.spacing.line;
         } else {
             this._currentY = this._currentY - sectionFontSize - IncosPDFBase.LAYOUT.spacing.line;
         }
@@ -597,10 +597,10 @@ export class IncosPDFLibBase {
 
     /**
      * Agrega un párrafo de texto normal
-     * 
+     *
      * Método simplificado que usa el estado interno (página y posición Y).
      * Siempre usa fuente Helvetica, tamaño normal, color texto, alineado a la izquierda.
-     * 
+     *
      * @protected
      * @param {string} text - Texto del párrafo
      * @param {Object} [options]
@@ -654,9 +654,10 @@ export class IncosPDFLibBase {
      * @param {string} label - Texto en negrita (ej. "Nombres y Apellidos:")
      * @param {string} value - Texto normal a continuación
      * @param {number} [maxWidth] - Ancho máximo disponible (opcional, para evitar desbordamiento)
+     * @param {number} [fontSize] - Override del tamaño de fuente (por defecto FONTS.normal.size)
      * @returns {Promise<number>} Altura total usada (para múltiples líneas)
      */
-    async _drawLabelValueAt(x, y, label, value, maxWidth = null) {
+    async _drawLabelValueAt(x, y, label, value, maxWidth = null, fontSize = null) {
         if (!this._pdfDoc || !this._currentPage) {
             throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
         }
@@ -667,7 +668,7 @@ export class IncosPDFLibBase {
         const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
         const boldFont = await this._pdfDoc.embedFont(boldFontName);
         const normalFont = await this._pdfDoc.embedFont(normalFontName);
-        const fontSize = IncosPDFBase.FONTS.normal.size;
+        fontSize = fontSize ?? IncosPDFBase.FONTS.normal.size;
         const lineSpacing = IncosPDFBase.LAYOUT.spacing.line;
         const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
 
@@ -774,7 +775,7 @@ export class IncosPDFLibBase {
         }
 
         const { width: pageWidth } = this._currentPage.getSize();
-        const margins = IncosPDFBase.LAYOUT.margins;
+        const { margins } = IncosPDFBase.LAYOUT;
         // Aumentar tamaño de fuente para datos personales: 8pt -> 9pt (1 punto más)
         const fontSize = IncosPDFBase.FONTS.normal.size + 1;
         // Si valueBold es true y no se especifica valueFontSize, usar tamaño del título
@@ -881,7 +882,7 @@ export class IncosPDFLibBase {
         }
 
         const { width: pageWidth } = this._currentPage.getSize();
-        const margins = IncosPDFBase.LAYOUT.margins;
+        const { margins } = IncosPDFBase.LAYOUT;
         // Aumentar tamaño de fuente para datos personales: 8pt -> 9pt (1 punto más)
         const fontSize = IncosPDFBase.FONTS.normal.size + 1;
         const lineSpacing = IncosPDFBase.LAYOUT.spacing.line;
@@ -902,7 +903,8 @@ export class IncosPDFLibBase {
 
         const totalWidth = pageWidth - margins.left - margins.right;
 
-        let leftColWidth, rightColWidth, leftColX, rightColX;
+        let leftColWidth; let rightColWidth; let leftColX; let
+rightColX;
 
         // Si el porcentaje es 100, se trata como una sola columna que ocupa todo el ancho
         if (leftColumnWidthPercent >= 100) {
@@ -976,6 +978,369 @@ export class IncosPDFLibBase {
         }
     }
 
+    // ============================================
+    // CABECERA Y TABLA DE IDENTIFICACIÓN OFICIALES
+    // (formularios/actas del Ministerio de Educación — FMDG-1, actas de
+    // defensa, dictámenes — que replican el membrete físico real: escudo del
+    // Ministerio + logo INCOS, SIN la franja verde ni el pie de redes
+    // sociales de `Plantilla.pdf`, que es el membrete corporativo moderno
+    // usado en otros documentos. Ver memoria de proyecto
+    // "PDFs oficiales: fidelidad a plantilla física".)
+    // ============================================
+
+    /**
+     * Tamaños de fuente para los documentos oficiales en tamaño oficio
+     * (`PAGE_SIZE = [612.12, 935.58]` en cada generador de `titulacion/`),
+     * escalados ~18% respecto a `IncosPDFBase.FONTS` (935.58/792 ≈ 1.18, la
+     * razón entre el alto de oficio y el alto de carta): el mismo tamaño de
+     * `IncosPDFBase.FONTS` que se ve bien en carta queda pequeño en una hoja
+     * más alta. Exclusivo de los métodos `_addOfficial*`,
+     * `_addIdentificationTable` y `_addSignatureBlockInFlow` (y de los
+     * métodos privados de cada generador de titulación) — NO reemplaza
+     * `IncosPDFBase.FONTS`, que sigue igual para el resto de PDFs del
+     * sistema (recibos, historial académico...) en tamaño carta.
+     */
+    static OFICIO_FONTS = {
+        title: 17,
+        subtitle: 14,
+        section: 12,
+        normal: 9.5,
+        small: 7,
+        bold: 9.5,
+    };
+
+    /** Alto (pt) de los logos de `_addOfficialLogosHeader`, mismo criterio de escala que OFICIO_FONTS. */
+    static OFICIO_LOGO_HEIGHTS = {
+        ministerio: 50,
+        incos: 57,
+    };
+
+    /**
+     * Cabecera oficial con ambos logos del documento físico: escudo del
+     * Ministerio de Educación (izquierda) + logo INCOS con la resolución
+     * ministerial debajo (derecha). Pensada para documentos SIN plantilla de
+     * fondo (`_initializeDocumentState(doc, page, false)`): dibuja sobre
+     * fondo blanco y deja `_currentY` debajo de ambos logos.
+     *
+     * @protected
+     * @param {Object} [options]
+     * @param {string} [options.motto='RESOLUCIÓN MINISTERIAL 426/2016'] - Texto bajo el logo INCOS
+     * @returns {Promise<void>}
+     */
+    async _addOfficialLogosHeader(options = {}) {
+        if (!this._pdfDoc || !this._currentPage) {
+            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
+        }
+
+        const { width: pageWidth, height: pageHeight } = this._currentPage.getSize();
+        const { margins } = IncosPDFBase.LAYOUT;
+        const topY = pageHeight - margins.top;
+        const motto = options.motto ?? 'RESOLUCIÓN MINISTERIAL 426/2016';
+
+        const ministerioPath = path.join(IncosPDFBase.TEMPLATES_DIR, 'ministerio.png');
+        const incosPath = path.join(IncosPDFBase.TEMPLATES_DIR, 'logo.png');
+
+        let bottomY = topY;
+
+        if (fs.existsSync(ministerioPath)) {
+            const image = await this._pdfDoc.embedPng(fs.readFileSync(ministerioPath));
+            const height = IncosPDFLibBase.OFICIO_LOGO_HEIGHTS.ministerio;
+            const dims = image.scale(1);
+            const width = dims.width * (height / dims.height);
+            this._currentPage.drawImage(image, {
+                x: margins.left,
+                y: topY - height,
+                width,
+                height,
+            });
+            bottomY = Math.min(bottomY, topY - height);
+        }
+
+        if (fs.existsSync(incosPath)) {
+            const image = await this._pdfDoc.embedPng(fs.readFileSync(incosPath));
+            const height = IncosPDFLibBase.OFICIO_LOGO_HEIGHTS.incos;
+            const dims = image.scale(1);
+            const width = dims.width * (height / dims.height);
+            const x = pageWidth - margins.right - width;
+            this._currentPage.drawImage(image, { x, y: topY - height, width, height });
+
+            if (motto) {
+                const mottoFont = await this._pdfDoc.embedFont(StandardFonts.HelveticaBold);
+                const mottoFontSize = IncosPDFLibBase.OFICIO_FONTS.small;
+                const mottoWidth = mottoFont.widthOfTextAtSize(motto, mottoFontSize);
+                const mottoY = topY - height - mottoFontSize - 3;
+                this._currentPage.drawText(motto, {
+                    x: x + (width - mottoWidth) / 2,
+                    y: mottoY,
+                    size: mottoFontSize,
+                    font: mottoFont,
+                    color: this._hexToRgb(IncosPDFBase.COLORS.text),
+                });
+                bottomY = Math.min(bottomY, mottoY);
+            } else {
+                bottomY = Math.min(bottomY, topY - height);
+            }
+        }
+
+        this._currentY = bottomY - IncosPDFBase.LAYOUT.spacing.section;
+    }
+
+    /**
+     * Título/línea centrada en Helvetica-Bold (NO la fuente decorativa
+     * institucional de `_addDocumentTitle`): los formularios/actas físicos
+     * oficiales del Ministerio usan tipografía sans-serif simple, no la
+     * fuente de marca de otros documentos (cartas, informes). Acepta varias
+     * líneas (una por elemento de `lines`).
+     *
+     * @protected
+     * @param {string|string[]} lines - Una línea o varias (se dibujan en orden, centradas)
+     * @param {Object} [options]
+     * @param {number} [options.fontSize] - Por defecto OFICIO_FONTS.subtitle
+     * @returns {Promise<void>}
+     */
+    async _addOfficialDocumentTitle(lines, options = {}) {
+        if (!this._pdfDoc || !this._currentPage) {
+            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
+        }
+        const { width: pageWidth } = this._currentPage.getSize();
+        const font = await this._pdfDoc.embedFont(
+            this._mapFontNameToStandardFont(IncosPDFBase.FONTS.section.font),
+        );
+        const fontSize = options.fontSize ?? IncosPDFLibBase.OFICIO_FONTS.subtitle;
+        const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
+        const arr = Array.isArray(lines) ? lines : [lines];
+
+        arr.forEach((text) => {
+            const textWidth = font.widthOfTextAtSize(text, fontSize);
+            this._currentPage.drawText(text, {
+                x: (pageWidth - textWidth) / 2,
+                y: this._currentY,
+                size: fontSize,
+                font,
+                color: textRgb,
+            });
+            this._currentY -= fontSize + IncosPDFBase.LAYOUT.spacing.line;
+        });
+    }
+
+    /**
+     * Tabla de identificación de 2 columnas (etiqueta con fondo gris + valor
+     * con borde), réplica del "cuadro de datos" de los formularios físicos
+     * oficiales (p. ej. FMDG-1: NOMBRES/APELLIDOS/CÉDULA DE IDENTIDAD/
+     * INSTITUTO/CARRERA/...). Cada fila ocupa el ancho completo entre
+     * márgenes; la altura se ajusta al contenido (wrap automático).
+     *
+     * @protected
+     * @param {Array<{label: string, value?: string, subFields?: {label:string, value:string}[], minHeight?: number}>} rows
+     *   `subFields` divide la columna de valor en N sub-columnas con su
+     *   propio mini-encabezado (p. ej. CÉDULA DE IDENTIDAD: Nº/EXPEDIDO/Nº DE CELULAR).
+     * @param {Object} [options]
+     * @param {number} [options.labelWidth=130] - Ancho fijo de la columna de etiquetas
+     * @returns {Promise<void>}
+     */
+    async _addIdentificationTable(rows, options = {}) {
+        if (!this._pdfDoc || !this._currentPage) {
+            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
+        }
+        if (!Array.isArray(rows) || rows.length === 0) return;
+
+        const { width: pageWidth } = this._currentPage.getSize();
+        const { margins } = IncosPDFBase.LAYOUT;
+        const labelWidth = options.labelWidth ?? 130;
+        const cellPadding = 6;
+        const borderWidth = 1;
+        const fontSize = IncosPDFLibBase.OFICIO_FONTS.normal + 1;
+        const lineHeight = fontSize * 1.3;
+
+        const tableX = margins.left;
+        const tableWidth = pageWidth - margins.left - margins.right;
+        const valueX = tableX + labelWidth;
+        const valueWidth = tableWidth - labelWidth;
+
+        const labelFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
+        const valueFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
+        const labelFont = await this._pdfDoc.embedFont(labelFontName);
+        const valueFont = await this._pdfDoc.embedFont(valueFontName);
+        const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
+        const borderRgb = this._hexToRgb(IncosPDFBase.COLORS.border);
+        const labelBgRgb = rgb(0.9, 0.9, 0.9);
+        const geometry = { tableX, labelWidth, valueX, valueWidth };
+        const cellStyle = {
+            labelFont,
+            valueFont,
+            fontSize,
+            lineHeight,
+            cellPadding,
+            textRgb,
+            borderRgb,
+            labelBgRgb,
+            borderWidth,
+        };
+
+        for (const row of rows) {
+            const rowY = this._currentY;
+            const hasSubFields = Array.isArray(row.subFields) && row.subFields.length > 0;
+            const rowHeight = hasSubFields
+                ? this._drawIdTableSubFieldsRow(row, rowY, geometry, cellStyle)
+                : this._drawIdTableSimpleRow(row, rowY, geometry, cellStyle);
+            this._currentY = rowY - rowHeight;
+        }
+    }
+
+    /** @private */
+    _drawIdTableSubFieldsRow(row, rowY, geometry, cellStyle) {
+        const { tableX, labelWidth, valueX, valueWidth } = geometry;
+        const {
+            labelFont,
+            valueFont,
+            fontSize,
+            lineHeight,
+            cellPadding,
+            textRgb,
+            borderRgb,
+            labelBgRgb,
+            borderWidth,
+        } = cellStyle;
+        const subCount = row.subFields.length;
+        const subWidth = valueWidth / subCount;
+        const subHeaderFontSize = IncosPDFLibBase.OFICIO_FONTS.small;
+        const subHeaderHeight = subHeaderFontSize + cellPadding * 2;
+        const subValueHeight = lineHeight + cellPadding;
+        const rowHeight = Math.max(row.minHeight ?? 0, subHeaderHeight + subValueHeight);
+
+        this._drawIdTableLabelCell(tableX, rowY, labelWidth, rowHeight, row.label, cellStyle);
+
+        row.subFields.forEach((sub, i) => {
+            const subX = valueX + i * subWidth;
+
+            this._currentPage.drawRectangle({
+                x: subX,
+                y: rowY - subHeaderHeight,
+                width: subWidth,
+                height: subHeaderHeight,
+                color: labelBgRgb,
+                borderColor: borderRgb,
+                borderWidth,
+            });
+            const subLabelStr = String(sub.label ?? '').toUpperCase();
+            const subLabelWidth = labelFont.widthOfTextAtSize(subLabelStr, subHeaderFontSize);
+            this._currentPage.drawText(subLabelStr, {
+                x: subX + (subWidth - subLabelWidth) / 2,
+                y: rowY - subHeaderHeight + (subHeaderHeight - subHeaderFontSize) / 2 + 1,
+                size: subHeaderFontSize,
+                font: labelFont,
+                color: textRgb,
+            });
+
+            this._currentPage.drawRectangle({
+                x: subX,
+                y: rowY - subHeaderHeight - subValueHeight,
+                width: subWidth,
+                height: subValueHeight,
+                borderColor: borderRgb,
+                borderWidth,
+            });
+            const subValueStr = String(sub.value ?? '').trim();
+            if (subValueStr) {
+                const subValueWidth = valueFont.widthOfTextAtSize(subValueStr, fontSize);
+                const subValueBoxY = rowY - subHeaderHeight - subValueHeight;
+                const subValueY = subValueBoxY + (subValueHeight - fontSize) / 2 + 1;
+                this._currentPage.drawText(subValueStr, {
+                    x: subX + (subWidth - subValueWidth) / 2,
+                    y: subValueY,
+                    size: fontSize,
+                    font: valueFont,
+                    color: textRgb,
+                });
+            }
+        });
+
+        return rowHeight;
+    }
+
+    /** @private */
+    _drawIdTableSimpleRow(row, rowY, geometry, cellStyle) {
+        const { tableX, labelWidth, valueX, valueWidth } = geometry;
+        const {
+            valueFont, fontSize, lineHeight, cellPadding, textRgb, borderRgb, borderWidth,
+        } = cellStyle;
+        const valueStr = String(row.value ?? '').trim();
+        const availableTextWidth = valueWidth - cellPadding * 2;
+        // Preserva párrafos separados por línea en blanco (p. ej. "Objetivo
+        // General" / "Objetivos Específicos" en la celda OBJETIVOS del
+        // FMDG-1): `_wrapText` por sí solo colapsaría el salto a un espacio.
+        const paragraphs = valueStr
+            ? valueStr.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean)
+            : [];
+        const valueLines = paragraphs.length > 0
+            ? paragraphs.flatMap((paragraph, idx) => {
+                const wrapped = this._wrapText(paragraph, valueFont, fontSize, availableTextWidth);
+                return idx < paragraphs.length - 1 ? [...wrapped, ''] : wrapped;
+            })
+            : [''];
+        const contentHeight = valueLines.length * lineHeight;
+        const rowHeight = Math.max(row.minHeight ?? 22, contentHeight + cellPadding * 2);
+
+        this._drawIdTableLabelCell(tableX, rowY, labelWidth, rowHeight, row.label, cellStyle);
+
+        this._currentPage.drawRectangle({
+            x: valueX,
+            y: rowY - rowHeight,
+            width: valueWidth,
+            height: rowHeight,
+            borderColor: borderRgb,
+            borderWidth,
+        });
+
+        // Texto alineado arriba de la celda (fiel al original: párrafos
+        // largos como OBJETIVOS empiezan pegados al borde superior, no
+        // centrados verticalmente).
+        let lineY = rowY - cellPadding - fontSize;
+        valueLines.forEach((line) => {
+            if (line) {
+                this._currentPage.drawText(line, {
+                    x: valueX + cellPadding,
+                    y: lineY,
+                    size: fontSize,
+                    font: valueFont,
+                    color: textRgb,
+                });
+            }
+            lineY -= lineHeight;
+        });
+
+        return rowHeight;
+    }
+
+    /** @private */
+    _drawIdTableLabelCell(x, rowY, width, height, label, cellStyle) {
+        const { labelFont, fontSize, textRgb, borderRgb, labelBgRgb, borderWidth } = cellStyle;
+        this._currentPage.drawRectangle({
+            x,
+            y: rowY - height,
+            width,
+            height,
+            color: labelBgRgb,
+            borderColor: borderRgb,
+            borderWidth,
+        });
+        const labelStr = String(label ?? '').toUpperCase();
+        const labelLines = this._wrapText(labelStr, labelFont, fontSize, width - 12);
+        const lineHeight = fontSize * 1.2;
+        const totalHeight = labelLines.length * lineHeight;
+        let textY = rowY - (height - totalHeight) / 2 - fontSize;
+        labelLines.forEach((line) => {
+            this._currentPage.drawText(line, {
+                x: x + 6,
+                y: textY,
+                size: fontSize,
+                font: labelFont,
+                color: textRgb,
+            });
+            textY -= lineHeight;
+        });
+    }
+
     /**
      * Dibuja una tabla con encabezado y filas de datos.
      * El encabezado tiene fondo de color primario y texto blanco.
@@ -1005,7 +1370,7 @@ export class IncosPDFLibBase {
         }
 
         const { width: pageWidth } = this._currentPage.getSize();
-        const margins = IncosPDFBase.LAYOUT.margins;
+        const { margins } = IncosPDFBase.LAYOUT;
         const tableCfg = IncosPDFBase.LAYOUT.table || {};
         const rowHeight = tableCfg.rowHeight ?? 18;
         const headerHeight = tableCfg.headerHeight ?? 20;
@@ -1048,7 +1413,7 @@ export class IncosPDFLibBase {
                 // Es un porcentaje (0-1)
                 normalizedWidths.push(width);
                 totalPercent += width;
-            } else if (width <= 100 && i === 0 && columnWidths.every(w => w <= 100)) {
+            } else if (width <= 100 && i === 0 && columnWidths.every((w) => w <= 100)) {
                 // Podrían ser porcentajes (0-100)
                 normalizedWidths.push(width / 100);
                 totalPercent += width / 100;
@@ -1421,7 +1786,7 @@ export class IncosPDFLibBase {
         }
 
         const { width: pageWidth } = this._currentPage.getSize();
-        const margins = IncosPDFBase.LAYOUT.margins;
+        const { margins } = IncosPDFBase.LAYOUT;
         const boxCfg = IncosPDFBase.LAYOUT.boxedFields || {};
         const colGap = boxCfg.colGap ?? 16;
 
@@ -1472,7 +1837,7 @@ export class IncosPDFLibBase {
     /**
      * Helper: Dibuja un campo con label y cuadro dentro de una columna específica.
      * Ajusta automáticamente la altura del cuadro si el contenido es más ancho.
-     * 
+     *
      * @private
      * @param {number} colX - Posición X de la columna
      * @param {number} rowY - Posición Y de la fila
@@ -1607,16 +1972,18 @@ export class IncosPDFLibBase {
      * @protected
      * @param {{ label: string, value: string }[]} items - Lista de { label, value }
      * @param {number} numCols - Número de columnas (2 o 3)
+     * @param {Object} [options]
+     * @param {number} [options.fontSize] - Override del tamaño de fuente (por defecto FONTS.normal.size)
      * @returns {Promise<void>}
      */
-    async _addLabelValueGrid(items, numCols = 2) {
+    async _addLabelValueGrid(items, numCols = 2, options = {}) {
         if (!this._pdfDoc || !this._currentPage || !items.length) return;
 
         const { width: pageWidth } = this._currentPage.getSize();
         const m = IncosPDFBase.LAYOUT.margins;
         const cfg = IncosPDFBase.LAYOUT;
         const colGap = cfg.gridColGap ?? 16;
-        const fontSize = IncosPDFBase.FONTS.normal.size;
+        const fontSize = options.fontSize ?? IncosPDFBase.FONTS.normal.size;
         const lineSpacing = IncosPDFBase.LAYOUT.spacing.line;
 
         const totalWidth = pageWidth - m.left - m.right;
@@ -1669,7 +2036,7 @@ export class IncosPDFLibBase {
                 const x = baseX + col * (colWidth + colGap);
 
                 // Dibujar con el ancho máximo de columna para evitar desbordamiento
-                await this._drawLabelValueAt(x, rowY, label, value, colWidth);
+                await this._drawLabelValueAt(x, rowY, label, value, colWidth, fontSize);
             }
 
             // Mover a la siguiente fila
@@ -1682,11 +2049,11 @@ export class IncosPDFLibBase {
 
     /**
      * Agrega una viñeta con círculo negro rellenado seguido de texto
-     * 
+     *
      * Método simplificado que usa el estado interno (página y posición Y).
      * Dibuja un círculo negro rellenado y luego el texto al lado.
      * Las viñetas tienen indentación adicional respecto a las secciones.
-     * 
+     *
      * @protected
      * @param {string} text - Texto de la viñeta
      * @returns {Promise<void>} Actualiza el estado interno _currentY
@@ -1706,9 +2073,9 @@ export class IncosPDFLibBase {
         const bulletRgb = this._hexToRgb(IncosPDFBase.COLORS.text); // Círculo negro
 
         // Indentación y tamaño desde configuración
-        const bulletIndent = IncosPDFBase.LAYOUT.bulletIndent;
+        const { bulletIndent } = IncosPDFBase.LAYOUT;
         const bulletX = IncosPDFBase.LAYOUT.margins.left + bulletIndent;
-        const bulletDiameter = IncosPDFBase.LAYOUT.bulletDiameter;
+        const { bulletDiameter } = IncosPDFBase.LAYOUT;
         const bulletRadius = bulletDiameter / 2;
 
         // Calcular posición Y del círculo: centrado verticalmente con la línea de texto
@@ -1723,7 +2090,7 @@ export class IncosPDFLibBase {
         });
 
         // Posición del texto (después del círculo con espacio desde configuración)
-        const bulletSpacing = IncosPDFBase.LAYOUT.bulletSpacing;
+        const { bulletSpacing } = IncosPDFBase.LAYOUT;
         const textX = bulletX + bulletDiameter + bulletSpacing;
         const maxWidth = pageWidth - IncosPDFBase.LAYOUT.margins.right - textX;
 
@@ -1753,9 +2120,9 @@ export class IncosPDFLibBase {
 
     /**
      * Agrega un espacio en blanco
-     * 
+     *
      * Método simplificado que usa el estado interno (posición Y).
-     * 
+     *
      * @protected
      * @param {number} height - Altura del espacio (por defecto: IncosPDFBase.LAYOUT.spacing.paragraph)
      * @returns {void} Actualiza el estado interno _currentY
@@ -1764,7 +2131,7 @@ export class IncosPDFLibBase {
         if (this._currentY === null) {
             throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
         }
-        this._currentY = this._currentY - height;
+        this._currentY -= height;
     }
 
     /**
@@ -1786,7 +2153,7 @@ export class IncosPDFLibBase {
         const lines = Array.isArray(opts.lines) ? opts.lines : [];
         const { width: pageWidth } = this._currentPage.getSize();
         const cfg = IncosPDFBase.LAYOUT;
-        const margins = cfg.margins;
+        const { margins } = cfg;
         const lineWidth = cfg.signatureLineWidth ?? 150;
         const lineThickness = cfg.signatureLineThickness ?? 1;
         const footerPadding = cfg.signatureFooterPadding ?? 10;
@@ -1829,6 +2196,66 @@ export class IncosPDFLibBase {
             }
             textY -= fontSize + (i < lines.length - 1 ? spaceBetweenLines : 0);
         }
+    }
+
+    /**
+     * Bloque de firma dibujado en el FLUJO normal (línea horizontal + líneas
+     * de texto centradas debajo, usa y actualiza `_currentY`) — a diferencia
+     * de `_addSignatureBlock`, NO se ancla al pie de página. Pensado para
+     * documentos SIN plantilla de fondo (`_addOfficialLogosHeader`) donde,
+     * en el físico real, la firma queda a media hoja seguida de más texto
+     * (p. ej. "Lugar y fecha" después de la firma en el FMDG-1), no pegada
+     * al borde inferior.
+     *
+     * @protected
+     * @param {string[]} lines - Líneas de texto centradas bajo la línea de firma
+     * @returns {Promise<void>}
+     */
+    async _addSignatureBlockInFlow(lines = []) {
+        if (!this._pdfDoc || !this._currentPage) {
+            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
+        }
+
+        const { width: pageWidth } = this._currentPage.getSize();
+        const cfg = IncosPDFBase.LAYOUT;
+        const lineWidth = cfg.signatureLineWidth ?? 150;
+        const lineThickness = cfg.signatureLineThickness ?? 1;
+        const spaceLineToFirst = cfg.signatureSpacingLineToFirstText ?? 8;
+        const spaceBetweenLines = cfg.signatureSpacingBetweenTextLines ?? 4;
+        const centerX = pageWidth / 2;
+
+        const font = await this._pdfDoc.embedFont(
+            this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font),
+        );
+        const fontSize = IncosPDFLibBase.OFICIO_FONTS.normal;
+        const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
+
+        this._addSpace(cfg.spacing.section);
+        const lineY = this._currentY;
+        this._currentPage.drawLine({
+            start: { x: centerX - lineWidth / 2, y: lineY },
+            end: { x: centerX + lineWidth / 2, y: lineY },
+            thickness: lineThickness,
+            color: textRgb,
+        });
+
+        let cursorY = lineY - lineThickness - spaceLineToFirst;
+        lines.forEach((line) => {
+            const baselineY = cursorY - fontSize;
+            const str = String(line ?? '').trim();
+            if (str) {
+                const w = font.widthOfTextAtSize(str, fontSize);
+                this._currentPage.drawText(str, {
+                    x: centerX - w / 2,
+                    y: baselineY,
+                    size: fontSize,
+                    font,
+                    color: textRgb,
+                });
+            }
+            cursorY = baselineY - spaceBetweenLines;
+        });
+        this._currentY = cursorY;
     }
 
     /**
@@ -1963,14 +2390,14 @@ export class IncosPDFLibBase {
 
     /**
      * Mapea un nombre de fuente de configuración a StandardFonts de pdf-lib
-     * 
+     *
      * Este mapeo es específico de pdf-lib y convierte los nombres de fuente
      * declarados en IncosPDFBase.FONTS a StandardFonts de pdf-lib.
-     * 
+     *
      * Las fuentes declaradas en IncosPDFBase.FONTS son:
      * - 'Helvetica-Bold' (usado en: title, subtitle, heading, bold)
      * - 'Helvetica' (usado en: normal, small)
-     * 
+     *
      * @protected
      * @param {string} fontName - Nombre de fuente desde IncosPDFBase.FONTS (ej: 'Helvetica-Bold', 'Helvetica')
      * @returns {StandardFonts} Fuente estándar de pdf-lib
@@ -1979,11 +2406,11 @@ export class IncosPDFLibBase {
         // Mapeo directo de nombres de configuración a StandardFonts de pdf-lib
         const fontMap = {
             'Helvetica-Bold': StandardFonts.HelveticaBold,
-            'Helvetica': StandardFonts.Helvetica,
+            Helvetica: StandardFonts.Helvetica,
             'Helvetica-Oblique': StandardFonts.HelveticaOblique,
             'Times-Roman': StandardFonts.TimesRoman,
             'Times-Bold': StandardFonts.TimesBold,
-            'Courier': StandardFonts.Courier,
+            Courier: StandardFonts.Courier,
             'Courier-Bold': StandardFonts.CourierBold,
         };
 
@@ -2023,11 +2450,11 @@ export class IncosPDFLibBase {
         if (text == null || text === '') return [];
         // Limpiar el texto: reemplazar saltos de línea y caracteres problemáticos con espacios
         const cleanText = String(text)
-            .replace(/\r\n/g, ' ')  // Windows line breaks
-            .replace(/\n/g, ' ')    // Unix line breaks
-            .replace(/\r/g, ' ')     // Old Mac line breaks
-            .replace(/\t/g, ' ')     // Tabs
-            .replace(/\s+/g, ' ')   // Múltiples espacios
+            .replace(/\r\n/g, ' ') // Windows line breaks
+            .replace(/\n/g, ' ') // Unix line breaks
+            .replace(/\r/g, ' ') // Old Mac line breaks
+            .replace(/\t/g, ' ') // Tabs
+            .replace(/\s+/g, ' ') // Múltiples espacios
             .trim();
         const words = cleanText.split(' ');
         const lines = [];

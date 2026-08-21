@@ -22,6 +22,9 @@ export const ESTADOS_PROYECTO_GRADO = [
   'PERFIL',
   'APROBADO_PERFIL',
   'DESARROLLO',
+  // Informe de suficiencia del tutor (extensión 2026-08-17), previo a la
+  // predefensa.
+  'SUFICIENCIA',
   'PREDEFENSA',
   'APROBADO_PREDEFENSA',
   'DEFENSA',
@@ -34,6 +37,7 @@ const PROYECTO_ESTADO_META = {
   PERFIL: { label: 'Perfil', pill: 'cfg-materia-pill--default' },
   APROBADO_PERFIL: { label: 'Perfil aprobado', pill: 'cfg-materia-pill--info' },
   DESARROLLO: { label: 'En desarrollo', pill: 'cfg-materia-pill--primary' },
+  SUFICIENCIA: { label: 'Informe de suficiencia', pill: 'cfg-materia-pill--info' },
   PREDEFENSA: { label: 'Predefensa', pill: 'cfg-materia-pill--warning' },
   APROBADO_PREDEFENSA: { label: 'Predefensa aprobada', pill: 'cfg-materia-pill--info' },
   DEFENSA: { label: 'Defensa', pill: 'cfg-materia-pill--warning' },
@@ -61,13 +65,25 @@ export const getEstadoProyectoPillClass = (estado) =>
  * en el backend la misma transición T11 con la nota del titular). El modal
  * genérico sigue permitiendo `CANCELADO` desde `DEFENSA` (el backend sigue
  * aceptando las 3 transiciones vía `/transiciones`, P4: solo se guía por UI).
+ *
+ * Extensión 2026-08-17 (informe de suficiencia + exención de defensa):
+ * - `DESARROLLO → SUFICIENCIA → PREDEFENSA` se intercala en la fila lineal;
+ *   `AprobarEtapaModal` sigue resolviendo el destino como "el primero que no
+ *   sea CANCELADO", así que el flujo normal no cambia de forma.
+ * - `APROBADO_PREDEFENSA → APROBADO` (exención de defensa, notaPredefensa >
+ *   90) se agrega al final SOLO para reflejar la máquina de estados real del
+ *   backend — el modal genérico NUNCA la ofrece (sigue resolviendo a
+ *   `DEFENSA`, que va primero); esa transición la dispara el botón separado
+ *   "Declarar exento de defensa" (mismo patrón que `CancelarProyectoModal`,
+ *   ver `ProyectoGradoDetail.jsx`).
  */
 export const TRANSICIONES_PROYECTO = {
   PERFIL: ['APROBADO_PERFIL', 'CANCELADO'],
   APROBADO_PERFIL: ['DESARROLLO', 'CANCELADO'],
-  DESARROLLO: ['PREDEFENSA', 'CANCELADO'],
+  DESARROLLO: ['SUFICIENCIA', 'CANCELADO'],
+  SUFICIENCIA: ['PREDEFENSA', 'CANCELADO'],
   PREDEFENSA: ['APROBADO_PREDEFENSA', 'CANCELADO'],
-  APROBADO_PREDEFENSA: ['DEFENSA', 'CANCELADO'],
+  APROBADO_PREDEFENSA: ['DEFENSA', 'APROBADO', 'CANCELADO'],
   DEFENSA: ['CANCELADO'],
   APROBADO: [],
   REPROBADO: [],
@@ -85,11 +101,20 @@ export const TRANSICIONES_PROYECTO = {
 const EXPLICACION_TRANSICION_PROYECTO = {
   APROBADO_PERFIL: 'Se registrará la fecha de aprobación del perfil con la fecha de hoy.',
   DESARROLLO: 'Se registrará la fecha de inicio del desarrollo con la fecha de hoy.',
+  // Informe de suficiencia (extensión 2026-08-17): el formulario propio del
+  // modal (3 criterios + veredicto) reemplaza aquí la explicación genérica.
+  SUFICIENCIA:
+    'Se registrará el informe de suficiencia del tutor con la fecha de hoy y el sistema emitirá el PDF oficial.',
   PREDEFENSA: 'Se registrará la fecha de presentación a predefensa con la fecha de hoy.',
   APROBADO_PREDEFENSA:
     'Se registrará la fecha de aprobación de la predefensa con la fecha de hoy.',
   DEFENSA:
     'Se registrará la fecha de defensa con la fecha de hoy. El resultado final (aprobado o reprobado) se define después, al registrar el acta de defensa.',
+  // Exención de defensa (extensión 2026-08-17): salto directo APROBADO_PREDEFENSA
+  // → APROBADO, disparado por el botón separado "Declarar exento de defensa"
+  // (nunca por el modal genérico de transición).
+  APROBADO:
+    'El estudiante queda exento de la Defensa de Proyecto de Grado: la nota final será la misma de la predefensa y el proyecto pasa directamente a APROBADO. Esta acción no admite más transiciones ni puede revertirse desde el sistema.',
   CANCELADO:
     'Esta acción cancela el proyecto de forma definitiva: no admite más transiciones ni puede revertirse desde el sistema.',
 };

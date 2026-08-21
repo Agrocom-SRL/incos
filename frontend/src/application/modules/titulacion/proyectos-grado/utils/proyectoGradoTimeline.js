@@ -15,6 +15,9 @@ const ORDEN_ESTADOS_VIGENTES = [
   'PERFIL',
   'APROBADO_PERFIL',
   'DESARROLLO',
+  // Informe de suficiencia del tutor (extensión 2026-08-17), previo a la
+  // predefensa.
+  'SUFICIENCIA',
   'PREDEFENSA',
   'APROBADO_PREDEFENSA',
   'DEFENSA',
@@ -25,6 +28,7 @@ const ETAPAS = [
   { label: 'Perfil', fechaField: 'fechaPresentacionPerfil' },
   { label: 'Perfil aprobado', fechaField: 'fechaAprobacionPerfil' },
   { label: 'Desarrollo', fechaField: 'fechaInicioDesarrollo' },
+  { label: 'Informe de suficiencia', fechaField: 'fechaInformeSuficiencia' },
   { label: 'Predefensa', fechaField: 'fechaPresentacionPredefensa' },
   { label: 'Predefensa aprobada', fechaField: 'fechaAprobacionPredefensa' },
   { label: 'Defensa', fechaField: 'fechaDefensa' },

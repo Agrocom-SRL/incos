@@ -1,19 +1,27 @@
 /**
- * ActaDefensaPdfGenerator (módulo TIT · titulación, extensión 2026-08-01)
+ * ActaDefensaPdfGenerator (módulo TIT · titulación, extensión 2026-08-01,
+ * rediseñado 2026-08-19 para replicar 1:1 el documento físico real — ver
+ * memoria de proyecto "PDFs oficiales: fidelidad a plantilla física" y la
+ * foto de referencia entregada por el usuario)
  *
- * Genera el ACTA DE DEFENSA DE GRADO MODALIDAD DE GRADUACIÓN a partir de la
- * plantilla institucional (Plantilla.pdf) con pdf-lib. Patrón
- * `FormularioModalidadGradoPdfGenerator`: extiende IncosPDFLibBase, retorna
- * Buffer (documento "export" — el acta ya está persistida en `actas_defensa`,
- * el PDF es reproducible; NO escribe en uploads ni en `dictamenes_proyecto`).
+ * Genera el ACTA DE DEFENSA DE GRADO MODALIDAD DE GRADUACIÓN. Igual que
+ * `FormularioModalidadGradoPdfGenerator`, NO usa la plantilla corporativa
+ * moderna `Plantilla.pdf` (franja verde + pie de redes sociales): el físico
+ * real es hoja blanca con el membrete clásico del Ministerio (folio rojo
+ * arriba a la derecha + escudo Ministerio + logo INCOS), construido con
+ * `_addOfficialLogosHeader` (IncosPDFLibBase). Extiende IncosPDFLibBase,
+ * retorna Buffer (documento "export" — el acta ya está persistida en
+ * `actas_defensa`, el PDF es reproducible; NO escribe en uploads ni en
+ * `dictamenes_proyecto`).
  *
  * Espejo de §1 del plan de desarrollo
  * (docs/plan/acta-defensa-grado-plan-desarrollo.md): foliado rojo esquina
- * superior derecha, título de 2 líneas, grilla de cabecera institucional,
- * párrafo de apertura con nombre/modalidad en negrita, título del proyecto
- * entre comillas centrado, lista numerada del tribunal, párrafo fijo de
- * desarrollo del acto, resolución con calificación en número y letras, hora
- * de conclusión y 4 firmas (3 tribunal + postulante).
+ * superior derecha, título de 2 líneas, cabecera institucional en texto
+ * simple (SIN cuadros — el físico no dibuja bordes ahí, a diferencia del
+ * FMDG-1), párrafo de apertura con nombre/modalidad en negrita, título del
+ * proyecto entre comillas centrado, lista numerada del tribunal, párrafo fijo
+ * de desarrollo del acto, resolución con calificación en número y letras,
+ * hora de conclusión y 4 firmas (3 tribunal + postulante).
  *
  * Identidad institucional propia (INSTITUTO/CARÁCTER/CIUDAD/DEPARTAMENTO):
  * constantes locales, mismo patrón que `FormularioModalidadGradoPdfGenerator`
@@ -25,10 +33,15 @@
  * @implements {IActaDefensaPdfGenerator}
  */
 
+import { PDFDocument } from 'pdf-lib';
+import fontkit from '@pdf-lib/fontkit';
 import { IncosPDFLibBase } from '../IncosPDFLibBase.js';
 import { IncosPDFBase } from '../IncosPDFBase.js';
 import { numberToWords, fechaEnLetras } from '../numberToWords.js';
 import { RESULTADOS_ACTA_DEFENSA } from '../../../../domain/constants/titulacion.constants.js';
+
+/** Tamaño de página oficio, igual al resto de plantillas institucionales. */
+const PAGE_SIZE = [612.12, 935.58];
 
 /** Identidad institucional propia del acta (cabecera §1.4). */
 const INSTITUTO = {
@@ -66,16 +79,18 @@ export class ActaDefensaPdfGenerator extends IncosPDFLibBase {
    */
   async generate(options = {}) {
     try {
-      const pdfDoc = await this._loadTemplate('Plantilla.pdf');
-      const firstPage = pdfDoc.getPages()[0];
-      this._initializeDocumentState(pdfDoc, firstPage, true);
+      const pdfDoc = await PDFDocument.create();
+      pdfDoc.registerFontkit(fontkit);
+      const page = pdfDoc.addPage(PAGE_SIZE);
+      this._initializeDocumentState(pdfDoc, page, false);
 
+      await this._addOfficialLogosHeader();
       await this._drawFolioRojo(options.acta?.numeroActaFormateado);
 
-      await this._addDocumentTitle('ACTA DE DEFENSA DE GRADO');
-      await this._addSubtitle(
-        `MODALIDAD DE GRADUACIÓN: ${(options.proyecto?.modalidadNombre ?? '').toUpperCase()}`
-      );
+      await this._addOfficialDocumentTitle([
+        'ACTA DE DEFENSA DE GRADO MODALIDAD DE GRADUACIÓN:',
+        (options.proyecto?.modalidadNombre ?? '').toUpperCase(),
+      ]);
       this._addSpace();
 
       await this._buildCabecera(options);
@@ -101,16 +116,21 @@ export class ActaDefensaPdfGenerator extends IncosPDFLibBase {
     }
   }
 
-  /** @private Número rojo (ej. "012") en la esquina superior derecha (foliado del talonario). */
+  /**
+   * Número rojo (ej. "012") en la esquina superior derecha (foliado del
+   * talonario) — POR ENCIMA de los logos (fiel al físico: el folio está a la
+   * altura del borde superior de la hoja, no del bloque de membrete).
+   * @private
+   */
   async _drawFolioRojo(numeroActaFormateado) {
     if (!numeroActaFormateado) return;
     const { width: pageWidth, height: pageHeight } = this._currentPage.getSize();
     const { margins } = IncosPDFBase.LAYOUT;
     const fontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
     const font = await this._pdfDoc.embedFont(fontName);
-    const fontSize = IncosPDFBase.FONTS.title.size;
+    const fontSize = IncosPDFLibBase.OFICIO_FONTS.title;
     const rojo = this._hexToRgb(COLOR_FOLIO_ROJO);
-    const y = pageHeight - margins.top - fontSize;
+    const y = pageHeight - margins.top / 2;
     const width = font.widthOfTextAtSize(numeroActaFormateado, fontSize);
     this._currentPage.drawText(numeroActaFormateado, {
       x: pageWidth - margins.right - width,
@@ -121,22 +141,23 @@ export class ActaDefensaPdfGenerator extends IncosPDFLibBase {
     });
   }
 
-  /** @private Grilla de cabecera institucional (2 columnas × 3 filas, §1.4). */
+  /**
+   * Cabecera institucional en texto simple, 2 columnas × 3 filas (§1.4) —
+   * fiel al físico: SIN cuadros con borde (a diferencia del FMDG-1).
+   * @private
+   */
   async _buildCabecera(options) {
-    await this._addBoxedFieldGrid(
+    await this._addLabelValueGrid(
       [
-        { label: 'INSTITUTO:', value: INSTITUTO.nombre },
-        { label: 'CARRERA:', value: options.proyecto?.carreraNombre ?? '' },
-        { label: 'CIUDAD/LOCALIDAD:', value: INSTITUTO.ciudad },
+        { label: 'INSTITUTO: ', value: INSTITUTO.nombre },
+        { label: 'CARÁCTER: ', value: INSTITUTO.caracter },
+        { label: 'CARRERA: ', value: options.proyecto?.carreraNombre ?? '' },
+        { label: 'NIVEL: ', value: options.nivel ?? '' },
+        { label: 'CIUDAD/LOCALIDAD: ', value: INSTITUTO.ciudad },
+        { label: 'DEPARTAMENTO: ', value: INSTITUTO.departamento },
       ],
-      [
-        { label: 'CARÁCTER:', value: INSTITUTO.caracter },
-        { label: 'NIVEL:', value: options.nivel ?? '' },
-        { label: 'DEPARTAMENTO:', value: INSTITUTO.departamento },
-      ],
-      55,
-      70,
-      80
+      2,
+      { fontSize: IncosPDFLibBase.OFICIO_FONTS.normal },
     );
     this._addSpace();
   }
@@ -173,7 +194,8 @@ export class ActaDefensaPdfGenerator extends IncosPDFLibBase {
   /** @private Lista numerada del Tribunal Evaluador (§1.7). */
   async _buildTribunal(tribunal) {
     await this._addParagraph(
-      'Asistiendo en calidad de miembros del Tribunal Evaluador los siguientes profesionales del área de formación:'
+      'Asistiendo en calidad de miembros del Tribunal Evaluador los siguientes profesionales del área de formación:',
+      { fontSize: IncosPDFLibBase.OFICIO_FONTS.normal },
     );
     const miembros = Array.isArray(tribunal) ? tribunal : [];
     for (let i = 0; i < miembros.length; i += 1) {
@@ -190,7 +212,7 @@ export class ActaDefensaPdfGenerator extends IncosPDFLibBase {
     const { margins } = IncosPDFBase.LAYOUT;
     const fontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
     const font = await this._pdfDoc.embedFont(fontName);
-    const fontSize = IncosPDFBase.FONTS.normal.size;
+    const fontSize = IncosPDFLibBase.OFICIO_FONTS.normal;
     const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
 
     const izquierda = `${numero}.- ${nombre}`;
@@ -222,7 +244,8 @@ export class ActaDefensaPdfGenerator extends IncosPDFLibBase {
       'Instalado el acto académico, el Tribunal Evaluador procedió a la evaluación de la ' +
         'defensa oral del proyecto, tras lo cual se decretó un cuarto intermedio para la ' +
         'deliberación reservada del Tribunal. Reinstalado el acto en presencia del postulante, ' +
-        'el Tribunal Evaluador resolvió:'
+        'el Tribunal Evaluador resolvió:',
+      { fontSize: IncosPDFLibBase.OFICIO_FONTS.normal },
     );
   }
 
@@ -246,10 +269,12 @@ export class ActaDefensaPdfGenerator extends IncosPDFLibBase {
   /** @private Cierre del acto (§1.10). */
   async _buildCierre(acta) {
     const horaConclusion = formatHora(acta?.horaConclusion);
+    const fontOpts = { fontSize: IncosPDFLibBase.OFICIO_FONTS.normal };
     await this._addParagraph(
-      `El presente acto académico concluyó a horas: ${horaConclusion || '____'}.`
+      `El presente acto académico concluyó a horas: ${horaConclusion || '____'}.`,
+      fontOpts,
     );
-    await this._addParagraph('En señal de conformidad firman al pie del presente.');
+    await this._addParagraph('En señal de conformidad firman al pie del presente.', fontOpts);
   }
 
   /**
@@ -264,13 +289,15 @@ export class ActaDefensaPdfGenerator extends IncosPDFLibBase {
     const { margins } = cfg;
     const lineWidth = (cfg.signatureLineWidth ?? 150) * 0.8;
     const lineThickness = cfg.signatureLineThickness ?? 1;
-    const templateFooterHeight = cfg.signatureTemplateFooterHeight ?? 0;
+    // Sin Plantilla.pdf (hoja blanca, membrete propio vía
+    // `_addOfficialLogosHeader`): no hay franja de pie pre-impresa que evitar.
+    const templateFooterHeight = 0;
     const spaceLineToFirst = cfg.signatureSpacingLineToFirstText ?? 8;
     const spaceBetweenLines = cfg.signatureSpacingBetweenTextLines ?? 4;
 
     const fontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
     const font = await this._pdfDoc.embedFont(fontName);
-    const fontSize = IncosPDFBase.FONTS.normal.size;
+    const fontSize = IncosPDFLibBase.OFICIO_FONTS.normal;
     const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
 
     const tribunal = Array.isArray(options.acta?.tribunal) ? options.acta.tribunal : [];
@@ -340,7 +367,7 @@ export class ActaDefensaPdfGenerator extends IncosPDFLibBase {
     const { width: pageWidth } = this._currentPage.getSize();
     const { margins } = IncosPDFBase.LAYOUT;
     const maxWidth = pageWidth - margins.left - margins.right;
-    const fontSize = IncosPDFBase.FONTS.normal.size;
+    const fontSize = IncosPDFLibBase.OFICIO_FONTS.normal;
     const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
     const normalFont = await this._pdfDoc.embedFont(
       this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font)
@@ -401,7 +428,7 @@ export class ActaDefensaPdfGenerator extends IncosPDFLibBase {
     const { width: pageWidth } = this._currentPage.getSize();
     const { margins } = IncosPDFBase.LAYOUT;
     const maxWidth = pageWidth - margins.left - margins.right;
-    const fontSize = IncosPDFBase.FONTS.normal.size + 1;
+    const fontSize = IncosPDFLibBase.OFICIO_FONTS.normal + 1;
     const font = await this._pdfDoc.embedFont(
       this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font)
     );
