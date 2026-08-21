@@ -63,6 +63,17 @@ export const ESTADOS_ACADEMICOS_FOLIO = {
 export const ESTADOS_ACADEMICOS_FOLIO_VALUES = Object.values(ESTADOS_ACADEMICOS_FOLIO);
 
 /**
+ * Cierre FORZADO del libro (PATCH /libros/:id con `forzarCierre: true`):
+ * las filas del folio que siguen CURSANDO (materias sin nota_final) se
+ * asientan como ABANDONO — convención del libro físico (fila sin notas: todo
+ * NP + ABANDONO) — con esta observación en la columna OBSERVACIONES (se
+ * concatena si la fila ya tenía una, truncado a 255). Exige un motivo
+ * (auditoría en `libros_registro.observaciones`).
+ */
+export const OBSERVACION_CIERRE_SIN_NOTAS = 'SIN NOTAS AL CIERRE DE GESTIÓN';
+export const MOTIVO_CIERRE_FORZADO_MIN_LENGTH = 10;
+
+/**
  * Metadatos de cabecera del documento oficial (espejo del CENTRALIZADOR_DOC del
  * frontend + campos propios del libro físico). NO viven en tablas: son
  * parametrizables el día que el instituto los gestione desde Configuración.
@@ -137,6 +148,8 @@ export default {
   TRANSICIONES_FOLIO,
   ESTADOS_ACADEMICOS_FOLIO,
   ESTADOS_ACADEMICOS_FOLIO_VALUES,
+  OBSERVACION_CIERRE_SIN_NOTAS,
+  MOTIVO_CIERRE_FORZADO_MIN_LENGTH,
   LIBRO_REGISTRO_DOC,
   ORDEN_CARRERAS_LIBRO,
   ordenCarreraLibro,

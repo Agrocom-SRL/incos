@@ -22,6 +22,7 @@
 import {
   FILAS_POR_FOLIO,
   FILAS_POR_FIRMA,
+  LINEA_FIRMA,
   COLUMNAS_FIRMAS_DOCENTES,
   COL_WIDTHS,
   FONT_SIZE,
@@ -427,7 +428,8 @@ export class LibroRegistroSheetBuilder {
 
   /**
    * Firmas de autoridades al pie del folio (JEFE DE CARRERA / DIRECTOR /
-   * RECTOR): línea punteada con el rótulo debajo, 3 zonas a lo ancho.
+   * RECTOR): línea de firma (`LINEA_FIRMA`, misma que la de docentes) con el
+   * rótulo debajo, 3 zonas a lo ancho.
    */
   static _firmasAutoridades(c, { base, layout, doc }) {
     const row = base + FILA.firmasAutoridades;
@@ -436,7 +438,11 @@ export class LibroRegistroSheetBuilder {
     firmas.forEach((firma, i) => {
       const [start, end] = zonas[i] ?? zonas[zonas.length - 1];
       c.mergeBox(row, start, row, end, firma, texto({ size: FONT_SIZE.firma, wrap: true }));
-      c.outline(row, start, row, end, { style: 'dotted', color: DOC_COLOR.border, sides: SOLO.top });
+      c.outline(row, start, row, end, {
+        style: LINEA_FIRMA.style,
+        color: DOC_COLOR.border,
+        sides: SOLO.top,
+      });
     });
   }
 
@@ -444,9 +450,12 @@ export class LibroRegistroSheetBuilder {
    * Página de FIRMAS DE DOCENTES del paralelo (al final de la hoja, tras el
    * último folio). Artefacto de impresión: NO es un folio del libro y NO
    * incrementa numero_folio. Logo + título (sin LIBRO/FOLIO) y una grilla de
-   * 3 columnas con el nombre del docente y su materia debajo, dejando 9 filas
-   * en blanco sobre cada nombre para la firma física (sin línea, como el
-   * papel real; fuente: asignaciones vigentes del paralelo vía vista 135).
+   * 3 columnas con el nombre del docente y su materia debajo, dejando el
+   * espacio en blanco sobre cada nombre para la firma física, con una línea
+   * fina sobre el nombre (`LINEA_FIRMA`, pedido del usuario; el papel real no
+   * la trae). El primer renglón arranca en `FILA_DOCENTES.primerNombre`
+   * (11, medido en el físico) para no quedar pegado al logo. Fuente:
+   * asignaciones vigentes del paralelo vía vista 135.
    *
    * @returns {number} Fila absoluta de la última materia pintada (para ubicar
    *          la sección siguiente).
@@ -474,6 +483,12 @@ export class LibroRegistroSheetBuilder {
       const rowMateria = rowNombre + 1;
       const docente = texto({ size: FONT_SIZE.docente });
       c.mergeBox(rowNombre, start, rowNombre, end, mayusculas(asig.docenteNombre), docente);
+      // Línea de firma: solo el borde superior de la celda del nombre.
+      c.outline(rowNombre, start, rowNombre, end, {
+        style: LINEA_FIRMA.style,
+        color: DOC_COLOR.border,
+        sides: SOLO.top,
+      });
       c.mergeBox(rowMateria, start, rowMateria, end, asig.nombre ?? '', { ...docente, wrap: true });
       ultimaFila = rowMateria;
     });

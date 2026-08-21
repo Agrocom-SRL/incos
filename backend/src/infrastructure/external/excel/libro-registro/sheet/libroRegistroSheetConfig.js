@@ -18,13 +18,25 @@ export const FILAS_POR_FOLIO = 34;
 
 /**
  * Filas por celda de la grilla de FIRMAS DE DOCENTES (página final de la
- * hoja): 6 filas de espacio en blanco (firma física, sin línea, ≈100pt) +
- * 1 fila de nombre del docente + 1 fila de materia. El físico usa 11 (con
- * alturas de fila retocadas a mano para que entre en la hoja); con 8 el
- * bloque de 3 grupos + ESTADÍSTICAS cabe en UNA página oficio horizontal sin
- * retoques.
+ * hoja): 5 filas de espacio en blanco (firma física, ≈82pt ≈ 2,9 cm) + 1 fila
+ * de nombre del docente (con `LINEA_FIRMA` encima) + 1 fila de materia. El
+ * físico usa 11 (con alturas de fila retocadas a mano para que entre en la
+ * hoja). Presupuesto vertical de la página (oficio horizontal, escala ≈0,9
+ * por ajuste a 1 página de ancho): con el primer nombre en la fila 11
+ * (`FILA_DOCENTES.primerNombre`, medido en el físico) y 3 grupos +
+ * ESTADÍSTICAS, 8 filas por firma desbordaba a una 2da hoja por ~12pt; con 7
+ * entra en UNA página (verificado renderizando con soffice + pdftoppm).
  */
-export const FILAS_POR_FIRMA = 8;
+export const FILAS_POR_FIRMA = 7;
+
+/**
+ * Línea de firma (borde superior de la celda del rótulo/nombre), compartida
+ * por las firmas de AUTORIDADES al pie del folio y por las de DOCENTES de la
+ * página final: `thin` sólida y negra. El xlsx físico trae la de autoridades
+ * punteada y la de docentes no existe; el usuario pidió (2026-08-21) líneas
+ * sobre cada docente y que las de autoridades se vean igual de marcadas.
+ */
+export const LINEA_FIRMA = { style: 'thin' };
 
 /** Columnas de la grilla de FIRMAS DE DOCENTES (3 firmas por fila, como el papel real). */
 export const COLUMNAS_FIRMAS_DOCENTES = 3;
@@ -140,14 +152,16 @@ export const FILA = {
 
 /**
  * Offsets de fila de la página de FIRMAS DE DOCENTES (relativos a su base):
- * logo (1-7), título (3-4), primer nombre de docente (9; luego cada
- * FILAS_POR_FIRMA), y el bloque ESTADÍSTICAS 3 filas después de la última
- * materia (título, fila de aire, cabecera, filas).
+ * logo (1-7), título (3-4), primer nombre de docente (11, MEDIDO en el físico:
+ * página en la fila 69, primer nombre en la 79 — con 9 el primer renglón
+ * quedaba pegado al logo; luego cada FILAS_POR_FIRMA), y el bloque
+ * ESTADÍSTICAS 3 filas después de la última materia (título, fila de aire,
+ * cabecera, filas).
  */
 export const FILA_DOCENTES = {
   tituloInicio: 3,
   tituloFin: 4,
-  primerNombre: 9,
+  primerNombre: 11,
   espacioAntesEstadisticas: 3,
 };
 
@@ -216,6 +230,7 @@ export const DOC_COLOR = {
 export default {
   FILAS_POR_FOLIO,
   FILAS_POR_FIRMA,
+  LINEA_FIRMA,
   COLUMNAS_FIRMAS_DOCENTES,
   COL_WIDTHS,
   FONT_SIZE,

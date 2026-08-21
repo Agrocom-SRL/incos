@@ -26,6 +26,12 @@ import { IRepository } from './IRepository.js';
  *   por una numeración correlativa ENTRE SÍ, arrancando en MAX(numero_folio
  *   del libro)+1 (mismo contador que `crearFoliosConEstudiantes`: numero_folio
  *   nunca se reutiliza, `uk_libro_folio` es UNIQUE).
+ * - cerrarLibro({ libroId, cambios, asientos }, userId):
+ *   TRANSACCIONAL — asienta en `folio_estudiantes` cada grupo de `asientos`
+ *   ({ ids, estadoAcademico, observacion? }; la observación se concatena a la
+ *   existente, truncada a 255) y actualiza la cabecera del libro (`cambios`)
+ *   en la misma transacción. Devuelve { libro, filasAsentadas }. Qué filas y
+ *   con qué estado lo decide `EditarLibroUseCase` (cierre con pendientes).
  * - findFolioById(folioId) / updateFolio(folioId, data, userId).
  * - listarEstudiantesFolio(folioId): nómina congelada con datos del estudiante.
  * - findFolioEstudianteById(filaId) / updateFolioEstudiante(filaId, data, userId).

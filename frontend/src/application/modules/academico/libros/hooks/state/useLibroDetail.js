@@ -7,18 +7,42 @@
  * del libro (`useEditarLibroApi`) y la exportación a Excel
  * (`useExportLibroExcel`). Toda la orquestación vive aquí; la página solo
  * compone.
+ *
+ * Cierre con notas pendientes: "Cerrar libro" intenta el cierre normal; si el
+ * backend responde 409 CONFLICT con `details.pendientes`, el desglose abre el
+ * modal `CerrarLibroPendientesModal` (por paralelo → estudiantes → materias
+ * sin nota y docente). "Cerrar de todos modos" reintenta con
+ * `{ forzarCierre: true, motivo }`: los pendientes quedan asentados como
+ * ABANDONO (NP en el libro) y el cierre deja auditoría en el backend.
  */
 
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { App } from 'antd';
 import { LIBROS_LIST_PATH, folioPreviewPath } from '../../utils/librosPaths';
 import { createLibrosBreadcrumbItems } from '../../utils/librosBreadcrumbs';
+import { mapCierrePendientes } from '../../mappers';
 import { createFoliosTableColumns } from '@academico/libros/config/foliosTableColumns';
 import { useLibroDetalleApi } from '../api/useLibroDetalleApi';
 import { useGenerarFoliosGestion } from '../api/useGenerarFoliosGestion';
 import { useEditarLibroApi } from '../api/useEditarLibroApi';
 import { useExportLibroExcel } from '../api/useExportLibroExcel';
+
+/** Texto de la notificación de cierre exitoso según lo que se asentó. */
+const describirCierre = (cierre) => {
+  const partes = ['El libro de registro quedó cerrado.'];
+  if (cierre?.pendientesAsentados > 0) {
+    partes.push(
+      `${cierre.pendientesAsentados} estudiante(s) sin notas quedaron asentados como Abandono.`,
+    );
+  }
+  if (cierre?.filasSincronizadas > 0) {
+    partes.push(
+      `${cierre.filasSincronizadas} fila(s) se actualizaron con las notas cargadas después de generar los folios.`,
+    );
+  }
+  return partes.join(' ');
+};
 
 export const useLibroDetail = () => {
   const { id } = useParams();
@@ -31,6 +55,9 @@ export const useLibroDetail = () => {
   const { generarFoliosGestion, loading: generandoTodosFolios } = useGenerarFoliosGestion();
   const { editarLibro, loading: actualizando } = useEditarLibroApi();
   const { exportar, loading: exportando } = useExportLibroExcel();
+
+  /** Desglose del 409 (forma de UI, `mapCierrePendientes`); null = modal cerrado. */
+  const [cierrePendientes, setCierrePendientes] = useState(null);
 
   const load = useCallback(async () => {
     if (isInvalidId) return;
@@ -73,13 +100,40 @@ export const useLibroDetail = () => {
   const handleCerrarLibro = useCallback(async () => {
     const result = await editarLibro(libroId, { estado: 'CERRADO' });
     if (result.success) {
-      notification.success({ title: 'Libro cerrado', description: 'El libro de registro quedó cerrado.' });
+      notification.success({ title: 'Libro cerrado', description: describirCierre(result.cierre) });
       await load();
-    } else {
-      notification.error({ title: 'No se pudo cerrar el libro', description: result.error });
+      return result;
     }
+
+    const pendientes =
+      result.errorDetails?.code === 'CONFLICT'
+        ? mapCierrePendientes(result.errorDetails?.details)
+        : null;
+    if (pendientes) {
+      setCierrePendientes(pendientes);
+      return result;
+    }
+
+    notification.error({ title: 'No se pudo cerrar el libro', description: result.error });
     return result;
   }, [editarLibro, libroId, notification, load]);
+
+  const handleConfirmarCierreForzado = useCallback(
+    async (motivo) => {
+      const result = await editarLibro(libroId, { estado: 'CERRADO', forzarCierre: true, motivo });
+      if (result.success) {
+        setCierrePendientes(null);
+        notification.success({ title: 'Libro cerrado', description: describirCierre(result.cierre) });
+        await load();
+      } else {
+        notification.error({ title: 'No se pudo cerrar el libro', description: result.error });
+      }
+      return result;
+    },
+    [editarLibro, libroId, notification, load],
+  );
+
+  const handleCancelarCierreForzado = useCallback(() => setCierrePendientes(null), []);
 
   const handleReabrirLibro = useCallback(async () => {
     const result = await editarLibro(libroId, { estado: 'ABIERTO' });
@@ -141,6 +195,10 @@ export const useLibroDetail = () => {
     handleCerrarLibro,
     handleReabrirLibro,
     actualizando,
+
+    cierrePendientes,
+    handleConfirmarCierreForzado,
+    handleCancelarCierreForzado,
 
     handleExportar,
     exportando,

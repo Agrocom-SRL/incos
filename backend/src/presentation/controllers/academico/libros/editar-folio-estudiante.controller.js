@@ -12,7 +12,7 @@ export class EditarFolioEstudianteController {
   async handle(req, res, next) {
     try {
       const resultado = await this.editarFolioEstudianteUseCase.execute({
-        usuarioId: req.user?.id ?? null,
+        usuarioId: req.usuario?.id ?? null,
         id: Number(req.params.id),
         folioId: Number(req.params.folioId),
         filaId: Number(req.params.filaId),

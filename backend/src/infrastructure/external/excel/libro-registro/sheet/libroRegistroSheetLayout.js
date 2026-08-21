@@ -97,8 +97,14 @@ export function computeTresZonasFirmas(layout) {
 
 /**
  * 3 zonas [colInicio, colFin] de la grilla de FIRMAS DE DOCENTES (página
- * final): C:D / E:J / L:Q en el físico (8 materias) — la 2da y 3ra relativas
- * a la derecha.
+ * final). El físico usa C:D / E:J / L:Q (8 materias), con la 1ra y 2da zona
+ * CONTIGUAS; desde que cada nombre lleva una línea de firma encima
+ * (`LINEA_FIRMA`, 2026-08-21) las zonas dejan UNA columna de aire
+ * entre sí — si no, las líneas de dos docentes vecinos se funden en una sola
+ * raya. Resultado con 8 materias: C:D / F:K / M:Q (aire en E y L); la 2da y
+ * 3ra siguen relativas a la derecha: la 3ra es siempre ESTADO + OBSERVACIONES
+ * (5 columnas) y la 2da va desde la 2da columna de materia hasta la
+ * antepenúltima materia (tan ancha como antes, corrida una columna).
  *
  * @param {ReturnType<typeof computeLibroColumnMap>} layout
  * @returns {[number, number][]} 3 pares [colInicio, colFin].
@@ -108,8 +114,8 @@ export function computeTresZonasDocentes(layout) {
   const clamp = (col) => Math.min(Math.max(col, COL_NOMBRE_END), lastCol);
   return [
     [COL_NOMBRE_END, COL_CI],
-    [clamp(firstAsigCol), clamp(lastCol - 7)],
-    [clamp(lastCol - 5), lastCol],
+    [clamp(firstAsigCol + 1), clamp(lastCol - 6)],
+    [clamp(lastCol - 4), lastCol],
   ];
 }
 

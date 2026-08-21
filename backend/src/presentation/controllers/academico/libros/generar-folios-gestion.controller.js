@@ -13,7 +13,7 @@ export class GenerarFoliosGestionController {
   async handle(req, res, next) {
     try {
       const resultado = await this.generarFoliosGestionUseCase.execute({
-        usuarioId: req.user?.id ?? null,
+        usuarioId: req.usuario?.id ?? null,
         gestionId: Number(req.params.gestionId),
         body: req.body,
       });

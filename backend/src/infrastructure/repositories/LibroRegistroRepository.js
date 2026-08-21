@@ -348,6 +348,55 @@ export class LibroRegistroRepository extends BaseRepository {
   }
 
   /**
+   * TRANSACCIONAL, todo o nada: CIERRE del libro con asientos en la nómina.
+   * Aplica cada grupo de `asientos` sobre `folio_estudiantes` (estado
+   * académico definitivo; con `observacion` la CONCATENA a la existente con
+   * " · ", truncando a 255 = VARCHAR de la columna) y luego actualiza la
+   * cabecera del libro (`cambios`: estado CERRADO, fecha_cierre, observaciones
+   * con el sello de auditoría...) en la misma transacción. Qué filas y con qué
+   * estado lo decide el use case (`cierreLibroPendientesHelper`); aquí solo
+   * se persiste.
+   *
+   * @param {Object} params
+   * @param {number} params.libroId
+   * @param {Object} params.cambios - Cambios de cabecera (mismo shape que `update`).
+   * @param {Array<{ ids:Array<number>, estadoAcademico:string, observacion?:string }>} params.asientos
+   * @param {number} [userId]
+   * @returns {Promise<{ libro: Object, filasAsentadas: number }>}
+   */
+  async cerrarLibro({ libroId, cambios, asientos = [] }, userId = null) {
+    return sequelize.transaction(async (t) => {
+      let filasAsentadas = 0;
+
+      for (const asiento of asientos) {
+        const ids = (asiento.ids ?? []).map(Number).filter(Number.isFinite);
+        // eslint-disable-next-line no-continue
+        if (ids.length === 0) continue;
+
+        const updateData = { estadoAcademico: asiento.estadoAcademico, updatedBy: userId };
+        if (asiento.observacion) {
+          updateData.observaciones = sequelize.literal(
+            `LEFT(CONCAT_WS(' · ', NULLIF(TRIM(COALESCE(observaciones, '')), ''), ${sequelize.escape(
+              String(asiento.observacion),
+            )}), 255)`,
+          );
+        }
+
+        // Secuencial a propósito: pocos grupos (uno por estado asentado).
+        // eslint-disable-next-line no-await-in-loop
+        const [afectadas] = await FolioEstudianteModel.update(updateData, {
+          where: { id: ids },
+          transaction: t,
+        });
+        filasAsentadas += Number(afectadas ?? 0);
+      }
+
+      const libro = await this.update(libroId, cambios, userId, { transaction: t });
+      return { libro, filasAsentadas };
+    });
+  }
+
+  /**
    * Un folio por id (fila plana de folios_libro) o null.
    * @param {number} folioId
    * @returns {Promise<Object|null>}

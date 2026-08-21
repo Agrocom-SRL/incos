@@ -83,6 +83,20 @@ export function construirCeldasEstudiante(filasEstudiante) {
 }
 
 /**
+ * ¿La materia sigue SIN nota final cargada? (NULL en `matriculas_materia.nota_final`
+ * y sin retiro real registrado). Es exactamente la condición que deja la fila
+ * del folio en CURSANDO (`derivarEstadoAcademico`) y la que el cierre del
+ * libro reporta como "nota pendiente" por materia/docente.
+ * @param {Object} fila135
+ * @returns {boolean}
+ */
+export function esMateriaPendienteDeNota(fila135) {
+  const estadoMateria = fila135?.estado ?? null;
+  if (ESTADOS_MATERIA_NP.includes(estadoMateria)) return false;
+  return fila135?.nota_final == null;
+}
+
+/**
  * Veredicto de UNA materia contra la nota mínima institucional — fuente ÚNICA
  * de "aprobado/reprobado", compartida por el folio del Libro
  * (`derivarEstadoAcademico`) y por Centralizador
@@ -98,9 +112,8 @@ export function construirCeldasEstudiante(filasEstudiante) {
 export function calcularVeredictoMateria(fila135, notaMinimaAprobacion) {
   const estadoMateria = fila135?.estado ?? null;
   if (ESTADOS_MATERIA_NP.includes(estadoMateria)) return ESTADOS_ACADEMICOS_FOLIO.ABANDONO;
-  const notaFinal = fila135?.nota_final;
-  if (notaFinal == null) return ESTADOS_ACADEMICOS_FOLIO.CURSANDO;
-  return Number(notaFinal) >= Number(notaMinimaAprobacion)
+  if (esMateriaPendienteDeNota(fila135)) return ESTADOS_ACADEMICOS_FOLIO.CURSANDO;
+  return Number(fila135.nota_final) >= Number(notaMinimaAprobacion)
     ? ESTADOS_ACADEMICOS_FOLIO.APROBADO
     : ESTADOS_ACADEMICOS_FOLIO.REPROBADO;
 }
@@ -142,6 +155,7 @@ export default {
   notaCeldaFolio,
   agruparFilas135PorEstudiante,
   construirCeldasEstudiante,
+  esMateriaPendienteDeNota,
   calcularVeredictoMateria,
   derivarEstadoAcademico,
 };
