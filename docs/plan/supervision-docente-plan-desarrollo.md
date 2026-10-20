@@ -1,5 +1,8 @@
 # Fase 3 — Supervisión docente (schema 27, ítem de DOC) — plan de desarrollo
 
+> **Estado: implementado — verificado 2026-10-20.** Comprobado contra el código: iteraciones 1 y 2: `/api/v1/supervision-docente` (vista 174, permiso único `docentes.supervision.ficha` en `60-seed-permisos-doc.sql`) y frontend en `docentes/supervision` con portal docente. Falta: confirmar en BD el schema 27 y la vista 174.
+
+
 > Plan del `planificador` (2026-07-29), persistido para ejecutar por iteraciones.
 > **Entrega por partes:** Iteración 1 = datos + RBAC + backend + documentación
 > (bloques A, B, C, E). Iteración 2 = frontend + portal docente + verificación

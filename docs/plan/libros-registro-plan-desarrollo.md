@@ -1,5 +1,8 @@
 # Fase 4 — Libros de registro (schema 25, ítem de ACA) — plan de desarrollo
 
+> **Estado: implementado — verificado 2026-10-20.** Comprobado contra el código: backend `/api/v1/libros` (vistas 175-177, seed 59 con `academico.libro`) y frontend `academico/libros` (incluye `CerrarLibroPendientesModal`). Falta: confirmar vistas 175-177 en BD y la acción administrativa «registrar nota/observación pendiente» que el plan marca como segundo paso.
+
+
 > Plan del `planificador` (2026-07-29), persistido para ejecutar por iteraciones.
 > **Entrega por partes:** Iteración 1 = datos + RBAC + backend + documentación
 > (bloques A archivos, B edición, C, E). Iteración 2 = frontend + verificación

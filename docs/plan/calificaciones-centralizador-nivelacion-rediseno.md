@@ -1,5 +1,8 @@
 # Calificaciones → Centralizador → Nivelación → Libros — rediseño por etapas
 
+> **Estado: implementado — verificado 2026-10-20.** Comprobado contra el código: ciclo A-E cerrado (Calificaciones, Centralizador y Nivelación en `academico/`, vistas 135/185/187/189). Falta: aplicar en BD las vistas 185/187 y la migración `05-migrations/26-migrate-alter-tablas-existentes.sql` (lo ejecuta el usuario); los choques de horario y arrastres siguen en `matricula-arrastre-choques-centralizador.md`.
+
+
 > Auditoría base + hoja de ruta (2026-08-06), persistida para retomar en
 > sesión nueva sin depender de la memoria de la conversación. Continúa el
 > trabajo de `centralizador-nivelacion-plan-desarrollo.md` (ese ciclo quedó

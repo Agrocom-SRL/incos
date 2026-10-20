@@ -1,5 +1,8 @@
 # Módulo Tutorías y Acompañamiento Académico (TUT) — plan de desarrollo
 
+> **Estado: implementado — verificado 2026-10-20.** Comprobado contra el código: módulo hoy llamado Titulación (`proyectos-grado.routes.js`, `modules/titulacion`) más Acompañamiento en ACA (`acompanamiento.routes.js`). Falta: documento histórico con nomenclatura vieja (`tutorias`, seed 66); el Acompañamiento está oculto por el seed 59 desde 2026-08-03.
+
+
 > **Nota (2026-07-31):** el módulo se renombró `tutorias` → `titulacion` y el
 > sub-grupo Acompañamiento se reclasificó al dominio Académico (`ACA`);
 > documento histórico, no refleja la nomenclatura actual.

@@ -1,5 +1,8 @@
 # Sincronización BD servidor → schema local (`01-schemas`)
 
+> **Estado: pendiente — verificado 2026-10-20.** Comprobado contra el código: el propio documento indica que ningún paso se ha ejecutado; la BD local con datos del servidor es un trabajo operativo que no se puede comprobar en el repo (el dump `instituto_incos.sql` está en `.gitignore`). Falta: ejecutar el plan paso a paso.
+
+
 > Objetivo: tener una base de datos local con **los datos reales del servidor**
 > (dump del 2026-10-19) pero con la **estructura de `backend/database/01-schemas/`**,
 > que es la fuente de verdad limpia. Este documento es el plan paso a paso; ningún paso

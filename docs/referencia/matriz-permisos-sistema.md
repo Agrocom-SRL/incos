@@ -3,6 +3,43 @@
 
 Documento de auditoria funcional (frontend + backend + seeds) sobre permisos por accion.
 
+> **Nota de verificación contra seeds (2026-10-20) — leer antes de usar esta matriz.**
+> La matriz describe la **intención de negocio** y el diseño RBAC; el estado **real en BD** lo
+> fija `backend/database/02-seeders/`. Numeración vigente de seeds: `55` roles → `56` usuarios-admin
+> → `57` titulación-modalidades (catálogo, no RBAC) → permisos por módulo: `58` MAT · `59` ACA · `60` DOC ·
+> `61` FIN · `62` INST · `63` REP (solo conservado como historial: módulo disuelto) · `64` CAP · `65` TIT ·
+> `66` CFG · `67` SEG(+SYS). Las menciones a «seed 54/55/56», «57-64» o «65 = CAP / 66 = TUT» en los
+> changelogs son **históricas** y ya no corresponden a los archivos.
+>
+> **Divergencias conocidas matriz ↔ seeds:**
+>
+> 1. **«Seguimiento académico» oculto (2026-08-03, seed 59).** Los permisos `academico.avance`,
+>    `academico.desercion`, `academico.acompanamiento.{alerta,sesion,panel}` (con sus acciones,
+>    asignaciones a roles y grupos UI `aca_avance`, `aca_desercion`, `aca_acompanamiento`) se marcan
+>    `activo=0, deleted_at='2026-08-03'`. Efecto: `/avance-academico`, `/desercion` y `/acompanamiento`
+>    responden **403 a todos los roles, incluido ADMIN_SISTEMA** (hereda por `vista_*_activas`, que filtra
+>    activo y `deleted_at`), aunque las secciones «ACA - Avance académico y Deserción» y la fila
+>    «Avance académico» de esta matriz los describan como vivos. El código (backend y frontend,
+>    incluida la agrupación `/academico/seguimiento`) sigue existiendo; la **intención de negocio se
+>    conserva** y se rehabilita poniendo `activo=1, deleted_at=NULL` en esas filas del seed 59.
+> 2. **Traspasos y Transitabilidad** (`academico.trazabilidad.traspaso.*` / `.transitabilidad.*`):
+>    apagados desde 2026-06-24 (seed 59); sus menús se dieron de baja (la función migrará a una pestaña de
+>    la ficha de Inscripción). Las filas de esta matriz que los listan son plan, no estado vivo.
+> 3. **Nivelaciones** (`academico.nivelacion.{ver,inscribir,aprobar}`): rehabilitadas 2026-08-07; el seed
+>    usa las acciones propias `ver/inscribir/aprobar` como códigos de permiso, no el vocabulario genérico
+>    `VER/CREAR/APROBAR` de la tabla «Nivelaciones, Trazabilidad, Historial».
+> 4. **Permisos sembrados que la matriz no lista como fila propia:** `academico.calificacion.centralizador`,
+>    `academico.asistencia.registro.coordinacion`, `docentes.licencia.aprobar` (solo en changelog),
+>    `matricula.admision.crear`, `matricula.admision.editar`, `matricula.documento.ver`,
+>    `finanzas.aporte`, `finanzas.pago.reporte.estudiante`, `finanzas.pago.reporte.gestion`,
+>    `institucional.oferta.gestionar`, `institucional.gestion.pasadas`. La fuente de verdad es el seed.
+> 5. **Códigos que la matriz cita y ya no existen** (renombrados o retirados): `tutorias.*` → `titulacion.*`
+>    y `academico.acompanamiento.*`; `reportes.*` (módulo disuelto 2026-07-29);
+>    `docentes.supervision.{evaluar,reporte,pasantia.evaluar}` (reemplazados por el único
+>    `docentes.supervision.ficha`); `academico.historial.{folio,validar}` (reemplazados por `academico.libro` y
+>    `titulacion.*`).
+> 6. **Seed 63 (REP):** conserva solo el historial; no siembra permisos activos.
+
 ## Changelog 2026-08-10 — TIT: Requisito 3 reemplazado por "Seguimiento de tutorías a docentes" (sin permisos nuevos)
 
 La planilla "10 en 10" (bimestral, dependía de Matrícula/`periodo_numero=3`,
@@ -420,7 +457,7 @@ nuevas funciones. Cambios aplicados:
 
 > **IMPORTANTE (seeds RBAC por módulo, sin ids fijos):** Los seeders de permisos están
 > **separados por módulo** en `02-seeders/`: `55-seed-roles.sql` → `56-seed-usuarios-admin.sql`
-> → `57-64 seed-permisos-<mod>.sql` (MAT, ACA, DOC, FIN, INST, CFG, REP, SEG — **SEG incluye SYS**).
+> → `58-67 seed-permisos-<mod>.sql` (MAT, ACA, DOC, FIN, INST, REP, CAP, TIT, CFG, SEG — **SEG incluye SYS**).
 > Cada archivo de módulo es autocontenido con 3 inserts: `permisos` (SIN id, AUTO_INCREMENT) +
 > `permiso_acciones` + `roles_permisos`, **referenciando por CÓDIGO** (de permiso y de rol),
 > no por id. Por eso este documento **ya no cita ids de permiso**: la fuente de verdad es el
@@ -455,7 +492,7 @@ nuevas funciones. Cambios aplicados:
   los pares (permiso, accion) usados por los botones (`ActionButton`/`PermisoGuard`/`useAcciones`/`hasPermiso`)
   ya existian en el catalogo (54+56); no requirio permisos nuevos. ADMIN_SISTEMA los tiene todos por derivacion del catalogo.
 
-**Arquitectura:** frontend `.cursor/rules/incos-frontend-module.mdc` · backend `.cursor/rules/incos-backend-module.mdc` · guías `docs/guias/implementacion-*` y `checklist-*`.
+**Arquitectura:** frontend skill `.claude/skills/incos-frontend-module` · backend skill `.claude/skills/incos-backend-module` (resumen en `CLAUDE.md`) · guías `docs/guias/implementacion-*` y `checklist-*`.
 
 ## ADMIN_SISTEMA (rol_id = 1)
 
@@ -463,13 +500,13 @@ El usuario **admin** inicial (`56-seed-usuarios-admin.sql`) tiene `rol_id = 1`. 
 
 En **RolPermisosPage**, la grilla usa `vista_grilla_roles_permisos_agrupada`: para `rol_id = 1` el backend marca como asignadas todas las acciones validas del catalogo (misma fuente que login), no las filas vacias de `roles_permisos`.
 
-Tras cambiar `ruta_sidebar` o `grupo_ui` de un permiso, edita su archivo de módulo (`57-64 seed-permisos-<mod>.sql`) y re-seed (las tablas RBAC se vacían y resiembran); en instalación nueva basta con los seeders `55` (roles) → `56` (usuarios-admin) → `57-64` (permisos por módulo) y las vistas RBAC.
+Tras cambiar `ruta_sidebar` o `grupo_ui` de un permiso, edita su archivo de módulo (`58-67 seed-permisos-<mod>.sql`) y re-seed (las tablas RBAC se vacían y resiembran); en instalación nueva basta con los seeders `55` (roles) → `56` (usuarios-admin) → `58-67` (permisos por módulo) y las vistas RBAC.
 
 ## Criterio canon para nuevas funciones (ABM limpio + seguridad)
 
 Todo alta/baja/modificacion (ABM) o nueva pantalla de un modulo debe cumplir estas restricciones minimas:
 
-1. **Arquitectura limpia por capa** (detalle en `.cursor/rules/incos-frontend-module.mdc`)
+1. **Arquitectura limpia por capa** (detalle en el skill `.claude/skills/incos-frontend-module`)
    - Carpetas alineadas al **menu lateral** (un directorio por item de menu).
    - `presentation/pages`: UI pura.
    - `application/hooks/api|features|state`: API; listados en tabs (`features`); pantallas (`state`).
@@ -616,9 +653,9 @@ const CalificacionesEntradaConnector = () => (
 
 ### Checklist al agregar un modulo con vistas distintas por perfil
 
-1. **Seed 54**: permiso de **ingreso** (menu) + permisos por pantalla hija (IDs fijos).
-2. **Seed 56**: acciones validas por permiso.
-3. **Seed 55**: asignar a cada rol solo los permisos que le corresponden (docente **sin** coordinacion si no debe ver listado global).
+1. **Seed del módulo (`58-67`), bloque `permisos`**: permiso de **ingreso** (menu) + permisos por pantalla hija (sin ids; referencia por código).
+2. **Mismo seed, bloque `permiso_acciones`**: acciones validas por permiso.
+3. **Mismo seed, bloque `roles_permisos`**: asignar a cada rol solo los permisos que le corresponden (docente **sin** coordinacion si no debe ver listado global).
 4. **`routes.jsx`**: ruta de ingreso con `permiso` ingreso; hijas con permisos propios; `landingStack` + `viewStack` (archivo `config/*ViewStack.js` del modulo).
 5. **`ModuleEntryConnector`** + pagina inline para la vista admin/coordinacion.
 6. **Hooks de datos**: `useRouteViewMode(routeKey)` para elegir API segun `isView('coordinacion'|'propio')` y `contextId`.
@@ -767,7 +804,7 @@ Este catalogo define las capacidades reales del sistema para evitar ambiguedad e
 ### Inventario frontend de permisos en rutas (single source UI)
 
 El barrido de `frontend/src/presentation/modules/**/routes.jsx` confirma que los codigos usados en UI
-estan alineados con los archivos de permisos por módulo (`57-64 seed-permisos-<mod>.sql`) por **código** y que la visibilidad del sidebar depende de accion **LISTAR** (no existe `VER` en `permiso_acciones`).
+estan alineados con los archivos de permisos por módulo (`58-67 seed-permisos-<mod>.sql`) por **código** y que la visibilidad del sidebar depende de accion **LISTAR** (no existe `VER` en `permiso_acciones`).
 
 ### Nota de compatibilidad documental
 
@@ -910,7 +947,7 @@ Dos permisos gobiernan los 4 catálogos de Finanzas → Configuración. Grupos U
 > (vista `vista_catalogos_finanzas_usos`, 152). Roles con ACTIVAR: RECTOR y DIR_ADMIN (los mismos
 > que ya tienen el resto del bloque); ADMIN_SISTEMA hereda por vista (sin filas en `roles_permisos`).
 > Métodos de pago sigue **sin** endpoint DELETE (catálogo fijo de 4 códigos referenciado por FK).
-> Seed: `60-seed-permisos-fin.sql` (requiere re-siembra).
+> Seed: `61-seed-permisos-fin.sql` (requiere re-siembra).
 
 ### ACA - Académico (`/academico/*`)
 Submódulos (cada uno con directorio y `routes.jsx` bajo `modules/academico/`):
@@ -920,11 +957,11 @@ Submódulos (cada uno con directorio y `routes.jsx` bajo `modules/academico/`):
 | Calificaciones | `/academico/calificaciones` | `academico.calificacion.*` |
 | Asistencia | `/academico/asistencia` | `academico.asistencia.*` (gemelo de Calificaciones; ver detalle abajo) |
 | Nivelaciones | `/academico/nivelaciones/listar` | `academico.nivelacion.*` |
-| Traspasos | `/academico/traspasos/listar` | `academico.trazabilidad.traspaso.*` |
-| Transitabilidad | `/academico/transitabilidad/listar` | `academico.trazabilidad.transitabilidad.*` |
+| Traspasos | `/academico/traspasos/listar` | `academico.trazabilidad.traspaso.*` — **apagado en seed 59 (menú dado de baja)** |
+| Transitabilidad | `/academico/transitabilidad/listar` | `academico.trazabilidad.transitabilidad.*` — **apagado en seed 59 (menú dado de baja)** |
 | Historial | `/academico/historial/academico` | `academico.historial.*` |
-| Avance académico | `/academico/avance` | `academico.avance` + `academico.desercion` (pestaña Deserción) |
-| Libros de registro | `/academico/libros` | `academico.libro` (frontend en iteración 2) |
+| Avance académico | `/academico/avance` | `academico.avance` + `academico.desercion` (pestaña Deserción) — **OCULTO en seed 59 desde 2026-08-03 (403 a todos), ver nota de verificación** |
+| Libros de registro | `/academico/libros` | `academico.libro` (backend + frontend completos) |
 
 > **Licencias estudiantiles** ya **no** es un ítem propio: pasó a ser una **página dentro de
 > Asistencia** (`/academico/asistencia/licencias/listar`), permisos renombrados
@@ -954,7 +991,7 @@ Permisos: `academico.calificacion.*` — menu: `/academico/calificaciones` (IDs 
 | `academico.calificacion.bimestre.ajuste_admin` | EDITAR | Consolidado bimestre cerrado: habilitación / ajuste administrativo | REC, DIRA, SECA |
 
 ### ACA - Asistencia (detalle rutas)
-Permisos: `academico.asistencia.*` — ítem `/academico/asistencia` (gemelo de Calificaciones, un ítem con varias páginas). Seeds en `58-seed-permisos-aca.sql`. Ver `docs/plan/MODULO-ASISTENCIA.md`.
+Permisos: `academico.asistencia.*` — ítem `/academico/asistencia` (gemelo de Calificaciones, un ítem con varias páginas). Seeds en `59-seed-permisos-aca.sql`. Ver `docs/plan/MODULO-ASISTENCIA.md`.
 
 | Permiso (codigo) | Acciones | Pantalla / comportamiento | Roles |
 |---|---|---|---|
@@ -1002,8 +1039,8 @@ rehabilitado el 2026-07-29 — ver sección Avance).
 > `docs/plan/HISTORIAL-ACADEMICO.md`.
 
 ### ACA - Avance académico y Deserción (`/academico/avance`) — backend 2026-07-29 (REP disuelto)
-Una página, dos pestañas con `PermisoGuard` por pestaña (frontend en la
-iteración siguiente; hoy la ruta sigue en `UnderConstruction`). Grupos UI:
+Una página, dos pestañas con `PermisoGuard` por pestaña (frontend construido y agrupado bajo `/academico/seguimiento`).
+**Estado en BD: oculto por el seed 59 (2026-08-03); los endpoints devuelven 403 a todos los roles hasta rehabilitar.** Grupos UI:
 `aca_avance` (rehabilitado) y `aca_desercion` (nuevo). Seeds en
 `59-seed-permisos-aca.sql`.
 
@@ -1177,7 +1214,7 @@ Subrutas operativas de horarios (definidas en `frontend/.../institucional/routes
 - `/institucional/horarios/aulas` — `institucional.gestion.horarios` + LISTAR
 - `/institucional/horarios/publicacion` — `institucional.horario.publicacion` + EDITAR
 
-Permisos por etapa (en `61-seed-permisos-inst.sql`):
+Permisos por etapa (en `62-seed-permisos-inst.sql`):
 - `institucional.horario.plantilla`
 - `institucional.horario.armado`
 - `institucional.horario.conflictos`
@@ -1274,7 +1311,7 @@ CREAR/EDITAR/ELIMINAR de la tabla de cursos en armado acepta `institucional.gest
 ### CFG - Configuracion (`/configuracion/*`)
 
 **Arquitectura frontend:** skill `incos-frontend-module`. Permisos del módulo en
-`62-seed-permisos-cfg.sql` (códigos `configuracion.*`: plan-estudio, carrera, materia,
+`66-seed-permisos-cfg.sql` (códigos `configuracion.*`: plan-estudio, carrera, materia,
 plan-estudio.{periodos,asignaturas,prerrequisitos}, paralelo, aula, tipo-evaluacion,
 complementario.* (discapacidad, apoderados, idiomas, estado-civil), documentacion.*, convenios,
 pagos, historial-actividades), cada uno con sus acciones y grants en el mismo archivo.
@@ -1329,7 +1366,7 @@ Aulas, tab 3 Tipos de evaluación (ambos nuevos, 2026-07-07).
 > `?incluirInactivos=true` para incluir ítems con `activo=false` (`deleted_at IS NULL`); cada ítem del
 > listado expone el campo `activo` (boolean). Roles con ACTIVAR (simetría con ELIMINAR por código):
 > los 3 códigos → RECTOR y DIR_ACADEMICO. ADMIN_SISTEMA hereda por vista (sin filas en
-> `roles_permisos`). Seed: `62-seed-permisos-cfg.sql` (requiere re-siembra).
+> `roles_permisos`). Seed: `66-seed-permisos-cfg.sql` (requiere re-siembra).
 
 #### Datos complementarios (tabs + ABM/detalle de página completa)
 
@@ -1353,7 +1390,7 @@ Aulas, tab 3 Tipos de evaluación (ambos nuevos, 2026-07-07).
 > (`deleted_at IS NULL`); cada ítem del listado expone el campo `activo` (boolean). Roles con ACTIVAR
 > (simetría con ELIMINAR por código): discapacidad y apoderados → RECTOR; idiomas y estado-civil →
 > RECTOR y DIR_ACADEMICO. ADMIN_SISTEMA hereda por vista (sin filas en `roles_permisos`). Seed:
-> `62-seed-permisos-cfg.sql` (requiere re-siembra).
+> `66-seed-permisos-cfg.sql` (requiere re-siembra).
 
 `ruta_sidebar` del permiso aún apunta `/configuracion/datos-complementarios`; la app redirige a `/configuracion/complementarios`. Alinear en el archivo de permisos CFG.
 
@@ -1386,7 +1423,7 @@ El esqueleto frontend (`modules/reportes/`, iconos `REP-*`) se borra en la
 iteración frontend de la disolución.
 
 ### CAP - Capacitación (`/capacitacion/*`) — módulo nuevo 2026-07-16
-Dominio `CAPACITACION`, módulo `CAP` (cursos cortos a público externo, sin login). Seed: `65-seed-permisos-cap.sql` (**pendiente de siembra en BD**, junto al schema `25-cursos-capacitacion.sql`, el seeder `66-seed-horarios-capacitacion.sql` y las vistas 154/155). Grupos UI: `cap_cursos`, `cap_participantes`, `cap_inscripciones`. Roles con acceso (primer corte): RECTOR, DIR_ADMIN, SEC_ADMIN; ADMIN_SISTEMA hereda por vista.
+Dominio `CAPACITACION`, módulo `CAP` (cursos cortos a público externo, sin login). Seed: `64-seed-permisos-cap.sql` (numeración vigente; en el changelog original figuraba como 65; **verificar siembra en BD**, junto al schema `25-cursos-capacitacion.sql`, el seeder de horarios de capacitación y las vistas 154/155). Grupos UI: `cap_cursos`, `cap_participantes`, `cap_inscripciones`. Roles con acceso (primer corte): RECTOR, DIR_ADMIN, SEC_ADMIN; ADMIN_SISTEMA hereda por vista.
 
 | Permiso (codigo) | Acciones | Ruta sidebar | Endpoints | Roles |
 |---|---|---|---|---|

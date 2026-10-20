@@ -1,5 +1,8 @@
 # Acta de defensa de grado (modalidad de graduación) — plan de desarrollo
 
+> **Estado: implementado — verificado 2026-10-20.** Comprobado contra el código: backend (`RegistrarActaDefensaUseCase`, `AnularActaDefensaUseCase`, `ExportActaDefensaPdfUseCase`, rutas en `proyectos-grado.routes.js`), tablas `actas_defensa`/`tribunal_acta_defensa` en `01-schemas/22-modalidades-grado.sql` y frontend (`RegistrarActaDefensaConnector`, `AnularActaDefensaModal`). Falta: confirmar que el usuario aplicó `22-modalidades-grado.sql` y las vistas en la BD real, y la decisión pendiente del §268.
+
+
 > Plan del `planificador` (2026-08-01), persistido para ejecutar por iteraciones.
 > **Entrega por partes (backend-first):** Iteración 1 = datos + backend + RBAC +
 > documentación (bloques A, B, C, E). Iteración 2 = frontend + verificación

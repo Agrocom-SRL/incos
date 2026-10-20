@@ -1,5 +1,8 @@
 # Planes de estudio duales por gestión + selector de plan en matrícula — plan de desarrollo
 
+> **Estado: parcial — verificado 2026-10-20.** Comprobado contra el código: el wizard ya elige plan y envía `plan_estudio_id` con derivación como respaldo (ver `matricula-wizard-rediseno.md`). Falta: el DDL del bloque A (`plan_estudio_id` en `estudiantes_datos_academicos`) NO está en `01-schemas/` (pendiente de aprobación), el backfill y el gate de habilitación C2 (pospuesto por decisión).
+
+
 > Plan del `planificador` (2026-08-01), persistido para ejecutar por iteraciones.
 > **Entrega por partes:** Iteración 1 = datos + backend (bloques A, B, C, E).
 > Iteración 2 = frontend + verificación (bloques D, F, G). Nada se ejecuta en BD

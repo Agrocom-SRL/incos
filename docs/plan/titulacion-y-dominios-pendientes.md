@@ -1,5 +1,8 @@
 # Titulación y dominios pendientes — decisión de menú y plan por fases
 
+> **Estado: parcial — verificado 2026-10-20.** Comprobado contra el código: Fases 0-4 hechas (menú Titulación, pasantías `pasantias.routes.js`, supervisión, libros). Falta: Fase 5 «Títulos y certificados» (schema 26 sin módulo ni rutas; GATED) y las decisiones fuera de plan. Ojo: sus números de seed (59 DOC, 65 CAP, 66 TUT) son anteriores; hoy son 60 DOC, 64 CAP, 65 TIT.
+
+
 **Fecha:** 2026-07-29 · **Resuelve:** decisión pendiente §6.7 de
 `docs/plan/auditoria-modelo-datos.md` (dueño de menú de pasantías, libros y
 supervisión) + hoja de ruta de cierre de los dominios sin construir.

@@ -9,15 +9,15 @@ Patrones de referencia: docentes (ABM) · CFG académico (tabs) · institucional
 
 **Detalle / ficha:** `docs/guias/implementacion-detalle-modulo.md` y `docs/guias/checklist-detalle.md`
 
-**Arquitectura frontend (menú, hooks):** `.cursor/rules/incos-frontend-module.mdc`  
+**Arquitectura frontend (menú, hooks):** `.claude/skills/incos-frontend-module/SKILL.md`  
 
-**Arquitectura backend (capas, DI, RBAC, respuestas API):** `.cursor/rules/incos-backend-module.mdc` — **obligatoria** para cualquier listado nuevo; esta guía detalla el paso a paso integrado frontend + backend.
+**Arquitectura backend (capas, DI, RBAC, respuestas API):** `.claude/skills/incos-backend-module/SKILL.md` — **obligatoria** para cualquier listado nuevo; esta guía detalla el paso a paso integrado frontend + backend.
 
 **Relación con otros documentos**
 
-- `docs/02_estructura_sidebar.md` — keys de menú, `permiso` / `accion` en rutas de presentación.
+- Keys de menú, `permiso` / `accion` en rutas: `frontend/src/presentation/modules/*/routes.jsx` (el antiguo `docs/02_estructura_sidebar.md` ya no existe).
 - `docs/referencia/matriz-permisos-sistema.md` — vocabulario v2 de acciones (`LISTAR`, `DETALLE`, `CREAR`, etc.).
-- `docs/plan/SPRINT_1.md` — catálogo plan de estudio (CFG académico), solo mientras aplique Plan V2.
+- Plan de estudio (CFG académico): catálogo plan de estudio; ver `docs/plan/estado-avance-y-proximos-pasos.md` (el antiguo `SPRINT_1.md` ya no existe).
 
 ---
 
@@ -51,7 +51,7 @@ Regla de carpetas: **un directorio por ítem de menú**, no por entidad; ver `in
 
 ## 3. Backend — proceso completo
 
-Visión de capas y checklist de archivos: **`.cursor/rules/incos-backend-module.mdc`**.
+Visión de capas y checklist de archivos: **`.claude/skills/incos-backend-module/SKILL.md`**.
 
 ### 3.0 Flujo resumido
 
@@ -215,7 +215,7 @@ No crear `hooks/carreras/` ni `presentation/.../carreras/routes.jsx` si carreras
 - **Página:** `PageTemplate`, `PageHeader`, `TableListView`; breadcrumb; acciones del header con **`ActionButton`** y permisos reales.
 - **Columnas:** archivo dedicado `config/tableColumns.jsx` — usar **`TableCell`**, **`Space`** y variables **`var(--font-size-*)`** como en estudiantes; **`TableActions`** para ver/editar (y eliminar solo si existe API + permiso).
 - **Connector:** envuelve providers + página; export **lazy** desde `connectors/index.js`.
-- **Rutas del módulo:** `path`, `element`, `key`, `permiso`, `accion`, `menu` / `breadcrumbParent` según `02_estructura_sidebar.md`. Rutas dinámicas **`/:id`** después de las rutas estáticas para no colisionar con segmentos fijos.
+- **Rutas del módulo:** `path`, `element`, `key`, `permiso`, `accion`, `menu` / `breadcrumbParent` según `routes.jsx` del módulo. Rutas dinámicas **`/:id`** después de las rutas estáticas para no colisionar con segmentos fijos.
 
 **Referencia:** `DocentesList.jsx`, `tableColumns.jsx`, `DocentesListConnector.jsx`, `routes.jsx`.
 
@@ -341,7 +341,7 @@ Frontend: `application/.../complementarios/hooks/` + `DiscapacidadesList.jsx`.
 1. **Columnas del modelo Sequelize que no existen en MySQL** — 500 en listado; revisar DDL vs `define()`.
 2. **`dataFieldName` distinto** entre use case, controller y `dataKey` del frontend — tabla vacía con 200 OK.
 3. **`getSearchFields`** con nombres SQL en lugar de atributos Sequelize.
-4. **Permiso del router ≠ seed 54** — 403 con rol que sí ve el menú.
+4. **Permiso del router ≠ seed del módulo (`58-67`)** — 403 con rol que sí ve el menú.
 5. **Router no registrado** en container o `routes/index.js` — 404.
 
 ### Frontend

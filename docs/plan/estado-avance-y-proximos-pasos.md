@@ -1,5 +1,8 @@
 # Estado de avance y próximos pasos — retomar en sesión nueva
 
+> **Estado: parcial (fotografía histórica) — verificado 2026-10-20.** Comprobado contra el código: es un corte del 2026-08-01 y quedó superado: el frente «Seguimiento académico» que describe se ocultó en el seed 59 el 2026-08-03 (403 a todos los roles) y los seeds RBAC ya son `58-67`; los módulos TIT, supervisión, libros y nivelación ya están construidos. No lo use como estado actual: consulte `CLAUDE.md`, la matriz de permisos (nota de verificación) y los planes individuales.
+
+
 > **Fecha de corte:** 2026-08-01 (actualizado; corte anterior 2026-07-30).
 > **Propósito:** este documento es el punto de entrada para CONTINUAR el
 > trabajo en una conversación nueva sin re-derivar contexto. Léelo completo
