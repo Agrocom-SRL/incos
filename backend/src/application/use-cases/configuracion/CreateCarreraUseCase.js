@@ -27,4 +27,3 @@ export class CreateCarreraUseCase {
     return { carrera: created };
   }
 }
-

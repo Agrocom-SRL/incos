@@ -1,19 +1,21 @@
 /**
  * Contenedor de Inyección de Dependencias (DI Container)
- * 
+ *
  * Implementa el patrón Service Locator para gestionar dependencias.
  * Todas las dependencias se registran como singletons (una sola instancia compartida).
- * 
+ *
  * Responsabilidades:
  * - Registrar servicios/repositorios/use cases
  * - Resolver dependencias automáticamente
  * - Gestionar ciclo de vida singleton (una instancia por token)
- * 
+ *
  * @example
  * const container = new Container();
  * container.register('logger', () => new Logger());
  * const logger = container.resolve('logger');
  */
+import { logger } from '../services/WinstonLoggerFactory.js';
+
 export class Container {
     constructor() {
         /**
@@ -31,12 +33,12 @@ export class Container {
 
     /**
      * Registra un proveedor de dependencia como singleton
-     * 
+     *
      * @param {string} token - Identificador único del servicio
      * @param {Function} factory - Función que crea la instancia
-     * 
+     *
      * @throws {Error} Si el token ya está registrado o los parámetros son inválidos
-     * 
+     *
      * @example
      * container.register('logger', () => new Logger());
      * container.register('studentRepository', () => new StudentRepository());
@@ -44,19 +46,19 @@ export class Container {
     register(token, factory) {
         if (!token || typeof token !== 'string') {
             const error = new Error(`DI: Token inválido. Debe ser un string no vacío: "${token}"`);
-            console.error('[Container]', error.message);
+            logger.error('[Container]', { error: error.message });
             throw error;
         }
 
         if (typeof factory !== 'function') {
             const error = new Error(`DI: Factory debe ser una función para el token: "${token}"`);
-            console.error('[Container]', error.message);
+            logger.error('[Container]', { error: error.message });
             throw error;
         }
 
         if (this.providers.has(token)) {
             const error = new Error(`DI: Token ya registrado: "${token}"`);
-            console.error('[Container]', error.message);
+            logger.error('[Container]', { error: error.message });
             throw error;
         }
 
@@ -65,11 +67,11 @@ export class Container {
 
     /**
      * Resuelve una dependencia por su token
-     * 
+     *
      * @param {string} token - Identificador del servicio
      * @returns {any} Instancia del servicio (singleton)
      * @throws {Error} Si el token no está registrado
-     * 
+     *
      * @example
      * const logger = container.resolve('logger');
      * logger.info('Hello');
@@ -79,7 +81,7 @@ export class Container {
 
         if (!factory) {
             const error = new Error(`DI: Provider no encontrado: "${token}"`);
-            console.error('[Container]', error.message);
+            logger.error('[Container]', { error: error.message });
             throw error;
         }
 
@@ -96,7 +98,7 @@ export class Container {
 
     /**
      * Verifica si un token está registrado
-     * 
+     *
      * @param {string} token - Identificador del servicio
      * @returns {boolean} True si el token está registrado
      */

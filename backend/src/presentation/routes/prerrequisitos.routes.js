@@ -29,4 +29,3 @@ export function buildPrerrequisitosRouter({ controllers, middlewares }) {
 
   return router;
 }
-

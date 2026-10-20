@@ -6,21 +6,21 @@ import { StudentDocumentMapper } from '../mappers/StudentDocumentMapper.js';
 /**
  * Implementación del repositorio de documentos de estudiantes usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
- * 
+ *
  * Responsabilidades:
  * - Acceso a datos (consultas, persistencia)
  * - Delegar conversión ORM ↔ Entidad a StudentDocumentMapper
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja acceso a datos
  * - Dependency Inversion: Usa StudentDocumentMapper para conversiones (depende de abstracción)
- * 
+ *
  * Clean Architecture:
  * - Infrastructure Layer: Implementación concreta de IDocumentoEstudianteRepository
  * - Usa StudentDocumentMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
- * 
+ *
  * @implements {IDocumentoEstudianteRepository}
- * 
+ *
  * Esta clase cumple con el contrato IDocumentoEstudianteRepository:
  * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
  * - La especialización está en buildWhereClause(), no en métodos adicionales
@@ -37,7 +37,7 @@ export class StudentDocumentRepository extends BaseRepository {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Delega la responsabilidad de mapeo a StudentDocumentMapper
-   * 
+   *
    * @param {Object} model - Modelo Sequelize
    * @returns {StudentDocument|null} Entidad de dominio
    */
@@ -48,15 +48,15 @@ export class StudentDocumentRepository extends BaseRepository {
   /**
    * Construye la cláusula WHERE para filtros específicos
    * Maneja todos los criterios de búsqueda de la entidad StudentDocument
-   * 
+   *
    * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
    * sin necesidad de crear métodos adicionales en el repositorio.
-   * 
+   *
    * Ejemplos de uso:
    * - findAll({ studentId: 1 }) → Busca documentos de un estudiante
    * - findAll({ tipoDocumento: 'INSCRIPCION', state: 'APROBADO' }) → Busca documentos aprobados de inscripción
    * - findBy({ studentId: 1, documentacionId: 2 }) → Busca documento específico
-   * 
+   *
    * @param {Object} filters - Filtros de búsqueda
    *   - studentId: ID del estudiante
    *   - tipoDocumento: Tipo de documento (INSCRIPCION, LICENCIA, PASANTIA, etc.)
@@ -141,7 +141,7 @@ export class StudentDocumentRepository extends BaseRepository {
   /**
    * Mapea datos de dominio a formato del modelo Sequelize (para creación)
    * Delega la responsabilidad de mapeo a StudentDocumentMapper
-   * 
+   *
    * @param {StudentDocument|Object} data - Entidad StudentDocument o objeto con datos de dominio
    * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
    * @returns {Object} Objeto con formato del modelo Sequelize
@@ -153,7 +153,7 @@ export class StudentDocumentRepository extends BaseRepository {
   /**
    * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
    * Delega la responsabilidad de mapeo a StudentDocumentMapper
-   * 
+   *
    * @param {StudentDocument|Object} data - Entidad StudentDocument o objeto con datos de dominio
    * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
@@ -164,11 +164,10 @@ export class StudentDocumentRepository extends BaseRepository {
 
   /**
    * Retorna el nombre de la colección en la respuesta JSON
-   * 
+   *
    * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
     return 'studentDocuments';
   }
 }
-

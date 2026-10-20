@@ -75,7 +75,7 @@ const consoleFormat = winston.format.combine(
                     filteredMeta[key] = meta[key];
                 }
             }
-            
+
             // Si hay otras propiedades, agregarlas también
             for (const [key, value] of Object.entries(meta)) {
                 if (!importantProps.includes(key) && value !== undefined) {

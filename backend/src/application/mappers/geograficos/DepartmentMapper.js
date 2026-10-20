@@ -1,16 +1,16 @@
 /**
  * Mapper: DepartmentMapper (Application Layer)
  * Convierte entidades de dominio (Department) a formato de presentación (API/Español)
- * 
+ *
  * Responsabilidad: Domain (inglés) ↔ Presentation (español)
- * 
+ *
  * Ubicación: Application Layer
  * Módulo: Geográficos
  */
 export class DepartmentMapper {
   /**
    * Convierte una entidad Department (dominio, inglés) a formato de presentación (castellano)
-   * 
+   *
    * @param {Department} department - Entidad Department con nombres en inglés
    * @returns {Object} Objeto con nombres en castellano para la respuesta API
    */
@@ -29,7 +29,7 @@ export class DepartmentMapper {
 
   /**
    * Convierte un array de entidades Department a formato de presentación
-   * 
+   *
    * @param {Department[]} departments - Array de entidades Department
    * @returns {Object[]} Array de objetos con nombres en castellano
    */
@@ -38,4 +38,3 @@ export class DepartmentMapper {
     return departments.map((department) => this.entityToPresentation(department));
   }
 }
-

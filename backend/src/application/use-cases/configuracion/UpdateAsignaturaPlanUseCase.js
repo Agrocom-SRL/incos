@@ -23,4 +23,3 @@ export class UpdateAsignaturaPlanUseCase {
     return { asignatura: updated };
   }
 }
-

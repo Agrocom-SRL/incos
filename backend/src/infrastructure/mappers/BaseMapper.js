@@ -2,15 +2,15 @@ import { BaseEntity } from '../../domain/entities/BaseEntity.js';
 
 /**
  * Mapper Base: BaseMapper
- * 
+ *
  * Responsabilidad: Factoriza la conversión de campos comunes entre Modelo ORM ↔ Entidad Base
- * 
+ *
  * Campos comunes (heredados de BaseEntity/baseModel):
  * - id, activo/active, createdAt, updatedAt, deletedAt
  * - createdBy, updatedBy, deletedBy
- * 
+ *
  * Ubicación: Infrastructure Layer
- * 
+ *
  * Patrón: Template Method
  * - Métodos template manejan campos comunes
  * - Métodos abstractos permiten personalización de campos específicos
@@ -19,11 +19,11 @@ export class BaseMapper {
   /**
    * Extrae los campos base del modelo ORM para crear una entidad
    * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
-   * 
+   *
    * IMPORTANTE: Cuando se usan attributes limitados, Sequelize almacena los campos solicitados
    * en model.dataValues. Este método accede a dataValues para obtener solo los campos
    * que fueron solicitados explícitamente.
-   * 
+   *
    * @param {Object} model - Modelo Sequelize
    * @returns {Object|null} Objeto con campos base para la entidad (solo campos presentes)
    */
@@ -34,7 +34,7 @@ export class BaseMapper {
     // Cuando se usan attributes limitados, Sequelize almacena los campos en dataValues
     const dataValues = model.dataValues || model;
     const baseFields = {};
-    
+
     // Solo incluir campos que existen en dataValues (campos solicitados explícitamente)
     if ('id' in dataValues && dataValues.id !== undefined) {
       baseFields.id = dataValues.id;
@@ -66,14 +66,14 @@ export class BaseMapper {
 
   /**
    * Convierte campos base de la entidad a formato del modelo ORM (para creación)
-   * 
+   *
    * NOTA: Este método retorna un objeto vacío porque BaseRepository.create() maneja:
    * - activo: Lo establece con data.activo !== undefined ? data.activo : true
    * - createdBy: Lo establece con el userId proporcionado
-   * 
+   *
    * Este método existe para mantener simetría con baseFieldsToModelForUpdate()
    * y para permitir extensiones futuras si se necesitan campos base adicionales.
-   * 
+   *
    * @param {BaseEntity|Object} entity - Entidad o objeto con datos
    * @returns {Object} Objeto con campos base para el modelo ORM (actualmente vacío)
    */
@@ -87,7 +87,7 @@ export class BaseMapper {
   /**
    * Convierte campos base de la entidad a formato del modelo ORM (para actualización)
    * Solo incluye campos definidos
-   * 
+   *
    * @param {BaseEntity|Object} entity - Entidad o objeto con datos
    * @returns {Object} Objeto con campos base para actualización
    */
@@ -110,7 +110,7 @@ export class BaseMapper {
   /**
    * Combina campos base con campos específicos para crear una entidad
    * Helper method para usar en mappers específicos
-   * 
+   *
    * @param {Object} model - Modelo Sequelize
    * @param {Object} specificFields - Campos específicos de la entidad
    * @returns {Object|null} Objeto combinado para crear la entidad
@@ -125,4 +125,3 @@ export class BaseMapper {
     };
   }
 }
-

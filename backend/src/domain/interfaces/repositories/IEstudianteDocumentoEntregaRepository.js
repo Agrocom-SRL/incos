@@ -3,7 +3,7 @@ import { IRepository } from './IRepository.js';
 /**
  * Interfaz de Repositorio: IEstudianteDocumentoEntregaRepository
  * Define el contrato que debe cumplir el repositorio de entregas de documentos de estudiantes
- * 
+ *
  * Métodos heredados de IRepository:
  * - findById(id)
  * - findBy(criteria, options)
@@ -13,7 +13,7 @@ import { IRepository } from './IRepository.js';
  * - delete(id, userId)
  * - search(searchTerm, options)
  * - count(filters)
- * 
+ *
  * Métodos específicos:
  * - obtenerEntregasConDetalle(filters) - Obtiene entregas de documentos con detalles del documento
  */
@@ -21,7 +21,7 @@ export class IEstudianteDocumentoEntregaRepository extends IRepository {
   /**
    * Obtiene entregas de documentos con detalles del documento
    * Retorna datos que incluyen tanto la información de la entrega como los detalles del documento
-   * 
+   *
    * @param {Object} filters - Filtros opcionales
    *   - estudiante_id: ID del estudiante
    *   - documentacion_id: ID de la documentación
@@ -45,4 +45,3 @@ export class IEstudianteDocumentoEntregaRepository extends IRepository {
     throw new Error('Method obtenerEntregasConDetalle must be implemented by subclass');
   }
 }
-

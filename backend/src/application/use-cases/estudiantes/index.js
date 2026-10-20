@@ -38,4 +38,3 @@ export { GetStudentScholarshipByIdUseCase } from './becas/GetStudentScholarshipB
 // ============================================
 // export { ListDocumentosUseCase } from './documentos/ListDocumentosUseCase.js';
 // export { UploadDocumentoUseCase } from './documentos/UploadDocumentoUseCase.js';
-

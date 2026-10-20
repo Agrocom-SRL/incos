@@ -52,7 +52,7 @@ export class ContributionConfiguration extends BaseEntity {
 
   toPlainObject() {
     const plainObject = super.toPlainObject();
-    
+
     if (this.hasOwnProperty('managementId')) {
       plainObject.managementId = this.managementId;
     }

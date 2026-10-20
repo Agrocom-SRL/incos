@@ -58,4 +58,3 @@ export class Institution extends BaseEntity {
     return this.toPlainObject();
   }
 }
-

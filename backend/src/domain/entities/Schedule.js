@@ -71,7 +71,7 @@ export class Schedule extends BaseEntity {
    */
   toPlainObject() {
     const plainObject = super.toPlainObject();
-    
+
     // Solo incluir campos que fueron inicializados (existen en this)
     if (this.hasOwnProperty('name')) {
       plainObject.name = this.name;

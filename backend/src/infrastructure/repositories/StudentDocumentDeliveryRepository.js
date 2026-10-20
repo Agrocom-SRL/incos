@@ -7,21 +7,21 @@ import { sequelize } from '../database/sequelize.js';
 /**
  * Implementación del repositorio de entregas de documentos de estudiantes usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
- * 
+ *
  * Responsabilidades:
  * - Acceso a datos (consultas, persistencia)
  * - Delegar conversión ORM ↔ Entidad a StudentDocumentDeliveryMapper
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja acceso a datos
  * - Dependency Inversion: Usa StudentDocumentDeliveryMapper para conversiones (depende de abstracción)
- * 
+ *
  * Clean Architecture:
  * - Infrastructure Layer: Implementación concreta de IEstudianteDocumentoEntregaRepository
  * - Usa StudentDocumentDeliveryMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
- * 
+ *
  * @implements {IEstudianteDocumentoEntregaRepository}
- * 
+ *
  * Esta clase cumple con el contrato IEstudianteDocumentoEntregaRepository:
  * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
  * - La especialización está en buildWhereClause(), no en métodos adicionales
@@ -38,7 +38,7 @@ export class StudentDocumentDeliveryRepository extends BaseRepository {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Delega la responsabilidad de mapeo a StudentDocumentDeliveryMapper
-   * 
+   *
    * @param {Object} model - Modelo Sequelize
    * @returns {StudentDocumentDelivery|null} Entidad de dominio
    */
@@ -49,15 +49,15 @@ export class StudentDocumentDeliveryRepository extends BaseRepository {
   /**
    * Construye la cláusula WHERE para filtros específicos
    * Maneja todos los criterios de búsqueda de la entidad StudentDocumentDelivery
-   * 
+   *
    * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
    * sin necesidad de crear métodos adicionales en el repositorio.
-   * 
+   *
    * Ejemplos de uso:
    * - findAll({ studentId: 1 }) → Busca entregas de documentos de un estudiante
    * - findAll({ documentacionId: 2, entregado: true }) → Busca documentos entregados
    * - findBy({ studentId: 1, documentacionId: 2 }) → Busca entrega específica
-   * 
+   *
    * @param {Object} filters - Filtros de búsqueda
    *   - studentId: ID del estudiante
    *   - documentacionId: ID de la documentación
@@ -111,7 +111,7 @@ export class StudentDocumentDeliveryRepository extends BaseRepository {
   /**
    * Mapea datos de dominio a formato del modelo Sequelize (para creación)
    * Delega la responsabilidad de mapeo a StudentDocumentDeliveryMapper
-   * 
+   *
    * @param {StudentDocumentDelivery|Object} data - Entidad StudentDocumentDelivery o objeto con datos de dominio
    * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
    * @returns {Object} Objeto con formato del modelo Sequelize
@@ -123,7 +123,7 @@ export class StudentDocumentDeliveryRepository extends BaseRepository {
   /**
    * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
    * Delega la responsabilidad de mapeo a StudentDocumentDeliveryMapper
-   * 
+   *
    * @param {StudentDocumentDelivery|Object} data - Entidad StudentDocumentDelivery o objeto con datos de dominio
    * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
@@ -134,7 +134,7 @@ export class StudentDocumentDeliveryRepository extends BaseRepository {
 
   /**
    * Retorna el nombre de la colección en la respuesta JSON
-   * 
+   *
    * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
@@ -144,11 +144,11 @@ export class StudentDocumentDeliveryRepository extends BaseRepository {
   /**
    * Obtiene entregas de documentos con detalles del documento
    * Retorna datos que incluyen tanto la información de la entrega como los detalles del documento
-   * 
+   *
    * IMPORTANTE:
    * - Retorna objetos planos (no entidades) porque viene de consulta SQL directa
    * - Solo incluye registros activos (soft delete validado)
-   * 
+   *
    * @param {Object} filters - Filtros opcionales
    *   - estudiante_id: ID del estudiante
    *   - documentacion_id: ID de la documentación
@@ -206,7 +206,7 @@ export class StudentDocumentDeliveryRepository extends BaseRepository {
     }
 
     // Construir la consulta SQL
-    const whereClause = whereConditions.length > 0 
+    const whereClause = whereConditions.length > 0
       ? `WHERE ${whereConditions.join(' AND ')}`
       : '';
 
@@ -226,4 +226,3 @@ export class StudentDocumentDeliveryRepository extends BaseRepository {
     return results;
   }
 }
-

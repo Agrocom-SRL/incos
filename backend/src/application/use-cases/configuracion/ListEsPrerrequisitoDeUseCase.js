@@ -12,4 +12,3 @@ export class ListEsPrerrequisitoDeUseCase {
     return { es_prerrequisito_de };
   }
 }
-

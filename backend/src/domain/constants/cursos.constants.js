@@ -1,6 +1,6 @@
 /**
  * Constantes del dominio relacionadas con Cursos
- * 
+ *
  * Estas constantes son parte del dominio de negocio y pueden ser usadas
  * por entidades, value objects y servicios de dominio relacionados con cursos.
  */
@@ -120,4 +120,3 @@ export const ESTADOS_GESTION_PLAN = {
  * Array de estados de gestión plan válidos (útil para validators)
  */
 export const ESTADOS_GESTION_PLAN_VALUES = Object.values(ESTADOS_GESTION_PLAN);
-

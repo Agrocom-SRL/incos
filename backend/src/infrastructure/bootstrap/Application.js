@@ -5,7 +5,7 @@ import { sequelize } from '../database/sequelize.js';
 
 /**
  * Clase de aplicación
- * 
+ *
  * Responsabilidades:
  * - Inicializar base de datos
  * - Iniciar servidor HTTP

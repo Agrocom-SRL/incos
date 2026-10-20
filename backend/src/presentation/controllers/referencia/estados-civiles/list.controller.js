@@ -1,24 +1,24 @@
 /**
  * GET /api/v1/estados-civiles
  * Controller para listar estados civiles con filtros y paginación
- * 
+ *
  * Responsabilidades:
  * - Recibir peticiones HTTP GET para listar estados civiles
  * - Delegar lógica de negocio a ListEstadosCivilesUseCase
  * - Formatear respuesta JSON estandarizada
- * 
+ *
  * Endpoint:
  * GET /api/v1/estados-civiles?page=1&limit=50&search=soltero
- * 
+ *
  * Query Parameters:
  * - page: Número de página (default: 1)
  * - limit: Cantidad de resultados por página (default: 50)
  * - search: Término de búsqueda por nombre (opcional)
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja la comunicación HTTP para listar estados civiles
  * - Dependency Inversion: Depende de ListEstadosCivilesUseCase (abstracción), no de implementación concreta
- * 
+ *
  * Clean Architecture:
  * - Presentation Layer: Maneja HTTP request/response
  * - Depende de Application Layer (Use Cases) a través de inyección de dependencias
@@ -47,4 +47,3 @@ export class ListEstadosCivilesController extends BaseListController {
   // Si en el futuro necesitamos filtros específicos,
   // podemos sobrescribir buildFilters() aquí
 }
-

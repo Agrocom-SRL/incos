@@ -25,4 +25,3 @@ export class PeriodMapper {
     return entitiesToPresentation(periods);
   }
 }
-

@@ -9,4 +9,3 @@ export const AULAS_HORARIOS_TOKENS = {
 
   aulasHorariosRouter: 'aulasHorarios.aulasHorariosRouter',
 };
-

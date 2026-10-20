@@ -64,7 +64,7 @@ export class ExcelFormulaBuilder {
         worksheet.getCell(`${cols[colIdx]}${row}`).value = getValor(p[par], colIdx) || 0;
         worksheet.getCell(`${cols[colIdx + 1]}${row}`).value = getValor(p[par], colIdx + 1) || 0;
       });
-      
+
       worksheet.getCell(`${totalCol}${row}`).value = {
         formula: `SUM(${cols[0]}${row}:${cols[cols.length - 1]}${row})`
       };
@@ -91,7 +91,7 @@ export class ExcelFormulaBuilder {
       const colInscripcion = colsInscripcion[i];
       const colReprobado = colsReprobados[i];
       const colAbandono = colsAbandonos[i];
-      
+
       worksheet.getCell(`${col}${row}`).value = {
         formula: `${colInscripcion}${row}-${colReprobado}${row}-${colAbandono}${row}`
       };

@@ -1,12 +1,12 @@
 /**
  * Mapper de aplicación: Career
  * Convierte entidades de dominio (Career) a formato de presentación (API/Spanish)
- * 
+ *
  * Clean Architecture:
  * - Application Layer: Convierte Domain Entities → Presentation Format
  * - Depende de Domain Layer (Career entity)
  * - Usa BaseMapper para campos comunes
- * 
+ *
  * Responsabilidades:
  * - Mapear propiedades de dominio (English/camelCase) a presentación (Spanish/snake_case)
  * - Formatear datos para consumo por el frontend
@@ -18,7 +18,7 @@ import { BaseMapper } from '../base/index.js';
 /**
  * Convierte una entidad Career a formato de presentación
  * Solo incluye campos que existen en la entidad (útil cuando se usan attributes limitados)
- * 
+ *
  * @param {Career} career - Entidad de dominio Career
  * @returns {Object|null} Objeto en formato de presentación o null si career es null/undefined
  */
@@ -26,10 +26,10 @@ export function entityToPresentation(career) {
   if (!career) return null;
 
   const presentation = {};
-  
+
   // Mapear campos base comunes (id, active, createdAt, updatedAt)
   BaseMapper.mapBaseFields(career, presentation);
-  
+
   // Mapear campos específicos de Career
   // Solo incluir campos que existen en la entidad (usando mapFieldIfExists)
   // Esto es importante cuando se usan attributes limitados en las consultas
@@ -66,4 +66,3 @@ export class CareerMapper {
     return entitiesToPresentation(careers);
   }
 }
-

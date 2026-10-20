@@ -1,7 +1,7 @@
 /**
  * GET /api/v1/estudiantes/search
  * Controller para buscar estudiantes por texto libre
- * 
+ *
  * Busca en: codigo_estudiante, ci, apellido_paterno, apellido_materno, nombres
  */
 import { BaseSearchController } from '../../base/BaseSearchController.js';

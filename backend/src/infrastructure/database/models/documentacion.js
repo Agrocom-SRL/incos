@@ -63,4 +63,3 @@ export const Documentacion = sequelize.define(
 );
 
 export default Documentacion;
-

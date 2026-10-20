@@ -315,7 +315,7 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
 
     /**
      * Obtiene los datos académicos del estudiante desde vista_estudiante_datos_academicos
-     * 
+     *
      * @private
      * @param {number} studentId - ID del estudiante
      * @returns {Promise<Object|null>} Datos académicos o null si no existen
@@ -421,7 +421,7 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
 
     /**
      * Busca las entregas de documentos de inscripción entregados (entregado: true)
-     * 
+     *
      * @private
      * @param {number} studentId - ID del estudiante
      * @returns {Promise<Array>} Lista de entregas entregadas

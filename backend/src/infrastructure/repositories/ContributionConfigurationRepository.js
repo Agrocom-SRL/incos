@@ -6,7 +6,7 @@ import { ContributionConfigurationMapper } from '../mappers/ContributionConfigur
 /**
  * Implementación del repositorio de configuración de aportes usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
- * 
+ *
  * @implements {IConfiguracionAporteRepository}
  */
 export class ContributionConfigurationRepository extends BaseRepository {

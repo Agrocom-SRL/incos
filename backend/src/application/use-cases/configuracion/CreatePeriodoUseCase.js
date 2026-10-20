@@ -26,4 +26,3 @@ export class CreatePeriodoUseCase {
     return { periodo: created };
   }
 }
-

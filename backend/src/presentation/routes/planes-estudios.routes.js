@@ -146,4 +146,3 @@ export function buildPlanesEstudiosRouter({ controllers, middlewares }) {
 
   return router;
 }
-

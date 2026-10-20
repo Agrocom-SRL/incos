@@ -1,24 +1,24 @@
 /**
  * GET /api/v1/documentacion
  * Controller para listar tipos de documentación con filtros y paginación
- * 
+ *
  * Responsabilidades:
  * - Recibir peticiones HTTP GET para listar tipos de documentación
  * - Delegar lógica de negocio a ListDocumentacionUseCase
  * - Formatear respuesta JSON estandarizada
- * 
+ *
  * Endpoint:
  * GET /api/v1/documentacion?page=1&limit=50&search=ci
- * 
+ *
  * Query Parameters:
  * - page: Número de página (default: 1)
  * - limit: Cantidad de resultados por página (default: 50)
  * - search: Término de búsqueda por nombre o descripción (opcional)
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja la comunicación HTTP para listar tipos de documentación
  * - Dependency Inversion: Depende de ListDocumentacionUseCase (abstracción), no de implementación concreta
- * 
+ *
  * Clean Architecture:
  * - Presentation Layer: Maneja HTTP request/response
  * - Depende de Application Layer (Use Cases) a través de inyección de dependencias
@@ -43,4 +43,3 @@ export class ListDocumentacionController extends BaseListController {
   }
 
 }
-

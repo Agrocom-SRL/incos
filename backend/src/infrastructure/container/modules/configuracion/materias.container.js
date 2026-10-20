@@ -1,13 +1,13 @@
 /**
  * Registro de dependencias del recurso Materias
- * 
+ *
  * Responsabilidades:
  * - Registrar Use Cases del recurso Materias
  * - Registrar Controllers del recurso Materias
  * - Construir y registrar el router del recurso Materias
- * 
+ *
  * Principio SRP: Cada container maneja solo UN recurso/entidad
- * 
+ *
  * @param {Container} container - Contenedor de DI
  * @returns {Container} Contenedor con recurso Materias registrado
  */
@@ -30,7 +30,7 @@ import { buildMateriasRouter } from '../../../../presentation/routes/materias.ro
 
 /**
  * Registra el recurso Materias en el contenedor
- * 
+ *
  * @param {Container} container - Contenedor de DI
  * @returns {Container} Contenedor actualizado
  */
@@ -173,4 +173,3 @@ export function registerMateriasResource(container) {
 
     return container;
 }
-

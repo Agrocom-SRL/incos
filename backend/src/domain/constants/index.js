@@ -1,9 +1,9 @@
 /**
  * Constantes del dominio
- * 
+ *
  * Este archivo centraliza todas las constantes del dominio organizadas por módulo.
  * Las constantes están separadas en archivos específicos para mantener la organización.
- * 
+ *
  * Estas constantes son parte del dominio de negocio y pueden ser usadas
  * por entidades, value objects y servicios de dominio.
  */

@@ -28,4 +28,3 @@ export class UpdateMateriaUseCase {
     return { materia: updated };
   }
 }
-

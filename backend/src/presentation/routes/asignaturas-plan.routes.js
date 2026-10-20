@@ -62,4 +62,3 @@ export function buildAsignaturasPlanRouter({ controllers, middlewares }) {
 
   return router;
 }
-

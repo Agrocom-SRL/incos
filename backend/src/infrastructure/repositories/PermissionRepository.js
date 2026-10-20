@@ -7,26 +7,26 @@ import { PermissionMapper } from '../mappers/PermissionMapper.js';
 /**
  * Implementación del repositorio de permisos usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
- * 
+ *
  * Responsabilidades:
  * - Acceso a datos (consultas, persistencia)
  * - Delegar conversión ORM ↔ Entidad a PermissionMapper
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja acceso a datos
  * - Dependency Inversion: Usa PermissionMapper para conversiones (depende de abstracción)
- * 
+ *
  * Clean Architecture:
  * - Infrastructure Layer: Implementación concreta de IPermisoRepository
  * - Usa PermissionMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
- * 
+ *
  * @implements {IPermisoRepository}
- * 
+ *
  * Esta clase cumple con el contrato IPermisoRepository:
  * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
  * - La especialización está en buildWhereClause(), no en métodos adicionales
  * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda
- * 
+ *
  * IMPORTANTE: Use findBy / findAll con criterios del dominio (code, domain, module, name).
  */
 export class PermissionRepository extends BaseRepository {
@@ -41,7 +41,7 @@ export class PermissionRepository extends BaseRepository {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Delega la responsabilidad de mapeo a PermissionMapper
-   * 
+   *
    * @param {Object} model - Modelo Sequelize
    * @returns {Permission|null} Entidad de dominio
    */
@@ -52,15 +52,15 @@ export class PermissionRepository extends BaseRepository {
   /**
    * Construye la cláusula WHERE para filtros específicos
    * Maneja todos los criterios de búsqueda de la entidad Permission
-   * 
+   *
    * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
    * sin necesidad de crear métodos adicionales en el repositorio.
-   * 
+   *
    * Ejemplos de uso:
    * - findAll({ module: 'MAT' }) → Por subdominio técnico (modulo)
    * - findAll({ domain: 'ACADEMICO' }) → Por dominio de negocio
    * - findBy({ code: 'academico.calificacion.ver' }) → Por código exacto
-   * 
+   *
    * @param {Object} filters - Filtros de búsqueda
    *   - code: Código del permiso (exacto)
    *   - name: Nombre legible (exacto; texto libre → search())
@@ -113,7 +113,7 @@ export class PermissionRepository extends BaseRepository {
   /**
    * Mapea datos de dominio a formato del modelo Sequelize (para creación)
    * Delega la responsabilidad de mapeo a PermissionMapper
-   * 
+   *
    * @param {Permission|Object} data - Entidad Permission o objeto con datos de dominio
    * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
    * @returns {Object} Objeto con formato del modelo Sequelize
@@ -125,7 +125,7 @@ export class PermissionRepository extends BaseRepository {
   /**
    * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
    * Delega la responsabilidad de mapeo a PermissionMapper
-   * 
+   *
    * @param {Permission|Object} data - Entidad Permission o objeto con datos de dominio
    * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
@@ -136,7 +136,7 @@ export class PermissionRepository extends BaseRepository {
 
   /**
    * Retorna el nombre de la colección en la respuesta JSON
-   * 
+   *
    * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
@@ -219,4 +219,3 @@ export class PermissionRepository extends BaseRepository {
     );
   }
 }
-

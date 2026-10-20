@@ -1,24 +1,24 @@
 /**
  * GET /api/v1/provincias
  * Controller para listar provincias con filtros y paginación
- * 
+ *
  * Responsabilidades:
  * - Recibir peticiones HTTP GET para listar provincias
  * - Delegar lógica de negocio a ListProvinciasUseCase
  * - Formatear respuesta JSON estandarizada
- * 
+ *
  * Endpoint:
  * GET /api/v1/provincias?page=1&limit=50&search=valle
- * 
+ *
  * Query Parameters:
  * - page: Número de página (default: 1)
  * - limit: Cantidad de resultados por página (default: 50)
  * - search: Término de búsqueda por nombre (opcional)
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja la comunicación HTTP para listar provincias
  * - Dependency Inversion: Depende de ListProvinciasUseCase (abstracción), no de implementación concreta
- * 
+ *
  * Clean Architecture:
  * - Presentation Layer: Maneja HTTP request/response
  * - Depende de Application Layer (Use Cases) a través de inyección de dependencias
@@ -43,4 +43,3 @@ export class ListProvinciasController extends BaseListController {
   }
 
 }
-

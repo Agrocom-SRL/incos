@@ -3,11 +3,11 @@ import { IRepository } from './IRepository.js';
 /**
  * Interfaz de Repositorio: IDocumentationRepository
  * Define el contrato que debe cumplir el repositorio de documentación
- * 
+ *
  * NOTA: Solo extiende IRepository sin métodos adicionales.
  * La especialización está en la implementación (buildWhereClause), no en la interfaz.
  * La lógica de negocio (findRequeridos) debe estar en casos de uso.
- * 
+ *
  * Métodos heredados de IRepository:
  * - findById(id)
  * - findBy(criteria, options)
@@ -23,4 +23,3 @@ export class IDocumentacionRepository extends IRepository {
   // NOTA: El nombre de la clase se mantiene en español por compatibilidad con código existente
   // pero representa la entidad Documentation (en inglés)
 }
-

@@ -1,25 +1,25 @@
 /**
  * Controlador base para operaciones de generación de documentos
- * 
+ *
  * Implementa el patrón Template Method para proporcionar funcionalidad común
  * a todos los controladores de generación de documentos (acta de compromiso, licencias, becas, etc.)
- * 
+ *
  * Responsabilidades:
  * - Extraer y validar el ID del recurso desde los parámetros de ruta
  * - Ejecutar el caso de uso correspondiente para generar el documento
  * - Formatear respuesta JSON estandarizada usando ResponseFormatter
  * - Manejar errores de manera consistente
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Maneja solo la lógica común de generación de documentos
  * - Template Method: Define el algoritmo común, permite personalización en subclases
  * - Open/Closed: Abierto para extensión (opciones personalizadas), cerrado para modificación
- * 
+ *
  * Clean Architecture:
  * - Presentation Layer: Maneja la comunicación HTTP (request/response)
  * - Usa ResponseFormatter para formatear respuestas exitosas
  * - Depende de Use Cases (Application Layer) a través de abstracción
- * 
+ *
  * @abstract
  * @example
  * class ActaCompromisoController extends BaseDocumentController {
@@ -31,7 +31,7 @@
  *       resourceName: 'acta de compromiso'
  *     });
  *   }
- * 
+ *
  * }
  */
 export class BaseDocumentController {
@@ -64,13 +64,13 @@ export class BaseDocumentController {
 
   /**
    * Maneja la petición HTTP POST para generar un documento
-   * 
+   *
    * Template Method: Define el algoritmo común de:
    * 1. Extraer y validar ID del recurso
    * 2. Ejecutar use case
    * 3. Formatear respuesta
    * 4. Manejar errores
-   * 
+   *
    * @param {Object} req - Request de Express
    * @param {Object} res - Response de Express
    * @param {Function} next - Next middleware de Express
@@ -109,4 +109,3 @@ export class BaseDocumentController {
     }
   }
 }
-

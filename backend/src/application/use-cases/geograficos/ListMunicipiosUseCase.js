@@ -2,7 +2,7 @@
  * Use Case: ListMunicipiosUseCase
  * Módulo: Geográficos
  * Lista municipios con filtros, paginación y ordenamiento
- * 
+ *
  * Filtros específicos: provinciaId
  */
 import { BaseListUseCase } from '../base/BaseListUseCase.js';
@@ -53,4 +53,3 @@ export class ListMunicipiosUseCase extends BaseListUseCase {
     return filters;
   }
 }
-

@@ -11,12 +11,12 @@ export class Student extends BaseEntity {
     super(data);
     // Solo inicializar campos si fueron proporcionados explícitamente
     // Esto permite usar attributes limitados sin inicializar campos no solicitados
-    
+
     // Relaciones
     if (data.hasOwnProperty('userId')) {
       this.userId = data.userId;
     }
-    
+
     // Datos de identificación
     if (data.hasOwnProperty('studentCode')) {
       this.studentCode = data.studentCode;
@@ -27,7 +27,7 @@ export class Student extends BaseEntity {
     if (data.hasOwnProperty('expedition')) {
       this.expedition = data.expedition;
     }
-    
+
     // Datos personales
     if (data.hasOwnProperty('firstName')) {
       this.firstName = data.firstName;
@@ -56,7 +56,7 @@ export class Student extends BaseEntity {
       // Solo usar valor por defecto si no se está usando attributes limitados
       this.hasDisability = false;
     }
-    
+
     // Contacto
     if (data.hasOwnProperty('personalEmail')) {
       this.personalEmail = data.personalEmail;
@@ -199,7 +199,7 @@ export class Student extends BaseEntity {
    */
   toPlainObject() {
     const plainObject = super.toPlainObject();
-    
+
     // Solo incluir campos que fueron inicializados (existen en this)
     if (this.hasOwnProperty('userId')) {
       plainObject.userId = this.userId;

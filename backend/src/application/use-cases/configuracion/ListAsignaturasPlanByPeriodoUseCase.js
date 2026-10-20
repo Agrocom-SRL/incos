@@ -12,4 +12,3 @@ export class ListAsignaturasPlanByPeriodoUseCase {
     return { asignaturas };
   }
 }
-

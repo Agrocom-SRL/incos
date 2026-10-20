@@ -1,9 +1,9 @@
 /**
  * Request DTO genérico: ListRequestDTO
- * 
+ *
  * Transforma y normaliza los query parameters comunes para operaciones de listado.
  * Usado por todos los módulos que implementan listado (países, departamentos, carreras, etc.)
- * 
+ *
  * Query Parameters comunes:
  * - page: Número de página (default: 1)
  * - limit: Cantidad de resultados por página (default: 50, max: 10000)
@@ -11,28 +11,28 @@
  * - sort: Ordenamiento (opcional, formato: "nombreCampo:ASC" o "nombreCampo:DESC")
  *   Ejemplos: "codigoEstudiante:ASC", "nombres:DESC"
  *   Si no se proporciona, se usa el orden por defecto del repositorio
- * 
+ *
  * Use Case espera:
  * - filters: { search?, sort?, ...filtrosEspecificos }
  * - page: number
  * - limit: number
- * 
+ *
  * Clean Architecture:
  * - Application Layer: Transforma datos de Presentation → Application
  * - Depende solo de estructuras de datos, no de entidades de dominio
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo transforma y normaliza query parameters comunes
  * - DRY: Evita duplicación entre módulos
  * - Open/Closed: Extensible para agregar filtros específicos en subclases o métodos adicionales
- * 
+ *
  * NOTA: Este DTO es genérico y maneja parámetros comunes (page, limit, search, sort).
  * Los filtros específicos de cada módulo se agregan en el controller mediante buildFilters().
  */
 export class ListRequestDTO {
   /**
    * Transforma los query parameters del request a la estructura que espera el use case
-   * 
+   *
    * @param {Object} query - Query parameters de Express (req.query)
    * @returns {Object} Objeto con filtros, page y limit para el use case
    */
@@ -66,4 +66,3 @@ export class ListRequestDTO {
     };
   }
 }
-

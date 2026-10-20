@@ -40,4 +40,3 @@ export function buildPeriodosRouter({ controllers, middlewares }) {
 
   return router;
 }
-

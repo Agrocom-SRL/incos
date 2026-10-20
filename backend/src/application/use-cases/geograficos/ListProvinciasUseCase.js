@@ -2,7 +2,7 @@
  * Use Case: ListProvinciasUseCase
  * Módulo: Geográficos
  * Lista provincias con filtros, paginación y ordenamiento
- * 
+ *
  * Filtros específicos: departamentoId
  */
 import { BaseListUseCase } from '../base/BaseListUseCase.js';
@@ -53,4 +53,3 @@ export class ListProvinciasUseCase extends BaseListUseCase {
     return filters;
   }
 }
-

@@ -4,17 +4,17 @@ import { listMunicipiosValidator } from '../validators/geograficos/index.js';
 
 /**
  * Construye el router del módulo Municipios
- * 
+ *
  * Responsabilidades:
  * - Definir rutas y métodos HTTP
  * - Vincular validators y middlewares
  * - Delegar lógica a controllers inyectados
- * 
+ *
  * @param {Object} params - Dependencias inyectadas
  * @param {Object} params.controllers - Controllers del módulo
  * @param {Object} params.middlewares - Middlewares (validateRequest, upload, auth, etc.)
  * @returns {Router} Router configurado de Express
- * 
+ *
  * @example
  * const router = buildMunicipiosRouter({ controllers, middlewares });
  * app.use('/api/v1/municipios', router);
@@ -31,7 +31,7 @@ export function buildMunicipiosRouter({ controllers, middlewares }) {
     /**
      * GET /api/v1/municipios
      * Listar todos los municipios con filtros y paginación
-     * 
+     *
      * Query params según IBaseRepository.obtenerTodos:
      * - pagina: número de página (paginación)
      * - limite: cantidad por página (paginación)
@@ -83,4 +83,3 @@ export function buildMunicipiosRouter({ controllers, middlewares }) {
 
     return router;
 }
-

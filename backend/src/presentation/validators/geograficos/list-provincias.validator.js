@@ -3,10 +3,10 @@ import { listValidator } from '../common/index.js';
 
 /**
  * Validador para listar provincias
- * 
+ *
  * Combina el validador común de listado (page, limit, search)
  * con validaciones específicas para provincias (departamentoId)
- * 
+ *
  * @example
  * router.get('/', listProvinciasValidator, validateRequest, controller);
  */

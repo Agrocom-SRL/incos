@@ -5,4 +5,3 @@ import { IRepository } from './IRepository.js';
  * Contrato para operaciones sobre transitabilidades.
  */
 export class ITransitabilidadRepository extends IRepository {}
-

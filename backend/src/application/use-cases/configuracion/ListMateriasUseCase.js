@@ -2,9 +2,9 @@
  * Use Case: ListMateriasUseCase
  * Módulo: Configuración
  * Lista materias con filtros, paginación y ordenamiento
- * 
+ *
  * Filtros específicos: periodo_id
- * 
+ *
  * Las materias se relacionan con periodos a través de asignatura_plan
  * Si se proporciona periodo_id, busca todas las asignaturas_plan con ese periodo_id,
  * obtiene los materia_id y filtra las materias por esos IDs
@@ -60,10 +60,10 @@ export class ListMateriasUseCase extends BaseListUseCase {
 
   /**
    * Prepara filtros cuando hay filtro por periodo_id
-   * 
+   *
    * Si viene periodo_id, busca todas las asignaturas_plan con ese periodo_id,
    * obtiene los materia_id y modifica los filtros para usar esos IDs
-   * 
+   *
    * @param {Object} filters - Filtros ya construidos por buildSpecificFilters
    * @param {Object} queryParams - Query parameters originales (para detectar periodo_id)
    * @returns {Promise<Object>} Filtros modificados con subjectId como array de IDs
@@ -105,4 +105,3 @@ export class ListMateriasUseCase extends BaseListUseCase {
     return filters;
   }
 }
-

@@ -1,20 +1,20 @@
 /**
  * PUT /api/v1/estudiantes/:id
  * Controller para actualizar los datos básicos de un estudiante existente
- * 
+ *
  * Responsabilidades:
  * - Recibir peticiones HTTP PUT para actualizar estudiantes
  * - Validar el ID del estudiante
  * - Preparar datos del body para el use case
  * - Delegar lógica de negocio a UpdateStudentUseCase
  * - Formatear respuesta JSON estandarizada
- * 
+ *
  * Endpoint:
  * PUT /api/v1/estudiantes/:id
- * 
+ *
  * Path Parameters:
  * - id: ID del estudiante (número entero mayor a 0)
- * 
+ *
  * Body Parameters (todos opcionales - actualización parcial):
  * - Campos básicos del estudiante: ci, expedicionId, nombres, apellidoPaterno, apellidoMaterno,
  *   fechaNacimiento, generoId, estadoCivilId, tipoSangre, tieneDiscapacidad, emailPersonal,
@@ -23,11 +23,11 @@
  * - disabilities: Array de discapacidades (reemplazo completo)
  * - origins: Array de orígenes (reemplazo completo)
  * - documentation: Objeto con entregas de documentos (reemplazo completo)
- * 
+ *
  * NOTA: Similar a RegisterStudentUseCase, actualiza estudiante y todas sus relaciones.
  * - Datos básicos: actualización parcial (solo campos proporcionados)
  * - Relaciones: reemplazo completo (si se proporcionan, elimina todas las existentes y crea las nuevas)
- * 
+ *
  * Response:
  * {
  *   success: true,
@@ -40,11 +40,11 @@
  *   },
  *   message: "Estudiante (ID: 123) actualizado correctamente"
  * }
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja la comunicación HTTP para actualizar estudiantes
  * - Dependency Inversion: Depende de UpdateStudentUseCase (abstracción), no de implementación concreta
- * 
+ *
  * Clean Architecture:
  * - Presentation Layer: Maneja HTTP request/response
  * - Depende de Application Layer (Use Cases inyectados)
@@ -76,7 +76,7 @@ export class UpdateStudentController {
    * Prepara los datos del body antes de enviarlos al use case
    * Transforma campos del frontend al dominio y estructura los datos
    * similar a RegisterStudentController (con separación de student y relaciones)
-   * 
+   *
    * @param {Object} body - Body de la petición HTTP
    * @returns {Object} Datos preparados para el use case
    *   - student: Datos básicos del estudiante (formato dominio)
@@ -156,103 +156,103 @@ export class UpdateStudentController {
     // Transformar campos del estudiante al formato dominio (solo si hay datos)
     if (Object.keys(studentData).length > 0) {
       const preparedStudent = { ...studentData };
-      
+
       // Transformar expedicionId a expedition
       if (preparedStudent.expedicionId !== undefined) {
         preparedStudent.expedition = preparedStudent.expedicionId;
         delete preparedStudent.expedicionId;
       }
-      
+
       // Transformar generoId a gender
       if (preparedStudent.generoId !== undefined) {
         preparedStudent.gender = preparedStudent.generoId;
         delete preparedStudent.generoId;
       }
-      
+
       // Transformar nombres a firstName
       if (preparedStudent.nombres !== undefined) {
         preparedStudent.firstName = preparedStudent.nombres;
         delete preparedStudent.nombres;
       }
-      
+
       // Transformar apellidoPaterno a lastName
       if (preparedStudent.apellidoPaterno !== undefined) {
         preparedStudent.lastName = preparedStudent.apellidoPaterno;
         delete preparedStudent.apellidoPaterno;
       }
-      
+
       // Transformar apellidoMaterno a motherLastName
       if (preparedStudent.apellidoMaterno !== undefined) {
         preparedStudent.motherLastName = preparedStudent.apellidoMaterno;
         delete preparedStudent.apellidoMaterno;
       }
-      
+
       // Transformar fechaNacimiento a birthDate
       if (preparedStudent.fechaNacimiento !== undefined) {
         preparedStudent.birthDate = preparedStudent.fechaNacimiento;
         delete preparedStudent.fechaNacimiento;
       }
-      
+
       // Transformar estadoCivilId a civilStatusId
       if (preparedStudent.estadoCivilId !== undefined) {
         preparedStudent.civilStatusId = preparedStudent.estadoCivilId;
         delete preparedStudent.estadoCivilId;
       }
-      
+
       // Transformar tipoSangre a bloodType. Solo valores actuales; legacy ya reemplazado por null en validador.
       if (preparedStudent.tipoSangre !== undefined) {
         preparedStudent.bloodType = preparedStudent.tipoSangre;
         delete preparedStudent.tipoSangre;
       }
-      
+
       // Transformar tieneDiscapacidad a hasDisability
       if (preparedStudent.tieneDiscapacidad !== undefined) {
         preparedStudent.hasDisability = preparedStudent.tieneDiscapacidad;
         delete preparedStudent.tieneDiscapacidad;
       }
-      
+
       // Transformar emailPersonal a personalEmail
       if (preparedStudent.emailPersonal !== undefined) {
         preparedStudent.personalEmail = preparedStudent.emailPersonal;
         delete preparedStudent.emailPersonal;
       }
-      
+
       // Transformar celular a mobilePhone
       if (preparedStudent.celular !== undefined) {
         preparedStudent.mobilePhone = preparedStudent.celular;
         delete preparedStudent.celular;
       }
-      
+
       // Transformar telefonoFijo a landlinePhone
       if (preparedStudent.telefonoFijo !== undefined) {
         preparedStudent.landlinePhone = preparedStudent.telefonoFijo;
         delete preparedStudent.telefonoFijo;
       }
-      
+
       // Transformar direccion a address
       if (preparedStudent.direccion !== undefined) {
         preparedStudent.address = preparedStudent.direccion;
         delete preparedStudent.direccion;
       }
-      
+
       // Transformar municipioResidenciaId a residenceMunicipalityId
       if (preparedStudent.municipioResidenciaId !== undefined) {
         preparedStudent.residenceMunicipalityId = preparedStudent.municipioResidenciaId;
         delete preparedStudent.municipioResidenciaId;
       }
-      
+
       // Transformar zona a zone
       if (preparedStudent.zona !== undefined) {
         preparedStudent.zone = preparedStudent.zona;
         delete preparedStudent.zona;
       }
-      
+
       // Transformar observaciones a observations
       if (preparedStudent.observaciones !== undefined) {
         preparedStudent.observations = preparedStudent.observaciones;
         delete preparedStudent.observaciones;
       }
-      
+
       // Transformar datos laborales al formato dominio
       if (preparedStudent.trabaja !== undefined) {
         preparedStudent.works = preparedStudent.trabaja;
@@ -306,20 +306,20 @@ export class UpdateStudentController {
 
     // IMPORTANTE: tipoOrigen puede ser 0 (BOLIVIANA), que es falsy, por lo que debemos verificar explícitamente !== undefined
     const hasOriginData = paisId || ciudadNacimiento || municipioId || localidadComunidad || idiomaMaternoId || idiomaSecundarioId || (tipoOrigen !== undefined && tipoOrigen !== null);
-    
+
     if (hasOriginData) {
       // Normalizar tipoOrigen a string
       const tipoOrigenNormalizado = tipoOrigen === 0 || tipoOrigen === '0' ? 'BOLIVIANA'
         : tipoOrigen === 1 || tipoOrigen === '1' ? 'EXTRANJERA'
         : tipoOrigen === 2 || tipoOrigen === '2' ? 'DOBLE_NACIONALIDAD'
         : tipoOrigen;
-      
+
       result.origins = [];
-      
+
       if (tipoOrigenNormalizado === 'DOBLE_NACIONALIDAD' && primeraNacionalidad) {
         // Doble nacionalidad: crear 2 orígenes
         const primeraEsBoliviana = primeraNacionalidad === 'BOLIVIANA' || primeraNacionalidad === '0';
-        
+
         // Primera nacionalidad (principal)
         result.origins.push({
           countryId: primeraEsBoliviana ? null : (paisId || null),
@@ -330,7 +330,7 @@ export class UpdateStudentController {
           originType: primeraEsBoliviana ? 'BOLIVIANA' : 'EXTRANJERA',
           isPrincipal: true,
         });
-        
+
         // Segunda nacionalidad (secundaria)
         const segundaEsBoliviana = !primeraEsBoliviana;
         result.origins.push({
@@ -408,7 +408,7 @@ export class UpdateStudentController {
 
   /**
    * Maneja la petición HTTP PUT para actualizar un estudiante
-   * 
+   *
    * @param {Object} req - Request de Express
    * @param {Object} res - Response de Express
    * @param {Function} next - Next middleware de Express
@@ -481,13 +481,13 @@ export class UpdateStudentController {
   /**
    * Sanitiza el body para logging (elimina datos sensibles)
    * Oculta información como CI, emails, teléfonos y direcciones.
-   * 
+   *
    * @param {Object} body - Body de la petición
    * @returns {Object} Body sanitizado para logging
    */
   sanitizeBodyForLogging(body) {
     const sanitized = { ...body };
-    
+
     // Sanitizar datos personales sensibles
     if (sanitized.ci) sanitized.ci = '***';
     if (sanitized.emailPersonal) sanitized.emailPersonal = '***';

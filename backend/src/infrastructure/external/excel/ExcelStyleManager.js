@@ -123,7 +123,7 @@ class ExcelStyleManager {
    */
   static obtenerColorTotalCarrera(carreraNombre) {
     const nombre = carreraNombre?.toUpperCase() || '';
-    
+
     if (nombre.includes('CONTADURÍA') || nombre.includes('CONTADURIA')) {
       return this.COLORS.TOTAL_CONTADURIA_BG;
     }

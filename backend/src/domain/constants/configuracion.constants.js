@@ -1,6 +1,6 @@
 /**
  * Constantes del dominio relacionadas con Configuración
- * 
+ *
  * Estas constantes son parte del dominio de negocio y pueden ser usadas
  * por entidades, value objects y servicios de dominio relacionados con configuración.
  */
@@ -22,4 +22,3 @@ export const TIPOS_MATERIA = {
  * Array de tipos de materia válidos (útil para validators)
  */
 export const TIPOS_MATERIA_VALUES = Object.values(TIPOS_MATERIA);
-

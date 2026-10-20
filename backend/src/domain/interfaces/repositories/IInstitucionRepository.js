@@ -10,4 +10,3 @@ import { IRepository } from './IRepository.js';
 export class IInstitucionRepository extends IRepository {
   // Solo hereda métodos de IRepository
 }
-

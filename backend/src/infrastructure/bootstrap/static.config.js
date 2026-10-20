@@ -4,11 +4,11 @@ import { serverConfig } from '../config/server.config.js';
 
 /**
  * Configuración de archivos estáticos
- * 
+ *
  * Sirve:
  * - Uploads (documentos de estudiantes, fotos, etc.)
  * - Public (si existe en el futuro)
- * 
+ *
  * @param {Express} app - Aplicación Express
  * @param {ILogger} logger - Logger inyectado (DI)
  */

@@ -28,4 +28,3 @@ export class UpdateCarreraUseCase {
     return { carrera: updated };
   }
 }
-

@@ -8,21 +8,21 @@ import { sequelize } from '../database/sequelize.js';
 /**
  * Implementación del repositorio de paralelos usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
- * 
+ *
  * Responsabilidades:
  * - Acceso a datos (consultas, persistencia)
  * - Delegar conversión ORM ↔ Entidad a ParallelMapper
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja acceso a datos
  * - Dependency Inversion: Usa ParallelMapper para conversiones (depende de abstracción)
- * 
+ *
  * Clean Architecture:
  * - Infrastructure Layer: Implementación concreta de IParaleloRepository
  * - Usa ParallelMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
- * 
+ *
  * @implements {IParaleloRepository}
- * 
+ *
  * Esta clase cumple con el contrato IParaleloRepository:
  * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
  * - La especialización está en buildWhereClause(), no en métodos adicionales
@@ -40,15 +40,15 @@ export class ParallelRepository extends BaseRepository {
   /**
    * Construye la cláusula WHERE para filtros específicos
    * Maneja todos los criterios de búsqueda de la entidad Parallel
-   * 
+   *
    * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
    * sin necesidad de crear métodos adicionales en el repositorio.
-   * 
+   *
    * Ejemplos de uso:
    * - findAll({ careerId: 1 }) → Busca paralelos de una carrera
    * - findAll({ periodId: 2, shift: 'MAÑANA' }) → Busca paralelos de un periodo y turno
    * - findBy({ careerId: 1, periodId: 2, name: 'A' }) → Busca paralelo específico
-   * 
+   *
    * @param {Object} filters - Filtros de búsqueda
    *   - careerId: ID de la carrera
    *   - periodId: ID del periodo
@@ -83,7 +83,7 @@ export class ParallelRepository extends BaseRepository {
   /**
    * Retorna los campos que se usarán para búsqueda de texto
    * Estos campos se usan en el método search() para búsqueda por término
-   * 
+   *
    * @returns {string[]} Array de nombres de campos del modelo Sequelize
    */
   getSearchFields() {
@@ -93,7 +93,7 @@ export class ParallelRepository extends BaseRepository {
   /**
    * Retorna el orden por defecto para las consultas
    * Delega el orden al BaseRepository que ordena por ID ASC
-   * 
+   *
    * @returns {Array} Array vacío para usar el orden por defecto del BaseRepository (id ASC)
    */
   getDefaultSort() {

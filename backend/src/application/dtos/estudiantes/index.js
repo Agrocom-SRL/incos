@@ -1,6 +1,6 @@
 /**
  * DTOs de aplicación para el módulo Estudiantes
- * 
+ *
  * Exporta todos los DTOs (Data Transfer Objects) que transforman datos
  * entre Presentation Layer y Application Layer
  */

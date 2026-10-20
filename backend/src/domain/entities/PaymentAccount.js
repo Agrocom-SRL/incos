@@ -29,7 +29,7 @@ export class PaymentAccount extends BaseEntity {
 
   toPlainObject() {
     const plainObject = super.toPlainObject();
-    
+
     if (this.hasOwnProperty('paymentMethodId')) {
       plainObject.paymentMethodId = this.paymentMethodId;
     }

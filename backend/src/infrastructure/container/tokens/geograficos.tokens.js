@@ -1,6 +1,6 @@
 /**
  * Tokens del Módulo Geográficos
- * 
+ *
  * Convenciones:
  * - Use Cases: {modulo}_list{Entity}UseCase (ej: 'geograficos.listPaisesUseCase')
  * - Controllers: {modulo}_list{Entity}Controller (ej: 'geograficos.listPaisesController')
@@ -26,4 +26,3 @@ export const GEOGRAFICOS_TOKENS = {
     provinciasRouter: 'geograficos.provinciasRouter',
     municipiosRouter: 'geograficos.municipiosRouter',
 };
-

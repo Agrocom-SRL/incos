@@ -14,7 +14,7 @@
 /**
  * Mapea campos base comunes de una entidad a formato de presentación
  * Solo incluye campos que existen en la entidad (útil cuando se usan attributes limitados)
- * 
+ *
  * @param {Object} entity - Entidad de dominio o objeto plano
  * @param {Object} presentation - Objeto de presentación donde agregar los campos base
  * @returns {Object} Objeto de presentación con campos base agregados
@@ -42,7 +42,7 @@ export function mapBaseFields(entity, presentation = {}) {
 /**
  * Mapea un campo condicionalmente solo si existe en la entidad
  * Útil para mapear campos opcionales o cuando se usan attributes limitados
- * 
+ *
  * @param {Object} entity - Entidad de dominio o objeto plano
  * @param {string} sourceField - Nombre del campo en la entidad (camelCase)
  * @param {string} targetField - Nombre del campo en la presentación (snake_case)

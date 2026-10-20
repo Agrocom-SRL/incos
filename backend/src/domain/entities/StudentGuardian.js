@@ -45,7 +45,6 @@ export class StudentGuardian extends BaseEntity {
     return parts.filter(Boolean).join(' ');
   }
 
-
   /**
    * Convierte la entidad a objeto plano
    * Solo incluye campos que existen en la instancia (fueron inicializados)
@@ -53,7 +52,7 @@ export class StudentGuardian extends BaseEntity {
    */
   toPlainObject() {
     const plainObject = super.toPlainObject();
-    
+
     // Solo incluir campos que fueron inicializados (existen en this)
     if (this.hasOwnProperty('studentId')) {
       plainObject.studentId = this.studentId;

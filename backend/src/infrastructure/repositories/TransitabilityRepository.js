@@ -100,4 +100,3 @@ export class TransitabilityRepository extends BaseRepository {
     return 'transitabilities';
   }
 }
-

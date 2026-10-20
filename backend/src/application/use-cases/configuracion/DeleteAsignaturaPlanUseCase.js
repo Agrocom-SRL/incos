@@ -12,4 +12,3 @@ export class DeleteAsignaturaPlanUseCase {
     return true;
   }
 }
-

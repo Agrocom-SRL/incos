@@ -7,13 +7,13 @@ const LIST_VIEW_MAX_LIMIT = 10000;
 
 /**
  * Clase base abstracta para repositorios usando el patrón Template Method
- * 
+ *
  * Este patrón define el esqueleto de un algoritmo en una clase base,
  * delegando algunos pasos a métodos abstractos que las subclases deben implementar.
- * 
+ *
  * Los métodos template (findById, findBy, findAll, create, update, delete, search, count) contienen
  * la lógica común, mientras que los métodos abstractos permiten personalización.
- * 
+ *
  * Extiende IRepository para cumplir con el contrato base de repositorios.
  */
 export class BaseRepository extends IRepository {
@@ -61,9 +61,9 @@ export class BaseRepository extends IRepository {
    * Retorna el orden por defecto para las consultas
    * Ordena por ID para mantener el orden original de inserción en la base de datos
    * Las subclases pueden sobrescribir este método si necesitan un orden diferente
-   * 
+   *
    * IMPORTANTE: Si la subclase retorna un array vacío [], se usa este orden por defecto
-   * 
+   *
    * @returns {Array} Array de arrays [campo, dirección] para Sequelize order
    */
   getDefaultSort() {
@@ -95,11 +95,11 @@ export class BaseRepository extends IRepository {
   /**
    * Retorna el nombre de la colección en la respuesta JSON
    * Este nombre se usa en las respuestas de la API, NO para el schema de BD
-   * 
-   * Ejemplo: 
+   *
+   * Ejemplo:
    * - Tabla BD: 'paises' (español, snake_case)
    * - Collection name: 'countries' (inglés, plural, para respuesta JSON)
-   * 
+   *
    * @abstract
    * @returns {string} Nombre de la colección para la respuesta JSON
    */
@@ -110,7 +110,7 @@ export class BaseRepository extends IRepository {
   /**
    * Helper interno: Obtiene el orden efectivo para las consultas
    * Si la subclase retorna un array vacío, usa el orden por defecto de BaseRepository
-   * 
+   *
    * @private
    * @returns {Array} Orden efectivo para la consulta
    */
@@ -124,7 +124,7 @@ export class BaseRepository extends IRepository {
    * TEMPLATE METHOD: Buscar por ID
    * Define el algoritmo común, delega la conversión a toEntity()
    * Con paranoid: true, automáticamente excluye registros eliminados
-   * 
+   *
    * @param {number} id - ID del registro a buscar
    * @param {Object} options - Opciones opcionales
    *   - attributes: Array de campos a seleccionar (opcional, ej: ['id', 'nombre'])
@@ -158,12 +158,12 @@ export class BaseRepository extends IRepository {
   /**
    * TEMPLATE METHOD: Buscar un solo registro según criterios
    * Define el algoritmo común de búsqueda de un solo registro
-   * 
+   *
    * IMPORTANTE:
    * - Con paranoid: true, Sequelize automáticamente excluye registros con deletedAt (soft delete)
    * - Por defecto solo busca en registros activos (activo: true)
    * - Para incluir inactivos, pasar options.includeInactive = true
-   * 
+   *
    * @param {Object} criteria - Criterios de búsqueda (ej: { studentCode: "2025-001", ci: "1234567", expedicion: "LP" })
    * @param {Object} options - Opciones opcionales
    *   - includeInactive: Si incluir registros inactivos (default: false)
@@ -200,12 +200,12 @@ export class BaseRepository extends IRepository {
   /**
    * TEMPLATE METHOD: Buscar todos los registros
    * Define el algoritmo común de búsqueda con filtros y paginación
-   * 
-   * IMPORTANTE: 
+   *
+   * IMPORTANTE:
    * - Con paranoid: true, Sequelize automáticamente excluye registros con deletedAt (soft delete)
    * - Por defecto solo trae registros activos (activo: true)
    * - Para incluir inactivos, pasar filters.includeInactive = true
-   * 
+   *
    * @param {Object} filters - Filtros opcionales
    *   - search: Término de búsqueda
    *   - includeInactive: Si incluir registros inactivos (default: false)
@@ -273,7 +273,7 @@ export class BaseRepository extends IRepository {
   /**
    * TEMPLATE METHOD: Crear un nuevo registro
    * Define el algoritmo común de creación
-   * 
+   *
    * @param {Object} data - Datos para crear el registro
    * @param {number} userId - ID del usuario que crea (opcional)
    * @param {Object} options - Opciones opcionales para `Model.create` (ej: `{ transaction }`)
@@ -294,7 +294,7 @@ export class BaseRepository extends IRepository {
   /**
    * TEMPLATE METHOD: Actualizar un registro
    * Define el algoritmo común de actualización
-   * 
+   *
    * @param {number} id - ID del registro a actualizar
    * @param {Object} data - Datos para actualizar
    * @param {number} userId - ID del usuario que actualiza (opcional)
@@ -323,14 +323,14 @@ export class BaseRepository extends IRepository {
    * Usa el método destroy() de Sequelize que respeta paranoid: true
    * Esto automáticamente establece deletedAt y respeta el soft delete
    * También marca el registro como inactivo (activo = false)
-   * 
+   *
    * @param {number} id - ID del registro a eliminar
    * @param {number} userId - ID del usuario que elimina (opcional)
    * @returns {Promise<boolean>} true si se eliminó correctamente, false si no se encontró
    */
   async delete(id, userId = null) {
     const Model = this.getModel();
-    
+
     // Sequelize con paranoid: true usa destroy() para soft delete
     // Esto automáticamente establece deletedAt
     const model = await Model.findByPk(id);
@@ -342,7 +342,7 @@ export class BaseRepository extends IRepository {
     const updateData = {
       activo: false,
     };
-    
+
     if (userId) {
       updateData.deletedBy = userId;
     }
@@ -360,12 +360,12 @@ export class BaseRepository extends IRepository {
   /**
    * TEMPLATE METHOD: Buscar con término de búsqueda
    * Define el algoritmo común de búsqueda de texto
-   * 
+   *
    * IMPORTANTE:
    * - Con paranoid: true, Sequelize automáticamente excluye registros con deletedAt (soft delete)
    * - Por defecto solo busca en registros activos (activo: true)
    * - Para incluir inactivos, pasar options.includeInactive = true
-   * 
+   *
    * @param {string} searchTerm - Término de búsqueda
    * @param {Object} options - Opciones opcionales
    *   - limit: Límite de resultados (default: 50)
@@ -409,12 +409,12 @@ export class BaseRepository extends IRepository {
   /**
    * TEMPLATE METHOD: Contar registros
    * Cuenta el total de registros según filtros
-   * 
+   *
    * IMPORTANTE:
    * - Con paranoid: true, Sequelize automáticamente excluye registros con deletedAt (soft delete)
    * - Por defecto solo cuenta registros activos (activo: true)
    * - Para incluir inactivos, pasar filters.includeInactive = true
-   * 
+   *
    * @param {Object} filters - Filtros opcionales
    *   - includeInactive: Si incluir registros inactivos (default: false)
    * @returns {Promise<number>} Cantidad de registros
@@ -471,4 +471,3 @@ export class BaseRepository extends IRepository {
   }
 
 }
-

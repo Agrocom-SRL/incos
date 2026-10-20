@@ -24,5 +24,3 @@ export function registerInfrastructure(container) {
 
     return container;
 }
-
-

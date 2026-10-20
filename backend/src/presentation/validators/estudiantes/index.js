@@ -1,6 +1,6 @@
 /**
  * Validators del módulo Estudiantes
- * 
+ *
  * Exporta todos los validators específicos del módulo Estudiantes
  */
 
@@ -13,4 +13,3 @@ export { createBecaDescuentoValidator, updateBecaDescuentoValidator } from './be
 
 // TODO: Agregar otros validators cuando se implementen sus endpoints
 // export { getStudentByIdValidator } from './get-by-id.validator.js';
-

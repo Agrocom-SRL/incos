@@ -1,13 +1,13 @@
 /**
  * Registro de dependencias del recurso Departamentos
- * 
+ *
  * Responsabilidades:
  * - Registrar Use Cases del recurso Departamentos
  * - Registrar Controllers del recurso Departamentos
  * - Construir y registrar el router del recurso Departamentos
- * 
+ *
  * Principio SRP: Cada container maneja solo UN recurso/entidad
- * 
+ *
  * @param {Container} container - Contenedor de DI
  * @returns {Container} Contenedor con recurso Departamentos registrado
  */
@@ -20,7 +20,7 @@ import { buildDepartamentosRouter } from '../../../../presentation/routes/depart
 
 /**
  * Registra el recurso Departamentos en el contenedor
- * 
+ *
  * @param {Container} container - Contenedor de DI
  * @returns {Container} Contenedor actualizado
  */
@@ -78,4 +78,3 @@ export function registerDepartamentosResource(container) {
 
     return container;
 }
-

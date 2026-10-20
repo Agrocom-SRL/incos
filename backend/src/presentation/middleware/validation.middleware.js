@@ -3,10 +3,10 @@ import { ValidationError } from '../../domain/errors/AppError.js';
 
 /**
  * Factory function para crear el middleware de validación
- * 
+ *
  * @param {ILogger} logger - Logger inyectado del container
  * @returns {Function} Middleware de validación
- * 
+ *
  * Middleware genérico para validación de datos
  * Lanza ValidationError (de domain/errors) que será capturado por errorHandler
  *
@@ -27,8 +27,7 @@ export function createValidateRequest(logger) {
 
       // Log detallado con JSON.stringify para que se vea completo en consola
       logger.warn(`Error de validación en request ${req.method} ${req.originalUrl}`);
-      console.error('Errores de validación:', JSON.stringify(errorDetails, null, 2));
-      console.error('Body recibido:', JSON.stringify(req.body, null, 2));
+      logger.warn('Detalle de errores de validación', { errores: errorDetails });
 
       // Lanzar ValidationError real (de domain/errors)
       // El errorHandler lo capturará y ErrorFormatter lo formateará

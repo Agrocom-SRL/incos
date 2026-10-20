@@ -102,7 +102,7 @@ export class CalendarActivity extends BaseEntity {
    */
   toPlainObject() {
     const plainObject = super.toPlainObject();
-    
+
     // Solo incluir campos que fueron inicializados (existen en this)
     if (this.hasOwnProperty('academicPeriodId')) {
       plainObject.academicPeriodId = this.academicPeriodId;

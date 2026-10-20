@@ -1,13 +1,13 @@
 /**
  * IncosPDFBase - Constantes y configuración para generación de PDFs del Instituto INCOS
- * 
+ *
  * Este archivo contiene SOLO constantes estáticas y configuración compartida.
  * NO contiene lógica de generación de PDFs.
- * 
+ *
  * Para generar PDFs:
  * - Usa IncosPDFLibBase (pdf-lib) para editar plantillas o crear desde cero
  * - Las constantes aquí definidas son usadas por todos los generadores
- * 
+ *
  * Contenido:
  * - Configuración institucional (INSTITUTE)
  * - Títulos de documentos (DOCUMENT_TITLES)
@@ -15,15 +15,15 @@
  * - Fuentes y tamaños (FONTS)
  * - Márgenes y espaciado (LAYOUT)
  * - Rutas de recursos (TEMPLATES_DIR, FONTS_DIR)
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo contiene constantes de configuración
  * - Dependency Inversion: Proporciona abstracción de configuración
- * 
+ *
  * Clean Architecture:
  * - Infrastructure Layer: Configuración compartida
  * - Usado por IncosPDFLibBase y otros generadores
- * 
+ *
  * NOTA: Este archivo NO es una clase base para extender.
  * Solo contiene constantes estáticas que pueden ser usadas por cualquier generador.
  */
@@ -37,7 +37,7 @@ const __dirname = path.dirname(__filename);
 
 /**
  * Clase estática con constantes y configuración para generación de PDFs
- * 
+ *
  * NO es una clase base para extender. Solo contiene constantes estáticas.
  * Para generar PDFs, usa IncosPDFLibBase (pdf-lib).
  */

@@ -1,13 +1,13 @@
 /**
  * Clase base para errores personalizados de la aplicación
- * 
+ *
  * Ubicación: domain/errors (capa de dominio - más interna)
- * 
+ *
  * En Clean Architecture, los errores están en Domain porque:
  * - Domain es la capa más interna, sin dependencias externas
  * - Todas las demás capas (Application, Infrastructure, Presentation) pueden depender de Domain
  * - Los errores son conceptos del dominio de negocio (NotFoundError, ValidationError, etc.)
- * 
+ *
  * Estos errores pueden ser lanzados desde cualquier capa:
  * - Domain: Reglas de negocio
  * - Application: Casos de uso
@@ -93,4 +93,3 @@ export class ConflictError extends AppError {
     }
   }
 }
-

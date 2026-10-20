@@ -1,29 +1,29 @@
 /**
  * Use Case Base para operaciones de búsqueda por texto libre
- * 
+ *
  * Implementa el patrón Template Method para proporcionar funcionalidad común
  * a todos los casos de uso de búsqueda
- * 
+ *
  * Responsabilidades:
  * - Ejecutar búsqueda en el repositorio (usa getSearchFields() del repositorio)
  * - Manejar límite de resultados parametrizable
  * - Registrar logs durante la operación
  * - Retornar resultado estandarizado
- * 
+ *
  * NOTA: La validación del término de búsqueda y el límite se realiza en las rutas
  * mediante el validator común (searchValidator), por lo que este use case
  * asume que searchTerm y limit ya están validados.
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Maneja solo la lógica común de búsqueda
  * - Template Method: Define el algoritmo común
  * - Open/Closed: Permite personalizar el comportamiento mediante opciones
- * 
+ *
  * Clean Architecture:
  * - Application Layer: Orquesta la lógica de casos de uso
  * - Depende de Repository (Infrastructure) a través de abstracción
  * - El repositorio define los campos de búsqueda en getSearchFields()
- * 
+ *
  * @abstract
  * @example
  * class SearchStudentUseCase extends BaseSearchUseCase {
@@ -35,7 +35,7 @@
  *       resourceName: 'estudiante',
  *     });
  *   }
- * 
+ *
  *   getMapper() {
  *     return StudentMapper;
  *   }
@@ -71,9 +71,9 @@ export class BaseSearchUseCase {
 
     /**
      * Retorna el mapper a usar para convertir entidades a presentación
-     * 
+     *
      * Método abstracto: Debe ser implementado por subclases
-     * 
+     *
      * @abstract
      * @returns {Object} Clase mapper con método estático entityToPresentation()
      */
@@ -83,9 +83,9 @@ export class BaseSearchUseCase {
 
     /**
      * Formatea un resultado individual usando el mapper
-     * 
+     *
      * Usa getMapper() para convertir la entidad a formato de presentación
-     * 
+     *
      * @param {Object} result - Resultado a formatear (entidad de dominio)
      * @returns {Object} Resultado formateado
      */
@@ -96,16 +96,16 @@ export class BaseSearchUseCase {
 
     /**
      * Ejecuta el caso de uso de búsqueda
-     * 
+     *
      * Template Method: Define el algoritmo común de:
      * 1. Normalizar término de búsqueda (trim)
      * 2. Logging inicial
      * 3. Ejecutar búsqueda en el repositorio con límite
      * 4. Procesar y formatear resultados
      * 5. Retornar resultado
-     * 
+     *
      * NOTA: searchTerm y limit ya están validados por el validator en las rutas
-     * 
+     *
      * @param {string} searchTerm - Término de búsqueda (ya validado por el validator)
      * @param {number} limit - Límite de resultados (opcional, default: 50)
      * @returns {Promise<Array>} Array de resultados formateados (vacío si no hay resultados)

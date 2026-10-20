@@ -65,4 +65,3 @@ export const EstudianteOrigen = sequelize.define(
 );
 
 export default EstudianteOrigen;
-

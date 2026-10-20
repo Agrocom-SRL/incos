@@ -1,17 +1,17 @@
 /**
  * DELETE /api/v1/estudiantes/:id
  * Controller para eliminar un estudiante
- * 
+ *
  * Responsabilidades:
  * - Recibir peticiones HTTP DELETE para eliminar estudiantes
  * - Extraer el ID del estudiante de los parámetros de ruta
  * - Delegar lógica de negocio a DeleteStudentUseCase
  * - Formatear respuesta JSON estandarizada
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja la comunicación HTTP para eliminar estudiantes
  * - Dependency Inversion: Depende de DeleteStudentUseCase (abstracción)
- * 
+ *
  * Clean Architecture:
  * - Presentation Layer: Maneja HTTP request/response
  * - Depende de Application Layer (Use Cases) a través de inyección de dependencias

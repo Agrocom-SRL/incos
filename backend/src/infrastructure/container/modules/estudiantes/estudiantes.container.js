@@ -1,13 +1,13 @@
 /**
  * Registro de dependencias del recurso Estudiantes (CRUD básico)
- * 
+ *
  * Responsabilidades:
  * - Registrar Use Cases del recurso Estudiantes (List, Register, GetById, Update, Delete)
  * - Registrar Controllers del recurso Estudiantes
  * - Construir y registrar el router del recurso Estudiantes
- * 
+ *
  * Principio SRP: Cada container maneja solo UN recurso/entidad
- * 
+ *
  * @param {Container} container - Contenedor de DI
  * @returns {Container} Contenedor con recurso Estudiantes registrado
  */
@@ -30,7 +30,7 @@ import { buildEstudiantesRouter } from '../../../../presentation/routes/estudian
 
 /**
  * Registra el recurso Estudiantes en el contenedor
- * 
+ *
  * @param {Container} container - Contenedor de DI
  * @returns {Container} Contenedor actualizado
  */
@@ -694,4 +694,3 @@ export function registerEstudiantesResource(container) {
 
     return container;
 }
-

@@ -1,32 +1,32 @@
 /**
  * Servicio de formateo de respuestas exitosas para HTTP
- * 
+ *
  * Responsabilidades:
  * - Formatear respuestas exitosas con estructura estándar
  * - Manejar diferentes tipos de respuestas (listado con paginación, creación, etc.)
  * - Agregar metadatos comunes (timestamp, requestId)
  * - Mantener consistencia en el formato de respuestas exitosas
- * 
+ *
  * Ubicación: infrastructure/services (capa de infraestructura)
- * 
+ *
  * Este servicio separa la lógica de formateo de los controllers,
  * siguiendo el principio de Single Responsibility (SRP) y manteniendo
  * consistencia con ErrorFormatter.
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo formatea respuestas exitosas
  * - DRY: Evita duplicación de código de formateo entre controllers
- * 
+ *
  * Clean Architecture:
  * - Infrastructure Layer: Servicio para formatear respuestas HTTP
  * - Se inyecta en controllers a través de DI (igual que ErrorFormatter)
- * 
+ *
  * @example
  * // En un controller (inyectado):
  * constructor({ useCase, logger, responseFormatter }) {
  *   this.responseFormatter = responseFormatter;
  * }
- * 
+ *
  * // Uso:
  * const result = await this.useCase.execute(data);
  * return this.responseFormatter.created(res, result[this.dataFieldName], this.resourceName);
@@ -35,7 +35,7 @@ export class ResponseFormatter {
   /**
    * Formatea una respuesta exitosa estándar
    * Método interno usado por otros métodos específicos
-   * 
+   *
    * @private
    * @param {Object} res - Response de Express
    * @param {*} data - Datos a incluir en la respuesta
@@ -75,7 +75,7 @@ export class ResponseFormatter {
 
   /**
    * Formatea una respuesta de listado con paginación
-   * 
+   *
    * @param {Object} res - Response de Express
    * @param {Array} data - Array de datos
    * @param {Object} pagination - Información de paginación
@@ -102,7 +102,7 @@ export class ResponseFormatter {
 
   /**
    * Formatea una respuesta de creación (201 Created)
-   * 
+   *
    * @param {Object} res - Response de Express
    * @param {*} data - Datos del recurso creado
    * @param {string} resourceName - Nombre del recurso (para mensaje)
@@ -120,7 +120,7 @@ export class ResponseFormatter {
 
   /**
    * Formatea una respuesta de obtención por ID (200 OK)
-   * 
+   *
    * @param {Object} res - Response de Express
    * @param {*} data - Datos del recurso obtenido (debe contener el ID)
    * @param {string} resourceName - Nombre del recurso (para mensaje)
@@ -138,7 +138,7 @@ export class ResponseFormatter {
 
   /**
    * Formatea una respuesta de actualización (200 OK)
-   * 
+   *
    * @param {Object} res - Response de Express
    * @param {*} data - Datos del recurso actualizado (debe contener el ID)
    * @param {string} resourceName - Nombre del recurso (para mensaje)
@@ -156,7 +156,7 @@ export class ResponseFormatter {
 
   /**
    * Formatea una respuesta de generación de documento (200 OK)
-   * 
+   *
    * @param {Object} res - Response de Express
    * @param {*} data - Datos del documento generado
    * @param {string} resourceName - Nombre del recurso (para mensaje)
@@ -174,7 +174,7 @@ export class ResponseFormatter {
 
   /**
    * Formatea una respuesta de eliminación (200 OK)
-   * 
+   *
    * @param {Object} res - Response de Express
    * @param {string} resourceName - Nombre del recurso (para mensaje)
    * @param {number|string} resourceId - ID del recurso eliminado
@@ -197,4 +197,3 @@ export class ResponseFormatter {
 export const responseFormatter = new ResponseFormatter();
 
 export default responseFormatter;
-

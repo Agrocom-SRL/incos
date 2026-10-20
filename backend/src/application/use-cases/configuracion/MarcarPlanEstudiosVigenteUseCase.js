@@ -23,4 +23,3 @@ export class MarcarPlanEstudiosVigenteUseCase {
     return { plan_estudio: updated };
   }
 }
-

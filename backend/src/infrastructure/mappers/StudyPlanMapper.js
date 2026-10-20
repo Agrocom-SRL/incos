@@ -3,18 +3,18 @@ import { BaseMapper } from './BaseMapper.js';
 
 /**
  * Mapper: StudyPlanMapper
- * 
+ *
  * Responsabilidad única: Conversión entre Modelo ORM (Sequelize) ↔ Entidad de Dominio (StudyPlan)
- * 
+ *
  * Patrón: Usa BaseMapper para campos comunes, solo maneja campos específicos de StudyPlan
- * 
+ *
  * Ubicación: Infrastructure Layer (es un detalle de implementación específico de Sequelize)
- * 
+ *
  * Principios SOLID aplicados:
  * - Single Responsibility: Solo se encarga de mapear campos específicos de StudyPlan
  * - Open/Closed: Extiende funcionalidad de BaseMapper sin modificarlo
  * - Dependency Inversion: Depende de la entidad de dominio, no de implementaciones concretas
- * 
+ *
  * Clean Architecture:
  * - Domain Layer: StudyPlan (entidad pura)
  * - Infrastructure Layer: BaseMapper (campos comunes) + StudyPlanMapper (campos específicos)
@@ -25,9 +25,9 @@ export class StudyPlanMapper {
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de StudyPlan
    * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
-   * 
+   *
    * Flujo: Base de Datos → ORM Model → Domain Entity
-   * 
+   *
    * @param {Object|null} model - Modelo Sequelize de PlanEstudios
    * @returns {StudyPlan|null} Entidad de dominio StudyPlan
    */
@@ -39,7 +39,7 @@ export class StudyPlanMapper {
     // Cuando se usan attributes limitados, Sequelize almacena los campos en dataValues
     const dataValues = model.dataValues || model;
     const specificFields = {};
-    
+
     // Mapeo: BD (snake_case español) → Dominio (camelCase inglés)
     if ('carreraId' in dataValues && dataValues.carreraId !== undefined) {
       specificFields.careerId = dataValues.carreraId ?? null;
@@ -77,18 +77,18 @@ export class StudyPlanMapper {
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
-    
+
     return new StudyPlan(entityData);
   }
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
-   * 
+   *
    * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
-   * 
+   *
    * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
    * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
-   * 
+   *
    * @param {StudyPlan|Object} entity - Entidad StudyPlan o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
@@ -116,9 +116,9 @@ export class StudyPlanMapper {
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
    * Solo incluye los campos que están definidos (que existen en la entidad)
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de StudyPlan
-   * 
+   *
    * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
-   * 
+   *
    * @param {StudyPlan|Object} entity - Entidad StudyPlan o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
@@ -173,7 +173,7 @@ export class StudyPlanMapper {
 
   /**
    * Convierte un array de modelos Sequelize a array de entidades de dominio
-   * 
+   *
    * @param {Array} models - Array de modelos Sequelize
    * @returns {StudyPlan[]} Array de entidades StudyPlan
    */
@@ -182,4 +182,3 @@ export class StudyPlanMapper {
     return models.map((model) => this.toEntity(model)).filter((entity) => entity !== null);
   }
 }
-

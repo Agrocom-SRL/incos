@@ -23,4 +23,3 @@ export class PrerequisiteMapper {
     return entitiesToPresentation(items);
   }
 }
-

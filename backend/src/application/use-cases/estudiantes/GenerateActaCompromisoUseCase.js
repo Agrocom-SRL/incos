@@ -75,14 +75,14 @@ export class GenerateActaCompromisoUseCase extends BaseDocumentGenerationUseCase
 
     /**
      * Ejecuta el caso de uso de generación de acta de compromiso
-     * 
+     *
      * Orquesta el flujo completo de generación del documento:
      * 1. Validar y obtener estudiante
      * 2. Buscar entregas de documentos
      * 3. Obtener gestión activa
      * 4. Generar PDF
      * 5. Guardar archivo y persistir en BD
-     * 
+     *
      * @param {number} studentId - ID del estudiante
      * @param {Object} options - Opciones adicionales (por defecto vacío)
      * @returns {Promise<{filePath: string, fileName: string, absolutePath: string}>} Rutas del PDF generado
@@ -131,7 +131,7 @@ export class GenerateActaCompromisoUseCase extends BaseDocumentGenerationUseCase
 
     /**
      * Valida y obtiene el estudiante por ID
-     * 
+     *
      * @private
      * @param {number} studentId - ID del estudiante
      * @returns {Promise<Object>} Datos del estudiante
@@ -225,7 +225,7 @@ export class GenerateActaCompromisoUseCase extends BaseDocumentGenerationUseCase
 
     /**
      * Genera el buffer del PDF del acta de compromiso
-     * 
+     *
      * @private
      * @param {number} gestionYear - Año de gestión activa
      * @param {Object} student - Datos del estudiante
@@ -259,10 +259,10 @@ export class GenerateActaCompromisoUseCase extends BaseDocumentGenerationUseCase
 
     /**
      * Persiste el documento: guarda en uploads y registra en BD
-     * 
+     *
      * Prepara la información del archivo (ruta relativa y nombre) y luego
      * guarda el PDF en uploads y registra la información en la base de datos.
-     * 
+     *
      * @private
      * @param {number} studentId - ID del estudiante
      * @param {Buffer} pdfBuffer - Buffer del PDF generado

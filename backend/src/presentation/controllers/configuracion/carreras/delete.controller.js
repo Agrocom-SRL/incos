@@ -10,4 +10,3 @@ export class DeleteCarreraController extends BaseDeleteController {
     });
   }
 }
-

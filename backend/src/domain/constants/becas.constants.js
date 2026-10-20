@@ -1,6 +1,6 @@
 /**
  * Constantes del dominio relacionadas con Becas y Descuentos
- * 
+ *
  * Estas constantes son parte del dominio de negocio y pueden ser usadas
  * por entidades, value objects y servicios de dominio relacionados con becas.
  */
@@ -41,4 +41,3 @@ export const TIPOS_BECA_AUTOMATICA_VALUES = Object.values(TIPOS_BECA_AUTOMATICA)
  * Promedio mínimo para beca automática
  */
 export const PROMEDIO_MINIMO_BECA_AUTOMATICA = 90;
-

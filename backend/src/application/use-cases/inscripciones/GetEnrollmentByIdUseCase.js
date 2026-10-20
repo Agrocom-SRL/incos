@@ -2,18 +2,18 @@
  * Use Case: GetEnrollmentByIdUseCase
  * Módulo: Inscripciones
  * Obtiene una inscripción por ID con todos sus datos relacionados
- * 
+ *
  * Responsabilidades:
  * - Validar que la inscripción exista
  * - Obtener la inscripción principal
  * - Obtener materias inscritas (múltiples)
  * - Obtener datos relacionados (estudiante, gestión, etc.)
  * - Retornar la inscripción con todos sus datos relacionados
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja la obtención completa de inscripciones
  * - Dependency Inversion: Depende de abstracciones (repositorios)
- * 
+ *
  * Clean Architecture:
  * - Application Layer: Orquesta la lógica de negocio
  * - Depende de Repositories (Infrastructure) a través de abstracciones
@@ -99,7 +99,7 @@ export class GetEnrollmentByIdUseCase {
    * Método interno para obtener una inscripción por ID
    * Valida que la inscripción exista y lanza ValidationError si no se encuentra
    * Solo recupera los campos necesarios: id, academicDataId, managementId, enrollmentType
-   * 
+   *
    * @private
    * @param {number} enrollmentId - ID de la inscripción a obtener
    * @returns {Promise<Object>} Inscripción encontrada con solo los campos especificados
@@ -125,7 +125,7 @@ export class GetEnrollmentByIdUseCase {
    * Método interno para obtener datos académicos del estudiante por ID
    * Valida que existan si se proporciona un ID, retorna null si no se proporciona ID (opcional)
    * Solo recupera los campos necesarios: estudianteId, carreraId, estadoRegistro
-   * 
+   *
    * @private
    * @param {number|null|undefined} academicDataId - ID de los datos académicos del estudiante
    * @returns {Promise<Object|null>} Datos académicos encontrados o null si no se proporciona ID
@@ -159,7 +159,7 @@ export class GetEnrollmentByIdUseCase {
    * Método interno para obtener gestión académica por ID
    * Valida que exista si se proporciona un ID, retorna null si no se proporciona ID (opcional)
    * Solo recupera los campos necesarios: nombre, anio
-   * 
+   *
    * @private
    * @param {number|null|undefined} managementId - ID de la gestión académica
    * @returns {Promise<Object|null>} Gestión encontrada o null si no se proporciona ID
@@ -190,7 +190,7 @@ export class GetEnrollmentByIdUseCase {
    * Método interno para obtener estudiante por ID
    * Valida que exista si se proporciona un ID, retorna null si no se proporciona ID (opcional)
    * Solo recupera los campos necesarios: codigoEstudiante, nombres, apellidoPaterno, apellidoMaterno, ci, expedicion
-   * 
+   *
    * @private
    * @param {number|null|undefined} studentId - ID del estudiante
    * @returns {Promise<Object|null>} Estudiante encontrado o null si no se proporciona ID
@@ -221,7 +221,7 @@ export class GetEnrollmentByIdUseCase {
    * Método interno para obtener carrera por ID
    * Valida que exista si se proporciona un ID, retorna null si no se proporciona ID (opcional)
    * Solo recupera los campos necesarios: codigo, nombre
-   * 
+   *
    * @private
    * @param {number|null|undefined} careerId - ID de la carrera
    * @returns {Promise<Object|null>} Carrera encontrada o null si no se proporciona ID
@@ -250,16 +250,16 @@ export class GetEnrollmentByIdUseCase {
 
   /**
    * Ejecuta el caso de uso de obtención de inscripción por ID
-   * 
+   *
    * Sigue el patrón de BaseListUseCase y BaseSearchUseCase:
    * - Logging inicial
    * - Try-catch para manejo de errores
    * - Logging de éxito/error
    * - Conversión a formato de presentación usando mapper
-   * 
+   *
    * NOTA: Desarrollo incremental - Los comentarios representan funcionalidad futura
    * que se implementará por pasos. El método _getEnrollmentById es el paso actual.
-   * 
+   *
    * @param {number} enrollmentId - ID de la inscripción a obtener
    * @returns {Promise<Object>} Inscripción encontrada en formato de presentación
    * @throws {ValidationError} Si la inscripción no existe

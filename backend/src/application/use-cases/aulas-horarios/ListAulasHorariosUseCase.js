@@ -32,4 +32,3 @@ export class ListAulasHorariosUseCase extends BaseListUseCase {
     return out;
   }
 }
-

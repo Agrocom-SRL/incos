@@ -17,7 +17,7 @@ export class PaymentMethod extends BaseEntity {
 
   toPlainObject() {
     const plainObject = super.toPlainObject();
-    
+
     if (this.hasOwnProperty('code')) {
       plainObject.code = this.code;
     }

@@ -728,4 +728,3 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
         return;
     }
 }
-

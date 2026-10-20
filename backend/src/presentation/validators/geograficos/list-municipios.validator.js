@@ -3,10 +3,10 @@ import { listValidator } from '../common/index.js';
 
 /**
  * Validador para listar municipios
- * 
+ *
  * Combina el validador común de listado (page, limit, search)
  * con validaciones específicas para municipios (provinciaId)
- * 
+ *
  * @example
  * router.get('/', listMunicipiosValidator, validateRequest, controller);
  */

@@ -1,21 +1,21 @@
 /**
  * Servicio de formateo de errores para respuestas HTTP
- * 
+ *
  * Responsabilidades:
  * - Formatear errores operacionales (AppError)
  * - Formatear errores de validación
  * - Formatear errores inesperados del sistema
  * - Mantener consistencia en el formato de respuestas de error
- * 
+ *
  * Ubicación: infrastructure/services (capa de infraestructura)
- * 
+ *
  * Este servicio separa la lógica de formateo del middleware errorHandler,
  * siguiendo el principio de Single Responsibility (SRP).
  */
 export class ErrorFormatter {
   /**
    * Formatea un error operacional (AppError) para respuesta HTTP
-   * 
+   *
    * @param {AppError} error - Error operacional
    * @param {Object} req - Request de Express
    * @returns {Object} Respuesta formateada
@@ -38,7 +38,7 @@ export class ErrorFormatter {
 
   /**
    * Formatea un error de validación para respuesta HTTP
-   * 
+   *
    * @param {ValidationError} error - Error de validación (de domain/errors)
    * @param {Object} req - Request de Express
    * @returns {Object} Respuesta formateada
@@ -61,7 +61,7 @@ export class ErrorFormatter {
 
   /**
    * Formatea un error inesperado del sistema para respuesta HTTP
-   * 
+   *
    * @param {Error} error - Error inesperado
    * @param {Object} req - Request de Express
    * @param {boolean} isProduction - Si está en producción
@@ -92,7 +92,7 @@ export class ErrorFormatter {
 
   /**
    * Extrae información de error para logging
-   * 
+   *
    * @param {Error} error - Error a loguear
    * @param {Object} req - Request de Express
    * @returns {Object} Información del error para logging
@@ -135,4 +135,3 @@ export class ErrorFormatter {
 export const errorFormatter = new ErrorFormatter();
 
 export default errorFormatter;
-

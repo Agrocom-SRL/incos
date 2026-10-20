@@ -3,13 +3,13 @@ import { listValidator } from '../common/index.js';
 
 /**
  * Validador para listar paralelos
- * 
+ *
  * Combina el validador común de listado (page, limit, search)
  * con validaciones específicas para paralelos (periodo_id, carrera_id)
- * 
+ *
  * Los parámetros específicos son opcionales, pero si se proporcionan
  * deben ser números enteros válidos.
- * 
+ *
  * @example
  * router.get('/', listParalelosValidator, validateRequest, controller);
  */

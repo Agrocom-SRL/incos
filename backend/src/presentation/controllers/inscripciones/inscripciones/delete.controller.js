@@ -1,22 +1,22 @@
 /**
  * DELETE /api/v1/inscripciones/:id
  * Controller para eliminar una inscripción
- * 
+ *
  * Responsabilidades:
  * - Recibir peticiones HTTP DELETE para eliminar inscripciones
  * - Delegar lógica de negocio a DeleteEnrollmentUseCase
  * - Formatear respuesta JSON estandarizada
- * 
+ *
  * Endpoint:
  * DELETE /api/v1/inscripciones/:id
- * 
+ *
  * Path Parameters:
  * - id: ID de la inscripción a eliminar
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja la comunicación HTTP para eliminar inscripciones
  * - Dependency Inversion: Depende de DeleteEnrollmentUseCase (abstracción), no de implementación concreta
- * 
+ *
  * Clean Architecture:
  * - Presentation Layer: Maneja HTTP request/response
  * - Depende de Application Layer (Use Cases inyectados)

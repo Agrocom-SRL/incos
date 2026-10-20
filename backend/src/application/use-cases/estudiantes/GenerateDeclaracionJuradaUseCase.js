@@ -355,4 +355,3 @@ export class GenerateDeclaracionJuradaUseCase extends GenerateFormularioInscripc
         return result;
     }
 }
-

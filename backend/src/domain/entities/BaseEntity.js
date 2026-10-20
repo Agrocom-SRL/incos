@@ -1,7 +1,7 @@
 /**
  * Entidad Base: BaseEntity
  * Factoriza los atributos comunes de auditoría para todas las entidades
- * 
+ *
  * Atributos comunes:
  * - id: Identificador único
  * - active: Estado activo/inactivo
@@ -103,7 +103,7 @@ export class BaseEntity {
    */
   toPlainObject() {
     const plainObject = {};
-    
+
     // Solo incluir campos que fueron inicializados (existen en this)
     if (this.hasOwnProperty('id')) {
       plainObject.id = this.id;

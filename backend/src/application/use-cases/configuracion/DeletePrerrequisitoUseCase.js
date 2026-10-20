@@ -12,4 +12,3 @@ export class DeletePrerrequisitoUseCase {
     return true;
   }
 }
-

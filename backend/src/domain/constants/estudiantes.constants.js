@@ -1,6 +1,6 @@
 /**
  * Constantes del dominio relacionadas con Estudiantes
- * 
+ *
  * Este archivo consolida todas las constantes relacionadas con estudiantes:
  * - Estados académicos
  * - Estados de registro
@@ -8,7 +8,7 @@
  * - Documentos de estudiantes
  * - Orígenes y nacionalidades
  * - Discapacidades
- * 
+ *
  * Todas las constantes están organizadas por categorías funcionales para facilitar su uso.
  */
 
