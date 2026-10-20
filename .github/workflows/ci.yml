@@ -3,6 +3,7 @@ name: CI
 on:
   pull_request:
     branches: [master, develop, studio]
+    types: [opened, synchronize, reopened, ready_for_review]
   push:
     branches: [master, develop, studio]
 
@@ -36,7 +37,7 @@ jobs:
         run: npm run build
 
   backend:
-    name: Backend (lint + sintaxis)
+    name: Backend (lint + sintaxis + unitarias)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -54,6 +55,9 @@ jobs:
         continue-on-error: true
       - name: Sintaxis de src
         run: find src -name '*.js' -print0 | xargs -0 -n1 node --check
+      # Sin BD: los repositorios van simulados (tests/unit).
+      - name: Pruebas unitarias
+        run: npm run test:unit
 
   studio:
     name: Studio (lint + build)
