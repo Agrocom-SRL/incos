@@ -37,7 +37,10 @@ describe('GetCarreraByIdUseCase', () => {
         fila({ periodo_id: 2, periodo_numero: 2, periodo_nombre: 'Segundo', asignatura_plan_id: 21 }),
         fila({ periodo_id: 1, periodo_numero: 1, periodo_nombre: 'Primero', asignatura_plan_id: 11 }),
         fila({
-          periodo_id: 1, periodo_numero: 1, periodo_nombre: 'Primero', asignatura_plan_id: 12,
+          periodo_id: 1,
+periodo_numero: 1,
+periodo_nombre: 'Primero',
+asignatura_plan_id: 12,
           cantidad_prerrequisitos: '2',
         }),
       ],
