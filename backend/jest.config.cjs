@@ -3,6 +3,8 @@ module.exports = {
   testEnvironment: 'node',
   transform: {},
   setupFiles: ['<rootDir>/tests/setup/env.js'],
+  // Las pruebas de integración hablan con una BD real: margen amplio.
+  testTimeout: 30000,
   testMatch: ['**/tests/**/*.test.js'],
   coveragePathIgnorePatterns: ['/node_modules/'],
   collectCoverageFrom: [

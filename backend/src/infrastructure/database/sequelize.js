@@ -27,6 +27,7 @@ export const sequelize = new Sequelize(
             serverConfig.isDevelopment && getEnvAsBoolean('DB_LOGGING', false)
                 ? (msg) => logger.debug(msg)
                 : false,
+        dialectOptions: databaseConfig.dialectOptions,
         timezone: databaseConfig.timezone,
         pool: databaseConfig.pool,
         define: databaseConfig.define,
