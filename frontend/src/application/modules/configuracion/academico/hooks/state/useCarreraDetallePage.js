@@ -11,7 +11,7 @@ import {
   resolveMenuSidebarKey,
   resolveReturnListPath,
 } from '@application-configuracion/academico/config/academicoNavigation';
-import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
+import { sanitizeDocenteColorHex } from '@docentes/utils/docenteColor';
 
 const initialsFromCarrera = (c) => {
   const src = (c?.codigo || c?.nombre || '?').trim();

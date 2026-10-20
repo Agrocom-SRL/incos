@@ -4,7 +4,7 @@
  */
 
 import { CloseOutlined } from '@ant-design/icons';
-import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
+import { sanitizeDocenteColorHex } from '@docentes/utils/docenteColor';
 
 export const DRAG_MIME = 'application/x-incos-paralelo-bloque';
 

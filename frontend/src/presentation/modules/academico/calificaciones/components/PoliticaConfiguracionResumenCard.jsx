@@ -6,7 +6,6 @@ import { Tag, Typography } from 'antd';
 import { CheckCircleOutlined, CopyOutlined, HistoryOutlined } from '@ant-design/icons';
 import { Button, Card } from '@atoms';
 import { POLITICAS_ASISTENCIA } from '@application-academico/calificaciones/utils/politicasAsistencia.js';
-import { sumaPesos } from '@application-academico/calificaciones/utils/politicaPorcentajeUtils.js';
 
 const { Text, Paragraph } = Typography;
 
@@ -23,29 +22,6 @@ const FilaResumen = ({ label, value, valueStyle, labelStyle }) => (
     </Text>
   </div>
 );
-
-/** Arma props de resumen a partir del objeto política (misma forma que guarda el API). */
-export const buildResumenDesdePolitica = (politica) => {
-  if (!politica) return null;
-  const cuotaTeorico = Number(politica.cuotaTeorico) || 0;
-  const cuotaPractico = Number(politica.cuotaPractico) || 0;
-  const pesosBimestres = politica.pesosBimestres ?? [25, 25, 25, 25];
-  const sumaCuota = politica.sumaCuota ?? cuotaTeorico + cuotaPractico;
-  const sumaBimestres = politica.sumaBimestres ?? sumaPesos(pesosBimestres);
-
-  return {
-    gestionNombre: politica.gestionNombre,
-    configurada: Boolean(politica.configurada),
-    cuotaTeorico,
-    cuotaPractico,
-    pesosBimestres,
-    politicaAsistenciaDefault: politica.politicaAsistenciaDefault ?? {},
-    notaMinimaAprobacion: politica.notaMinimaAprobacion ?? 61,
-    ultimaModificacion: politica.ultimaModificacion ?? null,
-    sumaCuota,
-    sumaBimestres,
-  };
-};
 
 const PoliticaConfiguracionResumenCard = ({
   variant = 'vigente',

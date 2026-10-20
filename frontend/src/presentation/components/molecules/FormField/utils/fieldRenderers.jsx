@@ -15,9 +15,9 @@
  * Uso: Solo dentro del componente FormField
  */
 
-import { Form, Typography, InputNumber, Flex } from 'antd';
-import { useEffect } from 'react';
-import { HexColorPicker } from 'react-colorful';
+import { Form, Typography, InputNumber } from 'antd';
+import FormHexColorPicker from '../components/FormHexColorPicker';
+import RenderDisplay from '../components/RenderDisplay';
 import FormColorPopoverPicker from '../components/FormColorPopoverPicker';
 import FormImageUploadDragger from '../components/FormImageUploadDragger';
 import FormPillSelect from '../components/FormPillSelect';
@@ -38,36 +38,6 @@ import {
 } from '@atoms';
 
 const { Paragraph, Text } = Typography;
-
-/**
- * HexColorPicker (react-colorful): el Form.Item inyecta value/onChange como string #RRGGBB.
- */
-const FormHexColorPicker = ({ value, onChange, disabled, readOnly, field }) => {
-    const d = disabled || readOnly;
-    const safe = typeof value === 'string' && /^#[0-9A-Fa-f]{6}$/i.test(value) ? value : '#1890ff';
-    return (
-        <Flex vertical gap={8} style={{ maxWidth: 280 }}>
-            <div
-                style={{ opacity: d ? 0.55 : 1, pointerEvents: d ? 'none' : 'auto' }}
-                aria-label={field?.ariaLabel || field?.label}
-            >
-                <HexColorPicker
-                    color={safe}
-                    onChange={onChange}
-                    style={{ width: '100%', height: 140, borderRadius: 8 }}
-                />
-            </div>
-            {field?.helperText ? (
-                <Text type="secondary" style={{ fontSize: 13 }}>
-                    {field.helperText}
-                </Text>
-            ) : null}
-            <Text type="secondary" code style={{ fontSize: 12 }}>
-                {safe}
-            </Text>
-        </Flex>
-    );
-};
 
 const renderColor = (field, disabled, readOnly) => {
   if (field.pickerMode === 'popover' || field.pickerMode === 'modal') {
@@ -265,7 +235,7 @@ const renderCheckboxGroup = (field, disabled, readOnly, selectOptions, form) => 
   // Componente wrapper: recibe value/onChange inyectados por Form.Item y prioriza field.value
   // para la visualización, así los checkboxes se marcan en edición aunque el store se actualice después.
   function CheckboxGroupFormAdapter(injectedProps) {
-    const { value: formValue, onChange: formOnChange, ...restInjected } = injectedProps || {};
+    const { value: formValue, onChange: _formOnChange, ...restInjected } = injectedProps || {};
     const rawValue =
       field.value !== undefined && field.value !== null
         ? field.value
@@ -312,49 +282,6 @@ const renderSearch = (field, disabled, readOnly) => {
       allowClear={field.allowClear !== false}
       onSearch={field.onSearch}
       className={field.className}
-    />
-  );
-};
-
-/**
- * Renderer para campo de tipo display (solo lectura, calculado)
- * Muestra un valor calculado que no se envía al backend
- * 
- * Nota: Este renderer debe ser un componente funcional para poder usar hooks
- */
-const RenderDisplay = ({ field, form }) => {
-  // Observar cambios en las dependencias usando Form.useWatch
-  const observaDependencia = Boolean(field.dependencies && field.dependencies.length > 0 && form);
-  const watchedDependency = Form.useWatch(observaDependencia ? field.dependencies[0] : [], form);
-  const watchedValue = observaDependencia ? watchedDependency : null;
-  
-  // Recalcular el valor cuando cambie la dependencia
-  useEffect(() => {
-    if (!form || !field.computeValue || !field.name) {
-      return;
-    }
-    
-    if (watchedValue !== undefined && watchedValue !== null) {
-      try {
-        const computedValue = field.computeValue(form, watchedValue) || '';
-        const currentValue = form.getFieldValue(field.name);
-        
-        if (computedValue && currentValue !== computedValue) {
-          form.setFieldValue(field.name, computedValue);
-        }
-      } catch (error) {
-        console.error('Error calculando valor display:', error);
-      }
-    }
-  }, [watchedValue, field, form]);
-  
-  // El valor viene del Form.Item (se actualiza automáticamente)
-  return (
-    <FieldInput
-      placeholder={field.placeholder}
-      disabled={false} // Hacer editable
-      readOnly={false} // Hacer editable
-      type="text"
     />
   );
 };

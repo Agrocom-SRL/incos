@@ -21,11 +21,6 @@ const isImageFile = (file) => {
 
 const DEFAULT_ACCEPT = 'image/*,.jpg,.jpeg,.png,.webp,.gif,.bmp,.tiff,.tif,.svg,.avif,.heic,.heif';
 
-const fileListFromUploadEvent = (e) => {
-  if (Array.isArray(e)) return e;
-  return e?.fileList;
-};
-
 const enrichFileListWithPreview = (nextList) => {
   if (!Array.isArray(nextList) || nextList.length === 0) {
     return [];
@@ -146,5 +141,4 @@ const FormImageUploadDragger = ({
   );
 };
 
-export { fileListFromUploadEvent };
 export default FormImageUploadDragger;

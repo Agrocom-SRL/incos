@@ -14,9 +14,8 @@ import { usePoliticaInstitucional } from '@application-academico/calificaciones/
 import { CALIFICACIONES_PERMISOS } from '@application-academico/calificaciones/utils/calificacionesPermisos.js';
 import { CALIFICACIONES_PATH } from '@application-academico/calificaciones/utils/calificacionesPaths.js';
 import { sumaPesos } from '@application-academico/calificaciones/utils/politicaPorcentajeUtils.js';
-import PoliticaConfiguracionResumenCard, {
-  buildResumenDesdePolitica,
-} from '../components/PoliticaConfiguracionResumenCard.jsx';
+import PoliticaConfiguracionResumenCard from '../components/PoliticaConfiguracionResumenCard.jsx';
+import { buildResumenDesdePolitica } from '@application-academico/calificaciones/utils/buildResumenDesdePolitica.js';
 import PoliticaPonderacionTeoricoPractico from '../components/PoliticaPonderacionTeoricoPractico.jsx';
 import PoliticaPonderacionBimestres from '../components/PoliticaPonderacionBimestres.jsx';
 import PoliticaAsistenciaPanel from '../components/PoliticaAsistenciaPanel.jsx';

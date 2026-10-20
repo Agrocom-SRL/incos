@@ -2,7 +2,7 @@
  * Título otorgado con indicador de color de carrera.
  */
 
-import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
+import { sanitizeDocenteColorHex } from '@docentes/utils/docenteColor';
 
 const CarreraTituloDotCell = ({ tituloOtorgado, colorHex }) => {
   const swatch = sanitizeDocenteColorHex(colorHex);

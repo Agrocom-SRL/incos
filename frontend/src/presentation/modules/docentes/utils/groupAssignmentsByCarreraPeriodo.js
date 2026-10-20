@@ -2,7 +2,7 @@
  * Agrupa asignaciones docente: carrera → periodo (orden de primera aparición).
  */
 
-import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
+import { sanitizeDocenteColorHex } from '@docentes/utils/docenteColor';
 
 export const assignmentRowKey = (row) =>
   [

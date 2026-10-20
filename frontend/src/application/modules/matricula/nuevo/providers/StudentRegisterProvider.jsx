@@ -26,7 +26,7 @@
  * - Expone datos + lógica vía StudentRegisterContext
  */
 
-import { useMemo, useEffect, useRef, useState, useCallback } from 'react';
+import { useMemo, useEffect, useRef, useCallback } from 'react';
 import {
     useStudentCatalogApi,
     useStudentGeographicApi,
@@ -125,7 +125,7 @@ export const StudentRegisterProvider = ({ children, mode = 'create', studentId =
     // Este hook usa useRegisterStudent o useUpdateStudent según el modo
     // IMPORTANTE: Inicialmente pasamos array vacío, pero useStudentFormHandlers usa un ref interno
     // que se actualizará cuando documentacionProcesada esté disponible
-    const { handleFinish, handleSave, registerForm, getFormValues, formRef, loading, error, validationErrors, registrationResult } = useStudentFormHandlers(showMessage, mode, studentId, []);
+    const { formRef } = useStudentFormHandlers(showMessage, mode, studentId, []);
 
     // Hook compuesto: procesar documentación sin observar valores del formulario
     // NO observa valores en tiempo real - solo procesa con valores por defecto

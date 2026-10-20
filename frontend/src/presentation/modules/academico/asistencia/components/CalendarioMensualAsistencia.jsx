@@ -26,7 +26,7 @@ import {
   celdasDelMes,
   mesesDelAnio,
 } from '@application-institucional/actual/utils/periodosCalendario.js';
-import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
+import { sanitizeDocenteColorHex } from '@docentes/utils/docenteColor';
 import { etiquetaDiaMes } from '@application-academico/asistencia/utils/asistenciaFechas.js';
 
 const partes = (iso) => String(iso).split('-').map(Number);

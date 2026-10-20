@@ -146,7 +146,7 @@ export const estudianteFormMapper = (studentDetail) => {
       // Fallback: intentar obtener desde catálogos si no vienen en el origen
       if (!formData.provinciaId || !formData.departamentoId) {
         if (studentDetail.catalogs) {
-          const { originMunicipalities, originProvinces, originDepartments } = studentDetail.catalogs;
+          const { originMunicipalities, originProvinces } = studentDetail.catalogs;
           
           if (municipioNacimientoId && originMunicipalities) {
             const municipio = originMunicipalities[municipioNacimientoId];

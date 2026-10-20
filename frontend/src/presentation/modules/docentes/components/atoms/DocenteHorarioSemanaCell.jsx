@@ -2,7 +2,7 @@
  * Contenido de una celda día×hora en el calendario semanal (uno o varios bloques).
  */
 
-import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
+import { sanitizeDocenteColorHex } from '@docentes/utils/docenteColor';
 
 const fmtHora = (t) => {
   if (t == null || t === '') return '—';

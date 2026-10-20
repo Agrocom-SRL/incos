@@ -9,7 +9,7 @@ import { Col, Form, Input, Row, Select, Switch, Typography } from 'antd';
 import ListPanelHeader from '@molecules/ListPanelHeader';
 import { FieldDatePicker } from '@atoms';
 import { cfgFormColProps } from '@organisms/CfgFormWorkspace';
-import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
+import { sanitizeDocenteColorHex } from '@docentes/utils/docenteColor';
 import CronogramaActividadSelectorField from '@institucional/actual/components/atoms/CronogramaActividadSelectorField';
 
 const { Paragraph, Text } = Typography;

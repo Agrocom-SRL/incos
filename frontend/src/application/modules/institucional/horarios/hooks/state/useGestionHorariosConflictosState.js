@@ -42,7 +42,6 @@ import {
 } from '@application-institucional/horarios/utils/computeConflictosBloquesLive';
 import {
     resolveParalelosConflictoHorarioResolucion,
-    conflictHorarioIdsForParaleloTab,
     solapeParaleloHorarioKeySet,
 } from '@application-institucional/horarios/utils/resolveParalelosTabsConflicto';
 
@@ -124,7 +123,7 @@ export const useGestionHorariosConflictosState = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [grillaRaw, setGrillaRaw] = useState(null);
-    const [docenteServerSchedules, setDocenteServerSchedules] = useState([]);
+    const [_docenteServerSchedules, setDocenteServerSchedules] = useState([]);
     const [docenteDraftSchedules, setDocenteDraftSchedules] = useState([]);
     const [paraleloStates, setParaleloStates] = useState({});
     const paralelosCargadosRef = useRef(new Set());

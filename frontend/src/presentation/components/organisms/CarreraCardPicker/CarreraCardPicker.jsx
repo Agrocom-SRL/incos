@@ -24,7 +24,7 @@
 
 import { Radio, Spin, Empty, Alert } from 'antd';
 import { buildCarreraImageUrl } from '@application-configuracion/academico/utils/buildCarreraImageUrl';
-import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
+import { sanitizeDocenteColorHex } from '@docentes/utils/docenteColor';
 
 const CarreraCardPicker = ({
   carreras = [],

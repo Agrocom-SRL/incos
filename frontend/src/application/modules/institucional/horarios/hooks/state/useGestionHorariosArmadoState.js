@@ -106,7 +106,7 @@ export const useGestionHorariosArmadoState = (notification) => {
         result: legacyPersistResult,
         loading: persistLegacyLoading,
         error: persistLegacyError,
-        fetch: persistLegacy,
+        fetch: _persistLegacy,
     } = usePersistParaleloScheduleApi();
     const {
         loading: persistBulkLoading,

@@ -1,4 +1,4 @@
-import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
+import { sanitizeDocenteColorHex } from '@docentes/utils/docenteColor';
 
 const hexToRgba = (hex, alpha) => {
   const normalized = hex.replace('#', '');

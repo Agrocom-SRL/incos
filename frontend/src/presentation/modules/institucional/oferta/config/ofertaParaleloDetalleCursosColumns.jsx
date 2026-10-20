@@ -1,7 +1,7 @@
 import { TeamOutlined } from '@ant-design/icons';
 import { Flex, Typography } from 'antd';
 import { ActionButton, StatusPill } from '@atoms';
-import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
+import { sanitizeDocenteColorHex } from '@docentes/utils/docenteColor';
 import {
   ofertaCursoDocentePillClass,
   ofertaCursoEstadoPillClass,

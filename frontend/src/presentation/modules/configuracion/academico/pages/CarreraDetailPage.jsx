@@ -13,7 +13,7 @@ import DetailProfileCard from '@organisms/DetailProfileCard';
 import DetailTabsPanel from '@organisms/DetailTabsPanel';
 import DetailPageShell from '@organisms/DetailPageShell';
 import DetailPageHeaderActions from '@organisms/DetailPageHeaderActions';
-import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
+import { sanitizeDocenteColorHex } from '@docentes/utils/docenteColor';
 import { useAuthContext } from '@application-auth';
 import { useCarreraDetallePage } from '@application-configuracion/academico/hooks';
 import {

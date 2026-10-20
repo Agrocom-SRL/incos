@@ -17,7 +17,7 @@ import { filterAssignmentsGestionVigente } from '../../utils/filterAssignmentsGe
 import { buildDocenteAsignacionesTabla } from '../../utils/buildDocenteAsignacionesTabla.js';
 import { mapDocenteGrillaConflictosFromApi } from '@application-institucional/horarios/mappers/docenteGrillaConflictosMapper';
 import { buildHorarioSlotIndexFromFranjas } from '@application-institucional/horarios/utils/buildHorarioSlotIndex';
-import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
+import { sanitizeDocenteColorHex } from '@docentes/utils/docenteColor';
 
 export function useDocenteAsignacionesState() {
   const { docenteId: idParam } = useParams();

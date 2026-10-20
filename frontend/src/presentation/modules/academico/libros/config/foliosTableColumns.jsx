@@ -15,7 +15,7 @@
 
 import { CarreraDotCell, IdentidadCelda, StatusPill } from '@atoms';
 import { TableActions, TableCell } from '@molecules';
-import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
+import { sanitizeDocenteColorHex } from '@docentes/utils/docenteColor';
 import { LIBROS_PERMISOS } from '@application-academico/libros/utils/librosPermisos';
 import {
   formatFolioEstadoDisplay,

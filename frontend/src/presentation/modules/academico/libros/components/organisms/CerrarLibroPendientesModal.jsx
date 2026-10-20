@@ -19,7 +19,7 @@ import { App, Form, Input, Modal, Typography } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { CarreraDotCell } from '@atoms';
 import { modalWidths } from '@theme/tokens/spacing';
-import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
+import { sanitizeDocenteColorHex } from '@docentes/utils/docenteColor';
 import '../../styles/libros.css';
 
 const { Paragraph, Text } = Typography;

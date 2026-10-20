@@ -105,8 +105,6 @@ export const useMisCursosCalificaciones = () => {
       : `${resumen.totalCursos} cursos activos · ${resumen.totalParalelos} paralelos`
     : '';
 
-  const docenteId = docente?.id ?? docenteIdCoordinacion;
-
   return {
     titulo,
     subtitulo,

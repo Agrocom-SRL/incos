@@ -6,7 +6,7 @@ import { memo, useCallback, useEffect, useMemo } from 'react';
 import { InputNumber, Tooltip } from 'antd';
 import { CalculatorOutlined } from '@ant-design/icons';
 import { useNotaAutosave } from '@application-academico/calificaciones/hooks/useNotaAutosave.js';
-import { useCuadernoAutosaveRegistry } from '@application-academico/calificaciones/context/CuadernoAutosaveContext.jsx';
+import { useCuadernoAutosaveRegistry } from '@application-academico/calificaciones/context/cuadernoAutosaveContexts';
 import { parseNotaInput } from '@application-academico/calificaciones/utils/parseNotaInput.js';
 
 const TOOLTIP_ASISTENCIA = 'Nota calculada automáticamente desde la asistencia del bimestre.';

@@ -47,7 +47,7 @@ import {
   resolveMenuSidebarKey,
   resolveReturnListPath,
 } from '@application-configuracion/academico/config/academicoNavigation';
-import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
+import { sanitizeDocenteColorHex } from '@docentes/utils/docenteColor';
 
 const initialsFromPlan = (plan, carrera) => {
   const src = (carrera?.codigo || plan?.nombrePlan || '?').trim();
