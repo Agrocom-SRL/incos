@@ -45,9 +45,8 @@ export class CarreraRepository extends ICarreraRepository {
     try {
       const response = await apiClient.get(CARRERAS_ENDPOINTS.BY_ID(id));
       const result = handleSuccessResponse(response);
-      if (result.success && result.data?.carrera) {
-        result.data = result.data;
-      } else if (result.success && result.data && !result.data.carrera) {
+      // Si ya viene con la forma { carrera, ... } se deja tal cual.
+      if (result.success && result.data && !result.data.carrera) {
         result.data = { carrera: result.data, periodos: [] };
       }
       return result;

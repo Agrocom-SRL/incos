@@ -324,9 +324,9 @@ const renderSearch = (field, disabled, readOnly) => {
  */
 const RenderDisplay = ({ field, form }) => {
   // Observar cambios en las dependencias usando Form.useWatch
-  const watchedValue = field.dependencies && field.dependencies.length > 0 && form
-    ? Form.useWatch(field.dependencies[0], form)
-    : null;
+  const observaDependencia = Boolean(field.dependencies && field.dependencies.length > 0 && form);
+  const watchedDependency = Form.useWatch(observaDependencia ? field.dependencies[0] : [], form);
+  const watchedValue = observaDependencia ? watchedDependency : null;
   
   // Recalcular el valor cuando cambie la dependencia
   useEffect(() => {

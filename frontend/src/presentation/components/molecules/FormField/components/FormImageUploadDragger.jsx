@@ -63,7 +63,8 @@ const FormImageUploadDragger = ({
   const d = disabled || readOnly;
   const fileList = resolveControlledFileList(fileListProp, value);
   const previewField = field.previewField || 'imagenRuta';
-  const storedPath = form ? Form.useWatch(previewField, form) : null;
+  const watchedPath = Form.useWatch(form ? previewField : [], form);
+  const storedPath = form ? watchedPath : null;
   const hasLocalFile = Boolean(fileList[0]);
   // Por defecto resuelve rutas de Carrera (`uploads/carreras/...`); otros
   // consumidores (p. ej. QR de cuenta, que ya guarda una URL completa) pasan
