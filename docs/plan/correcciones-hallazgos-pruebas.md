@@ -11,12 +11,15 @@ Decisiones del negocio ya tomadas:
 ## Ya corregido (PR #21, #22)
 folioFinal (Abrir/EditarLibro), horasRequeridas (pasantías), ids de ValidarConflicto/UpdateAsignacionHorario, mover bloque entre paralelos, calendario `null` en ListCursosCalificaciones, evaluaciones del cuaderno limitadas a su bimestre y reglas de asistencia en Update.
 
-## Preguntas abiertas (decidir antes de corregir)
-1. Compuertas de bimestre: `Update/Delete/ResetNotas` de evaluación usan "bimestre vigente o reabierto", y `Create/Upsert/Guardar` usan `assertBimestreEditable` (estado institucional). ¿Unificar?
-2. `AddIntegranteProyecto`: ¿se pueden agregar integrantes a un proyecto CANCELADO/APROBADO/REPROBADO?
-3. `RegistrarActaDefensa`: ¿el tribunal debe tener 3 docentes distintos?
-4. Paralelos: ¿hay transiciones de estado válidas fuera de BORRADOR→OFERTADO→PUBLICADO (p. ej. reabrir un CERRADO con permiso especial)?
-5. Estados de `GestionPlan` y `OfertaCurso`: ¿máquina de transiciones o libre?
+## Decisiones y preguntas (actualizado 2026-10-20)
+Respondidas por el dueño del proyecto:
+- **Integrantes de proyecto de grado (pregunta 2):** no se pueden agregar integrantes a un proyecto en estado final (CANCELADO/APROBADO/REPROBADO). → `AddIntegranteProyecto` debe rechazarlo.
+- **Tribunal de defensa (pregunta 3):** los 3 miembros deben ser personas distintas. → `RegistrarActaDefensa._resolverTribunal` debe rechazar duplicados.
+- **Estados de `paralelos_gestion` (pregunta 4):** no existe "cancelado". Un paralelo PUBLICADO solo se puede despublicar o pasar a "no ofertado". Estados reales: BORRADOR → OFERTADO → PUBLICADO → CERRADO. Máquina propuesta (confirmar al implementar): BORRADOR→OFERTADO; OFERTADO→PUBLICADO o →BORRADOR; PUBLICADO→OFERTADO (despublicar) o →BORRADOR (no ofertado); CERRADO es terminal (no se reabre). Con CERRADO no se cambia aula, cupos ni turno.
+- **Estados de `GestionPlan` y `OfertaCurso` (pregunta 5):** el dueño cree que sí tiene máquina de estados, pero no lo recuerda. El código no la tiene hoy (acepta cualquier estado desde cualquiera), mientras que nivelación, folio, proyecto de grado y pasantía sí tienen sus `TRANSICIONES_*` en `domain/constants`. → Seguir ese patrón: definir `TRANSICIONES_*` para ambos y validarlas, empezando por flujos lineales (p. ej. oferta: PROGRAMADA→ACTIVA→CERRADA, y CANCELADA desde PROGRAMADA/ACTIVA) y **confirmar con el dueño antes de bloquear**.
+
+Aún sin responder:
+1. Compuertas de bimestre: `Update/Delete/ResetNotas` de evaluación usan "bimestre vigente o reabierto" y `Create/Upsert/Guardar` usan `assertBimestreEditable` (estado institucional). ¿Unificar?
 6. `docentes.licencia.*` está sembrado pero apagado (no existe `licencias_docentes`): ¿mover a "fuera de alcance"?
 
 ## Bloque 1 — Dinero y recibos (pagos)
@@ -75,7 +78,7 @@ folioFinal (Abrir/EditarLibro), horasRequeridas (pasantías), ids de ValidarConf
 ## Bloque 5 — Titulación y pasantías
 | Prioridad | Archivo | Defecto |
 |---|---|---|
-| Alta | `RegistrarActaDefensaUseCase.js` (`_validarCalificaciones`, ~191) | `calificacionFinal` nulo o `''` ⇒ 0: acta EMITIDA con nota 0 y REPRUEBA sin error. Tribunal con docentes repetidos (ver pregunta 3). |
+| Alta | `RegistrarActaDefensaUseCase.js` (`_validarCalificaciones`, ~191) | `calificacionFinal` nulo o `''` ⇒ 0: acta EMITIDA con nota 0 y REPRUEBA sin error. Tribunal con docentes repetidos (el tribunal debe tener 3 docentes distintos: decidido). |
 | Alta | `AprobarEtapaProyectoUseCase.js` (~115-130) | `nota:'abc'` ⇒ notas en `NaN`; sin rango 0-100. |
 | Media | `CreateProyectoGradoUseCase.js` (~90) | `titulo` ausente ⇒ `"undefined"`; vacío se guarda vacío. |
 | Media | `CreateBitacoraEntradaUseCase.js` (79-101) | `porcentajeAvance:'abc'` pasa la regla monotónica y se guarda; sin tope 0-100. |
