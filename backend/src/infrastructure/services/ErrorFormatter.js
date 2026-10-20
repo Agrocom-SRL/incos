@@ -12,6 +12,8 @@
  * Este servicio separa la lógica de formateo del middleware errorHandler,
  * siguiendo el principio de Single Responsibility (SRP).
  */
+import { redactSensitive } from '../utils/redactSensitive.js';
+
 export class ErrorFormatter {
   /**
    * Formatea un error operacional (AppError) para respuesta HTTP
@@ -109,7 +111,7 @@ export class ErrorFormatter {
       'content-type': req.headers['content-type'],
       authorization: req.headers.authorization ? 'Present' : 'Missing',
       userId: req.user?.id,
-      body: req.body,
+      body: redactSensitive(req.body),
       isOperational: error.isOperational,
       statusCode: error.statusCode,
       code: error.code,
