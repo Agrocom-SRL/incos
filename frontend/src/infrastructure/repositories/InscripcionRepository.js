@@ -264,19 +264,15 @@ export class InscripcionRepository extends IInscripcionRepository {
    * @param {boolean} filtros.incluirInactivos - Incluir registros inactivos en el conteo
    * @returns {Promise<{success: boolean, data?: number, error?: string}>}
    */
-  async contar(filtros = {}) {
-    try {
-      // TODO: Cuando el backend implemente GET /inscripciones/contar, usar:
-      // const response = await apiClient.get(INSCRIPCIONES_ENDPOINTS.BASE + '/contar', { params: filtros });
-      
-      // Por ahora, retornar error indicando que no está disponible
-      return {
-        success: false,
-        error: 'El endpoint de conteo aún no está implementado en el backend',
-      };
-    } catch (error) {
-      return handleErrorResponse(error, 'Error al contar inscripciones');
-    }
+  async contar(_filtros = {}) {
+    // TODO: Cuando el backend implemente GET /inscripciones/contar, usar:
+    // const response = await apiClient.get(INSCRIPCIONES_ENDPOINTS.BASE + '/contar', { params: filtros });
+
+    // Por ahora, retornar error indicando que no está disponible
+    return {
+      success: false,
+      error: 'El endpoint de conteo aún no está implementado en el backend',
+    };
   }
 
   /**

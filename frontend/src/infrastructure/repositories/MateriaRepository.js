@@ -45,9 +45,8 @@ export class MateriaRepository extends IMateriaRepository {
     try {
       const response = await apiClient.get(MATERIAS_ENDPOINTS.BY_ID(id));
       const result = handleSuccessResponse(response);
-      if (result.success && result.data?.materia) {
-        result.data = result.data;
-      } else if (result.success && result.data && !result.data.materia) {
+      // Si ya viene con la forma { materia, ... } se deja tal cual.
+      if (result.success && result.data && !result.data.materia) {
         result.data = { materia: result.data, usos: [] };
       }
       return result;
