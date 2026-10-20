@@ -58,6 +58,54 @@ jobs:
       - name: Pruebas unitarias
         run: npm run test:unit
 
+  integracion:
+    name: Sistema (integración con MariaDB)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      matrix:
+        # Única fuente de la versión del servidor de BD del job.
+        # Alinear con el servidor (versión de MariaDB/MySQL que corre en producción).
+        mariadb: ['10.11']
+    # BD efímera solo de este job: se crea vacía, se carga con los SQL del repo + el seed
+    # de pruebas (backend/database/04-test-seeds) y se destruye al terminar. Sin datos reales;
+    # las claves son literales de prueba, no secretos.
+    services:
+      mariadb:
+        image: mariadb:${{ matrix.mariadb }}
+        env:
+          MARIADB_ROOT_PASSWORD: ci-solo-pruebas
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: ci-solo-pruebas
+      DB_NAME: incos_ci_test
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - name: Cliente de BD
+        run: command -v mysql || command -v mariadb || (sudo apt-get update && sudo apt-get install -y mariadb-client)
+      - name: Cargar BD de pruebas (esquema + seeders + vistas + seed de pruebas)
+        run: bash scripts/ci-cargar-bd.sh
+      - name: Pruebas de integración
+        run: npm run test:integration
+
   studio:
     name: Studio (lint + build)
     runs-on: ubuntu-24.04
@@ -95,7 +143,7 @@ jobs:
   automerge:
     name: Auto-merge a develop
     runs-on: ubuntu-24.04
-    needs: [frontend, backend, studio]
+    needs: [frontend, backend, integracion, studio]
     # Los jobs omitidos (sin carpeta) cuentan como éxito; un fallo o cancelación lo impide.
     if: >-
       ${{ !cancelled() &&
