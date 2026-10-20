@@ -62,6 +62,10 @@ export class ResetNotasEvaluacionCuadernoUseCase {
     if (!existente) {
       throw new NotFoundError('Evaluación');
     }
+    const periodoId = await this.cuadernoRepository.obtenerPeriodoAcademicoId(gestionId, bimestreNum);
+    if (!periodoId || Number(existente.periodo_academico_id) !== Number(periodoId)) {
+      throw new NotFoundError('Evaluación');
+    }
     if (existente.notas_cerradas && !reabierto) {
       throw new ForbiddenError('Las notas de esta evaluación están cerradas.');
     }

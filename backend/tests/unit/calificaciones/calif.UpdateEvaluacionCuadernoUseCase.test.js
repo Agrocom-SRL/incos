@@ -16,6 +16,7 @@ describe('UpdateEvaluacionCuadernoUseCase', () => {
         obtenerContextoVigente: jest.fn().mockResolvedValue({ gestion_id: 3, bimestre_vigente: 2 }),
       },
       cuadernoRepository: {
+        obtenerPeriodoAcademicoId: jest.fn().mockResolvedValue(11),
         obtenerEvaluacionDeAsignacion: jest.fn().mockResolvedValue({
           id: 40,
           componente: 'TEORICO',
@@ -173,5 +174,37 @@ describe('UpdateEvaluacionCuadernoUseCase', () => {
 
     deps.subjectEnrollmentBimesterRepository.contarBimestreReabiertoCurso.mockResolvedValue(1);
     await expect(useCase.execute(entrada({ nombre: 'X' }))).resolves.toMatchObject({ nombre: 'X' });
+  });
+
+  it('no opera sobre una evaluación de otro bimestre', async () => {
+    const { useCase, deps } = crear();
+    deps.cuadernoRepository.obtenerPeriodoAcademicoId.mockResolvedValue(12);
+    await expect(useCase.execute(entrada({ nombre: 'X' }))).rejects.toThrow(/Evaluación/);
+  });
+
+  describe('asistencia', () => {
+    const tipoAsistencia = { id: 9, code: 'ASISTENCIA' };
+
+    it('al pasar a asistencia fuerza PRACTICO', async () => {
+      const { useCase, deps } = crear();
+      deps.evaluationTypeRepository.findById.mockResolvedValue(tipoAsistencia);
+      deps.cuadernoRepository.listarColumnasAsistenciaBimestre = jest.fn().mockResolvedValue([]);
+      await useCase.execute(entrada({ tipoEvaluacionId: 9 }));
+      expect(deps.bimesterEvaluationRepository.update.mock.calls[0][1]).toMatchObject({ component: 'PRACTICO' });
+    });
+
+    it('rechaza una segunda columna de asistencia en el bimestre', async () => {
+      const { useCase, deps } = crear();
+      deps.evaluationTypeRepository.findById.mockResolvedValue(tipoAsistencia);
+      deps.cuadernoRepository.listarColumnasAsistenciaBimestre = jest.fn().mockResolvedValue([{ evaluacionId: 99 }]);
+      await expect(useCase.execute(entrada({ tipoEvaluacionId: 9 }))).rejects.toThrow(/Solo se permite una/);
+      expect(deps.bimesterEvaluationRepository.update).not.toHaveBeenCalled();
+    });
+
+    it('rechaza cambiar una asistencia a componente teórico', async () => {
+      const { useCase, deps } = crear();
+      deps.evaluationTypeRepository.findById.mockResolvedValue(tipoAsistencia);
+      await expect(useCase.execute(entrada({ componente: 'TEORICO' }))).rejects.toThrow(/práctico/);
+    });
   });
 });
