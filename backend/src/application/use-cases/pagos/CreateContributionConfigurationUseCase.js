@@ -69,7 +69,7 @@ export class CreateContributionConfigurationUseCase {
   }
 
   async _getCurrentManagement() {
-    const management = await this.managementRepository.findBy({ vigente: true, activo: true });
+    const management = await this.managementRepository.findBy({ vigente: true });
     if (!management) {
       throw new ValidationError('No hay una gestión vigente configurada en el sistema');
     }
