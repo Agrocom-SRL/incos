@@ -17,13 +17,13 @@ concurrency:
 jobs:
   frontend:
     name: Frontend (lint + build)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -36,13 +36,13 @@ jobs:
 
   backend:
     name: Backend (lint + sintaxis + unitarias)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: backend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -58,12 +58,12 @@ jobs:
 
   studio:
     name: Studio (lint + build)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: studio
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # `studio/` solo existe en la rama design; en las demás el job termina en verde sin hacer nada.
       - name: Detectar studio
         id: detectar
@@ -71,7 +71,7 @@ jobs:
         run: |
           if [ -f studio/package.json ]; then echo "existe=true" >> "$GITHUB_OUTPUT"; fi
       - if: steps.detectar.outputs.existe == 'true'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -92,7 +92,7 @@ jobs:
   # no borradores, y del autor autorizado. No ejecuta código del PR.
   automerge:
     name: Auto-merge a develop
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [frontend, backend, studio]
     # Los jobs omitidos (sin carpeta) cuentan como éxito; un fallo o cancelación lo impide.
     if: >-
