@@ -97,6 +97,20 @@ folioFinal (Abrir/EditarLibro), horasRequeridas (pasantías), ids de ValidarConf
 | Baja | `DeleteAsignaturaPlan/Periodo/Prerrequisito` | Sin log y sin comprobar referencias (dependen de FK). |
 | Baja | `GetTeacherDetail`, `UpdateTeacher`, `Get/UpdateFichaSeguimiento`, `CreateFichaSeguimiento` | `id` sin validar; `estudiantesAsistentes:'abc'` pasa la coherencia. |
 
+## Bloque 7 — Estudiantes, becas e inscripciones
+| Prioridad | Archivo | Defecto |
+|---|---|---|
+| Alta | `UpdateEnrollmentUseCase.js` (`_replacePriorEnrollmentHistory`) | Borra todo el historial previo y luego valida cada fila (`parsePriorHistoryItem`) sin transacción: con una fila inválida se pierde el historial y se lanza `ValidationError`. Validar todo antes de borrar o usar transacción. |
+| Alta | `DeleteStudentUseCase.js` | Borrado en cascada sin transacción; borra pagos, cuotas y becas sin comprobar cuotas ya cobradas; si falla el delete del estudiante, los hijos ya se perdieron. |
+| Alta | `GenerateActaCompromisoUseCase.js:247` | `student.codigoEstudiante` sobre la entidad de dominio (`studentCode`): llega `undefined` al PDF. (`GenerateDeclaracionJurada` está bien: usa el estudiante normalizado.) |
+| Media | `CreateBecaDescuentoUseCase`, `UpdateBecaDescuentoUseCase` | `porcentaje` sin validar (`NaN`, `-5`, `150`); en `CreateStudentScholarship` produce descuento `NaN` o mayor que el monto base. |
+| Media | `GetEnrollmentByIdUseCase.js` (`_get*ById`) | Lanza `ValidationError` (400) en vez de `NotFoundError` (404) cuando no existe. |
+| Media | `UpdateEnrollmentUseCase.js` (`executePriorHistoryOnly` y rama `priorHistory`) | `academicDataId` huérfano ⇒ `TypeError` (500) en vez de `NotFoundError`. |
+| Media | `CreateStudentScholarshipUseCase.js` | Si el tipo de beca no existe al actualizar el aporte, crea la asignación igual y solo avisa (la prueba lo fija hoy; confirmar si es lo deseado). |
+| Baja | `GetStudentScholarshipByIdUseCase.js` | `a || b` devuelve `undefined` en vez de `false`/`null` (`documentsComplete`, fechas de entrega). |
+| Baja | `GetStudentScholarshipsByStudentIdUseCase.js` | `percentage || null` convierte 0% en `null`; igual `managementYear` 0. |
+| Baja | `GetHistorialAcademicoUseCase.js` | `parseInt('5abc')` ⇒ 5; `1.5` ⇒ 1. |
+
 ## Patrón común (atacar con un helper)
 Casi todo es el mismo fallo: `Number('abc')` = `NaN`, que es *falsy* o no entra en comparaciones. Propuesta: helper de validación compartido en `application/utils/` (ids enteros positivos, números en rango, fechas ISO reales —rechazando `2026-02-31`—, booleanos estrictos, paginación acotada) y que lancen `ValidationError`. Después, repasar los use cases listados arriba. Cada uso lleva su prueba.
 
@@ -104,4 +118,5 @@ Casi todo es el mismo fallo: `Number('abc')` = `NaN`, que es *falsy* o no entra 
 1. Dinero (Bloque 1) y seguridad (Bloque 2).
 2. Cadena de negocio y estados (Bloque 3) y notas/actas (Bloque 5, alta).
 3. Helper común + el resto de validaciones numéricas y de fecha (Bloques 4 a 6).
-4. Resolver las preguntas abiertas y, si procede, convertirlas en reglas.
+4. Bloque 7 (historial de inscripción y borrado de estudiante, ambos sin transacción) justo después de dinero y seguridad.
+5. Resolver las preguntas abiertas y, si procede, convertirlas en reglas.
