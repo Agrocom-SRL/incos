@@ -135,6 +135,7 @@ describe('validatePasantiaPayload', () => {
     const base = { estudianteId: 1, tipo: 'PASANTIA' };
     expect(() => validatePasantiaPayload({ ...base, horasRequeridas: 300 })).not.toThrow();
     expect(() => validatePasantiaPayload({ ...base, horasRequeridas: '360' })).not.toThrow();
+    expect(() => validatePasantiaPayload({ ...base, horasRequeridas: 'abc' })).toThrow(ValidationError);
     expect(() => validatePasantiaPayload({ ...base, horasRequeridas: 299.9 })).toThrow(ValidationError);
     expect(() => validatePasantiaPayload({ ...base, horasRequeridas: 360.1 })).toThrow(ValidationError);
   });

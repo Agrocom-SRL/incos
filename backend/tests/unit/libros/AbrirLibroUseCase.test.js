@@ -61,6 +61,14 @@ describe('AbrirLibroUseCase', () => {
     });
   });
 
+  it.each(['abc', NaN, 5])('rechaza folioFinal inválido o menor al inicial (%p)', async (folioFinal) => {
+    const { useCase, deps } = crear();
+    await expect(useCase.execute({
+      usuarioId: 1, body: { gestionId: 2, numeroLibro: 1, folioInicial: 10, folioFinal },
+    })).rejects.toThrow(ValidationError);
+    expect(deps.libroRegistroRepository.create).not.toHaveBeenCalled();
+  });
+
   it.each([undefined, 0, -1, 'abc'])('rechaza gestión inválida (%p)', async (gestionId) => {
     const { useCase, deps } = crear();
     await expect(useCase.execute({ usuarioId: 1, body: { gestionId, numeroLibro: 1 } }))

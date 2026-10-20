@@ -64,6 +64,12 @@ describe('EditarLibroUseCase', () => {
       expect(res.cierre).toBeUndefined();
     });
 
+    it('rechaza un folioFinal no numérico sin llegar a update', async () => {
+      const { useCase, deps } = crear();
+      await expect(ejecutar(useCase, { folioFinal: 'abc' })).rejects.toThrow(ValidationError);
+      expect(deps.libroRegistroRepository.update).not.toHaveBeenCalled();
+    });
+
     it('permite limpiar folioFinal, fecha y observaciones con null', async () => {
       const { useCase, deps } = crear();
       await ejecutar(useCase, { folioFinal: null, fechaApertura: null, observaciones: null });

@@ -57,8 +57,8 @@ export class AbrirLibroUseCase {
     }
 
     const folioFinal = body.folioFinal != null ? Number(body.folioFinal) : null;
-    if (folioFinal != null && folioFinal < folioInicial) {
-      throw new ValidationError('El folio final no puede ser menor al folio inicial');
+    if (folioFinal != null && (!Number.isFinite(folioFinal) || folioFinal < folioInicial)) {
+      throw new ValidationError('El folio final debe ser un número no menor al folio inicial');
     }
 
     const codigoRegistro = body.codigoRegistro
