@@ -43,6 +43,24 @@ describe('UpdateAsignacionHorarioUseCase', () => {
     });
   });
 
+  it.each([{ horario_id: 'abc' }, { asignacion_docente_id: 'abc' }, { orden_secuencia: 'abc' }])(
+    'rechaza valores no numéricos (%j)',
+    async (body) => {
+      const { useCase, deps } = crear();
+      await expect(useCase.execute(5, body)).rejects.toThrow(ValidationError);
+      expect(deps.asignacionHorarioRepository.update).not.toHaveBeenCalled();
+    }
+  );
+
+  it('rechaza mover el bloque a una asignación de otro paralelo', async () => {
+    const { useCase, deps } = crear();
+    deps.teacherAssignmentRepository.findEnrichedById
+      .mockResolvedValueOnce({ vigente: true, paralelo_gestion_id: 22 })
+      .mockResolvedValueOnce({ vigente: true, paralelo_gestion_id: 11 });
+    await expect(useCase.execute(5, { asignacion_docente_id: 8 })).rejects.toThrow(ValidationError);
+    expect(deps.asignacionHorarioRepository.update).not.toHaveBeenCalled();
+  });
+
   it('conserva valores existentes si el body no los trae y no consulta el horario', async () => {
     const { useCase, deps } = crear();
     await useCase.execute(5, {});

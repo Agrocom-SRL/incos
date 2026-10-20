@@ -40,7 +40,7 @@ export function validatePasantiaPayload(data, { partial = false, tipoActual = nu
 
   if (data.horasRequeridas != null) {
     const horas = Number(data.horasRequeridas);
-    if (horas < HORAS_PASANTIA_MIN || horas > HORAS_PASANTIA_MAX) {
+    if (!Number.isFinite(horas) || horas < HORAS_PASANTIA_MIN || horas > HORAS_PASANTIA_MAX) {
       throw new ValidationError(
         `horasRequeridas debe estar entre ${HORAS_PASANTIA_MIN} y ${HORAS_PASANTIA_MAX}`
       );

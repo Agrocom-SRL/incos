@@ -55,6 +55,13 @@ describe('ListCursosCalificacionesUseCase', () => {
     return { deps, useCase: new ListCursosCalificacionesUseCase(deps) };
   };
 
+  it('no falla si el calendario de bimestres viene null', async () => {
+    const { useCase, deps } = crear();
+    deps.calificacionContextoRepository.obtenerPeriodosBimestresGestion.mockResolvedValue(null);
+    const result = await useCase.execute({ usuarioId: 1 });
+    expect(result.bimestresCalendario).toEqual([]);
+  });
+
   it('lista los cursos del docente de la sesión con bimestres y progreso', async () => {
     const { useCase, deps } = crear();
     const result = await useCase.execute({ usuarioId: 1 });

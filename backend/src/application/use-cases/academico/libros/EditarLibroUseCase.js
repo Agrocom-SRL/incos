@@ -91,8 +91,8 @@ export class EditarLibroUseCase {
 
     if (body.folioFinal !== undefined) {
       const folioFinal = body.folioFinal != null ? Number(body.folioFinal) : null;
-      if (folioFinal != null && folioFinal < (libro.folioInicial ?? 1)) {
-        throw new ValidationError('El folio final no puede ser menor al folio inicial');
+      if (folioFinal != null && (!Number.isFinite(folioFinal) || folioFinal < (libro.folioInicial ?? 1))) {
+        throw new ValidationError('El folio final debe ser un número no menor al folio inicial');
       }
       cambios.folioFinal = folioFinal;
     }

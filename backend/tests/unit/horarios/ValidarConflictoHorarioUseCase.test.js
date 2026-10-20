@@ -1,4 +1,5 @@
 import { describe, it, expect, jest } from '@jest/globals';
+import { ValidationError } from '../../../src/domain/errors/index.js';
 import { ValidarConflictoHorarioUseCase } from '../../../src/application/use-cases/horarios/ValidarConflictoHorarioUseCase.js';
 
 describe('ValidarConflictoHorarioUseCase', () => {
@@ -36,6 +37,15 @@ describe('ValidarConflictoHorarioUseCase', () => {
 
     expect(horarioConflictosService.validarPropuesta.mock.calls[0][0].excludeAsignacionHorarioId).toBe(7);
   });
+
+  it.each([{}, { asignacion_docente_id: 1, horario_id: 'x' }, { asignacion_docente_id: 'a', horario_id: 2 }])(
+    'rechaza ids inválidos sin consultar el servicio (%j)',
+    async (body) => {
+      const { useCase, horarioConflictosService } = crear();
+      await expect(useCase.execute(body)).rejects.toThrow(ValidationError);
+      expect(horarioConflictosService.validarPropuesta).not.toHaveBeenCalled();
+    }
+  );
 
   it('devuelve tal cual los conflictos de docente, aula y solape', async () => {
     const respuesta = {
