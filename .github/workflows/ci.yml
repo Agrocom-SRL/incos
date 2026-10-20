@@ -105,6 +105,11 @@ jobs:
         run: bash scripts/ci-cargar-bd.sh
       - name: Pruebas de integración
         run: npm run test:integration
+      # Diagnóstico solo si falla: versión y collations del servidor y de las columnas de las vistas.
+      - name: Diagnóstico de collations
+        if: failure()
+        run: |
+          mysql --host=127.0.0.1 --user=root --password=ci-solo-pruebas -e "SELECT VERSION(); SHOW VARIABLES LIKE 'collation%'; SHOW VARIABLES LIKE 'character_set%'; SELECT table_name, column_name, collation_name FROM information_schema.columns WHERE table_schema='incos_ci_test' AND table_name='vista_catalogos_finanzas_usos';" || true
 
   studio:
     name: Studio (lint + build)

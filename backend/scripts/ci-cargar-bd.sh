@@ -41,7 +41,9 @@ fi
 
 RAIZ="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/database"
 
-ARGS=(--user="$DB_USER" --default-character-set=utf8mb4)
+# La sesión usa la misma collation que database/00-config/database-config.sql; sin ella MariaDB
+# crea los literales de las vistas con utf8mb4_general_ci y luego no se mezclan con unicode_ci.
+ARGS=(--user="$DB_USER" --default-character-set=utf8mb4 --init-command="SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci")
 if [[ -n "${DB_SOCKET:-}" ]]; then
   ARGS+=(--socket="$DB_SOCKET")
 else
@@ -116,7 +118,7 @@ cargar_dir 01-schemas
 # Seeders con sql_mode no estricto: 22-seed-becas_descuentos.sql inserta tipo_automatica='PROMEDIO_80',
 # valor que no existe en el ENUM del esquema (11-estudiantes-parte2.sql). En modo estricto aborta; aquí
 # se trunca. Es una inconsistencia real del repo (reportada), no de la prueba.
-cargar_dir 02-seeders --init-command="SET SESSION sql_mode=REPLACE(@@sql_mode,'STRICT_TRANS_TABLES','')"
+cargar_dir 02-seeders --init-command="SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci; SET SESSION sql_mode=REPLACE(@@sql_mode,'STRICT_TRANS_TABLES','')"
 cargar_vistas
 cargar_dir 04-test-seeds
 
