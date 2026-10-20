@@ -42,6 +42,14 @@ export default defineConfig([
     },
   },
   {
+    // Pruebas (Vitest sin globals: se importa de 'vitest') y setup de pruebas.
+    files: ['**/*.test.{js,jsx}', 'src/test/**/*.{js,jsx}'],
+    languageOptions: {
+      globals: { ...globals.browser, ...globals.node },
+    },
+    rules: { 'react-refresh/only-export-components': 'off' },
+  },
+  {
     // Los routes.jsx definen wrappers locales y exportan el array de rutas: no son
     // módulos de componentes, Fast Refresh no aplica.
     files: ['**/routes.jsx'],

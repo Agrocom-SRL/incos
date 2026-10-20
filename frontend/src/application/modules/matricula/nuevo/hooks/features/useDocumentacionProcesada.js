@@ -26,15 +26,28 @@ export const useDocumentacionProcesada = (documentacion = [], formRef) => {
 
   const documentacionProcesadaResult = useDocumentacionDinamica(documentacion, formValues);
 
-  // useMemo mantiene la referencia mientras el resultado procesado no cambie
+  const {
+    documentacion: docs,
+    documentosRequeridos,
+    documentosOpcionales,
+    cantidadDocumentos,
+    cantidadRequeridos,
+    cantidadOpcionales,
+  } = documentacionProcesadaResult;
+
+  // useDocumentacionDinamica devuelve objetos/arrays nuevos en cada render: se estabiliza por
+  // valor (cantidades + ids de documentos) para no recrear el contexto del provider.
+  const docIdsKey = docs?.map((d) => d.id).sort().join(',') || '';
+
   return useMemo(() => ({
-    documentacion: documentacionProcesadaResult.documentacion,
-    documentosRequeridos: documentacionProcesadaResult.documentosRequeridos,
-    documentosOpcionales: documentacionProcesadaResult.documentosOpcionales,
-    cantidadDocumentos: documentacionProcesadaResult.cantidadDocumentos,
-    cantidadRequeridos: documentacionProcesadaResult.cantidadRequeridos,
-    cantidadOpcionales: documentacionProcesadaResult.cantidadOpcionales,
-  }), [documentacionProcesadaResult]);
+    documentacion: docs,
+    documentosRequeridos,
+    documentosOpcionales,
+    cantidadDocumentos,
+    cantidadRequeridos,
+    cantidadOpcionales,
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- estabiliza por valor: los arrays cambian de referencia en cada render
+  }), [docIdsKey, cantidadDocumentos, cantidadRequeridos, cantidadOpcionales]);
 };
 
 /**

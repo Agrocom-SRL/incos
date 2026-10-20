@@ -106,6 +106,15 @@ export default defineConfig({
         },
     },
 
+    // Vitest: reutiliza los alias de arriba. Sin globals: se importa de 'vitest'.
+    test: {
+        environment: 'jsdom',
+        globals: false,
+        setupFiles: ['./src/test/setup.js'],
+        include: ['src/**/*.test.{js,jsx}'],
+        css: false,
+    },
+
     server: {
         // host: true escucha en 0.0.0.0 → accesible por la IP de la LAN (router),
         // no solo por localhost. Vite imprime la URL "Network: http://<ip>:5173/".
