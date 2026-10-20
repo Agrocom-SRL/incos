@@ -30,7 +30,7 @@ import { Form } from 'antd';
 import { useFormField } from './hooks/useFormField';
 import { useFieldRenderer } from './hooks/useFieldRenderer';
 import { labelCol, wrapperCol } from './utils/formLayout';
-import { fileListFromUploadEvent } from './components/FormImageUploadDragger';
+import { fileListFromUploadEvent } from './utils/fileListFromUploadEvent';
 import { FieldInput } from '@atoms';
 
 const FormField = ({

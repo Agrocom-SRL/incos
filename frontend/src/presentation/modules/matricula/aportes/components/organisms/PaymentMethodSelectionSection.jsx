@@ -39,7 +39,7 @@ const PaymentMethodSelectionSection = ({
   metodosPagoData,
   onSelectMetodoPago,
   form,
-  onFinish, // eslint-disable-line no-unused-vars -- contrato histórico del padre; el submit va por form.submit()
+  onFinish,
   bare = false
 }) => {
   const { token } = theme.useToken();

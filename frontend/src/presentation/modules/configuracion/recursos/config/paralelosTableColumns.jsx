@@ -10,7 +10,7 @@ import {
   paraleloDetallePath,
   paraleloEditarPath,
 } from '@application-configuracion/recursos/config/paths';
-import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
+import { sanitizeDocenteColorHex } from '@docentes/utils/docenteColor';
 import IdentidadCelda from '@atoms/IdentidadCelda';
 import { TableActions } from '@molecules';
 import { createCatalogoEstadoColumn } from '@presentation/utils/tableColumns/createSimpleCatalogTableColumns';

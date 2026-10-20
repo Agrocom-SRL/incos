@@ -3,7 +3,7 @@
  */
 
 import { CloudOutlined, LoadingOutlined } from '@ant-design/icons';
-import { useCuadernoFooterState } from '@application-academico/calificaciones/context/CuadernoAutosaveContext.jsx';
+import { useCuadernoFooterState } from '@application-academico/calificaciones/context/cuadernoAutosaveContexts';
 
 const CuadernoFooter = () => {
   const footerState = useCuadernoFooterState();

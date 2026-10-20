@@ -21,7 +21,7 @@ import DetailProfileCard from '@organisms/DetailProfileCard';
 import DetailPageShell from '@organisms/DetailPageShell';
 import DetailPageHeaderActions from '@organisms/DetailPageHeaderActions';
 import { ActionButton } from '@atoms';
-import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
+import { sanitizeDocenteColorHex } from '@docentes/utils/docenteColor';
 import { usePlanDetallePage } from '@application-configuracion/academico/hooks';
 import { PLAN_ESTUDIO_PERMISO } from '@application-configuracion/academico/config/planEstudioPermisos';
 import {

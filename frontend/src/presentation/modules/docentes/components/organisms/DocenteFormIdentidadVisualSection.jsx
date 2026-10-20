@@ -6,7 +6,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Button, Flex, Input, Tooltip, Typography, message } from 'antd';
 import { BgColorsOutlined } from '@ant-design/icons';
 import { Card } from '@atoms';
-import DocenteColorBar, { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
+import DocenteColorBar from '@docentes/components/atoms/DocenteColorBar';
+import { sanitizeDocenteColorHex } from '@docentes/utils/docenteColor';
 import { useDocenteColorApi } from '@application-docentes/hooks/api/useDocenteColorApi';
 import '@docentes/styles/docente-color-picker.css';
 

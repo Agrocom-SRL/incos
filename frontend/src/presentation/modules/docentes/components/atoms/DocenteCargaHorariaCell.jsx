@@ -4,7 +4,7 @@
 
 import { CalendarOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { Typography } from 'antd';
-import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
+import { sanitizeDocenteColorHex } from '@docentes/utils/docenteColor';
 
 const { Text } = Typography;
 

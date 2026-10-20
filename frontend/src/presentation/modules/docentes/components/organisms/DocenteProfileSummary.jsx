@@ -4,7 +4,7 @@
 
 import { Tooltip } from 'antd';
 import { EditOutlined, SolutionOutlined } from '@ant-design/icons';
-import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
+import { sanitizeDocenteColorHex } from '@docentes/utils/docenteColor';
 
 const laborPillClass = (estado) => {
   const u = String(estado || '').toUpperCase();

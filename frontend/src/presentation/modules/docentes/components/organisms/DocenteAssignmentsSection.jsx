@@ -7,7 +7,7 @@ import { ApartmentOutlined, BookOutlined } from '@ant-design/icons';
 import { ActionButton } from '@atoms';
 import DetailInfoCard from '@docentes/components/molecules/DetailInfoCard';
 import DocenteAssignmentCard from '@docentes/components/molecules/DocenteAssignmentCard';
-import { docenteCarreraTitleStyles } from '@docentes/components/atoms/DocenteColorBar';
+import { docenteCarreraTitleStyles } from '@docentes/utils/docenteColor';
 import {
   assignmentRowKey,
   groupAssignmentsByCarreraPeriodo,

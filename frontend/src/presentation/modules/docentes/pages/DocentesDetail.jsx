@@ -21,7 +21,7 @@ import { useAuthContext, esDocente } from '@application-auth';
 import { useDocentesDetailContext } from '@application-docentes/hooks';
 import DetailField from '@docentes/components/atoms/DetailField';
 import DetailInfoCard from '@docentes/components/molecules/DetailInfoCard';
-import { getGeneroMeta } from '@docentes/components/atoms/DocenteReferenciaCell';
+import { getGeneroMeta } from '@docentes/utils/generoMeta';
 import {
   formatNivelAcademicoDocente,
   formatTipoContratoDocente,

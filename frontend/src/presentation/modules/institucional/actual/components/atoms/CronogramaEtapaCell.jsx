@@ -3,7 +3,7 @@
  * (color de negocio en BD `periodos_academicos.color_hex`, sanitizado).
  */
 
-import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
+import { sanitizeDocenteColorHex } from '@docentes/utils/docenteColor';
 
 const CronogramaEtapaCell = ({ nombre, colorHex }) => {
   const color = sanitizeDocenteColorHex(colorHex);

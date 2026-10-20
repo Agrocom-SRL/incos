@@ -4,9 +4,7 @@
  */
 
 import {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useReducer,
@@ -14,8 +12,7 @@ import {
   useState,
 } from 'react';
 
-const CuadernoRegistryContext = createContext(null);
-const CuadernoFooterContext = createContext(null);
+import { CuadernoRegistryContext, CuadernoFooterContext } from './cuadernoAutosaveContexts';
 
 const GUARDADO_VISIBLE_MS = 30_000;
 
@@ -141,20 +138,4 @@ export const CuadernoAutosaveProvider = ({ children }) => {
       <CuadernoFooterContext.Provider value={footerState}>{children}</CuadernoFooterContext.Provider>
     </CuadernoRegistryContext.Provider>
   );
-};
-
-export const useCuadernoAutosaveRegistry = () => {
-  const ctx = useContext(CuadernoRegistryContext);
-  if (!ctx) {
-    throw new Error('useCuadernoAutosaveRegistry debe usarse dentro de CuadernoAutosaveProvider');
-  }
-  return ctx;
-};
-
-export const useCuadernoFooterState = () => {
-  const footerState = useContext(CuadernoFooterContext);
-  if (footerState == null) {
-    throw new Error('useCuadernoFooterState debe usarse dentro de CuadernoAutosaveProvider');
-  }
-  return footerState;
 };
