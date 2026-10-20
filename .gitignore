@@ -150,3 +150,7 @@ vite.config.ts.timestamp-*
 # Prototipo de rediseño UI/UX (vive en la rama `revamp`). En `development` no se
 # versiona: aquí seguimos con los módulos del frontend principal.
 /studio/
+
+# Dump del servidor y su separación por tabla (datos reales/temporales: personales y hashes) — no versionar
+/backend/database/instituto_incos.sql
+/backend/database/instituto_incos/

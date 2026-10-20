@@ -260,6 +260,22 @@ export const mapProyectoGradoDetail = (raw) => {
       : [],
     observacionesTutor: cleanText(raw.observacionesTutor),
     observacionesComite: cleanText(raw.observacionesComite),
+    // Fechas por etapa (T11, `ProyectoGradoTimeline` / `buildProyectoGradoTimeline`)
+    // — el detalle raíz (`GetProyectoGradoByIdUseCase`) las entrega en ISO,
+    // sin formatear: la timeline las formatea a DD/MM/YYYY por su cuenta.
+    fechaPresentacionPerfil: raw.fechaPresentacionPerfil ?? null,
+    fechaAprobacionPerfil: raw.fechaAprobacionPerfil ?? null,
+    fechaInicioDesarrollo: raw.fechaInicioDesarrollo ?? null,
+    // Informe de suficiencia del tutor (extensión 2026-08-17).
+    fechaInformeSuficiencia: raw.fechaInformeSuficiencia ?? null,
+    fechaPresentacionPredefensa: raw.fechaPresentacionPredefensa ?? null,
+    fechaAprobacionPredefensa: raw.fechaAprobacionPredefensa ?? null,
+    fechaDefensa: raw.fechaDefensa ?? null,
+    notaPerfil: raw.notaPerfil != null ? toNumber(raw.notaPerfil) : null,
+    // Exención de defensa (extensión 2026-08-17): condición del botón
+    // "Declarar exento de defensa" (`ProyectoGradoDetail.jsx`, notaPredefensa > 90).
+    notaPredefensa: raw.notaPredefensa != null ? toNumber(raw.notaPredefensa) : null,
+    notaDefensa: raw.notaDefensa != null ? toNumber(raw.notaDefensa) : null,
   };
 };
 

@@ -26,12 +26,17 @@ export class SearchStudentsForInscripcionController {
   async handle(req, res, next) {
     try {
       const preliminar = req.query.preliminar === '1';
+      const soloNuevos = req.query.solo_nuevos === '1';
       const q = req.query.q != null ? String(req.query.q).trim() : '';
-      const limitRaw = req.query.limit != null ? parseInt(req.query.limit, 10) : 50;
-      const limit = Number.isNaN(limitRaw) ? 50 : Math.min(Math.max(limitRaw, 1), 100);
+      const defaultLimit = soloNuevos ? 10 : 50;
+      const limitRaw = req.query.limit != null ? parseInt(req.query.limit, 10) : defaultLimit;
+      const limit = Number.isNaN(limitRaw)
+        ? defaultLimit
+        : Math.min(Math.max(limitRaw, 1), 100);
 
       this.logger.info('[Estudiantes] Búsqueda estudiantes para inscripción', {
         preliminar,
+        soloNuevos,
         qLen: q.length,
         limit,
       });
@@ -40,6 +45,7 @@ export class SearchStudentsForInscripcionController {
         q,
         limit,
         preliminar,
+        soloNuevos,
       });
       const total = estudiantes.length;
 

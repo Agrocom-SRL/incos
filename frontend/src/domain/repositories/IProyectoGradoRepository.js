@@ -39,6 +39,19 @@ export class IProyectoGradoRepository extends IBaseRepository {
   }
 
   /**
+   * Autorregistro del estudiante autenticado (Fase B3, extensión 2026-08-17,
+   * `proyecto de grado`·CREAR). El backend resuelve el estudiante por token
+   * (NUNCA se envía estudianteId) y valida el prerrequisito de 3er año sin
+   * materias pendientes de 1º/2º — ese error 409 se muestra tal cual, sin
+   * reimplementar la regla en frontend.
+   * @param {{titulo: string, objetivos?: string, modalidadId: number}} _data
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async registrarMiProyecto(_data) {
+    throw new Error('Método registrarMiProyecto debe ser implementado');
+  }
+
+  /**
    * Asigna tutor; el backend genera el PDF de designación oficial (T10, APROBAR).
    * @param {string|number} _id
    * @param {{tutorId: number}} _data

@@ -14,6 +14,15 @@
  *     modal exige una confirmación explícita del usuario antes de continuar.
  */
 
+/**
+ * SUFICIENCIA (extensión 2026-08-17): deliberadamente SIN requisito manual
+ * propio en este mapa. El pedido original de negocio era "verificar que el
+ * tutor emitió el informe de suficiencia", pero esa verificación ahora ES la
+ * transición misma — `AprobarEtapaModal` exige los 3 criterios del tutor +
+ * el veredicto en un formulario propio antes de continuar (el backend además
+ * los valida y emite el PDF), así que un checklist adicional aquí sería
+ * redundante con datos que el usuario ya está completando en el mismo paso.
+ */
 const REQUISITOS_TRANSICION = {
   APROBADO_PERFIL: {
     manuales: [
@@ -31,7 +40,7 @@ const REQUISITOS_TRANSICION = {
   PREDEFENSA: {
     automaticos: [
       {
-        descripcion: 'Registrar al menos una entrada de bitácora de seguimiento',
+        descripcion: 'Registrar al menos una entrada del cronograma de progreso',
         cumplido: (ctx) => (ctx.bitacoraCount ?? 0) > 0,
       },
     ],

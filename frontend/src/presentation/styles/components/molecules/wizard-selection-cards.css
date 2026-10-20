@@ -34,24 +34,46 @@
 }
 
 /* Variante para wizards con una cantidad FIJA de 4 opciones (tipo de admisión,
-   tipo de alta de usuario): columnas explícitas 4→2→1 en vez del auto-fit
-   genérico de arriba, así las 4 quedan siempre en una sola fila cuando hay
-   espacio, sin depender de que el ancho real del contenedor caiga justo en
-   el rango donde auto-fit solo alcanza a acomodar 3. Breakpoints iguales a
-   los ya usados en layout/sider.css y layout/content.css (575px / 991px). */
+   tipo de alta de usuario): columnas explícitas 4→2→1, así las 4 quedan en una
+   sola fila cuando hay espacio.
+
+   El reflow se decide por el ancho del CONTENEDOR (@container), no del viewport:
+   con el sidebar expandido, un viewport de 992-1300px deja ~700px útiles y las
+   4 columnas de media query dejaban ~150px por tarjeta, rompiendo el texto letra
+   a letra. La sección declara `container-type: inline-size` para poder medirse. */
+.wizard-selection-cards__section {
+  container-type: inline-size;
+}
+
 .wizard-selection-cards__grid--fixed-4 {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
-@media (max-width: 991px) {
+/* Cada tarjeta necesita ~260px para que icono + texto convivan en fila. */
+@container (max-width: 1080px) {
   .wizard-selection-cards__grid--fixed-4 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 575px) {
+@container (max-width: 520px) {
   .wizard-selection-cards__grid--fixed-4 {
     grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+}
+
+/* Sin soporte de container queries: se conserva el comportamiento por viewport. */
+@supports not (container-type: inline-size) {
+  @media (max-width: 1300px) {
+    .wizard-selection-cards__grid--fixed-4 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 575px) {
+    .wizard-selection-cards__grid--fixed-4 {
+      grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
   }
 }
 

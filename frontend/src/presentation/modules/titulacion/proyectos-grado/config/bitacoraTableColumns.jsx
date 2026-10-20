@@ -41,7 +41,7 @@ const renderConfirmacion = (record, { modoEstudiante, onConfirmar, confirmandoId
   }
   return (
     <Popconfirm
-      title="Confirmar entrada de bitácora"
+      title="Confirmar entrada del cronograma de progreso"
       description="Su confirmación equivale a la firma de la planilla de seguimiento. ¿Desea continuar?"
       okText="Confirmar"
       cancelText="Volver"

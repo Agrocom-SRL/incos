@@ -43,4 +43,7 @@ export const SERVICIOS_TOKENS = {
     seguimientoTutoriaDocentesExcelGenerator: 'seguimientoTutoriaDocentesExcelGenerator', // ISeguimientoTutoriaDocentesExcelGenerator (.xlsx, módulo TIT)
     // Extensión 2026-08-01 (módulo TIT · titulación): acta de defensa de grado.
     actaDefensaPdfGenerator: 'actaDefensaPdfGenerator', // IActaDefensaPdfGenerator (.pdf, módulo TIT)
+    // Extensión 2026-08-17 (módulo TIT · titulación): informe de suficiencia
+    // del tutor (transición DESARROLLO → SUFICIENCIA).
+    informeSuficienciaPdfGenerator: 'informeSuficienciaPdfGenerator', // IInformeSuficienciaPdfGenerator (.pdf, módulo TIT)
 };

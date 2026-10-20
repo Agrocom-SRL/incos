@@ -77,6 +77,16 @@ export function registerLibrosResource(container) {
       new EditarLibroUseCase({
         libroRegistroRepository: c.resolve(REPOSITORIOS_TOKENS.libroRegistroRepository),
         libroRegistroViewRepository: c.resolve(REPOSITORIOS_TOKENS.libroRegistroViewRepository),
+        // Cierre con pendientes: notas vivas (135) + política de nota mínima.
+        calificacionCentralizadorRepository: c.resolve(
+          REPOSITORIOS_TOKENS.calificacionCentralizadorRepository,
+        ),
+        calificacionContextoRepository: c.resolve(
+          REPOSITORIOS_TOKENS.calificacionContextoRepository,
+        ),
+        evaluationConfigurationRepository: c.resolve(
+          REPOSITORIOS_TOKENS.evaluationConfigurationRepository,
+        ),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       }),
   );

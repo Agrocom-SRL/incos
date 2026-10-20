@@ -107,6 +107,19 @@ export class ProyectoGradoRepository extends IProyectoGradoRepository {
     }
   }
 
+  /**
+   * Autorregistro del estudiante autenticado (Fase B3, extensión 2026-08-17,
+   * `proyectoGrado`). POST /v1/proyectos-grado/mi-proyecto
+   */
+  async registrarMiProyecto(data) {
+    try {
+      const response = await apiClient.post(PROYECTOS_GRADO_ENDPOINTS.MI_PROYECTO, data);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al registrar su modalidad de grado');
+    }
+  }
+
   /** Crea un proyecto — TITULAR + integrantes si PSP (T7). POST /v1/proyectos-grado */
   async crear(data) {
     try {

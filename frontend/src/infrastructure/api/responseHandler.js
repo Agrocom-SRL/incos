@@ -1,4 +1,4 @@
-import { resolveInscripcionApiUserMessage } from '@application-inscripciones/utils/inscripcionApiErrors';
+import { resolveInscripcionApiUserMessage } from '@application-matricula/registro/utils/inscripcionApiErrors';
 
 /**
  * Helper para manejar respuestas y errores del API

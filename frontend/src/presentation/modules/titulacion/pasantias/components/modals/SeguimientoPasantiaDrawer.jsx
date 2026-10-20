@@ -46,8 +46,6 @@ const SeguimientoPasantiaDrawer = ({
       fortalezas: seguimiento?.fortalezas ?? '',
       areasMejorar: seguimiento?.areasMejorar ?? '',
       sugerencias: seguimiento?.sugerencias ?? '',
-      firmadoDocente: seguimiento?.firmadoDocente ?? false,
-      firmadoEmpresa: seguimiento?.firmadoEmpresa ?? false,
     });
   }, [open, seguimiento, form]);
 
@@ -61,8 +59,6 @@ const SeguimientoPasantiaDrawer = ({
       fortalezas: (values.fortalezas || '').trim() || null,
       areasMejorar: (values.areasMejorar || '').trim() || null,
       sugerencias: (values.sugerencias || '').trim() || null,
-      firmadoDocente: values.firmadoDocente === true,
-      firmadoEmpresa: values.firmadoEmpresa === true,
     });
   };
 
@@ -128,15 +124,6 @@ const SeguimientoPasantiaDrawer = ({
         <Form.Item name="sugerencias" label="Sugerencias (opcional)">
           <Input.TextArea rows={2} maxLength={5000} placeholder="Sugerencias para el estudiante" />
         </Form.Item>
-
-        <Flex gap="large" wrap>
-          <Form.Item name="firmadoDocente" label="Firmado por el docente" valuePropName="checked">
-            <Switch checkedChildren="Sí" unCheckedChildren="No" />
-          </Form.Item>
-          <Form.Item name="firmadoEmpresa" label="Firmado por la empresa" valuePropName="checked">
-            <Switch checkedChildren="Sí" unCheckedChildren="No" />
-          </Form.Item>
-        </Flex>
       </Form>
     </Drawer>
   );

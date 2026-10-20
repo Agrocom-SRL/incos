@@ -55,12 +55,6 @@
                 "./src/application/navigation/*"
             ],
             // Application Modules
-            "@application-estudiantes": [
-                "./src/application/modules/estudiantes"
-            ],
-            "@application-estudiantes/*": [
-                "./src/application/modules/estudiantes/*"
-            ],
             "@application-estudiantes-old": [
                 "./src/application/modules/estudiantes-old"
             ],
@@ -91,23 +85,17 @@
             "@application-configuracion-recursos/*": [
                 "./src/application/modules/configuracion/recursos/*"
             ],
-            "@application-inscripciones": [
-                "./src/application/modules/inscripciones"
-            ],
-            "@application-inscripciones/*": [
-                "./src/application/modules/inscripciones/*"
-            ],
             "@application-matricula": [
-                "./src/application/modules/inscripciones"
+                "./src/application/modules/matricula"
             ],
             "@application-matricula/*": [
-                "./src/application/modules/inscripciones/*"
+                "./src/application/modules/matricula/*"
             ],
             "@application-pagos": [
-                "./src/application/modules/pagos"
+                "./src/application/modules/matricula/aportes"
             ],
             "@application-pagos/*": [
-                "./src/application/modules/pagos/*"
+                "./src/application/modules/matricula/aportes/*"
             ],
             "@application-finanzas": [
                 "./src/application/modules/finanzas"
@@ -228,9 +216,6 @@
                 "./src/presentation/modules/*"
             ],
             // Módulos específicos de Presentation
-            "@estudiantes/*": [
-                "./src/presentation/modules/estudiantes/*"
-            ],
             "@estudiantes-old/*": [
                 "./src/presentation/modules/estudiantes-old/*"
             ],
@@ -291,12 +276,6 @@
             "@matricula/*": [
                 "./src/presentation/modules/matricula/*"
             ],
-            "@inscripciones": [
-                "./src/presentation/modules/matricula"
-            ],
-            "@inscripciones/*": [
-                "./src/presentation/modules/matricula/*"
-            ],
             "@nivelaciones": [
                 "./src/presentation/modules/academico/nivelaciones"
             ],
@@ -304,10 +283,10 @@
                 "./src/presentation/modules/academico/nivelaciones/*"
             ],
             "@pagos": [
-                "./src/presentation/modules/pagos"
+                "./src/presentation/modules/matricula/aportes"
             ],
             "@pagos/*": [
-                "./src/presentation/modules/pagos/*"
+                "./src/presentation/modules/matricula/aportes/*"
             ],
             "@finanzas": [
                 "./src/presentation/modules/finanzas"

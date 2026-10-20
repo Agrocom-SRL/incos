@@ -1,0 +1,564 @@
+/* ============================================================================
+   MATERIAS PLANILLA (Organismo — wizard de matrícula, paso «Periodo y materias»)
+   ============================================================================
+   Planilla seleccionable estilo documento de plan de estudios (adaptación de
+   plan-documento.css) con acento NEUTRO institucional: cabecera-banda por
+   periodo en color primario del theme (sin buildPlanDocumentoThemeVars ni
+   color de carrera), tabla [check] CÓDIGO | ASIGNATURA | PRE REQ. con
+   table-layout: fixed y fila clickeable completa.
+
+   SOLO tokens del tema (var(--…)) — dark-mode-safe. El colapso 3 → 1 columnas
+   es por CONTENEDOR (@container), no por viewport: la anchura útil del wizard
+   depende del sidebar.
+
+   También contiene la ficha de cierre del paso Paralelo (.insc-resumen),
+   que comparte lenguaje y bandas informativas con la planilla.
+   ============================================================================ */
+
+.materias-planilla {
+  /* Proporciones de columnas de la tabla (estructura, patrón plan-documento).
+     Sin columna de horas: el ancho liberado va a ASIGNATURA y PRE REQ. */
+  --materias-planilla-col-check: 11%;
+  --materias-planilla-col-codigo: 20%;
+  --materias-planilla-col-nombre: 49%;
+  --materias-planilla-col-prereq: 20%;
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  width: 100%;
+  min-width: 0;
+  color: var(--color-text);
+}
+
+/* ---- Grid de periodos (3 columnas → 1 por contenedor) ---- */
+
+.materias-planilla__years {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--spacing-sm);
+  align-items: stretch;
+}
+
+@container (max-width: 1180px) {
+  .materias-planilla__years {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---- Periodo (sección con cabecera-banda) ---- */
+
+.materias-planilla__year {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  background: var(--color-bg-container);
+  transition: opacity var(--transition-base) ease;
+}
+
+.materias-planilla__year--disabled {
+  opacity: 0.6;
+}
+
+.materias-planilla__year--disabled .materias-planilla__table {
+  pointer-events: none;
+}
+
+.materias-planilla__year-head {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: calc(var(--spacing-xs) * 3) var(--spacing-base);
+  background: var(--color-primary);
+  color: var(--color-white);
+}
+
+.materias-planilla__year-title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-strong);
+  letter-spacing: 0.4px;
+  line-height: var(--line-height-sm);
+}
+
+/* ---- Tabla de asignaturas ---- */
+
+.materias-planilla__year-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.materias-planilla__table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+}
+
+.materias-planilla__col-check {
+  width: var(--materias-planilla-col-check);
+}
+
+.materias-planilla__col-codigo {
+  width: var(--materias-planilla-col-codigo);
+}
+
+.materias-planilla__col-nombre {
+  width: var(--materias-planilla-col-nombre);
+}
+
+.materias-planilla__col-prereq {
+  width: var(--materias-planilla-col-prereq);
+}
+
+.materias-planilla__table th,
+.materias-planilla__table td {
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-border-secondary);
+  vertical-align: middle;
+}
+
+/* Franja de subtítulos de columna: más aire vertical que las filas de datos. */
+.materias-planilla__table thead th {
+  padding: calc(var(--spacing-xs) * 2) var(--spacing-sm);
+  background: var(--color-bg-layout);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xxs);
+  font-weight: var(--font-weight-strong);
+  letter-spacing: 0.4px;
+  text-align: center;
+  line-height: var(--line-height-sm);
+}
+
+/* ---- Filas ---- */
+
+.materias-planilla__row {
+  transition: background var(--transition-base) ease;
+}
+
+.materias-planilla__row--normal,
+.materias-planilla__row--seleccionada {
+  cursor: pointer;
+}
+
+.materias-planilla__row--normal:hover,
+.materias-planilla__row--seleccionada:hover {
+  background: var(--color-item-hover-bg);
+}
+
+.materias-planilla__row--seleccionada,
+.materias-planilla__row--fija {
+  background: var(--color-primary-bg);
+}
+
+/* Sobre el fondo primario suave el borde secundario se pierde: en las filas
+   marcadas (y al «marcar todo») la cuadrícula pasa al gris de borde normal. */
+.materias-planilla__row--seleccionada > td,
+.materias-planilla__row--fija > td {
+  border-color: var(--color-border);
+}
+
+.materias-planilla__row--aprobada,
+.materias-planilla__row--bloqueada-periodo,
+.materias-planilla__row--bloqueada-prerrequisito {
+  color: var(--color-text-tertiary);
+}
+
+.materias-planilla__row--bloqueada-prerrequisito {
+  cursor: not-allowed;
+}
+
+.materias-planilla__td-check {
+  text-align: center;
+}
+
+.materias-planilla__check-aprobada {
+  color: var(--color-success);
+  font-size: var(--font-size-base);
+}
+
+.materias-planilla__check-candado {
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-base);
+}
+
+.materias-planilla__td-codigo,
+.materias-planilla__td-prereq {
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-strong);
+}
+
+.materias-planilla__td-nombre {
+  text-align: left;
+  line-height: var(--line-height-sm);
+  overflow-wrap: anywhere;
+}
+
+/* Altura uniforme de fila: el nombre (con su nota/pill) ocupa SIEMPRE el alto
+   de dos líneas — reserva el espacio cuando el nombre es corto y recorta con
+   puntos suspensivos cuando es largo, para que las tres columnas de periodos
+   queden simétricas. El nombre completo sigue disponible en el `title`.
+   La caja externa centra verticalmente (los nombres de una línea quedan a media
+   altura) y la interna aplica el recorte a dos líneas. */
+.materias-planilla__nombre-box {
+  display: flex;
+  align-items: center;
+  min-height: calc(var(--font-size-sm) * var(--line-height-sm) * 2);
+  line-height: var(--line-height-sm);
+}
+
+.materias-planilla__nombre-clamp {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  width: 100%;
+}
+
+.materias-planilla__nombre-texto {
+  margin-right: var(--spacing-xs);
+}
+
+.materias-planilla__td-nombre .cfg-materia-pill {
+  margin-left: var(--spacing-xs);
+  vertical-align: middle;
+}
+
+/* Nota del kardex en filas aprobadas (chip verde suave). */
+.materias-planilla__nota {
+  display: inline-block;
+  margin-left: var(--spacing-xs);
+  padding: 0 var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.materias-planilla__td-vacio {
+  text-align: center;
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-sm);
+}
+
+/* ---- Bandas informativas (no Alert apilado) ---- */
+
+.materias-planilla__banda {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-sm);
+}
+
+.materias-planilla__banda--info {
+  background: var(--color-info-bg);
+  border: 1px solid var(--color-info-border);
+}
+
+.materias-planilla__banda--info .anticon {
+  color: var(--color-info);
+  margin-top: var(--spacing-xs);
+}
+
+.materias-planilla__banda--warning {
+  background: var(--color-warning-bg);
+  border: 1px solid var(--color-warning-border);
+}
+
+.materias-planilla__banda--warning .anticon {
+  color: var(--color-warning);
+  margin-top: var(--spacing-xs);
+}
+
+/* ---- Estados del paso (hint, error, esqueleto, inválido) ---- */
+
+.materias-planilla__hint {
+  padding: var(--spacing-sm) var(--spacing-base);
+  border-radius: var(--border-radius);
+  background: var(--color-bg-layout);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.materias-planilla__error {
+  padding: var(--spacing-base);
+}
+
+.materias-planilla__skeleton {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--spacing-sm);
+}
+
+.materias-planilla__skeleton-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-sm);
+}
+
+.materias-planilla__skeleton-col .materias-planilla__skeleton-head.ant-skeleton {
+  width: 100%;
+}
+
+.materias-planilla__skeleton-col .materias-planilla__skeleton-head .ant-skeleton-input {
+  width: 100%;
+  min-width: 0;
+  height: var(--control-height);
+}
+
+/* Marcado de error post-submit (materiasStepInvalid): borde de la planilla. */
+.materias-planilla--invalid .materias-planilla__year {
+  outline: 2px solid var(--color-error);
+  outline-offset: 2px;
+}
+
+.materias-planilla__invalid-hint {
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+}
+
+/* ============================================================================
+   RESUMEN DE LA INSCRIPCIÓN (paso Paralelo, §4-C2)
+   ----------------------------------------------------------------------------
+   Dirección «jerarquía limpia» (2026-08-14): UNA tarjeta elevada con tres
+   franjas separadas por divisores —identidad, datos académicos y materias
+   marcadas—. El color se reserva para lo que informa estado (pills, siglas);
+   la separación la hacen los divisores y la escala tipográfica, no los fondos.
+   Los avisos (nivelación / pendientes) van FUERA de la tarjeta, como bandas.
+   ============================================================================ */
+
+.insc-resumen {
+  /* Medidas de composición (layout, no estilo). */
+  --insc-resumen-dato-min: 190px;
+  --insc-resumen-pad-x: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  container-type: inline-size;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+  background: var(--color-bg-container);
+  /* La ficha se despega del lienzo: es una pieza de lectura, no una zona más
+     del formulario. */
+  box-shadow: var(--shadow-elevation-3);
+  overflow: hidden;
+}
+
+.insc-resumen__avisos:not(:empty) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-sm);
+}
+
+/* ---- Franja 1: identidad ---- */
+
+.insc-resumen__head {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-base);
+  flex-wrap: wrap;
+  padding: var(--spacing-md) var(--insc-resumen-pad-x);
+  border-bottom: 1px solid var(--color-border-secondary);
+}
+
+.insc-resumen__avatar.ant-avatar {
+  flex: none;
+  background-color: var(--color-primary-bg);
+  color: var(--color-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-strong);
+}
+
+.insc-resumen__identidad {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.insc-resumen__nombre {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-strong);
+  line-height: var(--line-height-sm);
+  color: var(--color-text);
+  letter-spacing: 0.01em;
+}
+
+.insc-resumen__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs) var(--spacing-lg);
+}
+
+.insc-resumen__meta-item {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+/* Dato de ancho fijo (C.I., código): monoespaciado para que se lea como cifra. */
+.insc-resumen__meta-valor {
+  font-family: var(--font-family-code);
+  font-weight: var(--font-weight-strong);
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+}
+
+.insc-resumen__pills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-inline-start: auto;
+}
+
+/* ---- Franja 2: datos académicos (columnas con divisor, sin cajas) ---- */
+
+.insc-resumen__datos {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(var(--insc-resumen-dato-min), 100%), 1fr)
+  );
+  border-bottom: 1px solid var(--color-border-secondary);
+}
+
+.insc-resumen__dato {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 0;
+  padding: var(--spacing-base) var(--insc-resumen-pad-x);
+  border-inline-start: 1px solid var(--color-border-secondary);
+}
+
+.insc-resumen__dato:first-child {
+  border-inline-start: none;
+}
+
+.insc-resumen__dato-label {
+  font-size: var(--font-size-xxs);
+  font-weight: var(--font-weight-strong);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-text-tertiary);
+}
+
+.insc-resumen__dato-valor {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-sm);
+  color: var(--color-text);
+}
+
+/* ---- Franja 3: materias marcadas ---- */
+
+.insc-resumen__periodos {
+  display: flex;
+  flex-direction: column;
+}
+
+.insc-resumen__periodo {
+  min-width: 0;
+  padding: var(--spacing-base) var(--insc-resumen-pad-x) var(--spacing-sm);
+}
+
+.insc-resumen__periodo + .insc-resumen__periodo {
+  border-top: 1px solid var(--color-border-secondary);
+}
+
+.insc-resumen__periodo-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--spacing-xs) var(--spacing-sm);
+}
+
+.insc-resumen__periodo-nombre {
+  min-width: 0;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-strong);
+  color: var(--color-text);
+}
+
+.insc-resumen__periodo-datos {
+  margin-inline-end: auto;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+.insc-resumen__periodo-pills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+/* Dos columnas: con los nombres completos del plan, más columnas obliga a
+   truncar y el resumen deja de ser verificable de un vistazo. */
+.insc-resumen__materias {
+  list-style: none;
+  margin: var(--spacing-xs) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: var(--spacing-xl);
+}
+
+@container (max-width: 720px) {
+  .insc-resumen__materias {
+    grid-template-columns: 1fr;
+  }
+}
+
+.insc-resumen__materia {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-base);
+  min-width: 0;
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid var(--color-border-secondary);
+}
+
+.insc-resumen__materia-sigla {
+  flex: none;
+  min-width: 4.5em;
+  font-family: var(--font-family-code);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-strong);
+  color: var(--color-primary);
+  letter-spacing: 0.02em;
+}
+
+.insc-resumen__materia-nombre {
+  min-width: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.insc-resumen__vacio.ant-typography {
+  display: block;
+  padding: var(--spacing-base) var(--insc-resumen-pad-x);
+}

@@ -14,7 +14,7 @@
 
 import { INSCRIPCIONES_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../tokens/index.js';
 import { registerComponent } from '../../utils/container.helpers.js';
-import { ListEnrollmentsUseCase, CreateEnrollmentUseCase, GetEnrollmentByIdUseCase, DeleteEnrollmentUseCase, GenerateFormularioInscripcionUseCase, UpdateEnrollmentUseCase, CambiarEstadoMatriculaUseCase } from '../../../../application/use-cases/inscripciones/index.js';
+import { ListEnrollmentsUseCase, CreateEnrollmentUseCase, GetEnrollmentByIdUseCase, DeleteEnrollmentUseCase, GenerateFormularioInscripcionUseCase, UpdateEnrollmentUseCase, CambiarEstadoMatriculaUseCase, GetMatriculaContextoUseCase } from '../../../../application/use-cases/inscripciones/index.js';
 import {
   ListEnrollmentsController,
   CreateEnrollmentController,
@@ -24,6 +24,7 @@ import {
   UpdateEnrollmentController,
   UpdateEnrollmentPriorHistoryController,
   ActivarCursadoMatriculaController,
+  GetMatriculaContextoController,
 } from '../../../../presentation/controllers/inscripciones/index.js';
 import { buildInscripcionesRouter } from '../../../../presentation/routes/inscripciones.routes.js';
 
@@ -87,6 +88,13 @@ export function registerInscripcionesResource(container) {
                   REPOSITORIOS_TOKENS.priorEnrollmentHistoryRepository
                 ),
                 subjectEnrollmentBimesterRepository: c.resolve(REPOSITORIOS_TOKENS.subjectEnrollmentBimesterRepository),
+                periodRepository: c.resolve(REPOSITORIOS_TOKENS.periodRepository),
+                subjectRepository: c.resolve(REPOSITORIOS_TOKENS.subjectRepository),
+                prerequisiteRepository: c.resolve(REPOSITORIOS_TOKENS.prerequisiteRepository),
+                transferRepository: c.resolve(REPOSITORIOS_TOKENS.transferRepository),
+                historialAcademicoRepository: c.resolve(
+                  REPOSITORIOS_TOKENS.historialAcademicoRepository
+                ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );
@@ -171,6 +179,45 @@ export function registerInscripcionesResource(container) {
                 planSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.planSubjectRepository),
                 priorEnrollmentHistoryRepository: c.resolve(
                   REPOSITORIOS_TOKENS.priorEnrollmentHistoryRepository
+                ),
+                periodRepository: c.resolve(REPOSITORIOS_TOKENS.periodRepository),
+                subjectRepository: c.resolve(REPOSITORIOS_TOKENS.subjectRepository),
+                prerequisiteRepository: c.resolve(REPOSITORIOS_TOKENS.prerequisiteRepository),
+                transferRepository: c.resolve(REPOSITORIOS_TOKENS.transferRepository),
+                historialAcademicoRepository: c.resolve(
+                  REPOSITORIOS_TOKENS.historialAcademicoRepository
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        INSCRIPCIONES_TOKENS.getMatriculaContextoUseCase,
+        (c) =>
+            new GetMatriculaContextoUseCase({
+                studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
+                studentAcademicDataRepository: c.resolve(
+                  REPOSITORIOS_TOKENS.studentAcademicDataRepository
+                ),
+                enrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentRepository),
+                transferRepository: c.resolve(REPOSITORIOS_TOKENS.transferRepository),
+                managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
+                managementPlanRepository: c.resolve(REPOSITORIOS_TOKENS.managementPlanRepository),
+                studyPlanRepository: c.resolve(REPOSITORIOS_TOKENS.studyPlanRepository),
+                careerRepository: c.resolve(REPOSITORIOS_TOKENS.careerRepository),
+                periodRepository: c.resolve(REPOSITORIOS_TOKENS.periodRepository),
+                planSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.planSubjectRepository),
+                subjectRepository: c.resolve(REPOSITORIOS_TOKENS.subjectRepository),
+                prerequisiteRepository: c.resolve(REPOSITORIOS_TOKENS.prerequisiteRepository),
+                historialAcademicoRepository: c.resolve(
+                  REPOSITORIOS_TOKENS.historialAcademicoRepository
+                ),
+                configuracionSistemaRepository: c.resolve(
+                  REPOSITORIOS_TOKENS.systemConfigurationRepository
+                ),
+                evaluationConfigurationRepository: c.resolve(
+                  REPOSITORIOS_TOKENS.evaluationConfigurationRepository
                 ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
@@ -279,6 +326,19 @@ export function registerInscripcionesResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        INSCRIPCIONES_TOKENS.getMatriculaContextoController,
+        (c) =>
+            new GetMatriculaContextoController({
+                getMatriculaContextoUseCase: c.resolve(
+                  INSCRIPCIONES_TOKENS.getMatriculaContextoUseCase
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
     // ============================================
     // ROUTER
     // ============================================
@@ -298,6 +358,9 @@ export function registerInscripcionesResource(container) {
                 ),
                 activarCursadoMatriculaController: c.resolve(
                   INSCRIPCIONES_TOKENS.activarCursadoMatriculaController
+                ),
+                getMatriculaContextoController: c.resolve(
+                  INSCRIPCIONES_TOKENS.getMatriculaContextoController
                 ),
             };
 

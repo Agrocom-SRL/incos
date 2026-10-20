@@ -59,10 +59,10 @@ const BitacoraEntradaDrawer = ({
   const mostrarAvance = esRevision || (esEdicion && entrada?.tipo === 'REVISION_AVANCE');
 
   const title = esEdicion
-    ? 'Editar entrada de bitácora'
+    ? 'Editar entrada del cronograma de progreso'
     : esRevision
       ? 'Revisar avance'
-      : 'Nueva entrada de bitácora';
+      : 'Nueva entrada del cronograma de progreso';
 
   // Precarga por modo cada vez que se abre el drawer. En una revisión NUEVA
   // el % arranca en el piso ya alcanzado (porcentajeActual), no en null —

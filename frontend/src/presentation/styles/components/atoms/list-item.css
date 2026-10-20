@@ -1,26 +1,45 @@
 /* ============================================================================
    LIST ITEM (Componente Atómico)
    ============================================================================
-   Estilos para items de lista personalizados
-   Los colores base vienen del tema de Ant Design (List componentConfig)
-   Variables CSS adicionales para estilos personalizados
+   Fila seleccionable de DataList / SelectableDataList.
+   Todos los valores salen de tokens del theme (root.js): color, espaciado,
+   radio, tipografía y motion. Cero literales de color/px aquí.
+
+   Estados:
+     .list-item                → superficie neutra
+     .list-item--clickable     → cursor + hover/focus con borde primario
+     .list-item.active         → seleccionado (fondo primario suave + acento)
+     .list-item--blocked       → no elegible (atenuado, informa al hacer click)
    ============================================================================ */
 
 .list-item {
-  /* Padding del item - usando paddingLG del tema para más espacio */
-  padding: var(--spacing-md) var(--spacing-lg);
-  background-color: var(--color-bg-layout);
-  
-  /* Border - usando variable del tema */
-  border: 1px solid var(--color-border);
-  border-radius: var(--border-radius-sm);
-  margin-bottom: var(--spacing-md);
-  
-  /* Transición suave para hover */
-  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+  padding: var(--spacing-md) var(--spacing-md);
+  background-color: var(--color-bg-container);
+
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+  margin-bottom: var(--spacing-sm);
+
+  transition:
+    background-color var(--motion-duration-fast) var(--motion-ease-out),
+    border-color var(--motion-duration-fast) var(--motion-ease-out),
+    box-shadow var(--motion-duration-fast) var(--motion-ease-out),
+    transform var(--motion-duration-fast) var(--motion-ease-out);
 }
 
-/* Avatar más grande - aumentar tamaño del icono */
+/* Barra de acento izquierda: solo se pinta en seleccionado (evita saltos de layout) */
+.list-item::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--border-radius-xs);
+  background-color: transparent;
+  transition: background-color var(--motion-duration-fast) var(--motion-ease-out);
+}
+
+/* Avatar (icono o iniciales) */
 .list-item .list-item-avatar {
   flex-shrink: 0;
   display: flex;
@@ -29,15 +48,16 @@
 }
 
 .list-item .list-item-avatar .anticon {
-  font-size: 32px; /* Aumentar de tamaño por defecto (24px) a 32px */
-  color: var(--color-item-hover-bg);
+  font-size: var(--font-size-lg);
+  color: var(--color-text-tertiary);
+  transition: color var(--motion-duration-fast) var(--motion-ease-out);
 }
 
-/* Título con color primario - ya se aplica en el componente pero asegurar en CSS */
+/* Título */
 .list-item .ant-typography {
-  color: var(--color-primary);
+  color: var(--color-text);
   font-size: var(--font-size-base);
-  margin-bottom: var(--spacing-xs);
+  margin-bottom: 0;
 }
 
 /* Caption con mejor espaciado */
@@ -45,45 +65,111 @@
   margin-top: var(--spacing-xs);
 }
 
-/* Hover state - usando variable genérica de hover de items */
-.list-item:hover {
-  background-color: var(--color-item-hover-bg);
-  border-color: var(--color-primary);
+.list-item .list-item-caption .ant-typography {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
 }
 
-/* Cursor pointer cuando es clickeable */
-.list-item[style*="cursor: pointer"] {
+/* Zona derecha (check de selección, pista de acción, estado) */
+.list-item__extra {
+  flex-shrink: 0;
+  gap: var(--spacing-xs);
+  color: var(--color-text-tertiary);
+}
+
+/* ── Clickeable: hover / focus ────────────────────────────────────────────── */
+
+.list-item--clickable {
   cursor: pointer;
 }
 
-/* Estado activo/seleccionado - fondo primario y texto blanco */
-.list-item.active {
-  background-color: var(--color-primary) !important;
-  border-color: var(--color-primary) !important;
+.list-item--clickable:hover {
+  background-color: var(--color-primary-bg);
+  border-color: var(--color-primary-border);
+  box-shadow: var(--shadow-elevation-1);
 }
 
-/* Texto blanco cuando está activo */
+.list-item--clickable:hover .list-item-avatar .anticon {
+  color: var(--color-primary);
+}
+
+.list-item--clickable:focus-visible {
+  outline: var(--border-radius-xs) solid var(--color-primary);
+  outline-offset: var(--border-radius-xs);
+  border-color: var(--color-primary);
+}
+
+@media (hover: hover) {
+  .list-item--clickable:hover {
+    transform: translateY(calc(var(--border-radius-xs) * -0.5));
+  }
+}
+
+/* ── Seleccionado ─────────────────────────────────────────────────────────── */
+
+.list-item.active {
+  background-color: var(--color-primary-bg);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-primary);
+}
+
 .list-item.active .ant-typography,
 .list-item.active .ant-typography strong {
-  color: var(--color-white) !important;
-}
-
-/* Avatar con color blanco cuando está activo */
-.list-item.active .list-item-avatar .anticon {
-  color: var(--color-white) !important;
-}
-
-/* Caption con color blanco cuando está activo */
-.list-item.active .list-item-caption {
-  color: var(--color-white) !important;
+  color: var(--color-primary-active);
 }
 
 .list-item.active .list-item-caption .ant-typography {
-  color: var(--color-white) !important;
+  color: var(--color-primary-active);
 }
 
-/* Hover cuando está activo - mantener fondo primario pero más oscuro */
-.list-item.active:hover {
-  background-color: var(--color-primary-hover) !important;
-  border-color: var(--color-primary-hover) !important;
+.list-item.active .list-item-avatar .anticon,
+.list-item.active .list-item__extra {
+  color: var(--color-primary);
+}
+
+.list-item.active.list-item--clickable:hover {
+  background-color: var(--color-primary-bg-hover);
+  border-color: var(--color-primary-hover);
+}
+
+/* ── Bloqueado (no elegible; el click solo informa el motivo) ─────────────── */
+
+.list-item--blocked {
+  background-color: var(--color-bg-layout);
+  border-style: dashed;
+  border-color: var(--color-border);
+}
+
+.list-item--blocked .ant-typography,
+.list-item--blocked .list-item-caption .ant-typography {
+  color: var(--color-text-secondary);
+}
+
+.list-item--blocked .list-item-avatar .anticon {
+  color: var(--color-text-tertiary);
+}
+
+.list-item--blocked.list-item--clickable {
+  cursor: not-allowed;
+}
+
+.list-item--blocked.list-item--clickable:hover {
+  background-color: var(--color-bg-layout);
+  border-color: var(--color-border);
+  box-shadow: none;
+  transform: none;
+}
+
+/* ── Accesibilidad: sin animación cuando el usuario la desactiva ──────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .list-item,
+  .list-item::before,
+  .list-item .list-item-avatar .anticon {
+    transition: none;
+  }
+
+  .list-item--clickable:hover {
+    transform: none;
+  }
 }

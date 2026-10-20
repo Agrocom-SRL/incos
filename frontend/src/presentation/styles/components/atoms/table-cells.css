@@ -195,6 +195,29 @@
   font-weight: 700;
 }
 
+/* El mismo tono aplicado a un icono suelto (fuera de InfoLinesCell): tarjetas
+   de paralelo del wizard de matrícula y cualquier métrica por sexo. El color se
+   expone como custom property (`--cfg-genero-color`) para que un contexto que
+   fuerce el color del texto —p. ej. una tarjeta seleccionada— pueda devolverle
+   su tono sin repetir el valor. Una sola fuente de verdad del azul/magenta. */
+.cfg-genero-tone--m {
+  --cfg-genero-color: var(--ant-blue, #1677ff);
+}
+
+.cfg-genero-tone--f {
+  --cfg-genero-color: var(--ant-color-magenta, #eb2f96);
+}
+
+.cfg-genero-tone--o {
+  --cfg-genero-color: var(--text-500, #6b7280);
+}
+
+.cfg-genero-tone--m > .anticon,
+.cfg-genero-tone--f > .anticon,
+.cfg-genero-tone--o > .anticon {
+  color: var(--cfg-genero-color);
+}
+
 /* ── Subestado bajo la identidad (patrón PagoEstudianteCell): dot + etiqueta teñida ── */
 .cfg-identidad-substate {
   display: inline-flex;

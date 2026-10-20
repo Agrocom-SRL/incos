@@ -1,286 +1,294 @@
 /* ============================================================================
-   STEP 2 - Periodo y materias (Material Design inspired)
+   PASO «PARALELO» — cards de paralelo por periodo (wizard de matrícula)
    ============================================================================
-   Elevation, surfaces, typography hierarchy, chips
+   Rediseño §4-C2 con tokens del design system (dark-safe, sin hex sueltos):
+   tarjeta elevada con hover motivado, cabecera con la inicial del paralelo y la
+   pill de turno (icono + color por token), y banda de inscritos con iconos
+   (total / hombres / mujeres). El estado seleccionado usa el acento primario
+   (borde + tinte + marca «Seleccionado»), no el relleno sólido.
+
+   La selección de periodo/materias vive ahora en la planilla
+   (materias-planilla.css); los estilos del checkboxGroup legacy se retiraron.
    ============================================================================ */
 
-/* ---- Contenedores de sección (materias y paralelos) ---- */
-/* Superficie de tarjetas: gris muy suave para que destaquen sobre fondo blanco/gris claro */
-.step2-materias-list {
-  --step2-elevation-1: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
-  --step2-elevation-2: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
-  --step2-surface: #f5f6f8;
-  --step2-surface-border: rgba(0, 0, 0, 0.1);
-  --step2-radius: 12px;
-  --step2-radius-sm: 8px;
-  padding: 4px 0;
+/* ---- Tarjeta contenedora (DataCards) ---- */
+
+/* Grilla de tarjetas: DOS columnas como máximo (span=12). Un paralelo suelto
+   ocupa media columna —no todo el ancho— y el máximo real observado (4 por
+   periodo) queda en 2×2. En columnas angostas (3 periodos a la vez) pasa a una
+   sola columna, medido por el ancho del contenedor, no del viewport. */
+.step2-paralelos-cards.data-cards {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
 }
 
-.step2-paralelos-cards {
-  --step2-elevation-1: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
-  --step2-elevation-2: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
-  --step2-elevation-hover: 0 12px 24px -8px rgba(0, 0, 0, 0.15), 0 4px 8px -4px rgba(0, 0, 0, 0.08);
-  --step2-surface: #f5f6f8;
-  --step2-surface-border: rgba(0, 0, 0, 0.1);
-  --step2-radius: 12px;
-  --step2-radius-sm: 8px;
+.step2-paralelos-cards.data-cards .data-cards__card {
+  flex: initial;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  height: 100%;
 }
 
-/* Lista de materias: tarjetas con superficie gris y borde visible */
-.step2-materias-list .activity-list {
-  gap: 12px !important;
+@container (max-width: 620px) {
+  .step2-paralelos-cards.data-cards {
+    grid-template-columns: 1fr;
+  }
 }
 
-.step2-materias-list .activity-item {
-  background: var(--step2-surface) !important;
-  border: 1px solid var(--step2-surface-border) !important;
-  border-radius: var(--step2-radius);
-  padding: 14px 16px !important;
-  box-shadow: var(--step2-elevation-1);
-  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+.step2-paralelos-cards .data-cards__card {
+  border-radius: var(--border-radius-lg) !important;
+  border: 1px solid var(--color-border) !important;
+  background: var(--color-bg-container) !important;
+  /* Elevación en reposo: las tarjetas deben leerse como piezas sobre el lienzo,
+     no como recuadros dibujados en él. */
+  box-shadow: var(--shadow-elevation-2) !important;
+  overflow: hidden;
+  transition:
+    box-shadow var(--transition-base) ease,
+    transform var(--transition-base) ease,
+    border-color var(--transition-base) ease !important;
 }
 
-.step2-materias-list .activity-item:hover {
-  box-shadow: var(--step2-elevation-2);
-  border-color: rgba(0, 0, 0, 0.14) !important;
+.step2-paralelos-cards .data-cards__card .ant-card-body {
+  padding: var(--spacing-base) !important;
+  border-radius: var(--border-radius-lg);
+  background: transparent !important;
 }
 
-/* ---- Tarjeta de paralelo (Material card) ---- */
-.step2-paralelo-card {
+/* El hover solo insinúa la tarjeta NO elegida: sobre la seleccionada volvía a
+   pintar el borde primario encima de su anillo y se leía como un borde doble. */
+.step2-paralelos-cards .data-cards__card:not(.data-cards__card--active):hover {
+  box-shadow: var(--shadow-elevation-3) !important;
+  border-color: var(--color-primary-border) !important;
+  transform: translateY(-2px);
+}
+
+/* Tarjeta seleccionada: acento primario (borde + tinte suave, texto legible).
+   `card.css` (legacy, compartido por otras pantallas) fuerza texto blanco sobre
+   relleno sólido en `.data-cards__card--active`; aquí se devuelve el color de
+   texto del theme para que el tinte claro siga siendo legible. */
+.step2-paralelos-cards .data-cards__card--active,
+.step2-paralelos-cards .data-cards__card--active:hover {
+  background: var(--color-primary-bg) !important;
+  box-shadow:
+    0 0 0 1.5px var(--color-primary-border),
+    var(--shadow-elevation-2) !important;
+  transform: none;
+}
+
+.step2-paralelos-cards .data-cards__card--active .ant-card,
+.step2-paralelos-cards .data-cards__card--active .ant-card-body {
+  background: transparent !important;
+}
+
+.step2-paralelos-cards .data-cards__card--active .ant-card-body,
+.step2-paralelos-cards .data-cards__card--active .ant-card-body * {
+  color: var(--color-text) !important;
+}
+
+.step2-paralelos-cards .data-cards__card--active .paralelo-card__desc {
+  color: var(--color-text-secondary) !important;
+}
+
+/* …salvo el tono de género (icono y rótulo), que se conserva también en la
+   tarjeta elegida: es información, no decoración. */
+.step2-paralelos-cards .data-cards__card--active [class*='cfg-genero-tone'] .anticon,
+.step2-paralelos-cards
+  .data-cards__card--active
+  [class*='cfg-genero-tone']
+  .paralelo-card__metrica-label {
+  color: var(--cfg-genero-color) !important;
+}
+
+/* ---- Contenido de la tarjeta (patrón TARJETA INFORMATIVA, prioridad 1) ----
+   Ver docs/referencia/tarjeta-informativa.md: cabecera (identidad + pills) →
+   divisor → banda de métricas con rótulo en versalitas sobre el valor. Sin
+   fondos de color: el color vive en las pills y en los acentos. */
+
+.paralelo-card {
+  --paralelo-turno-color: var(--color-border);
+  --paralelo-turno-bg: var(--color-bg-layout);
+  --paralelo-turno-fg: var(--color-text-secondary);
   width: 100%;
   min-height: 100%;
   display: flex;
   flex-direction: column;
-  padding: 0;
+  gap: var(--spacing-sm);
 }
 
-.step2-paralelo-card__header {
-  margin-bottom: 12px;
+.paralelo-card--warning {
+  --paralelo-turno-color: var(--color-warning-border);
+  --paralelo-turno-bg: var(--color-warning-bg);
+  --paralelo-turno-fg: var(--color-warning-active);
 }
 
-.step2-paralelo-card__title {
-  margin: 0 !important;
-  font-size: 1.125rem !important;
-  font-weight: 600 !important;
-  letter-spacing: -0.01em;
-  line-height: 1.35 !important;
-  color: rgba(0, 0, 0, 0.87) !important;
+.paralelo-card--info {
+  --paralelo-turno-color: var(--color-info-border);
+  --paralelo-turno-bg: var(--color-info-bg);
+  --paralelo-turno-fg: var(--color-info-active);
 }
 
-.step2-paralelo-card__meta {
+.paralelo-card--accent {
+  --paralelo-turno-color: var(--color-accent-border);
+  --paralelo-turno-bg: var(--color-accent-bg);
+  --paralelo-turno-fg: var(--color-accent-active);
+}
+
+/* ---- Cabecera: inicial + identidad + pills ---- */
+
+/* Sin wrap: la identidad encoge (min-width:0) antes de que las pills bajen de
+   línea, así el turno se lee siempre en la esquina superior derecha. */
+.paralelo-card__head {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin-top: 8px;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  flex-wrap: nowrap;
 }
 
-.step2-paralelo-card__chip {
+/* Inicial del paralelo (A, B, C…): ancla visual, teñida con el color del turno */
+.paralelo-card__inicial {
+  flex: none;
   display: inline-flex;
   align-items: center;
-  padding: 4px 10px;
-  border-radius: 16px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  line-height: 1.25;
-  background: rgba(0, 0, 0, 0.06);
-  color: rgba(0, 0, 0, 0.72);
+  justify-content: center;
+  width: var(--control-height-sm);
+  height: var(--control-height-sm);
+  border-radius: var(--border-radius);
+  background: var(--paralelo-turno-bg);
+  border: 1px solid var(--paralelo-turno-color);
+  color: var(--paralelo-turno-fg);
+  font-family: var(--font-family-code);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-strong);
+  line-height: 1;
 }
 
-.step2-paralelo-card__chip--turno {
-  background: rgba(24, 144, 255, 0.12);
-  color: #1890ff;
+/* Elegida: la inicial pasa al primario sólido (confirma la elección). */
+.step2-paralelos-cards .data-cards__card--active .paralelo-card__inicial {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-white) !important;
 }
 
-.step2-paralelo-card__desc {
-  font-size: 0.8125rem;
-  color: rgba(0, 0, 0, 0.6);
-  line-height: 1.4;
-  margin-top: 8px;
+.paralelo-card__identidad {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
-.step2-paralelo-card__divider {
-  height: 1px;
-  background: rgba(0, 0, 0, 0.08);
-  margin: 12px 0;
-  border: none;
+.paralelo-card__title {
+  margin: 0 !important;
+  min-width: 0;
+  font-size: var(--font-size-lg) !important;
+  font-weight: var(--font-weight-strong) !important;
+  line-height: var(--line-height-sm) !important;
+  color: var(--color-text) !important;
 }
 
-.step2-paralelo-card__stats {
+/* Dos líneas como máximo: mantiene la altura pareja entre tarjetas vecinas. */
+.paralelo-card__desc {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-sm);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.paralelo-card__pills {
+  flex: none;
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 12px;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--spacing-xs);
+  margin-inline-start: auto;
 }
 
-.step2-paralelo-card__stat {
-  flex: 1;
-  min-width: 70px;
-  padding: 10px 12px;
-  border-radius: var(--step2-radius-sm);
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  text-align: center;
-  transition: background 0.2s ease;
+/* Turno dentro de la pill: icono + texto */
+.paralelo-card__turno{
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
 }
 
-.step2-paralelo-card__stat-label {
-  display: block;
-  font-size: 0.6875rem;
-  font-weight: 600;
+/* La pill «Elegido» solo existe en la tarjeta seleccionada. */
+.paralelo-card__pill-elegido {
+  display: none;
+}
+
+.step2-paralelos-cards .data-cards__card--active .paralelo-card__pill-elegido {
+  display: inline-flex;
+}
+
+/* ---- Banda de métricas (inscritos por sexo) ---- */
+
+.paralelo-card__metricas {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: auto;
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--color-border-secondary);
+}
+
+.paralelo-card__metrica {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 0;
+  padding-inline: var(--spacing-sm);
+  border-inline-start: 1px solid var(--color-border-secondary);
+}
+
+.paralelo-card__metrica:first-child {
+  padding-inline-start: 0;
+  border-inline-start: none;
+}
+
+.paralelo-card__metrica-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-xxs);
+  font-weight: var(--font-weight-strong);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: rgba(0, 0, 0, 0.5);
-  margin-bottom: 4px;
+  letter-spacing: 0.1em;
+  color: var(--color-text-tertiary);
 }
 
-.step2-paralelo-card__stat-value {
-  font-size: 1.25rem;
-  font-weight: 700;
-  line-height: 1.2;
-  color: rgba(0, 0, 0, 0.87);
+/* Tono de género: icono Y rótulo teñidos (azul / magenta), igual que en las
+   listas (`cfg-genero-tone`, table-cells.css). No es decorativo: es el código
+   de color con el que ya se leen los datos por sexo en todo el sistema. */
+.paralelo-card__metrica[class*='cfg-genero-tone'] .paralelo-card__metrica-label {
+  color: var(--cfg-genero-color);
 }
 
-.step2-paralelo-card__stat--total .step2-paralelo-card__stat-value {
-  color: rgba(0, 0, 0, 0.87);
+/* El total de inscritos es el dato institucional de la tarjeta: primario. */
+.paralelo-card__metrica--total .paralelo-card__metrica-label,
+.paralelo-card__metrica--total .paralelo-card__metrica-label .anticon {
+  color: var(--color-primary);
 }
 
-.step2-paralelo-card__stat--hombres .step2-paralelo-card__stat-value {
-  color: #1890ff;
+/* El dato numérico manda en esta tarjeta: un escalón por encima del texto. */
+.paralelo-card__metrica-valor {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-strong);
+  line-height: var(--line-height-sm);
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
 }
 
-.step2-paralelo-card__stat--mujeres .step2-paralelo-card__stat-value {
-  color: #eb2f96;
-}
-
-/* Tarjeta de paralelo: superficie gris y borde visible para contraste con el fondo */
-.step2-paralelos-cards .data-cards__card .ant-card-body {
-  padding: 20px !important;
-  border-radius: var(--step2-radius);
-  background: var(--step2-surface) !important;
-}
-
-.step2-paralelos-cards .data-cards__card {
-  border-radius: var(--step2-radius) !important;
-  border: 1px solid var(--step2-surface-border) !important;
-  box-shadow: var(--step2-elevation-1) !important;
-  background: var(--step2-surface) !important;
-  transition: box-shadow 0.25s ease, transform 0.2s ease, border-color 0.2s ease !important;
-}
-
-.step2-paralelos-cards .data-cards__card:hover {
-  box-shadow: var(--step2-elevation-hover) !important;
-  border-color: rgba(0, 0, 0, 0.16) !important;
-}
-
-/* Tarjeta seleccionada: fondo y borde en color primario */
-.step2-paralelos-cards .data-cards__card--active {
-  border-color: var(--color-primary, #1890ff) !important;
-  background: var(--color-primary, #1890ff) !important;
-  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.25), var(--step2-elevation-2) !important;
-}
-
-.step2-paralelos-cards .data-cards__card--active .ant-card {
-  background: var(--color-primary, #1890ff) !important;
-}
-
-.step2-paralelos-cards .data-cards__card--active .ant-card-body {
-  background: var(--color-primary, #1890ff) !important;
-}
-
-/* Tarjeta activa: mantener legibilidad de chips y stats */
-.step2-paralelos-cards .data-cards__card--active .step2-paralelo-card__title {
-  color: #fff !important;
-}
-
-.step2-paralelos-cards .data-cards__card--active .step2-paralelo-card__chip {
-  background: rgba(255, 255, 255, 0.25);
-  color: #fff;
-}
-
-.step2-paralelos-cards .data-cards__card--active .step2-paralelo-card__chip--turno {
-  background: rgba(255, 255, 255, 0.3);
-  color: #fff;
-}
-
-.step2-paralelos-cards .data-cards__card--active .step2-paralelo-card__desc {
-  color: rgba(255, 255, 255, 0.85);
-}
-
-.step2-paralelos-cards .data-cards__card--active .step2-paralelo-card__divider {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.step2-paralelos-cards .data-cards__card--active .step2-paralelo-card__stat {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.step2-paralelos-cards .data-cards__card--active .step2-paralelo-card__stat-label {
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.step2-paralelos-cards .data-cards__card--active .step2-paralelo-card__stat-value {
-  color: #fff !important;
-}
-
-.step2-paralelos-cards .data-cards__card--active .step2-paralelo-card__stat--hombres .step2-paralelo-card__stat-value {
-  color: #bae7ff !important;
-}
-
-.step2-paralelos-cards .data-cards__card--active .step2-paralelo-card__stat--mujeres .step2-paralelo-card__stat-value {
-  color: #ffadd2 !important;
-}
-
-/* ---- Periodo: radio group horizontal (botones) ---- */
-.step2-periodo-radio .field-radio.ant-radio-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.step2-periodo-radio .ant-radio-button-wrapper {
-  border-radius: 8px;
-}
-
-/* ---- Periodo como checkbox group (multi-select, estilo botón) ---- */
-.step2-periodo-checkbox.field-checkbox-group--button .ant-checkbox-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.step2-periodo-checkbox.field-checkbox-group--button .ant-checkbox-wrapper {
-  margin-inline-start: 0;
-  padding: 4px 12px;
-  border: 1px solid #d9d9d9;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-}
-
-.step2-periodo-checkbox.field-checkbox-group--button .ant-checkbox-wrapper:hover {
-  border-color: var(--ant-color-primary-hover, #4096ff);
-  color: var(--ant-color-primary, #1677ff);
-}
-
-.step2-periodo-checkbox.field-checkbox-group--button .ant-checkbox-wrapper.ant-checkbox-wrapper-checked {
-  border-color: var(--ant-color-primary, #1677ff);
-  background-color: var(--ant-color-primary-bg, #e6f4ff);
-  color: var(--ant-color-primary, #1677ff);
-}
-
-/* Periodos deshabilitados por traspaso (año ya cursado en institución de origen).
-   La clase está en un span que envuelve cada checkbox para garantizar que se aplique. */
-.step2-periodo-checkbox .periodo-academico--disabled {
-  display: inline-block;
-  opacity: 0.6;
-  cursor: not-allowed;
-  pointer-events: none;
-}
-.step2-periodo-checkbox .periodo-academico--disabled .ant-checkbox-wrapper {
-  cursor: not-allowed;
-  pointer-events: none;
-}
-.step2-periodo-checkbox .periodo-academico--disabled .ant-checkbox-label {
-  color: var(--text-500, #6b7280);
-  text-decoration: line-through;
+@media (prefers-reduced-motion: reduce) {
+  .step2-paralelos-cards .data-cards__card,
+  .step2-paralelos-cards .data-cards__card:hover {
+    transition: none !important;
+    transform: none;
+  }
 }

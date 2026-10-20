@@ -67,6 +67,14 @@ export const modalWidths = {
   modalWidthLG: 720,
 };
 
+// Pickers de tarjetas del design system (CarreraCardPicker)
+export const pickerSizes = {
+  // Alto del área de imagen/fallback de cada tarjeta de carrera
+  carreraCardMediaHeight: 180,
+  // Padding del overlay inferior (código + nombre) sobre la imagen
+  carreraCardOverlayPadding: 12,
+};
+
 export const zIndex = {
   zIndexBase: 0,
   zIndexPopupBase: 1000,
@@ -96,6 +104,7 @@ export const allSpacing = {
   ...layoutHeights,
   ...logoSizes,
   ...modalWidths,
+  ...pickerSizes,
   ...zIndex,
   ...motion,
   ...skeletonSizes,

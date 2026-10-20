@@ -1,0 +1,293 @@
+/* ============================================================================
+   HISTORIAL DE NOTAS (paso «Historial de notas» del wizard de matrícula)
+   ----------------------------------------------------------------------------
+   Mismo lenguaje que la planilla de materias (materias-planilla.css): un bloque
+   por periodo con cabecera-banda primaria y tabla CÓDIGO | ASIGNATURA | ESTADO |
+   NOTA FINAL. Agrupar por periodo es el punto: en nivelación conviven materias
+   de varios años y en una lista corrida no se distinguen.
+
+   Solo tokens del theme (dark-safe, sin hex sueltos).
+   ============================================================================ */
+
+.historial-planilla {
+  /* Medidas de composición (layout, no estilo): ancho mínimo del bloque de un
+     periodo en la grilla y de su tabla antes de recurrir al scroll horizontal. */
+  --historial-year-min: 560px;
+  --historial-table-min: 460px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  width: 100%;
+  min-width: 0;
+  color: var(--color-text);
+}
+
+.historial-planilla--loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.historial-planilla__intro.ant-typography {
+  font-size: var(--font-size-sm);
+}
+
+/* ---- Grid de periodos ---- */
+
+.historial-planilla__years {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(var(--historial-year-min), 100%), 1fr)
+  );
+  gap: var(--spacing-sm);
+  align-items: start;
+}
+
+/* ---- Periodo (sección con cabecera-banda) ---- */
+
+.historial-planilla__year {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  background: var(--color-bg-container);
+}
+
+.historial-planilla__year-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  padding: calc(var(--spacing-xs) * 3) var(--spacing-base);
+  background: var(--color-primary);
+  color: var(--color-white);
+}
+
+.historial-planilla__year-title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-strong);
+  letter-spacing: 0.4px;
+  line-height: var(--line-height-sm);
+}
+
+.historial-planilla__year-resumen {
+  font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
+  opacity: 0.9;
+}
+
+/* Franja de contadores bajo la cabecera (cuántas llevan nota / convalidación) */
+.historial-planilla__year-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs) var(--spacing-base);
+  padding: var(--spacing-xs) var(--spacing-base);
+  background: var(--color-bg-layout);
+  border-bottom: 1px solid var(--color-border-secondary);
+}
+
+.historial-planilla__meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.historial-planilla__meta-item--aprobadas .anticon {
+  color: var(--color-success);
+}
+
+.historial-planilla__meta-item--pendiente {
+  color: var(--color-warning-active);
+  font-weight: var(--font-weight-strong);
+}
+
+.historial-planilla__meta-item--pendiente .anticon {
+  color: var(--color-warning);
+}
+
+/* ---- Tabla de asignaturas ---- */
+
+.historial-planilla__year-body {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.historial-planilla__table {
+  width: 100%;
+  min-width: var(--historial-table-min);
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+}
+
+.historial-planilla__col-codigo {
+  width: 15%;
+}
+
+.historial-planilla__col-nombre {
+  width: 41%;
+}
+
+.historial-planilla__col-estado {
+  width: 26%;
+}
+
+.historial-planilla__col-nota {
+  width: 18%;
+}
+
+.historial-planilla__table th,
+.historial-planilla__table td {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: 1px solid var(--color-border-secondary);
+  vertical-align: middle;
+}
+
+.historial-planilla__table thead th {
+  padding: calc(var(--spacing-xs) * 2) var(--spacing-sm);
+  background: var(--color-bg-layout);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xxs);
+  font-weight: var(--font-weight-strong);
+  letter-spacing: 0.4px;
+  text-align: center;
+  line-height: var(--line-height-sm);
+}
+
+.historial-planilla__td-codigo {
+  font-weight: var(--font-weight-strong);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.historial-planilla__td-nombre {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.historial-planilla__td-estado,
+.historial-planilla__td-nota {
+  text-align: center;
+}
+
+/* ---- Estados de fila ---- */
+
+.historial-planilla__row {
+  transition: background var(--transition-base) ease;
+}
+
+.historial-planilla__row--aprobado {
+  background: var(--color-success-bg);
+}
+
+.historial-planilla__row--aprobado > td {
+  border-color: var(--color-border);
+}
+
+.historial-planilla__row--invalid {
+  background: var(--color-error-bg);
+}
+
+.historial-planilla__row--invalid > td {
+  border-color: var(--color-error-border);
+}
+
+/* ---- Controles de la fila ---- */
+
+/* Estado: switch + pill separada (mismo patrón que el átomo EstadoTogglePill de
+   los catálogos). Encendido = la materia tiene nota (aprobada). */
+.historial-estado-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+/* La pill es el segundo blanco del toggle: mismo aspecto de etiqueta, pero
+   pulsable (y enfocable) para alternar el estado. */
+.historial-estado-toggle__pill {
+  cursor: pointer;
+  font-family: inherit;
+  line-height: var(--line-height-sm);
+  transition:
+    background var(--transition-base) ease,
+    color var(--transition-base) ease,
+    box-shadow var(--transition-base) ease;
+}
+
+.historial-estado-toggle__pill:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.historial-estado-toggle__pill:not(:disabled):hover {
+  box-shadow: var(--shadow-elevation-1);
+}
+
+.historial-estado-toggle__pill:focus-visible {
+  outline: var(--border-radius-xs) solid var(--color-primary);
+  outline-offset: var(--border-radius-xs);
+}
+
+/* Celda de nota: gemela de `cal-nota-cell` del cuaderno de calificaciones
+   (ancho fijo, centrada, tabular, punteada mientras está vacía), con tokens. */
+.historial-nota-cell {
+  --historial-nota-ancho: 80px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.historial-nota-cell__input.ant-input-number {
+  width: var(--historial-nota-ancho);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+}
+
+.historial-nota-cell__input .ant-input-number-input {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--font-weight-strong);
+  color: var(--color-text);
+  background: transparent;
+}
+
+.historial-nota-cell--vacia .historial-nota-cell__input.ant-input-number {
+  background: transparent;
+  border-style: dashed;
+}
+
+.historial-nota-cell--error .historial-nota-cell__input.ant-input-number {
+  border-color: var(--color-error);
+  background: var(--color-error-bg);
+}
+
+.historial-nota-cell--error .historial-nota-cell__input .ant-input-number-input {
+  color: var(--color-error-active);
+}
+
+.historial-planilla .historial-nota-no-aplica {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .historial-planilla__row {
+    transition: none;
+  }
+}
+
+/* El marcado de paso inválido de «Periodo y materias» vive en
+   materias-planilla.css (.materias-planilla--invalid). */

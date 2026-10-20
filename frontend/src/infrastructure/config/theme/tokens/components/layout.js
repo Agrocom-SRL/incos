@@ -53,5 +53,5 @@ export const Header = {
   colorBorder: allColors.colorBorder,
   padding: `0 ${allSpacing.marginLG}px`,
   borderRadius: 0,
-  boxShadow: shadows.shadowElevation1,
+  boxShadow: shadows.shadowElevation2,
 };

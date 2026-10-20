@@ -18,10 +18,25 @@
  * avance al 100%) bloquean "Continuar" mientras no se cumplan; manuales
  * (pasos que el sistema no puede verificar, p. ej. una firma física) se
  * listan como checklist y exigen una confirmación explícita del usuario.
+ *
+ * Informe de suficiencia (extensión 2026-08-17): cuando el destino es
+ * `SUFICIENCIA`, el modal reemplaza el textarea genérico de observaciones
+ * por la réplica digital del formulario físico "Informe de Suficiencia de
+ * Modalidad de Graduación" — 3 criterios del tutor (texto libre) + el
+ * veredicto. El backend exige estos 4 campos y, al completarse, emite y
+ * guarda el PDF (tipo INFORME_SUFICIENCIA en la tab "Dictámenes").
+ *
+ * Nota de predefensa (extensión 2026-08-19): cuando el destino es
+ * `APROBADO_PREDEFENSA`, el modal reemplaza el textarea genérico por un
+ * campo numérico obligatorio — es el dato que habilita después el botón
+ * "Declarar exento de defensa" (`proyecto.notaPredefensa > 90`, ver
+ * `useProyectoGradoDetailPage`). El backend ya acepta `body.nota` en esta
+ * transición (`AprobarEtapaProyectoUseCase`, `NOTA_POR_ESTADO`) y la persiste
+ * como `notaPredefensa`; solo faltaba el campo en este formulario.
  */
 
 import { useMemo, useState } from 'react';
-import { Checkbox, Empty, Flex, Form, Input, Modal, Typography } from 'antd';
+import { Checkbox, Empty, Flex, Form, Input, InputNumber, Modal, Radio, Typography } from 'antd';
 import { ArrowRightOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { allColors } from '@theme/tokens';
 import {
@@ -31,6 +46,11 @@ import {
 import { getRequisitosTransicion } from '@application-titulacion/proyectos-grado/utils/requisitosTransicionProyecto';
 
 const { Paragraph, Text } = Typography;
+
+/** Estado destino que activa el formulario del informe de suficiencia (T11). */
+const DESTINO_SUFICIENCIA = 'SUFICIENCIA';
+/** Estado destino que activa el campo de nota de predefensa (T11). */
+const DESTINO_APROBADO_PREDEFENSA = 'APROBADO_PREDEFENSA';
 
 const AprobarEtapaModal = ({
   open,
@@ -62,6 +82,8 @@ const AprobarEtapaModal = ({
   }
 
   const explicacion = formatExplicacionTransicionProyecto(destino);
+  const esInformeSuficiencia = destino === DESTINO_SUFICIENCIA;
+  const esAprobacionPredefensa = destino === DESTINO_APROBADO_PREDEFENSA;
 
   const requisitos = useMemo(
     () => getRequisitosTransicion(destino, { proyecto, bitacoraCount }),
@@ -78,6 +100,15 @@ const AprobarEtapaModal = ({
     await onSubmit({
       estado: destino,
       observaciones: (values.observaciones || '').trim() || undefined,
+      ...(esInformeSuficiencia
+        ? {
+            aspectosFormato: (values.aspectosFormato || '').trim(),
+            contenidoProyecto: (values.contenidoProyecto || '').trim(),
+            procesoTutoria: (values.procesoTutoria || '').trim(),
+            resultadoSuficiencia: values.resultadoSuficiencia,
+          }
+        : {}),
+      ...(esAprobacionPredefensa ? { nota: Number(values.notaPredefensa) } : {}),
     });
   };
 
@@ -148,13 +179,80 @@ const AprobarEtapaModal = ({
               </Checkbox>
             </Flex>
           ) : null}
-          <Form.Item name="observaciones" label="Observaciones (opcional)">
-            <Input.TextArea
-              rows={3}
-              maxLength={2000}
-              placeholder="Registre observaciones de la transición si corresponde"
-            />
-          </Form.Item>
+          {esInformeSuficiencia ? (
+            <>
+              <Form.Item
+                name="aspectosFormato"
+                label="Aspectos de formato"
+                rules={[{ required: true, message: 'Indique los aspectos de formato del proyecto' }]}
+              >
+                <Input.TextArea
+                  rows={2}
+                  maxLength={2000}
+                  placeholder="Formato, redacción, normas de presentación del documento"
+                />
+              </Form.Item>
+              <Form.Item
+                name="contenidoProyecto"
+                label="Contenido del proyecto"
+                rules={[{ required: true, message: 'Indique el contenido del proyecto' }]}
+              >
+                <Input.TextArea
+                  rows={2}
+                  maxLength={2000}
+                  placeholder="Pertinencia, desarrollo y consistencia del contenido"
+                />
+              </Form.Item>
+              <Form.Item
+                name="procesoTutoria"
+                label="Proceso de tutoría"
+                rules={[{ required: true, message: 'Indique el proceso de tutoría' }]}
+              >
+                <Input.TextArea
+                  rows={2}
+                  maxLength={2000}
+                  placeholder="Cumplimiento y desempeño del estudiante durante la tutoría"
+                />
+              </Form.Item>
+              <Form.Item
+                name="resultadoSuficiencia"
+                label="¿El estudiante está en condiciones de pasar a la Defensa de Proyecto de Grado?"
+                rules={[{ required: true, message: 'Seleccione el veredicto del informe de suficiencia' }]}
+              >
+                <Radio.Group
+                  optionType="button"
+                  buttonStyle="solid"
+                  options={[
+                    { label: 'Apto para la Defensa', value: 'APROBADO' },
+                    { label: 'No apto para la Defensa', value: 'NO_APROBADO' },
+                  ]}
+                />
+              </Form.Item>
+            </>
+          ) : esAprobacionPredefensa ? (
+            <Form.Item
+              name="notaPredefensa"
+              label="Nota de predefensa"
+              rules={[
+                { required: true, message: 'Indique la nota que el tribunal asignó en la predefensa' },
+              ]}
+            >
+              <InputNumber
+                min={0}
+                max={100}
+                style={{ width: '100%' }}
+                placeholder="Nota sobre 100"
+              />
+            </Form.Item>
+          ) : (
+            <Form.Item name="observaciones" label="Observaciones (opcional)">
+              <Input.TextArea
+                rows={3}
+                maxLength={2000}
+                placeholder="Registre observaciones de la transición si corresponde"
+              />
+            </Form.Item>
+          )}
         </Form>
       )}
     </Modal>

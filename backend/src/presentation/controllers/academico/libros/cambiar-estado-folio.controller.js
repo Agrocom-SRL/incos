@@ -12,7 +12,7 @@ export class CambiarEstadoFolioController {
   async handle(req, res, next) {
     try {
       const resultado = await this.cambiarEstadoFolioUseCase.execute({
-        usuarioId: req.user?.id ?? null,
+        usuarioId: req.usuario?.id ?? null,
         id: Number(req.params.id),
         folioId: Number(req.params.folioId),
         body: req.body,

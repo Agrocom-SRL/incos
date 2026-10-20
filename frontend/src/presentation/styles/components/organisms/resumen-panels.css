@@ -1,0 +1,119 @@
+/* ============================================================================
+   PANELES DE RESUMEN (compartidos)
+   ============================================================================
+   Paneles gemelos de confirmación/verificación (estudiante | beca, estudiante |
+   pago, etc.). Promovidos desde .beca-resumen (becas-asignar.css) al aparecer
+   más consumidores (asignar beca, registrar pago) — patrón "páginas gemelas".
+   Solo layout y composición; colores/tamaños vía variables del tema (root.js).
+   ============================================================================ */
+
+/* Paneles gemelos: columnas por contenedor (apilan solos cuando el espacio no
+   alcanza el mínimo). */
+.resumen-panels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
+  gap: var(--spacing-base);
+  align-items: stretch;
+}
+
+/* Mismo lenguaje de panel suave que .fw-subsection (form-workspace-section.css) */
+.resumen-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  background: var(--border-soft, var(--color-bg-layout));
+  border: 1px solid var(--border, var(--color-primary-border));
+  border-radius: var(--radius-lg, 12px);
+  padding: 18px 20px 20px;
+}
+
+.resumen-panel__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+
+.resumen-panel__label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-strong);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.resumen-panel__label .anticon {
+  color: var(--color-primary);
+  font-size: var(--font-size-base);
+}
+
+.resumen-panel__titulo.ant-typography {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-strong);
+  line-height: var(--line-height-sm);
+}
+
+.resumen-panel__desc.ant-typography {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.resumen-panel__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-xs) var(--spacing-base);
+  margin-top: auto;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.resumen-panel__meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  white-space: nowrap;
+}
+
+.resumen-panel__meta-item .anticon {
+  color: var(--color-text-tertiary);
+}
+
+/* Pill de valor destacado en la cabecera del panel (porcentaje de beca,
+   monto de la cuota, etc.) */
+.resumen-panel__pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--spacing-sm);
+  border-radius: 999px;
+  background: var(--color-primary-bg);
+  border: 1px solid var(--color-primary-border);
+  color: var(--color-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-strong);
+  line-height: var(--line-height-lg);
+  white-space: nowrap;
+}
+
+/* Filas etiqueta/valor dentro de un panel (resumen tipo recibo) */
+.resumen-panel__linea {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-base);
+}
+
+.resumen-panel__linea-label {
+  color: var(--color-text-secondary);
+}
+
+.resumen-panel__linea-valor {
+  font-weight: var(--font-weight-strong);
+  text-align: right;
+}

@@ -78,14 +78,17 @@ const DocumentoItem = ({
 
   return (
     <Container className="documento-item" vertical gap="md">
-      {/* Título y Switch */}
+      {/* Título y Switch: icono + texto en línea; el asterisco de requerido fluye
+          al final del texto (dentro del mismo span), no en una línea propia */}
       <Container className="documento-item-header">
         <Heading level={5} gap="small">
           <FileTextOutlined />
-          {tituloDocumento}
-          {esRequerido && (
-            <Text className="documento-required">*</Text>
-          )}
+          <span className="documento-item-title">
+            {tituloDocumento}
+            {esRequerido && (
+              <Text className="documento-required">*</Text>
+            )}
+          </span>
         </Heading>
 
         <Form.Item
@@ -112,31 +115,31 @@ const DocumentoItem = ({
         />
       )}
 
-      {/* Indicador "Se acepta Fotocopia": siempre en su propia línea para evitar cortes de texto */}
-      {mostrarIndicadorFotocopia && (
-        <div className="documento-item__fotocopia-wrap">
-          <Badge
-            variant="success"
-            icon={<CheckCircleOutlined />}
-            text="Se acepta Fotocopia"
-            className="documento-item__fotocopia-badge"
-          />
+      {/* Indicador "Se acepta Fotocopia" y checkbox "En trámite" (solo Pendiente):
+          lado a lado cuando el ancho de la card lo permite; con flex-wrap cada uno
+          baja a su propia línea en cards angostas (sin solaparse) */}
+      {(mostrarIndicadorFotocopia || !entregado) && (
+        <div className="documento-item__meta-row documento-item__fotocopia-wrap">
+          {mostrarIndicadorFotocopia && (
+            <Badge
+              variant="success"
+              icon={<CheckCircleOutlined />}
+              text="Se acepta Fotocopia"
+              className="documento-item__fotocopia-badge"
+            />
+          )}
+          {!entregado && (
+            <Form.Item
+              name={fieldNameEnTramite}
+              valuePropName="checked"
+              style={{ marginBottom: 0 }}
+            >
+              <FieldCheckbox disabled={readOnly}>
+                En trámite
+              </FieldCheckbox>
+            </Form.Item>
+          )}
         </div>
-      )}
-
-      {/* En trámite y motivo: solo cuando el documento está Pendiente, en bloque debajo */}
-      {!entregado && (
-        <>
-          <Form.Item
-            name={fieldNameEnTramite}
-            valuePropName="checked"
-            style={{ marginBottom: 0 }}
-          >
-            <FieldCheckbox disabled={readOnly}>
-              En trámite
-            </FieldCheckbox>
-          </Form.Item>
-        </>
       )}
 
       {/* Textarea para observaciones (motivo de no entrega) - solo visible cuando switch es FALSE */}

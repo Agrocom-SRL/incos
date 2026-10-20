@@ -95,6 +95,12 @@ export const ProyectoGrado = sequelize.define(
       field: 'fecha_inicio_desarrollo',
       allowNull: true,
     },
+    fechaInformeSuficiencia: {
+      type: DataTypes.DATEONLY,
+      field: 'fecha_informe_suficiencia',
+      allowNull: true,
+      comment: 'Fecha en que se registró el informe de suficiencia del tutor',
+    },
     fechaPresentacionPredefensa: {
       type: DataTypes.DATEONLY,
       field: 'fecha_presentacion_predefensa',

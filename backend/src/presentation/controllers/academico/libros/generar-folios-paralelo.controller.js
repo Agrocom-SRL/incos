@@ -12,7 +12,7 @@ export class GenerarFoliosParaleloController {
   async handle(req, res, next) {
     try {
       const resultado = await this.generarFoliosParaleloUseCase.execute({
-        usuarioId: req.user?.id ?? null,
+        usuarioId: req.usuario?.id ?? null,
         id: Number(req.params.id),
         body: req.body,
       });

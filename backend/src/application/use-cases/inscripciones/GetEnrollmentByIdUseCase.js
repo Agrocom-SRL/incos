@@ -21,6 +21,7 @@
  */
 
 import { ValidationError } from '../../../domain/errors/AppError.js';
+import { derivarCarreraPlanDesdeMatriculas } from './enrollmentBusinessRules.js';
 import { EnrollmentMapper, PriorEnrollmentHistoryMapper } from '../../mappers/inscripciones/index.js';
 import { TIPOS_INSCRIPCION } from '../../../domain/constants/inscripciones.constants.js';
 import { StudentAcademicDataMapper, StudentMapper } from '../../mappers/estudiantes/index.js';
@@ -289,7 +290,7 @@ export class GetEnrollmentByIdUseCase {
       );
 
       // 5. Obtener carrera (usando la entidad studentAcademicData)
-      const career = await this._getCareerById(
+      let career = await this._getCareerById(
         studentAcademicData?.careerId
       );
 
@@ -521,6 +522,30 @@ export class GetEnrollmentByIdUseCase {
       Object.keys(byPeriod).forEach((key) => {
         if (byPeriod[key].paraleloId != null) parallelIdsByPeriod[key] = Number(byPeriod[key].paraleloId);
       });
+
+      // 7c. Vínculo roto (datos académicos sin carrera): la carrera se deriva de
+      // las materias matriculadas (asignatura de plan → plan → carrera) para que
+      // el detalle y el modo edición no queden sin contexto de carrera. La fila
+      // de datos académicos se repara al guardar (UpdateEnrollmentUseCase), no
+      // aquí: un GET no escribe.
+      if (!career) {
+        const derivado = await derivarCarreraPlanDesdeMatriculas({
+          enrollmentId: enrollment.id,
+          subjectEnrollmentRepository: this.subjectEnrollmentRepository,
+          courseOfferRepository: this.courseOfferRepository,
+          planSubjectRepository: this.planSubjectRepository,
+          studyPlanRepository: this.studyPlanRepository,
+          logger: this.logger,
+        });
+        if (derivado?.careerId) {
+          career = await this._getCareerById(derivado.careerId);
+          this.logger.info('[Inscripciones] Carrera derivada desde materias matriculadas (datos académicos sin carrera)', {
+            enrollmentId: enrollment.id,
+            careerId: derivado.careerId,
+            studyPlanId: derivado.studyPlanId,
+          });
+        }
+      }
 
       // 8. Buscar formulario de inscripción del estudiante
       let formularioInscripcion = null;

@@ -1,83 +1,79 @@
 /* ============================================================================
-   InscripcionesPeriodoParalelosStepContent - Paralelos por periodo en columnas
+   InscripcionesPeriodoParalelosStepContent — Paralelos por periodo en columnas
+   ----------------------------------------------------------------------------
+   Solo layout y tokens del theme (dark-safe): la tarjeta y sus estados viven en
+   `pages/step2-periodo-materias.css` (.paralelo-card / .data-cards__card--active).
    ============================================================================ */
 
-/* Mismo tamaño y estilo que step 3 "Materias por periodo" */
-.step2-periodo-paralelos-section .step2-paralelos-columns-title {
-  margin-top: 20px;
-  margin-bottom: 16px;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: rgba(0, 0, 0, 0.85);
+/* Separador de sección: el organismo envuelve a FormWorkspaceSection, así que la
+   regla `__section:not(:first-child)` del workspace no lo alcanza y «Paralelos
+   por periodo» quedaba pegado al resumen. */
+.step2-periodo-paralelos-section {
+  width: 100%;
+  min-width: 0;
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--color-border-secondary);
 }
 
 .step2-paralelos-columns {
   margin-top: 0;
 }
 
-/* Columnas más compactas cuando hay 3 periodos */
-.step2-paralelos-columns--three .step2-paralelos-column-col {
-  max-width: 30.333%;
-}
-
-.step2-paralelos-columns--three .step2-paralelos-column {
-  padding: 8px 6px;
-  min-height: 100px;
-}
-
-.step2-paralelos-columns--three .step2-paralelos-column__header {
-  font-size: 1.125rem;
-  font-weight: 700;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-.step2-paralelos-columns--three .step2-paralelos-cards .data-cards__card {
-  margin-bottom: 6px;
-  padding: 8px 10px;
-}
-
 .step2-paralelos-column-col {
-  padding-left: 8px;
-  padding-right: 8px;
+  padding-inline: var(--spacing-xs);
 }
 
 .step2-paralelos-column {
-  min-height: 120px;
-  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  min-width: 0;
+  padding-block: var(--spacing-xs);
+  /* Contenedor de consulta de la grilla de tarjetas (2 columnas → 1). */
+  container-type: inline-size;
 }
 
 /* Divisor vertical entre columnas (todas menos la primera) */
 .step2-paralelos-column--with-divider {
-  border-left: 1px solid rgba(0, 0, 0, 0.12);
-  padding-left: 16px;
-  margin-left: 0;
+  border-inline-start: 1px solid var(--color-border-secondary);
+  padding-inline-start: var(--spacing-base);
 }
 
-/* Mismo tamaño y estilo que step 3 "Primer Año", "Segundo Año", etc. */
+/* Cabecera de la columna: periodo a la izquierda, estado de elección a la derecha */
 .step2-paralelos-column__header {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: rgba(0, 0, 0, 0.85);
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--spacing-xs) var(--spacing-sm);
+  padding-bottom: var(--spacing-xs);
+  border-bottom: 1px solid var(--color-border-secondary);
+}
+
+.step2-paralelos-column__periodo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-strong);
+  line-height: var(--line-height-sm);
+  color: var(--color-text);
+}
+
+.step2-paralelos-column__periodo .anticon {
+  color: var(--color-primary);
+}
+
+.step2-paralelos-column__estado {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
 }
 
 .step2-paralelos-empty-hint {
-  margin-top: 16px;
-  padding: 12px 16px;
-  background: rgba(0, 0, 0, 0.02);
-  border-radius: 8px;
-  color: rgba(0, 0, 0, 0.45);
-  font-size: 0.9rem;
-}
-
-.step2-periodo-paralelos-section .step2-paralelos-cards {
-  min-height: 80px;
-}
-
-.step2-periodo-paralelos-section .step2-paralelos-cards .data-cards__card {
-  margin-bottom: 8px;
+  margin-top: var(--spacing-base);
+  padding: var(--spacing-sm) var(--spacing-base);
+  border-radius: var(--border-radius);
+  background: var(--color-bg-layout);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
 }

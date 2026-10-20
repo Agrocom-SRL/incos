@@ -79,10 +79,18 @@ export class ForbiddenError extends AppError {
 
 /**
  * Error de conflicto (409)
+ *
+ * `details` (opcional) viaja en la respuesta (`ErrorFormatter.formatOperationalError`)
+ * para que el cliente pueda resolver el conflicto con información concreta
+ * (p. ej. el desglose de notas pendientes al cerrar un libro de registro) sin
+ * una segunda consulta.
  */
 export class ConflictError extends AppError {
-  constructor(message) {
+  constructor(message, details) {
     super(message, 409, 'CONFLICT');
+    if (details !== undefined) {
+      this.details = details;
+    }
   }
 }
 

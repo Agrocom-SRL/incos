@@ -167,3 +167,61 @@
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
 }
+
+/* ============================================================================
+   Modal de cierre con notas pendientes (CerrarLibroPendientesModal).
+   Resumen + lista compacta por paralelo (cabecera de una línea y sus folios
+   "Folio N · APELLIDO – APELLIDO" en rejilla de 2 columnas) con alto acotado
+   para que el motivo y los botones sigan a mano + formulario del motivo.
+   ============================================================================ */
+
+.libro-cierre__resumen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-md);
+}
+
+.libro-cierre__resumen .ant-typography {
+  margin-bottom: 0;
+}
+
+.libro-cierre__paralelos {
+  max-height: 48vh;
+  overflow-y: auto;
+  margin-bottom: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.libro-cierre__paralelo-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs) var(--spacing-sm);
+  padding-bottom: var(--spacing-xs);
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--spacing-xs);
+}
+
+.libro-cierre__folios {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--spacing-xs) var(--spacing-md);
+  font-size: var(--font-size-sm);
+}
+
+.libro-cierre__folio {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.libro-cierre__form .ant-form-item:last-child {
+  margin-bottom: 0;
+}

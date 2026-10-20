@@ -54,6 +54,7 @@ export class GetProyectoGradoByIdUseCase {
       fechaPresentacionPerfil: entity.fechaPresentacionPerfil,
       fechaAprobacionPerfil: entity.fechaAprobacionPerfil,
       fechaInicioDesarrollo: entity.fechaInicioDesarrollo,
+      fechaInformeSuficiencia: entity.fechaInformeSuficiencia,
       fechaPresentacionPredefensa: entity.fechaPresentacionPredefensa,
       fechaAprobacionPredefensa: entity.fechaAprobacionPredefensa,
       fechaDefensa: entity.fechaDefensa,

@@ -6,4 +6,5 @@ export {
   mapParaleloLibro,
   mapParalelosLibro,
   mapFolioEstudiante,
+  mapCierrePendientes,
 } from './librosMapper';

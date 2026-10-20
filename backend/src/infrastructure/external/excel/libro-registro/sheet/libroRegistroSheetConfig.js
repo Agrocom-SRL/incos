@@ -3,8 +3,12 @@
  * registro (un paralelo; folios apilados verticalmente, réplica del libro
  * físico "LIBRO LLENADO SISTEMAS 11 dic 2025": bloques de 34 filas).
  *
- * Centraliza anchos, alturas, offsets de fila del bloque de folio y colores de
- * ESTADO. Colores desde ExcelTheme (sin hex sueltos).
+ * TODOS los valores (anchos, altos, tamaños de fuente, colores, anclaje del
+ * logo) están MEDIDOS sobre el archivo físico real (hoja "3RO A SIST", folio
+ * de las filas 1-34 y página de firmas de docentes de las filas 69-118) — no
+ * son estimaciones. El documento es un formulario oficial del Ministerio de
+ * Educación: debe verse EXACTAMENTE igual al papel. Colores desde ExcelTheme
+ * (sin hex sueltos).
  */
 
 import { EXCEL_COLOR } from '../../shared/index.js';
@@ -14,54 +18,120 @@ export const FILAS_POR_FOLIO = 34;
 
 /**
  * Filas por celda de la grilla de FIRMAS DE DOCENTES (página final de la
- * hoja): 3 filas de espacio en blanco (firma física, sin línea) + 1 fila de
- * nombre del docente + 1 fila de materia.
+ * hoja): 5 filas de espacio en blanco (firma física, ≈82pt ≈ 2,9 cm) + 1 fila
+ * de nombre del docente (con `LINEA_FIRMA` encima) + 1 fila de materia. El
+ * físico usa 11 (con alturas de fila retocadas a mano para que entre en la
+ * hoja). Presupuesto vertical de la página (oficio horizontal, escala ≈0,9
+ * por ajuste a 1 página de ancho): con el primer nombre en la fila 11
+ * (`FILA_DOCENTES.primerNombre`, medido en el físico) y 3 grupos +
+ * ESTADÍSTICAS, 8 filas por firma desbordaba a una 2da hoja por ~12pt; con 7
+ * entra en UNA página (verificado renderizando con soffice + pdftoppm).
  */
-export const FILAS_POR_FIRMA = 5;
+export const FILAS_POR_FIRMA = 7;
 
 /**
- * Anchos de columna (unidades Excel) por rol semántico.
+ * Línea de firma (borde superior de la celda del rótulo/nombre), compartida
+ * por las firmas de AUTORIDADES al pie del folio y por las de DOCENTES de la
+ * página final: `thin` sólida y negra. El xlsx físico trae la de autoridades
+ * punteada y la de docentes no existe; el usuario pidió (2026-08-21) líneas
+ * sobre cada docente y que las de autoridades se vean igual de marcadas.
+ */
+export const LINEA_FIRMA = { style: 'thin' };
+
+/** Columnas de la grilla de FIRMAS DE DOCENTES (3 firmas por fila, como el papel real). */
+export const COLUMNAS_FIRMAS_DOCENTES = 3;
+
+/**
+ * Anchos de columna (unidades Excel) por rol semántico, 1:1 con el libro
+ * físico: A=4.29, B=9.43, C=39.43, D=14.71, materias 7.71-9.43 (se usa un
+ * ancho uniforme), ESTADO = 8.71 + 6.86, OBSERVACIONES = 7.71 + 7.71 + 19.86.
+ * Ancho total con 8 materias ≈ 190 unidades, lo que cabe en una hoja oficio
+ * horizontal ajustada a 1 página de ancho.
  *
  * OJO ExcelJS: un ancho de EXACTAMENTE `9` no se serializa como `customWidth`
  * (coincide con el default interno de la librería) y la columna vuelve al
- * ancho por defecto de Excel (~8.43, más angosto de lo pedido) — nunca usar
- * `9` aquí. Valores calibrados contra siglas/códigos de materia (hasta 7-8
- * caracteres, p. ej. "DCM-107") y R.M. ("0426/2016") en una sola línea.
+ * ancho por defecto de Excel (~8.43) — nunca usar `9` aquí.
  */
 export const COL_WIDTHS = {
-  nro: 5, // A — N°
-  nombreIzq: 12, // B — 1ra columna de NÓMINA (par B:C)
-  nombreDer: 34, // C — 2da columna de NÓMINA (valores de cabecera también van en C)
-  ci: 16, // D — CÉDULA DE IDENTIDAD
-  asignatura: 15, // una columna por materia (cabe la sigla en una línea)
-  estado: 12, // cada una de las 2 columnas de ESTADO
-  obs: 10, // cada una de las 4 columnas de OBSERVACIONES
-};
-
-/** Alturas de fila (puntos) por rol semántico. */
-export const ROW_HEIGHTS = {
-  titulo: 22, // filas de la banda CENTRALIZADOR DE CALIFICACIONES
-  cabecera: 18, // filas de campos (INSTITUCIÓN/GESTIÓN/...)
-  siglas: 20, // fila de siglas de materia
-  nombresMateria: 57.6, // fila (fusionada 5 filas) de nombres de materia (-10%)
-  dataRow: 22, // fila de estudiante (2 líneas de observación sin recorte)
-  firmas: 16,
-  firmaEspacio: 20, // cada una de las filas en blanco sobre la firma física (docentes)
+  nro: 4.29, // A — N°
+  nombreIzq: 9.43, // B — 1ra columna de NÓMINA (par B:C)
+  nombreDer: 39.43, // C — 2da columna de NÓMINA (valores de cabecera también van en C)
+  ci: 14.71, // D — CÉDULA DE IDENTIDAD
+  asignatura: 8.86, // una columna por materia
+  estado: [8.71, 6.86], // las 2 columnas de ESTADO
+  obs: [7.71, 7.71, 19.86], // las 3 columnas de OBSERVACIONES
 };
 
 /**
+ * Tamaños de fuente (pt) medidos en el físico. Locales a este documento: los
+ * tamaños institucionales de `EXCEL_FONT_SIZE` (14-20pt) son para los
+ * reportes internos del sistema, no para este formulario oficial.
+ */
+export const FONT_SIZE = {
+  titulo: 20, // CENTRALIZADOR DE CALIFICACIONES (folio)
+  tituloDocentes: 24, // mismo título en la página de firmas de docentes
+  codigoRegistro: 11,
+  libroFolio: 14, // LIBRO N° / FOLIO N° y sus valores
+  ciudad: 10, // Santa Cruz - Bolivia
+  campo: 11, // etiquetas y valores de cabecera, TURNO/R.M./CARÁCTER, siglas, N°/NÓMINA
+  cabeceraTabla: 12, // CÉDULA DE IDENTIDAD, nombres de materia, ESTADO, OBSERVACIONES
+  numeroOrden: 10, // N° de fila (negrita)
+  dato: 12, // nombre, C.I., notas, ESTADO
+  observacion: 9,
+  leyenda: 9, // NP / AP / PRE
+  firma: 9, // rótulos de firma de autoridades
+  docente: 11, // nombre y materia en la página de firmas de docentes
+  estadisticasTitulo: 14,
+  estadisticasCabecera: 9,
+  estadisticasEtiqueta: 10,
+  estadisticasValor: 11,
+  notaBorrador: 9,
+};
+
+/**
+ * Alturas de fila (puntos) medidas en el físico. Toda la cabecera usa el alto
+ * `base` (16.5pt) salvo: la fila superior del bloque (Código de Registro,
+ * 42.75pt: margen superior del folio), la fila CARRERA (49.5pt: es la que
+ * estira la fusión vertical de los nombres de materia rotados) y la fila
+ * N°/NÓMINA DE ESTUDIANTES (28.5pt). Las filas de estudiante son `base` y
+ * se estiran a `dataRowDosLineas` solo cuando la observación envuelve a 2
+ * líneas (en el físico eso se hizo a mano, fila por fila).
+ */
+export const ROW_HEIGHTS = {
+  superior: 42.75, // fila 1 del bloque (Código de Registro)
+  base: 16.5,
+  carrera: 49.5,
+  nomina: 28.5,
+  dataRow: 16.5,
+  dataRowDosLineas: 24, // fila de estudiante con observación de 2 líneas
+  leyenda: 12, // las 3 líneas NP/AP/PRE van juntas (en el físico es un cuadro de texto compacto)
+  estadisticasFila: 21.75,
+};
+
+/**
+ * Caracteres por línea que caben en OBSERVACIONES (3 columnas ≈ 35 unidades)
+ * a 9pt: por encima, la observación envuelve a una 2da línea y la fila se
+ * estira a `dataRowDosLineas`.
+ */
+export const OBS_CHARS_POR_LINEA = 48;
+
+/**
  * Offsets de fila DENTRO del bloque de un folio (1-based, relativos al inicio
- * del bloque). Espejo del libro real: escudo/logo (2-6, columnas A:C) con
- * código de registro (3, sobre columnas OBSERVACIONES P:S), título+LIBRO/FOLIO
- * (4-5), ciudad/turno (7), institución/R.M./carácter (8), gestión+siglas (9),
- * nivel+nombres de materia (10-13 fusionados hasta 14), carrera (11), régimen
- * (12), curso (13), cabecera de nómina (14), estudiantes (15-24), leyenda
- * NP/AP/PRE (26), firmas de autoridades (32).
+ * del bloque). Espejo del libro real: Código de Registro (1, sobre las
+ * columnas de OBSERVACIONES), escudo/logo (2-6, columnas A:C), título (4-5),
+ * cuadro LIBRO/FOLIO (3-6 con sus rótulos en 4-5), ciudad/turno (7),
+ * institución/R.M./carácter (8), gestión+siglas (9), nivel+nombres de materia
+ * (10-14 fusionados), carrera (11), régimen (12), curso (13), cabecera de
+ * nómina (14), estudiantes (15-24), leyenda NP/AP/PRE (26-28), firmas de
+ * autoridades (32; con el libro ABIERTO ese renglón lleva en su lugar la
+ * nota de borrador).
  */
 export const FILA = {
-  codigoRegistro: 3, // fila libre entre el escudo y la banda de título
+  codigoRegistro: 1,
   logoInicio: 2,
-  logoFin: 5,
+  logoFin: 6,
+  libroBoxInicio: 3, // cuadro LIBRO/FOLIO (fila de aire arriba y abajo)
+  libroBoxFin: 6,
   tituloInicio: 4,
   tituloFin: 5,
   libroNro: 4,
@@ -76,24 +146,41 @@ export const FILA = {
   nomina: 14, // N° / NÓMINA DE ESTUDIANTES
   dataInicio: 15,
   dataFin: 24, // 10 estudiantes por página
-  leyenda: 26, // NP = No se Presentó / AP = Aprobado / PRE = Prerrequisito
-  firmasAutoridades: 32,
+  leyendaInicio: 26, // NP = No se Presentó / AP = Aprobado / PRE = Prerrequisito
+  firmasAutoridades: 32, // o nota "DOCUMENTO BORRADOR" mientras el libro está ABIERTO
 };
 
 /**
- * Configuración de página para IMPRESIÓN/ENCUADERNADO del libro físico:
- * horizontal, ajustada al ancho, margen IZQUIERDO más ancho (lado del
- * encuadernado). Solo para este builder — no altera defaults de otros reportes.
- * Unidades de márgenes: pulgadas (ExcelJS pageSetup.margins).
+ * Offsets de fila de la página de FIRMAS DE DOCENTES (relativos a su base):
+ * logo (1-7), título (3-4), primer nombre de docente (11, MEDIDO en el físico:
+ * página en la fila 69, primer nombre en la 79 — con 9 el primer renglón
+ * quedaba pegado al logo; luego cada FILAS_POR_FIRMA), y el bloque
+ * ESTADÍSTICAS 3 filas después de la última materia (título, fila de aire,
+ * cabecera, filas).
+ */
+export const FILA_DOCENTES = {
+  tituloInicio: 3,
+  tituloFin: 4,
+  primerNombre: 11,
+  espacioAntesEstadisticas: 3,
+};
+
+/**
+ * Configuración de página para IMPRESIÓN del libro físico: papel OFICIO
+ * (legal, paperSize 5 — como el original), horizontal, ajustado a 1 página de
+ * ancho, márgenes uniformes ≈1 cm y centrado horizontal. Solo para este
+ * builder. Unidades de márgenes: pulgadas (ExcelJS pageSetup.margins).
  */
 export const PAGE_SETUP = {
+  paperSize: 5,
   orientation: 'landscape',
   fitToPage: true,
   fitToWidth: 1,
   fitToHeight: 0,
+  horizontalCentered: true,
   margins: {
-    left: 0.9, // lado de encuadernado
-    right: 0.3,
+    left: 0.4,
+    right: 0.4,
     top: 0.4,
     bottom: 0.4,
     header: 0.2,
@@ -102,28 +189,61 @@ export const PAGE_SETUP = {
 };
 
 /**
- * Relación de aspecto (ancho/alto) real de `external/templates/ministerio.png`:
- * el logo es más ancho que alto ("largo"). Se usa para calcular el ancho del
- * logo a partir del alto disponible en su caja (A2:C6 del bloque, 5 filas al
- * 100%) sin forzar el ancho de forma independiente — forzarlo lo deformaba.
- * Actualizar si se reemplaza el asset por uno con proporciones distintas.
+ * Relación de aspecto (ancho/alto) real de `external/templates/ministerio.png`
+ * (366×158 px) — misma imagen que el JPEG embebido en el libro físico
+ * (337×145 px). El logo se ancla por esquina superior izquierda + tamaño en
+ * píxeles (`oneCell`), así nunca se deforma. Actualizar si se reemplaza el
+ * asset por uno con proporciones distintas.
  */
-export const LOGO_ASPECT_RATIO = 366 / 68;
+export const LOGO_ASPECT_RATIO = 366 / 158;
 
-/** Color de texto de la columna ESTADO por valor. */
-export const ESTADO_COLOR = {
-  APROBADO: EXCEL_COLOR.finalHeader,
-  REPROBADO: EXCEL_COLOR.danger,
-  ABANDONO: EXCEL_COLOR.inkSoft,
-  CURSANDO: EXCEL_COLOR.info,
+/**
+ * Anclaje del logo medido en el físico (píxeles a 96 dpi): esquina superior
+ * izquierda = columna `startCol` (1-based) + `leftPx`, fila `topRow` del
+ * bloque + `topOffsetPx`; alto `heightPx` (el ancho sale de la relación de
+ * aspecto). Folio: A + 8px, fila 2 + 14px, 100px de alto (≈230px de ancho).
+ * Página de firmas de docentes: más grande (138px ≈ 313px de ancho), desde
+ * B + 43px, fila 1 + 18px.
+ */
+export const LOGO_FOLIO = { startCol: 1, leftPx: 8, topRow: 2, topOffsetPx: 14, heightPx: 100 };
+export const LOGO_DOCENTES = { startCol: 2, leftPx: 43, topRow: 1, topOffsetPx: 18, heightPx: 138 };
+
+/** Píxeles por punto (96 dpi) y por unidad de ancho Excel (≈7px + 5px de relleno). */
+export const PX_POR_PUNTO = 96 / 72;
+export const PX_POR_UNIDAD_EXCEL = 7;
+export const PX_RELLENO_COLUMNA = 5;
+
+/**
+ * Paleta del formulario oficial (todo desde ExcelTheme): texto y bordes negro
+ * puro; cabeceras de tabla "Verde oliva, Énfasis 3, claro 60%" (D6E3BC) salvo
+ * la fila de SIGLAS de materia, que en el físico lleva el mismo verde en su
+ * tono base, más oscuro (9BBB59).
+ */
+export const DOC_COLOR = {
+  ink: EXCEL_COLOR.black,
+  border: EXCEL_COLOR.black,
+  header: EXCEL_COLOR.officialHeader,
+  sigla: EXCEL_COLOR.officialHeaderStrong,
+  borrador: EXCEL_COLOR.danger,
 };
 
 export default {
   FILAS_POR_FOLIO,
+  FILAS_POR_FIRMA,
+  LINEA_FIRMA,
+  COLUMNAS_FIRMAS_DOCENTES,
   COL_WIDTHS,
+  FONT_SIZE,
   ROW_HEIGHTS,
+  OBS_CHARS_POR_LINEA,
   FILA,
+  FILA_DOCENTES,
   PAGE_SETUP,
   LOGO_ASPECT_RATIO,
-  ESTADO_COLOR,
+  LOGO_FOLIO,
+  LOGO_DOCENTES,
+  PX_POR_PUNTO,
+  PX_POR_UNIDAD_EXCEL,
+  PX_RELLENO_COLUMNA,
+  DOC_COLOR,
 };

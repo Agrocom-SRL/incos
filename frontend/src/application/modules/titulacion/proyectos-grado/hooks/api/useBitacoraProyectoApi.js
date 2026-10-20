@@ -33,7 +33,7 @@ export const useBitacoraProyectoApi = () => {
       setEntradas(mapBitacoraList(raw));
     } else {
       setEntradas([]);
-      setError(result?.error || 'No se pudo cargar la bitácora del proyecto');
+      setError(result?.error || 'No se pudo cargar el cronograma de progreso del proyecto');
     }
     setLoading(false);
     return result;

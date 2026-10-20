@@ -50,7 +50,7 @@ const ProyectoDatosSection = ({ proyecto }) => (
         <DetailField label="Correo del tutor">{proyecto.tutorEmail || '—'}</DetailField>
         <DetailField label="Teléfono del tutor">{proyecto.tutorTelefono || '—'}</DetailField>
         <DetailField label="Última tutoría">{proyecto.ultimaTutoriaLabel || 'Sin registros'}</DetailField>
-        <DetailField label="Entradas de bitácora">{proyecto.bitacoraTotal}</DetailField>
+        <DetailField label="Entradas del cronograma de progreso">{proyecto.bitacoraTotal}</DetailField>
         <DetailField label="Observaciones pendientes">
           {proyecto.observacionesPendientes}
         </DetailField>

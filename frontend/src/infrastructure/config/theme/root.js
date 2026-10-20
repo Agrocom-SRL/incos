@@ -195,6 +195,12 @@ export function injectCSSVariables() {
   root.style.setProperty('--control-height', `${allThemeTokens.controlHeight}px`);
   root.style.setProperty('--control-height-sm', `${allThemeTokens.controlHeightSM}px`);
 
+  root.style.setProperty('--control-height-lg', `${allThemeTokens.controlHeightLG}px`);
+
+  // Pickers de tarjetas del design system (CarreraCardPicker)
+  root.style.setProperty('--carrera-card-media-height', `${allThemeTokens.carreraCardMediaHeight}px`);
+  root.style.setProperty('--carrera-card-overlay-pad', `${allThemeTokens.carreraCardOverlayPadding}px`);
+
   // ========================================
   // LOGO - Tamaños
   // ========================================
@@ -239,18 +245,32 @@ export function injectCSSVariables() {
   // Solo definimos variables para casos específicos de layout
   root.style.setProperty('--font-family-base', allThemeTokens.fontFamily);
   root.style.setProperty('--font-family-heading', allThemeTokens.fontFamily);
+  // Monoespaciada: siglas/códigos que se leen en columna (resumen de matrícula).
+  root.style.setProperty('--font-family-code', allThemeTokens.fontFamilyCode);
   root.style.setProperty('--font-size-base', `${allThemeTokens.fontSize}px`);
   root.style.setProperty('--font-size-sm', `${allThemeTokens.fontSizeSM}px`);
   root.style.setProperty('--font-size-xs', `${allThemeTokens.fontSizeXS}px`);
+  root.style.setProperty('--font-size-xxs', `${allThemeTokens.fontSizeXXS}px`);
   root.style.setProperty('--font-size-lg', `${allThemeTokens.fontSizeLG}px`);
+  // Display grande (inicial de las tarjetas de carrera del design system)
+  root.style.setProperty('--font-size-heading-1', `${allThemeTokens.fontSizeHeading1}px`);
   root.style.setProperty('--line-height-normal', `${allThemeTokens.lineHeight}`);
   root.style.setProperty('--line-height-sm', `${allThemeTokens.lineHeightSM}`);
   root.style.setProperty('--line-height-lg', `${allThemeTokens.lineHeightLG}`);
   root.style.setProperty('--font-weight-strong', `${allThemeTokens.fontWeightStrong}`);
 
   // ========================================
-  // TRANSICIONES
+  // TRANSICIONES / MOTION
+  // Duraciones y curvas del theme (tokens/spacing.js → motion) expuestas como
+  // CSS vars para que el CSS de componentes no declare literales `0.2s` ni
+  // `cubic-bezier(...)` sueltos (una sola fuente de verdad de motion).
   // ========================================
   root.style.setProperty('--transition-base', allThemeTokens.motionDurationMid);
-  
+  root.style.setProperty('--motion-duration-fast', allThemeTokens.motionDurationFast);
+  root.style.setProperty('--motion-duration-mid', allThemeTokens.motionDurationMid);
+  root.style.setProperty('--motion-duration-slow', allThemeTokens.motionDurationSlow);
+  root.style.setProperty('--motion-ease-out', allThemeTokens.motionEaseOut);
+  root.style.setProperty('--motion-ease-in-out', allThemeTokens.motionEaseInOut);
+  root.style.setProperty('--motion-ease-in', allThemeTokens.motionEaseIn);
+
 }

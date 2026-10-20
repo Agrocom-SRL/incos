@@ -1,7 +1,7 @@
 /**
  * Mapper de formulario: catálogo maestro Becas y descuentos (módulo Finanzas).
- * Namespace propio (NO reutiliza los mappers de `application/modules/estudiantes/`,
- * que son del flujo legacy de asignación de becas a estudiantes).
+ * Namespace propio (NO reutiliza los mappers de `application/modules/matricula/becas/`,
+ * que son del flujo de asignación de becas a estudiantes en Matrícula).
  */
 
 import { becaDescuentoListMapper } from './becaDescuentoListMapper';

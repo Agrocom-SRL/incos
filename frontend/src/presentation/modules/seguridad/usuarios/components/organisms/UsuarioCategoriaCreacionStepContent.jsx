@@ -73,6 +73,9 @@ export default function UsuarioCategoriaCreacionStepContent({ form, isEditMode =
         rules={[{ required: true, message: 'Seleccione un tipo de alta' }]}
       >
         <Radio.Group onChange={handleRadioChange} disabled={isEditMode} style={{ width: '100%' }}>
+          {/* El wrapper `__section` es el contenedor de consulta (@container) que
+              decide 4→2→1 columnas por ancho REAL disponible, no por viewport. */}
+          <div className="wizard-selection-cards__section">
           <div className="wizard-selection-cards__grid wizard-selection-cards__grid--fixed-4">
             {OPCIONES.map((opt) => {
               const isSelected = selectedValue === opt.value;
@@ -98,6 +101,7 @@ export default function UsuarioCategoriaCreacionStepContent({ form, isEditMode =
                 </Radio.Button>
               );
             })}
+          </div>
           </div>
         </Radio.Group>
       </Form.Item>

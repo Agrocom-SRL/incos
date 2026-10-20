@@ -75,15 +75,20 @@ class LibroRegistroRepository {
 
   /**
    * PATCH /v1/libros/:id — edita cabecera (incluye cierre/reapertura por `estado`).
+   * Al cerrar, el backend agrega `cierre` ({ forzado, pendientesAsentados,
+   * filasSincronizadas }). Con notas pendientes y sin `forzarCierre` responde
+   * 409 CONFLICT: `handleErrorResponse` conserva el objeto completo en
+   * `errorDetails` (`code: 'CONFLICT'`, `details.pendientes` = desglose por
+   * paralelo → estudiantes → materias sin nota) para alimentar el modal.
    * @param {number} id
-   * @param {Object} payload
+   * @param {Object} payload - { ..., estado?, forzarCierre?, motivo? }
    */
   async editar(id, payload) {
     try {
       const response = await apiClient.patch(LIBROS_ENDPOINTS.BY_ID(id), payload);
       const result = unwrap(response);
       if (!result.success) return result;
-      return { success: true, data: result.data.libro ?? null };
+      return { success: true, data: result.data.libro ?? null, cierre: result.data.cierre ?? null };
     } catch (error) {
       return handleErrorResponse(error, 'Error al actualizar el libro de registro');
     }

@@ -9,12 +9,11 @@
 .documento-item {
   padding: var(--spacing-lg);
   margin-bottom: var(--spacing-md);
-  border: 1px solid var(--color-border-secondary);
+  /* Borde sutil visible en todo el contorno (el acento fuerte lo da ::before) */
+  border: 1px solid var(--border, #e8eaed);
   border-radius: var(--border-radius-sm);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   position: relative;
   overflow: hidden;
-  border-color: var(--color-primary-bg);
   box-shadow: var(--sombra-documento);
 }
 
@@ -31,6 +30,19 @@
 .documento-item-header {
   display: flex;
   justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+
+/* Título: el texto ocupa el ancho disponible y envuelve; icono y asterisco fluyen en línea */
+.documento-item-header .heading {
+  flex: 1;
+  min-width: 0;
+  margin-bottom: 0;
+}
+
+.documento-item-title {
+  flex: 1;
+  min-width: 0;
 }
 
 .documento-required {
@@ -38,10 +50,17 @@
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-bold);
   line-height: 1;
-  flex-shrink: 0;
+  margin-left: 4px;
 }
 
-/* Wrapper del indicador fotocopia: una línea propia para que no se apriete con "En trámite" */
+/* Fila fotocopia + en trámite: lado a lado con wrap según el ancho real de la card */
+.documento-item__meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-xs, 8px) var(--spacing-lg, 24px);
+}
+
 .documento-item__fotocopia-wrap {
   margin-bottom: var(--spacing-xs);
 }

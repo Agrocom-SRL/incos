@@ -1,0 +1,221 @@
+/* ============================================================================
+   REGISTRO DE PAGO (matricula/aportes)
+   ============================================================================
+   - .pago-cuotas-table:     tabla de cuotas fundida con el panel del aporte
+   - .compromiso-plazos:     selector de plazo del compromiso (paso Confirmación)
+   - .pago-compromiso-venc:  franja con la fecha de vencimiento proyectada
+   Los paneles de resumen usan .resumen-panel* (resumen-panels.css); los campos
+   del paso "Datos del pago" son FormField por config (sin CSS propio).
+   Solo layout y composición; colores/tamaños vía variables del tema (root.js).
+   ============================================================================ */
+
+/* --- Tabla de cuotas registradas (scoped) ----------------------------------
+   Dentro del panel suave del estado del aporte, la tabla se funde con el fondo
+   (sin bloque blanco). SOLO aplica vía .pago-cuotas-table — no altera Table
+   global. */
+
+.pago-cuotas-table .ant-table {
+  background: transparent;
+}
+
+.pago-cuotas-table .ant-table-thead > tr > th {
+  background: transparent;
+  border-bottom: 1px solid var(--color-border-secondary);
+}
+
+.pago-cuotas-table .ant-table-thead > tr > th::before {
+  display: none; /* separador vertical de cabecera de AntD */
+}
+
+.pago-cuotas-table .ant-table-tbody > tr > td {
+  background: transparent;
+}
+
+.pago-cuotas-table .ant-table-tbody > tr:hover > td,
+.pago-cuotas-table .ant-table-tbody > tr.ant-table-row:hover > td {
+  background: var(--color-item-hover-bg);
+}
+
+/* --- Cards de método de pago ------------------------------------------------
+   Relieve y estados con vida (hover-lift, press, halo de selección). El acento
+   categórico de cada medio de pago llega como variables (--metodo-accent /
+   --metodo-accent-bg) inyectadas por el componente desde los tokens del theme. */
+
+.pago-metodo-grid.ant-radio-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
+  gap: var(--spacing-base);
+  width: 100%;
+}
+
+.pago-metodo-grid .ant-radio-button-wrapper.pago-metodo-card {
+  width: 100%;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  border-radius: var(--radius-lg, 12px);
+  background: var(--color-bg-container);
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: var(--shadow-elevation-1);
+  transition:
+    border-color var(--transition-base) ease,
+    background var(--transition-base) ease,
+    box-shadow var(--transition-base) ease,
+    transform var(--dur-hover, 0.16s) var(--ease-out, ease-out);
+}
+
+/* Sin el separador vertical que Radio.Button pinta entre botones contiguos */
+.pago-metodo-grid .ant-radio-button-wrapper.pago-metodo-card::before {
+  display: none;
+}
+
+@media (hover: hover) {
+  .pago-metodo-grid .ant-radio-button-wrapper.pago-metodo-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--metodo-accent, var(--color-primary));
+    box-shadow: var(--shadow-elevation-2);
+  }
+}
+
+.pago-metodo-grid .ant-radio-button-wrapper.pago-metodo-card:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.pago-metodo-grid .ant-radio-button-wrapper-checked.pago-metodo-card {
+  border-color: var(--metodo-accent, var(--color-primary));
+  background: var(--metodo-accent-bg, var(--color-primary-bg));
+  box-shadow:
+    0 0 0 3px var(--metodo-accent-bg, var(--color-primary-bg)),
+    var(--shadow-elevation-1);
+}
+
+.pago-metodo-card__body {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-base);
+  padding: var(--spacing-base);
+}
+
+.pago-metodo-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--control-height);
+  height: var(--control-height);
+  border-radius: var(--border-radius-md);
+  background: var(--metodo-accent-bg, var(--color-primary-bg));
+  color: var(--metodo-accent, var(--color-primary));
+  font-size: var(--font-size-lg);
+  flex-shrink: 0;
+  transition:
+    background var(--transition-base) ease,
+    color var(--transition-base) ease;
+}
+
+.pago-metodo-grid .ant-radio-button-wrapper-checked .pago-metodo-card__icon {
+  background: var(--metodo-accent, var(--color-primary));
+  color: var(--color-white);
+}
+
+.pago-metodo-card__text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+.pago-metodo-card__nombre {
+  font-weight: var(--font-weight-strong);
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-sm);
+  color: var(--color-text);
+}
+
+.pago-metodo-card__codigo {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.pago-metodo-card__check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--control-height-sm);
+  height: var(--control-height-sm);
+  border-radius: 50%;
+  background: var(--metodo-accent, var(--color-primary));
+  color: var(--color-white);
+  flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pago-metodo-grid .ant-radio-button-wrapper.pago-metodo-card,
+  .pago-metodo-grid .ant-radio-button-wrapper.pago-metodo-card:hover,
+  .pago-metodo-grid .ant-radio-button-wrapper.pago-metodo-card:active {
+    transform: none;
+  }
+}
+
+/* --- Selector de plazo del compromiso -------------------------------------- */
+
+.compromiso-plazos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(96px, 100%), 1fr));
+  gap: var(--spacing-sm);
+}
+
+.compromiso-plazo {
+  cursor: pointer;
+  text-align: center;
+  padding: var(--spacing-sm) var(--spacing-xs);
+  border-radius: var(--radius-lg, 12px);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-bg-container);
+  color: var(--color-text);
+  transition: border-color var(--transition-base) ease,
+    background var(--transition-base) ease,
+    box-shadow var(--transition-base) ease;
+}
+
+.compromiso-plazo:hover {
+  border-color: var(--color-primary-border);
+}
+
+.compromiso-plazo--active {
+  border-color: var(--color-primary);
+  background: var(--color-primary-bg);
+  color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-bg);
+}
+
+.compromiso-plazo__dias {
+  font-weight: var(--font-weight-strong);
+  font-size: var(--font-size-lg);
+}
+
+.compromiso-plazo__sub {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}
+
+.compromiso-plazo--active .compromiso-plazo__sub {
+  color: var(--color-primary);
+}
+
+/* --- Vencimiento proyectado del compromiso --------------------------------- */
+
+.pago-compromiso-venc {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-base);
+  border-radius: var(--radius-lg, 12px);
+  background: var(--color-primary-bg);
+  color: var(--color-primary-text);
+}
+
+.pago-compromiso-venc .anticon {
+  font-size: var(--font-size-lg);
+}

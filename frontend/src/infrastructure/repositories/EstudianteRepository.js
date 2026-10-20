@@ -445,9 +445,12 @@ export class EstudianteRepository extends IEstudianteRepository {
    */
   async buscarParaInscripcion(options = {}) {
     try {
-      const { q = '', limit, preliminar } = options;
+      const { q = '', limit, preliminar, soloNuevos } = options;
       const params = {};
-      if (preliminar) {
+      if (soloNuevos) {
+        // solo_nuevos=1 implica preliminar (sin mínimo de caracteres, limit default 10)
+        params.solo_nuevos = '1';
+      } else if (preliminar) {
         params.preliminar = '1';
       } else {
         params.q = String(q).trim();

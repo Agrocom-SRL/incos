@@ -24,6 +24,7 @@ import { GetMiProyectoGradoUseCase } from '../../../../application/use-cases/tit
 import { ExportBitacoraMensualTutorPdfUseCase } from '../../../../application/use-cases/titulacion/ExportBitacoraMensualTutorPdfUseCase.js';
 import { GetProyectoGradoByIdUseCase } from '../../../../application/use-cases/titulacion/GetProyectoGradoByIdUseCase.js';
 import { CreateProyectoGradoUseCase } from '../../../../application/use-cases/titulacion/CreateProyectoGradoUseCase.js';
+import { RegistrarMiModalidadGradoUseCase } from '../../../../application/use-cases/titulacion/RegistrarMiModalidadGradoUseCase.js';
 import { UpdateProyectoGradoUseCase } from '../../../../application/use-cases/titulacion/UpdateProyectoGradoUseCase.js';
 import { DeleteProyectoGradoUseCase } from '../../../../application/use-cases/titulacion/DeleteProyectoGradoUseCase.js';
 import { AsignarTutorProyectoUseCase } from '../../../../application/use-cases/titulacion/AsignarTutorProyectoUseCase.js';
@@ -59,6 +60,7 @@ import {
   ExportBitacoraMensualTutorController,
   GetProyectoGradoByIdController,
   CreateProyectoGradoController,
+  RegistrarMiModalidadGradoController,
   UpdateProyectoGradoController,
   DeleteProyectoGradoController,
   AsignarTutorProyectoController,
@@ -189,6 +191,22 @@ export function registerProyectosGradoResource(container) {
       })
   );
 
+  // Fase B3 (extensión 2026-08-17): autorregistro del estudiante
+  registerComponent(
+    container,
+    TITULACION_TOKENS.registrarMiModalidadGradoUseCase,
+    (c) =>
+      new RegistrarMiModalidadGradoUseCase({
+        createProyectoGradoUseCase: c.resolve(TITULACION_TOKENS.createProyectoGradoUseCase),
+        modalidadGradoRepository: c.resolve(TITULACION_TOKENS.modalidadGradoRepository),
+        studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
+        userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
+        enrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentRepository),
+        historialAcademicoRepository: c.resolve(REPOSITORIOS_TOKENS.historialAcademicoRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      })
+  );
+
   registerComponent(
     container,
     TITULACION_TOKENS.updateProyectoGradoUseCase,
@@ -240,7 +258,11 @@ export function registerProyectosGradoResource(container) {
         dictamenProyectoRepository: c.resolve(TITULACION_TOKENS.dictamenProyectoRepository),
         bitacoraProyectoRepository: c.resolve(TITULACION_TOKENS.bitacoraProyectoRepository),
         managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
+        studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
         viabilidadProyectoPdfGenerator: c.resolve(SERVICIOS_TOKENS.viabilidadProyectoPdfGenerator),
+        informeSuficienciaPdfGenerator: c.resolve(
+          SERVICIOS_TOKENS.informeSuficienciaPdfGenerator
+        ),
         uploadsStorage: c.resolve(SERVICIOS_TOKENS.uploadsStorage),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       })
@@ -622,6 +644,17 @@ export function registerProyectosGradoResource(container) {
         }),
     ],
     [
+      TITULACION_TOKENS.registrarMiModalidadGradoController,
+      (c) =>
+        new RegistrarMiModalidadGradoController({
+          registrarMiModalidadGradoUseCase: c.resolve(
+            TITULACION_TOKENS.registrarMiModalidadGradoUseCase
+          ),
+          logger: c.resolve(SERVICIOS_TOKENS.logger),
+          responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+        }),
+    ],
+    [
       TITULACION_TOKENS.updateProyectoGradoController,
       (c) =>
         new UpdateProyectoGradoController({
@@ -891,6 +924,9 @@ export function registerProyectosGradoResource(container) {
       ),
       getProyectoGradoByIdController: c.resolve(TITULACION_TOKENS.getProyectoGradoByIdController),
       createProyectoGradoController: c.resolve(TITULACION_TOKENS.createProyectoGradoController),
+      registrarMiModalidadGradoController: c.resolve(
+        TITULACION_TOKENS.registrarMiModalidadGradoController
+      ),
       updateProyectoGradoController: c.resolve(TITULACION_TOKENS.updateProyectoGradoController),
       deleteProyectoGradoController: c.resolve(TITULACION_TOKENS.deleteProyectoGradoController),
       asignarTutorProyectoController: c.resolve(TITULACION_TOKENS.asignarTutorProyectoController),

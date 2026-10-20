@@ -34,6 +34,7 @@ export class ProyectoGradoRepository extends BaseRepository {
       fechaPresentacionPerfil: v.fechaPresentacionPerfil ?? null,
       fechaAprobacionPerfil: v.fechaAprobacionPerfil ?? null,
       fechaInicioDesarrollo: v.fechaInicioDesarrollo ?? null,
+      fechaInformeSuficiencia: v.fechaInformeSuficiencia ?? null,
       fechaPresentacionPredefensa: v.fechaPresentacionPredefensa ?? null,
       fechaAprobacionPredefensa: v.fechaAprobacionPredefensa ?? null,
       fechaDefensa: v.fechaDefensa ?? null,
@@ -89,6 +90,7 @@ export class ProyectoGradoRepository extends BaseRepository {
     if ('fechaPresentacionPerfil' in data) model.fechaPresentacionPerfil = data.fechaPresentacionPerfil ?? null;
     if ('fechaAprobacionPerfil' in data) model.fechaAprobacionPerfil = data.fechaAprobacionPerfil ?? null;
     if ('fechaInicioDesarrollo' in data) model.fechaInicioDesarrollo = data.fechaInicioDesarrollo ?? null;
+    if ('fechaInformeSuficiencia' in data) model.fechaInformeSuficiencia = data.fechaInformeSuficiencia ?? null;
     if ('fechaPresentacionPredefensa' in data) model.fechaPresentacionPredefensa = data.fechaPresentacionPredefensa ?? null;
     if ('fechaAprobacionPredefensa' in data) model.fechaAprobacionPredefensa = data.fechaAprobacionPredefensa ?? null;
     if ('fechaDefensa' in data) model.fechaDefensa = data.fechaDefensa ?? null;

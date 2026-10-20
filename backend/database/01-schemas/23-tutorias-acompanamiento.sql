@@ -134,11 +134,17 @@ COMMENT='Bitácora de reuniones y revisiones de tutoría de titulación. Fuente 
 CREATE TABLE dictamenes_proyecto (
     id INT AUTO_INCREMENT PRIMARY KEY,
     proyecto_grado_id INT NULL COMMENT 'Proyecto de grado (referencia a proyectos_grado)',
-    tipo ENUM('VIABILIDAD_TECNICA', 'DESIGNACION_OFICIAL') NOT NULL
-        COMMENT 'VIABILIDAD_TECNICA: informe de aprobación final del tutor | DESIGNACION_OFICIAL: informe de designación de tutor para la DDE',
+    -- INFORME_SUFICIENCIA agregado 2026-08-17 (informe del tutor al
+    -- transicionar DESARROLLO → SUFICIENCIA): ver
+    -- 05-migrations/28-migrate-titulacion-suficiencia.sql para el ALTER de
+    -- una BD ya desplegada.
+    tipo ENUM('VIABILIDAD_TECNICA', 'DESIGNACION_OFICIAL', 'INFORME_SUFICIENCIA') NOT NULL
+        COMMENT 'VIABILIDAD_TECNICA: informe de aprobación final del tutor | DESIGNACION_OFICIAL: informe de designación de tutor para la DDE | INFORME_SUFICIENCIA: informe del tutor previo a la predefensa',
     numero_informe VARCHAR(50) NULL COMMENT 'Número/cite del informe (ej: INF-DA-015/2026)',
-    resultado ENUM('APROBADO', 'OBSERVADO', 'RECHAZADO') NULL
-        COMMENT 'Resultado del dictamen (aplica a VIABILIDAD_TECNICA; NULL en DESIGNACION_OFICIAL)',
+    -- NO_APROBADO agregado 2026-08-17: veredicto del informe de suficiencia
+    -- (vocabulario propio del documento físico, distinto de OBSERVADO/RECHAZADO).
+    resultado ENUM('APROBADO', 'OBSERVADO', 'RECHAZADO', 'NO_APROBADO') NULL
+        COMMENT 'Resultado del dictamen (VIABILIDAD_TECNICA: NULL, documentación oficial fuera del alcance del sistema | INFORME_SUFICIENCIA: APROBADO/NO_APROBADO, veredicto del tutor)',
     fecha_emision DATE NULL COMMENT 'Fecha de emisión del informe',
     destinatario VARCHAR(150) NULL COMMENT 'Instancia destinataria (ej: DDE, Dirección Académica)',
     contenido TEXT NULL COMMENT 'Cuerpo/resumen del informe',

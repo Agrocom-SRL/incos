@@ -25,7 +25,7 @@ const ProyectoBitacoraSection = ({
   return (
     <div className="sd-tab-body">
       <DetailInfoCard
-        title={`Bitácora de tutoría (${entradas.length})`}
+        title={`Cronograma de progreso (${entradas.length})`}
         icon={<FileTextOutlined />}
         cols={1}
         extra={
@@ -43,9 +43,14 @@ const ProyectoBitacoraSection = ({
         }
       >
         {error ? (
-          <Alert type="error" showIcon title="No se pudo cargar la bitácora" description={error} />
+          <Alert
+            type="error"
+            showIcon
+            title="No se pudo cargar el cronograma de progreso"
+            description={error}
+          />
         ) : entradas.length === 0 && !loading ? (
-          <Empty description="El proyecto aún no tiene entradas de bitácora." />
+          <Empty description="El proyecto aún no tiene entradas de cronograma de progreso." />
         ) : (
           <Table
             dataSource={entradas}

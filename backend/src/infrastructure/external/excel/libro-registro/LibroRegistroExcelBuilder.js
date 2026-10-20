@@ -19,7 +19,7 @@ import { ILibroRegistroExcelGenerator } from '../../../../domain/interfaces/serv
 import { LIBRO_REGISTRO_DOC } from '../../../../domain/constants/libros.constants.js';
 import { ExcelSheetComposer } from '../shared/index.js';
 import { LibroRegistroSheetBuilder } from './LibroRegistroSheetBuilder.js';
-import { PAGE_SETUP } from './sheet/libroRegistroSheetConfig.js';
+import { PAGE_SETUP, ROW_HEIGHTS } from './sheet/libroRegistroSheetConfig.js';
 
 /** Sanea el nombre de hoja: Excel prohíbe : \ / ? * [ ] y limita a 31 chars. */
 const sanitizarNombreHoja = (nombre) => {
@@ -72,6 +72,11 @@ export class LibroRegistroExcelBuilder extends ILibroRegistroExcelGenerator {
       const nombre = nombreHojaUnico(hoja?.nombreHoja || 'Paralelo', usados);
       const worksheet = workbook.addWorksheet(nombre, {
         pageSetup: { ...PAGE_SETUP },
+        // Alto de fila por defecto del libro físico (16.5pt) para las filas
+        // que el builder no fija explícitamente.
+        properties: { defaultRowHeight: ROW_HEIGHTS.base },
+        // Hoja en blanco fiel al libro físico: sin líneas de cuadrícula.
+        views: [{ showGridLines: false }],
       });
 
       LibroRegistroSheetBuilder.build({

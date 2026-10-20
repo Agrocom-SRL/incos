@@ -15,6 +15,10 @@
  *    en el backend), exportación de PDF por acta (T·EXPORTAR) y anulación de
  *    un acta EMITIDA (P8, extensión 2026-08-02, mismo permiso APROBAR — NO
  *    revierte la transición del proyecto)
+ *  - exención de defensa (extensión 2026-08-17): acción SEPARADA del avance
+ *    lineal de etapa (mismo patrón que "Cancelar proyecto"), visible solo con
+ *    `notaPredefensa > 90`; dispara T11 con `estado: 'APROBADO'` fijo (nunca
+ *    el `destino` derivado, que sigue resolviendo a `DEFENSA`).
  * La página es "dumb"; los modales/drawers reciben estas props.
  */
 
@@ -23,7 +27,10 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { App } from 'antd';
 import { usePermiso } from '@application-auth';
 import { useProyectoGradoDetailContext } from '@application-titulacion/proyectos-grado/hooks/context/useProyectoGradoDetailContext';
-import { TRANSICIONES_PROYECTO } from '@application-titulacion/utils/titulacionPills';
+import {
+  TRANSICIONES_PROYECTO,
+  formatExplicacionTransicionProyecto,
+} from '@application-titulacion/utils/titulacionPills';
 import { TITULACION_PERMISOS } from '@application-titulacion/utils/titulacionPermisos';
 import {
   PROYECTOS_GRADO_LIST_PATH,
@@ -34,6 +41,10 @@ import {
 
 /** Estado del proyecto en el que se habilita el registro del acta (C6/D2). */
 const ESTADO_PROYECTO_DEFENSA = 'DEFENSA';
+/** Estado del proyecto desde el que se habilita la exención de defensa (extensión 2026-08-17). */
+const ESTADO_PROYECTO_APROBADO_PREDEFENSA = 'APROBADO_PREDEFENSA';
+/** Nota de predefensa mínima (exclusiva) para la exención — espejo del guard del backend. */
+const NOTA_MINIMA_EXENCION_DEFENSA = 90;
 
 export const useProyectoGradoDetailPage = () => {
   const navigate = useNavigate();
@@ -125,11 +136,19 @@ export const useProyectoGradoDetailPage = () => {
   );
 
   const handleAprobarEtapa = useCallback(
-    async ({ estado, observaciones }) => {
+    /**
+     * `payload` reenvía tal cual al backend: además de `estado`/
+     * `observaciones`, el informe de suficiencia (destino SUFICIENCIA) agrega
+     * `aspectosFormato`/`contenidoProyecto`/`procesoTutoria`/
+     * `resultadoSuficiencia` (extensión 2026-08-17) — el resto de
+     * transiciones NO los envía (el modal solo los arma cuando corresponde).
+     */
+    async (payload) => {
+      const { estado } = payload ?? {};
       if (!proyectoId || !estado) return;
       setAprobandoEtapa(true);
       try {
-        const result = await mutations.aprobarEtapa(proyectoId, { estado, observaciones });
+        const result = await mutations.aprobarEtapa(proyectoId, payload);
         if (result?.success) {
           notification.success({
             title: 'Transición registrada',
@@ -189,6 +208,53 @@ export const useProyectoGradoDetailPage = () => {
     },
     [proyectoId, mutations, notification, refetch],
   );
+
+  // ————— Exención de defensa (T11 con estado: 'APROBADO' fijo, extensión 2026-08-17) —————
+  /**
+   * Flujo SEPARADO del avance de etapa (mismo patrón que "Cancelar
+   * proyecto"): la transición real hacia adelante desde APROBADO_PREDEFENSA
+   * es DEFENSA (la que resuelve `AprobarEtapaModal`); esta es una excepción
+   * que solo se ofrece con nota de predefensa > 90 y se confirma con
+   * `Modal.confirm` (sin datos adicionales que recolectar, a diferencia de
+   * cancelar que sí exige un motivo).
+   */
+  const [declarandoExencion, setDeclarandoExencion] = useState(false);
+
+  const puedeDeclararExencionDefensa =
+    proyecto?.estado === ESTADO_PROYECTO_APROBADO_PREDEFENSA &&
+    Number(proyecto?.notaPredefensa) > NOTA_MINIMA_EXENCION_DEFENSA;
+
+  const handleDeclararExencionDefensa = useCallback(async () => {
+    if (!proyectoId) return;
+    setDeclarandoExencion(true);
+    try {
+      const result = await mutations.aprobarEtapa(proyectoId, { estado: 'APROBADO' });
+      if (result?.success) {
+        notification.success({
+          title: 'Exención de defensa registrada',
+          description: 'El proyecto quedó APROBADO con la nota de predefensa como nota final.',
+        });
+        await refetch();
+      } else {
+        notification.error({
+          title: 'No se pudo registrar la exención de defensa',
+          description: result?.error || 'Intente nuevamente en unos instantes.',
+        });
+      }
+    } finally {
+      setDeclarandoExencion(false);
+    }
+  }, [proyectoId, mutations, notification, refetch]);
+
+  const abrirConfirmacionExencionDefensa = useCallback(() => {
+    modal.confirm({
+      title: 'Declarar exento de defensa',
+      content: formatExplicacionTransicionProyecto('APROBADO'),
+      okText: 'Sí, declarar exento',
+      cancelText: 'Volver',
+      onOk: handleDeclararExencionDefensa,
+    });
+  }, [modal, handleDeclararExencionDefensa]);
 
   // ————— Integrantes (T12/T13) —————
   const [integranteModalOpen, setIntegranteModalOpen] = useState(false);
@@ -289,7 +355,7 @@ export const useProyectoGradoDetailPage = () => {
         if (result?.success) {
           notification.success({
             title: entradaId ? 'Entrada actualizada' : 'Entrada registrada',
-            description: 'La bitácora de tutoría fue actualizada.',
+            description: 'El cronograma de progreso fue actualizado.',
           });
           cerrarBitacoraDrawer();
           await refetch();
@@ -473,6 +539,12 @@ export const useProyectoGradoDetailPage = () => {
       submit: handleCancelarProyecto,
       saving: cancelandoProyecto,
       puedeCancelar: puedeCancelarProyecto,
+    },
+    // Exención de defensa (extensión 2026-08-17): botón separado, `Modal.confirm`.
+    exencionDefensa: {
+      puede: puedeDeclararExencionDefensa,
+      declarando: declarandoExencion,
+      confirmar: abrirConfirmacionExencionDefensa,
     },
     // Integrantes
     integrantes: {

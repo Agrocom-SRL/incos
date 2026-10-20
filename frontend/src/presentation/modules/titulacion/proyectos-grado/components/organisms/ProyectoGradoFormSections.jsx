@@ -16,7 +16,7 @@
  * PSP (grupal) muestra el multi-select de integrantes.
  */
 
-import { Alert, Col, Form, Row, Select, Spin, Typography } from 'antd';
+import { Col, Form, Row, Select, Spin, Typography } from 'antd';
 import { CfgFormWorkspace } from '@organisms';
 
 const { Text } = Typography;
@@ -72,14 +72,6 @@ const ProyectoGradoFormSections = ({
           fields: [],
           children: (
             <>
-              {!modalidadGrupal ? (
-                <Alert
-                  type="info"
-                  showIcon
-                  title="Esta modalidad admite un solo estudiante"
-                  description="Para registrar un proyecto con varios integrantes seleccione la modalidad PSP."
-                />
-              ) : null}
               <Row gutter={[24, 20]} className="cfg-academico-form-workspace__grid">
                 <Col xs={24} md={12}>
                   <Form.Item

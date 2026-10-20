@@ -2,40 +2,77 @@
  * LibroRegistroSheetBuilder — construye UNA hoja del Libro de registro (un
  * paralelo): los folios del paralelo APILADOS verticalmente en bloques de 34
  * filas (réplica del libro físico "LIBRO LLENADO SISTEMAS 11 dic 2025") y, al
- * final, la página de FIRMAS DE DOCENTES del paralelo (artefacto de impresión:
- * NO es un folio ni incrementa numero_folio).
+ * final, la página de FIRMAS DE DOCENTES + ESTADÍSTICAS del paralelo
+ * (artefacto de impresión: NO es un folio ni incrementa numero_folio).
  *
- * Solo construcción + estilos (ExcelSheetComposer + ExcelTheme, banda
- * FF196B45). Sin lógica de negocio: notas ('NP' incluido), estados y
- * observaciones llegan resueltos desde la capa de aplicación.
+ * Formulario OFICIAL del Ministerio de Educación: debe verse EXACTAMENTE igual
+ * al papel — Calibri negro puro, bordes finos negros, relleno verde oficial
+ * SOLO en las cabeceras de tabla, anchos/altos/tamaños medidos del original
+ * (ver sheet/libroRegistroSheetConfig). Sin lógica de negocio: notas ('NP'
+ * incluido), estados y observaciones llegan resueltos desde la capa de
+ * aplicación.
  *
  * Estructura (SOLID): la configuración declarativa vive en
  * sheet/libroRegistroSheetConfig, la aritmética de columnas en
- * sheet/libroRegistroSheetLayout (pura) y el formato de notas en
+ * sheet/libroRegistroSheetLayout (pura) y el formato de celdas en
  * sheet/libroRegistroSheetFormatters (puro). Cada sección del bloque es un
  * método privado `_seccion(c, ctx)`.
  */
 
-import { EXCEL_COLOR, EXCEL_FONT_SIZE } from '../shared/index.js';
-import { colLetter as L } from '../shared/ExcelSheetComposer.js';
 import {
   FILAS_POR_FOLIO,
   FILAS_POR_FIRMA,
+  LINEA_FIRMA,
+  COLUMNAS_FIRMAS_DOCENTES,
   COL_WIDTHS,
+  FONT_SIZE,
   ROW_HEIGHTS,
+  OBS_CHARS_POR_LINEA,
   FILA,
+  FILA_DOCENTES,
   LOGO_ASPECT_RATIO,
-  ESTADO_COLOR,
+  LOGO_FOLIO,
+  LOGO_DOCENTES,
+  PX_POR_PUNTO,
+  PX_POR_UNIDAD_EXCEL,
+  PX_RELLENO_COLUMNA,
+  DOC_COLOR,
 } from './sheet/libroRegistroSheetConfig.js';
 import {
   computeLibroColumnMap,
-  colFractionAtWidth,
   computeTresZonasFirmas,
+  computeTresZonasDocentes,
+  computeColumnasEstadisticas,
 } from './sheet/libroRegistroSheetLayout.js';
-import { formatNotaFolio, esNotaNP } from './sheet/libroRegistroSheetFormatters.js';
+import {
+  formatNotaFolio,
+  formatCedulaFolio,
+  estimarLineasObservacion,
+} from './sheet/libroRegistroSheetFormatters.js';
 
-/** Columnas de la grilla de FIRMAS DE DOCENTES (3 firmas por fila, como el papel real). */
-const COLUMNAS_FIRMAS_DOCENTES = 3;
+/** Texto suelto del formulario: Calibri negro, sin sangría ni borde (el físico alinea al borde de la celda). */
+const texto = (extra = {}) => ({ fontColor: DOC_COLOR.ink, indent: 0, border: false, ...extra });
+
+/** Celda de tabla: texto negro + borde fino negro en los 4 lados. */
+const celda = (extra = {}) => ({
+  fontColor: DOC_COLOR.ink,
+  indent: 0,
+  borderColor: DOC_COLOR.border,
+  ...extra,
+});
+
+/** Cabecera de tabla: celda + relleno verde oficial + negrita + ajuste de texto. */
+const cabecera = (extra = {}) =>
+  celda({ bold: true, fill: DOC_COLOR.header, wrap: true, ...extra });
+
+/** Solo un lado del contorno (helper de legibilidad para `composer.outline`). */
+const SOLO = {
+  top: { top: true, bottom: false, left: false, right: false },
+  bottom: { top: false, bottom: true, left: false, right: false },
+  right: { top: false, bottom: false, left: false, right: true },
+};
+
+const mayusculas = (valor) => String(valor ?? '').toUpperCase();
 
 export class LibroRegistroSheetBuilder {
   /**
@@ -45,9 +82,10 @@ export class LibroRegistroSheetBuilder {
    * @param {Object} params.doc - Metadatos institucionales (LIBRO_REGISTRO_DOC).
    * @param {number|null} [params.logoId] - Id de imagen del logo MINEDU en el
    *        workbook (null si el asset no está disponible; se omite sin fallar).
-   * @param {boolean} [params.incluirFirmas] - false → BORRADOR: se omiten las
-   *        firmas de autoridades (por folio) y la página de firmas de
-   *        docentes (por paralelo). Ver `ExportLibroExcelUseCase`.
+   * @param {boolean} [params.incluirFirmas] - false → BORRADOR (libro ABIERTO):
+   *        en lugar del bloque de firmas de autoridades va la nota "DOCUMENTO
+   *        BORRADOR", y se omiten la página de firmas de docentes y las
+   *        estadísticas (no definitivas). Ver `ExportLibroExcelUseCase`.
    */
   static build({ composer: c, hoja, doc, logoId = null, incluirFirmas = false }) {
     const folios = Array.isArray(hoja?.folios) ? hoja.folios : [];
@@ -55,11 +93,12 @@ export class LibroRegistroSheetBuilder {
 
     // Las columnas son estables dentro del paralelo (mismas materias).
     const layout = computeLibroColumnMap(folios[0].asignaturas ?? []);
-    this._anchos(c, layout);
+    const widths = this._anchos(c, layout);
 
     folios.forEach((folio, idx) => {
       const base = idx * FILAS_POR_FOLIO; // offset de filas del bloque
-      const ctx = { base, folio, layout, doc, logoId };
+      const ctx = { base, folio, layout, doc, logoId, widths };
+      this._altosFolio(c, ctx);
       this._cabeceraFolio(c, ctx);
       this._camposFolio(c, ctx);
       this._cabeceraTabla(c, ctx);
@@ -74,25 +113,31 @@ export class LibroRegistroSheetBuilder {
       c.ws.getRow(base + FILAS_POR_FOLIO).addPageBreak();
     });
 
-    const baseFirmas = folios.length * FILAS_POR_FOLIO;
-    const filasFirmasDocentes = incluirFirmas
-      ? this._firmasDocentes(c, { base: baseFirmas, folio: folios[0], layout, doc })
-      : 0;
-
-    // Bloque de ESTADÍSTICAS solo con el libro CERRADO (mismo gate que las
-    // firmas): en BORRADOR las notas todavía pueden cambiar y el conteo
+    // Página de firmas de docentes + ESTADÍSTICAS solo con el libro CERRADO:
+    // en BORRADOR las notas todavía pueden cambiar y el conteo
     // aprobados/reprobados/abandono no es definitivo.
     if (incluirFirmas) {
-      this._estadisticasParalelo(c, {
-        base: baseFirmas + filasFirmasDocentes + 2,
+      const baseDocentes = folios.length * FILAS_POR_FOLIO;
+      const ultimaFilaMateria = this._firmasDocentes(c, {
+        base: baseDocentes,
+        folio: folios[0],
         layout,
+        doc,
+        logoId,
+        widths,
+      });
+      this._estadisticasParalelo(c, {
+        base: ultimaFilaMateria + FILA_DOCENTES.espacioAntesEstadisticas,
         doc,
         estadisticas: hoja.estadisticas ?? null,
       });
     }
   }
 
-  /** Anchos de columna: identificación + una col por materia + estado/obs. */
+  /**
+   * Anchos de columna: identificación + una col por materia + estado/obs.
+   * @returns {Object<number, number>} ancho (unidades Excel) por índice de columna.
+   */
   static _anchos(c, layout) {
     const widths = {
       [layout.COL_NRO]: COL_WIDTHS.nro,
@@ -103,19 +148,48 @@ export class LibroRegistroSheetBuilder {
     for (let col = layout.firstAsigCol; col < layout.COL_ESTADO_START; col += 1) {
       widths[col] = COL_WIDTHS.asignatura;
     }
-    widths[layout.COL_ESTADO_START] = COL_WIDTHS.estado;
-    widths[layout.COL_ESTADO_END] = COL_WIDTHS.estado;
-    for (let col = layout.COL_OBS_START; col <= layout.COL_OBS_END; col += 1) {
-      widths[col] = COL_WIDTHS.obs;
-    }
+    COL_WIDTHS.estado.forEach((w, i) => {
+      widths[layout.COL_ESTADO_START + i] = w;
+    });
+    COL_WIDTHS.obs.forEach((w, i) => {
+      widths[layout.COL_OBS_START + i] = w;
+    });
     c.colWidths(widths);
+    return widths;
   }
 
-  /** Código de registro, escudo/logo, banda de título y LIBRO/FOLIO N°. */
-  static _cabeceraFolio(c, { base, folio, layout, doc, logoId }) {
+  /** Altos de todas las filas del bloque de folio (base + las 3 excepciones del físico). */
+  static _altosFolio(c, { base }) {
+    for (let fila = 1; fila <= FILAS_POR_FOLIO; fila += 1) {
+      c.rowHeight(base + fila, ROW_HEIGHTS.base);
+    }
+    c.rowHeight(base + FILA.codigoRegistro, ROW_HEIGHTS.superior);
+    c.rowHeight(base + FILA.carrera, ROW_HEIGHTS.carrera);
+    c.rowHeight(base + FILA.nomina, ROW_HEIGHTS.nomina);
+  }
+
+  /**
+   * Logo del Ministerio anclado por esquina superior izquierda + tamaño en
+   * píxeles (`oneCell`): nunca se deforma, sea cual sea el ancho de columna.
+   * La fracción de columna/fila de ExcelJS es relativa al ancho/alto de ESA
+   * columna/fila (ver `exceljs/lib/doc/anchor.js`).
+   */
+  static _logo(c, { logoId, base, widths, placement }) {
+    if (logoId == null) return;
+    const { startCol, leftPx, topRow, topOffsetPx, heightPx } = placement;
+    const colPx = (widths[startCol] ?? COL_WIDTHS.nro) * PX_POR_UNIDAD_EXCEL + PX_RELLENO_COLUMNA;
+    const rowPx = ROW_HEIGHTS.base * PX_POR_PUNTO;
+    c.ws.addImage(logoId, {
+      tl: { col: startCol - 1 + leftPx / colPx, row: base + topRow - 1 + topOffsetPx / rowPx },
+      ext: { width: Math.round(heightPx * LOGO_ASPECT_RATIO), height: heightPx },
+      editAs: 'oneCell',
+    });
+  }
+
+  /** Código de registro, escudo/logo, título y cuadro LIBRO/FOLIO N°. */
+  static _cabeceraFolio(c, { base, folio, layout, doc, logoId, widths }) {
     const cab = folio.cabecera ?? {};
     const {
-      lastCol,
       tituloStartCol,
       tituloEndCol,
       libroLabelStart,
@@ -125,469 +199,357 @@ export class LibroRegistroSheetBuilder {
       COL_OBS_END,
     } = layout;
 
-    // Fila 3 del bloque: Código de Registro, sobre la columna de OBSERVACIONES (P:S).
-    c.merge(
-      `${L(COL_OBS_START)}${base + FILA.codigoRegistro}:${L(COL_OBS_END)}${base + FILA.codigoRegistro}`,
+    // Fila 1 (alta): Código de Registro arriba a la derecha, pegado al pie de
+    // la fila, sobre el cuadro LIBRO/FOLIO.
+    c.mergeBox(
+      base + FILA.codigoRegistro,
+      COL_OBS_START,
+      base + FILA.codigoRegistro,
+      COL_OBS_END,
       `Código de Registro: ${cab.codigoRegistro ?? ''}`,
-      { size: EXCEL_FONT_SIZE.small, bold: true, align: 'right', border: false },
+      texto({ size: FONT_SIZE.codigoRegistro, bold: true, align: 'right', valign: 'bottom' }),
     );
 
-    // Caja del escudo (A2:C6 del bloque) + logo del Ministerio si está cargado,
-    // al 100% del alto de la caja (sin recorte vertical) y con el ancho
-    // DERIVADO de su relación de aspecto real (no se fuerza un ancho
-    // independiente: el logo es más ancho que alto y forzarlo lo deformaba).
+    // Caja del escudo (A2:C6 del bloque) + logo del Ministerio si está cargado.
     c.mergeBox(base + FILA.logoInicio, layout.COL_NRO, base + FILA.logoFin, layout.COL_NOMBRE_END, '', {
-      border: true,
+      border: false,
     });
-    if (logoId != null) {
-      const cajaRowInicio = base + FILA.logoInicio - 1;
-      const cajaRowFin = base + FILA.logoFin;
+    this._logo(c, { logoId, base, widths, placement: LOGO_FOLIO });
 
-      // Conversión aproximada punto->px / unidad de ancho Excel->px, solo
-      // para estimar cuánto ancho ocupa el logo al 100% del alto y poder
-      // centrarlo — no afecta el alto real, que usa bordes de fila exactos.
-      const PX_POR_PUNTO = 96 / 72;
-      const PX_POR_UNIDAD_EXCEL = 7;
-      const altoCajaPx = (cajaRowFin - cajaRowInicio) * ROW_HEIGHTS.cabecera * PX_POR_PUNTO;
-      const anchoLogoUnidades = (altoCajaPx * LOGO_ASPECT_RATIO) / PX_POR_UNIDAD_EXCEL;
-
-      const anchoColumnas = [COL_WIDTHS.nro, COL_WIDTHS.nombreIzq, COL_WIDTHS.nombreDer];
-      const anchoTotal = anchoColumnas.reduce((sum, w) => sum + w, 0);
-      const margenAncho = Math.max(0, (anchoTotal - anchoLogoUnidades) / 2);
-      const cajaColInicio = layout.COL_NRO - 1;
-
-      c.ws.addImage(logoId, {
-        tl: { col: colFractionAtWidth(cajaColInicio, anchoColumnas, margenAncho), row: cajaRowInicio },
-        br: {
-          col: colFractionAtWidth(cajaColInicio, anchoColumnas, anchoTotal - margenAncho),
-          row: cajaRowFin,
-        },
-      });
-    }
-
-    // Banda de título (D4:N5 del bloque).
+    // Título (D4:N5 del bloque): negro sobre blanco, centrado en el ancho de la tabla.
     c.mergeBox(
       base + FILA.tituloInicio,
       tituloStartCol,
       base + FILA.tituloFin,
       tituloEndCol,
       doc.titulo,
-      {
-        size: EXCEL_FONT_SIZE.subtitle,
-        bold: true,
-        fontColor: EXCEL_COLOR.bandText,
-        fill: EXCEL_COLOR.band,
-        borderMedium: true,
-      },
+      texto({ size: FONT_SIZE.titulo, bold: true }),
     );
-    c.rowHeight(base + FILA.tituloInicio, ROW_HEIGHTS.titulo);
-    c.rowHeight(base + FILA.tituloFin, ROW_HEIGHTS.titulo);
 
-    // LIBRO N° / FOLIO N° (esquina derecha de la banda).
+    // Cuadro LIBRO N° / FOLIO N° (O3:Q6 del bloque): una fila de aire arriba y
+    // abajo, contorno y divisor rótulo/valor finos y negros, sin relleno.
     const libroFolio = (fila, etiqueta, valor) => {
-      c.mergeBox(base + fila, libroLabelStart, base + fila, libroLabelEnd, etiqueta, {
-        bold: true,
-        size: EXCEL_FONT_SIZE.small,
-        align: 'left',
-        fill: EXCEL_COLOR.infoLabel,
-      });
-      c.cell(base + fila, libroValueCol, valor ?? '', {
-        bold: true,
-        size: EXCEL_FONT_SIZE.label,
-        fontColor: EXCEL_COLOR.finalHeader,
-      });
+      c.mergeBox(
+        base + fila,
+        libroLabelStart,
+        base + fila,
+        libroLabelEnd,
+        etiqueta,
+        texto({ size: FONT_SIZE.libroFolio, bold: true }),
+      );
+      c.cell(base + fila, libroValueCol, valor ?? '', texto({ size: FONT_SIZE.libroFolio, bold: true }));
     };
     libroFolio(FILA.libroNro, 'LIBRO N°', cab.numeroLibro);
     libroFolio(FILA.folioNro, 'FOLIO N°', cab.numeroFolio);
+    c.outline(base + FILA.libroBoxInicio, libroLabelStart, base + FILA.libroBoxFin, libroLabelEnd, {
+      style: 'thin',
+      color: DOC_COLOR.border,
+      sides: SOLO.right,
+    });
+    c.outline(base + FILA.libroBoxInicio, libroLabelStart, base + FILA.libroBoxFin, libroValueCol, {
+      style: 'thin',
+      color: DOC_COLOR.border,
+    });
   }
 
   /** Ciudad/turno, institución/R.M./carácter y campos GESTIÓN..CURSO. */
   static _camposFolio(c, { base, folio, layout, doc }) {
     const cab = folio.cabecera ?? {};
-    const { lastCol } = layout;
-    const { small } = EXCEL_FONT_SIZE;
+    const size = FONT_SIZE.campo;
+    const etiqueta = (align) => texto({ size, bold: true, align });
+    const valor = texto({ size, bold: true, align: 'left' });
 
-    // Fila 7: ciudad (izquierda) + TURNO (derecha).
+    // Fila 7: ciudad centrada bajo el logo + TURNO a la derecha.
     const filaCiudad = base + FILA.ciudad;
-    c.mergeBox(filaCiudad, layout.COL_NRO, filaCiudad, layout.COL_NOMBRE_END, doc.ciudad, {
-      size: small,
-      align: 'left',
-      border: false,
-      fontColor: EXCEL_COLOR.inkSoft,
-    });
-    c.mergeBox(base + FILA.ciudad, lastCol - 3, base + FILA.ciudad, lastCol - 2, 'TURNO:', {
-      bold: true,
-      size: small,
-      align: 'left',
-      fill: EXCEL_COLOR.infoLabel,
-    });
-    c.mergeBox(base + FILA.ciudad, lastCol - 1, base + FILA.ciudad, lastCol, cab.turno ?? '', {
-      size: small,
-      align: 'left',
-    });
-
-    // Fila 8: INSTITUCIÓN + R.M. + CARÁCTER.
-    c.mergeBox(base + FILA.institucion, layout.COL_NRO, base + FILA.institucion, layout.COL_NOMBRE_START, 'INSTITUCIÓN:', {
-      bold: true,
-      size: small,
-      align: 'left',
-      fill: EXCEL_COLOR.infoLabel,
-    });
     c.mergeBox(
-      base + FILA.institucion,
+      filaCiudad,
+      layout.COL_NRO,
+      filaCiudad,
       layout.COL_NOMBRE_END,
-      base + FILA.institucion,
-      lastCol - 6,
-      doc.institucion,
-      { size: small, align: 'left' },
+      doc.ciudad,
+      texto({ size: FONT_SIZE.ciudad, bold: true }),
     );
-    c.cell(base + FILA.institucion, lastCol - 5, 'R.M.', {
-      bold: true,
-      size: small,
-      fill: EXCEL_COLOR.infoLabel,
-    });
-    c.cell(base + FILA.institucion, lastCol - 4, doc.resolucionMinisterial, {
-      size: small,
-    });
-    c.mergeBox(base + FILA.institucion, lastCol - 3, base + FILA.institucion, lastCol - 2, 'CARÁCTER:', {
-      bold: true,
-      size: small,
-      align: 'left',
-      fill: EXCEL_COLOR.infoLabel,
-    });
-    const filaInst = base + FILA.institucion;
-    c.mergeBox(filaInst, lastCol - 1, filaInst, lastCol, doc.caracter, {
-      size: small,
-      align: 'left',
-    });
-    c.rowHeight(base + FILA.institucion, ROW_HEIGHTS.cabecera);
+    const { turnoLabel, turnoValue, institucionValue, rmValue } = layout;
+    const enFila = (row, [start, end], contenido, estilo) =>
+      c.mergeBox(row, start, row, end, contenido, estilo);
+    enFila(filaCiudad, turnoLabel, 'TURNO:', etiqueta('right'));
+    enFila(filaCiudad, turnoValue, mayusculas(cab.turno), valor);
 
-    // Filas 9-13: pares etiqueta (A:B) / valor (C) del bloque izquierdo.
-    const campo = (fila, etiqueta, valor) => {
-      c.mergeBox(base + fila, layout.COL_NRO, base + fila, layout.COL_NOMBRE_START, etiqueta, {
-        bold: true,
-        size: small,
-        align: 'left',
-        fill: EXCEL_COLOR.infoLabel,
-      });
-      c.cell(base + fila, layout.COL_NOMBRE_END, valor ?? '', { size: small, align: 'left' });
-      c.rowHeight(base + fila, ROW_HEIGHTS.cabecera);
+    // Fila 8: INSTITUCIÓN + R.M. (misma línea) + CARÁCTER a la derecha.
+    const filaInst = base + FILA.institucion;
+    enFila(filaInst, [layout.COL_NRO, layout.COL_NOMBRE_START], 'INSTITUCIÓN:', etiqueta('left'));
+    enFila(filaInst, institucionValue, doc.institucion, valor);
+    c.cell(filaInst, layout.rmLabelCol, 'R.M.', etiqueta('right'));
+    enFila(filaInst, rmValue, doc.resolucionMinisterial, valor);
+    enFila(filaInst, turnoLabel, 'CARÁCTER:', etiqueta('right'));
+    enFila(filaInst, turnoValue, doc.caracter, valor);
+    // Línea fina bajo INSTITUCIÓN…R.M. (A:K en el físico).
+    c.outline(filaInst, layout.COL_NRO, filaInst, layout.institucionLineaEnd, {
+      color: DOC_COLOR.border,
+      sides: SOLO.bottom,
+    });
+
+    // Filas 9-13: pares etiqueta (A:B) / valor (C), cada fila enmarcada por
+    // líneas finas (sin divisor vertical entre etiqueta y valor), valores en
+    // MAYÚSCULAS y negrita, sin relleno.
+    const campo = (fila, rotulo, contenido, extra = {}) => {
+      const row = base + fila;
+      c.mergeBox(row, layout.COL_NRO, row, layout.COL_NOMBRE_START, rotulo, etiqueta('left'));
+      c.cell(row, layout.COL_NOMBRE_END, contenido ?? '', { ...valor, ...extra });
+      c.outline(row, layout.COL_NRO, row, layout.COL_NOMBRE_END, { color: DOC_COLOR.border });
     };
     campo(FILA.gestion, 'GESTIÓN:', cab.gestionAnio);
-    campo(FILA.nivel, 'NIVEL:', doc.nivel);
-    campo(FILA.carrera, 'CARRERA:', cab.carrera);
-    campo(FILA.regimen, 'RÉGIMEN:', doc.regimen);
-    campo(FILA.curso, 'CURSO:', cab.curso);
+    campo(FILA.nivel, 'NIVEL:', mayusculas(doc.nivel));
+    campo(FILA.carrera, 'CARRERA:', mayusculas(cab.carrera), { wrap: true });
+    campo(FILA.regimen, 'RÉGIMEN:', mayusculas(doc.regimen));
+    campo(FILA.curso, 'CURSO:', mayusculas(cab.curso));
   }
 
-  /** Cabecera de la tabla: C.I./siglas/nombres de materia/ESTADO/OBSERVACIONES. */
+  /** Cabecera de la tabla: C.I./siglas/nombres de materia/ESTADO/OBSERVACIONES/N°/NÓMINA. */
   static _cabeceraTabla(c, { base, folio, layout }) {
     const asignaturas = folio.asignaturas ?? [];
-    const { small } = EXCEL_FONT_SIZE;
-    const headStyle = {
-      bold: true,
-      size: small,
-      wrap: true,
-      fill: EXCEL_COLOR.statHeader,
-      fontColor: EXCEL_COLOR.statHeaderText,
-      borderMedium: true,
-    };
+    const vertical = cabecera({ size: FONT_SIZE.cabeceraTabla, rotation: 90 });
+    const horizontal = cabecera({ size: FONT_SIZE.campo, wrap: false });
+    // La fila de siglas lleva el verde oliva en su tono base (más oscuro), como el físico.
+    const sigla = cabecera({ size: FONT_SIZE.campo, wrap: false, fill: DOC_COLOR.sigla });
 
-    // C.I. fusionada verticalmente (filas gestión..nómina del bloque).
-    c.mergeBox(base + FILA.gestion, layout.COL_CI, base + FILA.nomina, layout.COL_CI, 'CÉDULA DE IDENTIDAD', headStyle);
+    // C.I. fusionada verticalmente (filas gestión..nómina del bloque), texto horizontal envuelto.
+    c.mergeBox(
+      base + FILA.gestion,
+      layout.COL_CI,
+      base + FILA.nomina,
+      layout.COL_CI,
+      'CÉDULA DE IDENTIDAD',
+      cabecera({ size: FONT_SIZE.cabeceraTabla }),
+    );
 
-    // Por materia: sigla (fila 9) + nombre (fusión vertical 10-14).
+    // Por materia: sigla (fila 9, horizontal) + nombre (fusión vertical 10-14, rotado 90°).
     asignaturas.forEach((asig, i) => {
       const col = layout.asigCol(i);
-      c.cell(base + FILA.gestion, col, asig.sigla ?? '', {
-        bold: true,
-        size: small,
-        fill: EXCEL_COLOR.teoricasStrong,
-        wrap: true,
-        borderMedium: true,
-      });
-      c.mergeBox(base + FILA.nivel, col, base + FILA.nomina, col, asig.nombre ?? '', {
-        size: small,
-        fill: EXCEL_COLOR.teoricas,
-        wrap: true,
-      });
+      c.cell(base + FILA.gestion, col, asig.sigla ?? '', sigla);
+      c.mergeBox(base + FILA.nivel, col, base + FILA.nomina, col, asig.nombre ?? '', vertical);
     });
-    c.rowHeight(base + FILA.gestion, ROW_HEIGHTS.siglas);
-    c.rowHeight(base + FILA.nivel, ROW_HEIGHTS.nombresMateria);
 
-    // ESTADO y OBSERVACIONES fusionadas verticalmente.
-    c.mergeBox(
-      base + FILA.gestion,
-      layout.COL_ESTADO_START,
-      base + FILA.nomina,
-      layout.COL_ESTADO_END,
-      'ESTADO',
-      { ...headStyle, fill: EXCEL_COLOR.finalHeader },
-    );
-    c.mergeBox(
-      base + FILA.gestion,
-      layout.COL_OBS_START,
-      base + FILA.nomina,
-      layout.COL_OBS_END,
-      'OBSERVACIONES',
-      { ...headStyle, fill: EXCEL_COLOR.obsHeader, fontColor: EXCEL_COLOR.ink },
-    );
+    // ESTADO y OBSERVACIONES fusionadas verticalmente, rotadas 90°.
+    c.mergeBox(base + FILA.gestion, layout.COL_ESTADO_START, base + FILA.nomina, layout.COL_ESTADO_END, 'ESTADO', vertical);
+    c.mergeBox(base + FILA.gestion, layout.COL_OBS_START, base + FILA.nomina, layout.COL_OBS_END, 'OBSERVACIONES', vertical);
 
     // Fila 14: N° + NÓMINA DE ESTUDIANTES.
-    c.cell(base + FILA.nomina, layout.COL_NRO, 'N°', headStyle);
-    c.mergeBox(
-      base + FILA.nomina,
-      layout.COL_NOMBRE_START,
-      base + FILA.nomina,
-      layout.COL_NOMBRE_END,
-      'NÓMINA DE ESTUDIANTES',
-      headStyle,
-    );
+    c.cell(base + FILA.nomina, layout.COL_NRO, 'N°', horizontal);
+    c.mergeBox(base + FILA.nomina, layout.COL_NOMBRE_START, base + FILA.nomina, layout.COL_NOMBRE_END, 'NÓMINA DE ESTUDIANTES', horizontal);
   }
 
-  /** Filas de estudiantes (hasta 10 por folio; filas vacías hasta completar la página). */
+  /** Filas de estudiantes (hasta 10 por folio; filas vacías con cuadrícula hasta completar la página). */
   static _filasEstudiantes(c, { base, folio, layout }) {
     const asignaturas = folio.asignaturas ?? [];
     const estudiantes = folio.estudiantes ?? [];
-    const { small } = EXCEL_FONT_SIZE;
     const totalFilas = FILA.dataFin - FILA.dataInicio + 1;
 
     for (let i = 0; i < totalFilas; i += 1) {
       const row = base + FILA.dataInicio + i;
       const est = estudiantes[i] ?? null;
-      c.rowHeight(row, ROW_HEIGHTS.dataRow);
+      const observacion = est?.observaciones ?? '';
+      const dosLineas = estimarLineasObservacion(observacion, OBS_CHARS_POR_LINEA) > 1;
+      c.rowHeight(row, dosLineas ? ROW_HEIGHTS.dataRowDosLineas : ROW_HEIGHTS.dataRow);
 
-      c.cell(row, layout.COL_NRO, est?.numeroOrden ?? '', { size: small });
+      c.cell(row, layout.COL_NRO, est?.numeroOrden ?? '', celda({ size: FONT_SIZE.numeroOrden, bold: true }));
       c.mergeBox(
         row,
         layout.COL_NOMBRE_START,
         row,
         layout.COL_NOMBRE_END,
-        est ? String(est.nombreCompleto ?? '').toUpperCase() : '',
-        { size: small, align: 'left' },
+        est ? mayusculas(est.nombreCompleto) : '',
+        celda({ size: FONT_SIZE.dato, align: 'left' }),
       );
-      const ciTexto = est
-        ? `${est.ci ?? ''}${est.expedicion ? ` ${est.expedicion}` : ''}`.trim()
-        : '';
-      c.cell(row, layout.COL_CI, ciTexto, { size: small });
+      c.cell(
+        row,
+        layout.COL_CI,
+        est ? formatCedulaFolio(est.ci, est.expedicion) : '',
+        celda({ size: FONT_SIZE.dato, align: 'left' }),
+      );
 
       asignaturas.forEach((asig, j) => {
         const nota = est?.celdas?.[asig.ofertaCursoId] ?? null;
-        c.cell(row, layout.asigCol(j), est ? formatNotaFolio(nota) : '', {
-          size: small,
-          fontColor: esNotaNP(nota) ? EXCEL_COLOR.inkSoft : EXCEL_COLOR.ink,
-        });
+        c.cell(row, layout.asigCol(j), est ? formatNotaFolio(nota) : '', celda({ size: FONT_SIZE.dato }));
       });
 
-      const colorEstado = ESTADO_COLOR[est?.estadoAcademico] ?? EXCEL_COLOR.inkSoft;
       c.mergeBox(
         row,
         layout.COL_ESTADO_START,
         row,
         layout.COL_ESTADO_END,
         est?.estadoAcademico ?? '',
-        { size: small, bold: true, fontColor: colorEstado },
+        celda({ size: FONT_SIZE.dato }),
       );
-      c.mergeBox(row, layout.COL_OBS_START, row, layout.COL_OBS_END, est?.observaciones ?? '', {
-        size: small,
-        align: 'left',
-        wrap: true,
-        fontColor: EXCEL_COLOR.inkSoft,
-      });
+      c.mergeBox(
+        row,
+        layout.COL_OBS_START,
+        row,
+        layout.COL_OBS_END,
+        observacion,
+        celda({ size: FONT_SIZE.observacion, wrap: true }),
+      );
     }
   }
 
-  /** Leyenda de abreviaturas del centralizador, debajo de la nómina del folio. */
+  /** Leyenda de abreviaturas (NP / AP / PRE), SIEMPRE las tres líneas, bajo la nómina. */
   static _leyendaNotas(c, { base, layout, doc }) {
-    const row = base + FILA.leyenda;
-    c.mergeBox(row, layout.COL_NRO, row, layout.COL_CI, doc.leyendaNotas ?? '', {
-      size: EXCEL_FONT_SIZE.small,
-      align: 'left',
-      border: false,
-      fontColor: EXCEL_COLOR.inkSoft,
+    const lineas = Array.isArray(doc.leyendaNotas) ? doc.leyendaNotas : [doc.leyendaNotas ?? ''];
+    lineas.forEach((linea, i) => {
+      const row = base + FILA.leyendaInicio + i;
+      c.rowHeight(row, ROW_HEIGHTS.leyenda);
+      c.mergeBox(
+        row,
+        layout.COL_NOMBRE_START,
+        row,
+        layout.COL_NOMBRE_END,
+        linea,
+        texto({ size: FONT_SIZE.leyenda, bold: true, align: 'left' }),
+      );
     });
   }
 
   /**
-   * Nota "DOCUMENTO BORRADOR" al pie del folio, en el mismo renglón que
-   * ocuparían las firmas de autoridades — reemplaza ese bloque mientras el
-   * libro está ABIERTO (la numeración todavía puede reajustarse).
+   * Nota "DOCUMENTO BORRADOR" en el renglón de las firmas de autoridades,
+   * reemplazándolas mientras el libro está ABIERTO (la numeración todavía
+   * puede reajustarse; nadie debe firmar sobre este folio).
    */
   static _notaBorrador(c, { base, layout }) {
     const row = base + FILA.firmasAutoridades;
     c.mergeBox(
       row,
-      2,
+      layout.COL_NOMBRE_START,
       row,
       layout.lastCol,
       'DOCUMENTO BORRADOR — sin firmas; el libro aún está ABIERTO y la numeración puede reajustarse',
-      {
-        size: EXCEL_FONT_SIZE.small,
-        bold: true,
-        align: 'center',
-        border: false,
-        fontColor: EXCEL_COLOR.danger,
-      },
+      texto({ size: FONT_SIZE.notaBorrador, bold: true, fontColor: DOC_COLOR.borrador }),
     );
   }
 
-  /** Firmas de autoridades al pie del folio (JEFE DE CARRERA / DIRECTOR / RECTOR). */
+  /**
+   * Firmas de autoridades al pie del folio (JEFE DE CARRERA / DIRECTOR /
+   * RECTOR): línea de firma (`LINEA_FIRMA`, misma que la de docentes) con el
+   * rótulo debajo, 3 zonas a lo ancho.
+   */
   static _firmasAutoridades(c, { base, layout, doc }) {
     const row = base + FILA.firmasAutoridades;
     const firmas = doc.firmas ?? [];
-    const anchors = computeTresZonasFirmas(layout);
+    const zonas = computeTresZonasFirmas(layout);
     firmas.forEach((firma, i) => {
-      const [start, end] = anchors[i];
-      c.mergeBox(row, start, row, end, firma, {
-        size: EXCEL_FONT_SIZE.small,
-        bold: true,
-        align: 'center',
-        border: false,
+      const [start, end] = zonas[i] ?? zonas[zonas.length - 1];
+      c.mergeBox(row, start, row, end, firma, texto({ size: FONT_SIZE.firma, wrap: true }));
+      c.outline(row, start, row, end, {
+        style: LINEA_FIRMA.style,
+        color: DOC_COLOR.border,
+        sides: SOLO.top,
       });
-      // Línea de firma (borde superior del rótulo).
-      for (let col = start; col <= end; col += 1) {
-        c.ws.getCell(row, col).border = {
-          top: { style: 'thin', color: { argb: EXCEL_COLOR.ink } },
-        };
-      }
     });
   }
 
   /**
    * Página de FIRMAS DE DOCENTES del paralelo (al final de la hoja, tras el
    * último folio). Artefacto de impresión: NO es un folio del libro y NO
-   * incrementa numero_folio. Grilla de 3 columnas (nombre del docente + su
-   * materia debajo, espacio en blanco ARRIBA para la firma física con línea
-   * de firma explícita sobre el nombre — mismo criterio que
-   * `_firmasAutoridades`), réplica del libro real (fuente: asignaciones
-   * vigentes del paralelo vía vista 135).
+   * incrementa numero_folio. Logo + título (sin LIBRO/FOLIO) y una grilla de
+   * 3 columnas con el nombre del docente y su materia debajo, dejando el
+   * espacio en blanco sobre cada nombre para la firma física, con una línea
+   * fina sobre el nombre (`LINEA_FIRMA`, pedido del usuario; el papel real no
+   * la trae). El primer renglón arranca en `FILA_DOCENTES.primerNombre`
+   * (11, medido en el físico) para no quedar pegado al logo. Fuente:
+   * asignaciones vigentes del paralelo vía vista 135.
    *
-   * @returns {number} Total de filas usadas por esta sección (relativas a
-   *          `base`), para que el llamador ubique la sección siguiente.
+   * @returns {number} Fila absoluta de la última materia pintada (para ubicar
+   *          la sección siguiente).
    */
-  static _firmasDocentes(c, { base, folio, layout, doc }) {
-    const cab = folio.cabecera ?? {};
+  static _firmasDocentes(c, { base, folio, layout, doc, logoId, widths }) {
     const asignaturas = folio.asignaturas ?? [];
-    const { small } = EXCEL_FONT_SIZE;
-    const { lastCol } = layout;
+    const { lastCol, firstAsigCol } = layout;
 
-    c.mergeBox(base + 2, layout.COL_NRO, base + 3, lastCol, 'FIRMAS DE DOCENTES', {
-      size: EXCEL_FONT_SIZE.subtitle,
-      bold: true,
-      fontColor: EXCEL_COLOR.bandText,
-      fill: EXCEL_COLOR.band,
-      borderMedium: true,
-    });
+    this._logo(c, { logoId, base, widths, placement: LOGO_DOCENTES });
     c.mergeBox(
-      base + 4,
-      layout.COL_NRO,
-      base + 4,
+      base + FILA_DOCENTES.tituloInicio,
+      Math.min(firstAsigCol + 2, lastCol),
+      base + FILA_DOCENTES.tituloFin,
       lastCol,
-      `${doc.institucion} · ${cab.curso ?? ''} · GESTIÓN ${cab.gestionAnio ?? ''}`,
-      { size: small, fontColor: EXCEL_COLOR.inkSoft, border: false },
+      doc.titulo,
+      texto({ size: FONT_SIZE.tituloDocentes, bold: true }),
     );
 
-    // Grilla de 3 columnas (mismas zonas que _firmasAutoridades: primer
-    // bloque C:E, último ..:Q) — sin cabecera de tabla, cada celda es
-    // autoexplicativa.
-    const anchors = computeTresZonasFirmas(layout);
-
-    const grillaInicio = base + 6;
+    const zonas = computeTresZonasDocentes(layout);
+    let ultimaFila = base + FILA_DOCENTES.primerNombre;
     asignaturas.forEach((asig, i) => {
-      const fila = Math.floor(i / COLUMNAS_FIRMAS_DOCENTES);
-      const colIdx = i % COLUMNAS_FIRMAS_DOCENTES;
-      const [start, end] = anchors[colIdx];
-      const rowEspacioInicio = grillaInicio + fila * FILAS_POR_FIRMA;
-      const rowNombre = rowEspacioInicio + FILAS_POR_FIRMA - 2;
-      const rowMateria = rowEspacioInicio + FILAS_POR_FIRMA - 1;
-
-      // Espacio en blanco para la firma física (sin línea de firma explícita).
-      for (let row = rowEspacioInicio; row < rowNombre; row += 1) {
-        c.rowHeight(row, ROW_HEIGHTS.firmaEspacio);
-      }
-      c.mergeBox(rowEspacioInicio, start, rowNombre - 1, end, '', { border: false });
-
-      c.rowHeight(rowNombre, ROW_HEIGHTS.dataRow);
-      c.mergeBox(rowNombre, start, rowNombre, end, (asig.docenteNombre ?? '').toUpperCase(), {
-        size: small,
-        bold: true,
-        align: 'center',
-        border: false,
+      const grupo = Math.floor(i / COLUMNAS_FIRMAS_DOCENTES);
+      const [start, end] = zonas[i % COLUMNAS_FIRMAS_DOCENTES];
+      const rowNombre = base + FILA_DOCENTES.primerNombre + grupo * FILAS_POR_FIRMA;
+      const rowMateria = rowNombre + 1;
+      const docente = texto({ size: FONT_SIZE.docente });
+      c.mergeBox(rowNombre, start, rowNombre, end, mayusculas(asig.docenteNombre), docente);
+      // Línea de firma: solo el borde superior de la celda del nombre.
+      c.outline(rowNombre, start, rowNombre, end, {
+        style: LINEA_FIRMA.style,
+        color: DOC_COLOR.border,
+        sides: SOLO.top,
       });
-      // Línea de firma (borde superior del rótulo) — mismo criterio que
-      // _firmasAutoridades: el docente firma sobre esta línea, encima de su nombre.
-      for (let col = start; col <= end; col += 1) {
-        c.ws.getCell(rowNombre, col).border = {
-          top: { style: 'thin', color: { argb: EXCEL_COLOR.ink } },
-        };
-      }
-
-      c.rowHeight(rowMateria, ROW_HEIGHTS.dataRow);
-      c.mergeBox(rowMateria, start, rowMateria, end, asig.nombre ?? '', {
-        size: small,
-        align: 'center',
-        border: false,
-        fontColor: EXCEL_COLOR.inkSoft,
-      });
+      c.mergeBox(rowMateria, start, rowMateria, end, asig.nombre ?? '', { ...docente, wrap: true });
+      ultimaFila = rowMateria;
     });
 
-    const filasGrilla = Math.ceil(asignaturas.length / COLUMNAS_FIRMAS_DOCENTES);
-    return 6 + filasGrilla * FILAS_POR_FIRMA;
+    for (let row = base + 1; row <= ultimaFila; row += 1) {
+      c.rowHeight(row, ROW_HEIGHTS.base);
+    }
+    return ultimaFila;
   }
 
   /**
    * Bloque "ESTADÍSTICAS" del paralelo (DETALLE|CANTIDAD|%), debajo de las
    * firmas de docentes — inscritos/aprobados/reprobados/abandono, cabecera con
-   * la banda de color institucional (mismo verde que el resto del documento).
+   * el mismo verde oficial de la tabla del folio y bordes finos negros.
    * Sin `estadisticas` (paralelo aún sin folios/estudiantes) no pinta nada.
    */
-  static _estadisticasParalelo(c, { base, layout, doc, estadisticas }) {
+  static _estadisticasParalelo(c, { base, doc, estadisticas }) {
     if (!estadisticas) return;
     const cfg = doc.estadisticas ?? {};
     const filasCfg = cfg.filas ?? [];
-    const { small } = EXCEL_FONT_SIZE;
+    const cols = computeColumnasEstadisticas();
+    const [detalleStart, detalleEnd] = cols.detalle;
 
-    // Tabla angosta, alineada a la izquierda (independiente del número de
-    // materias): arranca en C (no en A) para alinear con el resto de bloques
-    // del pie de hoja (firmas de autoridades/docentes) — DETALLE (6 columnas)
-    // + CANTIDAD (1) + % (1).
-    const colDetalleStart = layout.COL_NOMBRE_END;
-    const colDetalleEnd = layout.COL_CI + 1;
-    const colCantidad = colDetalleEnd + 1;
-    const colPorcentaje = colCantidad + 1;
+    c.rowHeight(base, ROW_HEIGHTS.base);
+    c.mergeBox(
+      base,
+      detalleStart,
+      base,
+      cols.porcentaje,
+      cfg.titulo ?? 'ESTADÍSTICAS',
+      texto({ size: FONT_SIZE.estadisticasTitulo, bold: true }),
+    );
 
-    c.mergeBox(base, colDetalleStart, base, colDetalleEnd, cfg.titulo ?? 'ESTADÍSTICAS', {
-      size: EXCEL_FONT_SIZE.label,
-      bold: true,
-      fontColor: EXCEL_COLOR.band,
-      border: false,
-      align: 'left',
-    });
-
-    const headRow = base + 1;
-    const headStyle = {
-      bold: true,
-      size: small,
-      fill: EXCEL_COLOR.statHeader,
-      fontColor: EXCEL_COLOR.statHeaderText,
-      borderMedium: true,
-    };
-    c.mergeBox(headRow, colDetalleStart, headRow, colDetalleEnd, cfg.columnas?.[0] ?? 'DETALLE', headStyle);
-    c.cell(headRow, colCantidad, cfg.columnas?.[1] ?? 'CANTIDAD', headStyle);
-    c.cell(headRow, colPorcentaje, cfg.columnas?.[2] ?? '%', headStyle);
+    const headRow = base + 2;
+    const headStyle = cabecera({ size: FONT_SIZE.estadisticasCabecera, wrap: false });
+    c.rowHeight(base + 1, ROW_HEIGHTS.base);
+    c.rowHeight(headRow, ROW_HEIGHTS.base);
+    c.mergeBox(headRow, detalleStart, headRow, detalleEnd, cfg.columnas?.[0] ?? 'DETALLE', headStyle);
+    c.cell(headRow, cols.cantidad, cfg.columnas?.[1] ?? 'CANTIDAD', headStyle);
+    c.cell(headRow, cols.porcentaje, cfg.columnas?.[2] ?? '%', headStyle);
 
     filasCfg.forEach((filaCfg, i) => {
       const row = headRow + 1 + i;
-      c.mergeBox(row, colDetalleStart, row, colDetalleEnd, filaCfg.etiqueta, {
-        size: small,
-        bold: true,
-        align: 'left',
-        fill: EXCEL_COLOR.teoricas,
-      });
-      c.cell(row, colCantidad, Number(estadisticas[filaCfg.campo] ?? 0), { size: small });
-      c.cell(row, colPorcentaje, `${Number(estadisticas[filaCfg.pctCampo] ?? 0)}%`, {
-        size: small,
-      });
+      c.rowHeight(row, ROW_HEIGHTS.estadisticasFila);
+      c.mergeBox(
+        row,
+        detalleStart,
+        row,
+        detalleEnd,
+        filaCfg.etiqueta,
+        celda({ size: FONT_SIZE.estadisticasEtiqueta, bold: true, align: 'left', wrap: true }),
+      );
+      const valorEstilo = celda({ size: FONT_SIZE.estadisticasValor, bold: true });
+      c.cell(row, cols.cantidad, Number(estadisticas[filaCfg.campo] ?? 0), valorEstilo);
+      const pct = c.cell(
+        row,
+        cols.porcentaje,
+        Number(estadisticas[filaCfg.pctCampo] ?? 0) / 100,
+        valorEstilo,
+      );
+      pct.numFmt = '0%';
     });
   }
 }

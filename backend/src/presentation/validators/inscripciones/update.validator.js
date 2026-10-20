@@ -118,6 +118,14 @@ export const updateEnrollmentValidator = [
   // ============================================
   // CAMPOS OPCIONALES
   // ============================================
+  // Plan de estudios (planes duales): opcional; la edición NO cambia el plan de
+  // un estudiante con historial (RN-3, el derivado del kardex manda).
+  body('plan_estudio_id')
+    .optional({ nullable: true, values: 'null' })
+    .isInt({ min: 1 })
+    .withMessage('El ID del plan de estudios debe ser un número entero mayor a 0')
+    .toInt(),
+
   body('observations')
     .optional({ nullable: true, checkFalsy: true })
     .customSanitizer((value) => {

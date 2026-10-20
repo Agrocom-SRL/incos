@@ -76,6 +76,9 @@ export class ExcelSheetComposer {
    * @param {boolean} [s.wrap]
    * @param {boolean} [s.border] pinta borde (default true)
    * @param {boolean} [s.borderMedium] usa borde medium en vez de thin
+   * @param {string} [s.borderColor] ARGB del borde (default: color del theme)
+   * @param {'top'|'middle'|'bottom'} [s.valign] alineación vertical (default middle)
+   * @param {number} [s.rotation] rotación del texto en grados (0-180 o 255 para vertical apilado)
    */
   style(cell, s = {}) {
     cell.font = {
@@ -89,12 +92,14 @@ export class ExcelSheetComposer {
     }
     cell.alignment = {
       horizontal: s.align ?? 'center',
-      vertical: 'middle',
+      vertical: s.valign ?? 'middle',
       wrapText: Boolean(s.wrap),
-      indent: s.indent ?? (s.align === 'left' ? 1 : 0)
+      indent: s.indent ?? (s.align === 'left' ? 1 : 0),
+      textRotation: s.rotation ?? 0
     };
     if (s.border !== false) {
-      cell.border = borderAll(s.borderMedium ? EXCEL_BORDER.medium : EXCEL_BORDER.thin);
+      const base = s.borderMedium ? EXCEL_BORDER.medium : EXCEL_BORDER.thin;
+      cell.border = borderAll(s.borderColor ? { ...base, color: { argb: s.borderColor } } : base);
     }
     return cell;
   }
@@ -190,6 +195,41 @@ export class ExcelSheetComposer {
     for (let c = colStart; c <= colEnd; c += 1) {
       this.ws.getCell(row, c).border = borderAll(style);
     }
+  }
+
+  /**
+   * Contorno de un rango (r1,c1)→(r2,c2): pinta SOLO los lados exteriores
+   * pedidos (arriba en la primera fila, abajo en la última, izquierda en la
+   * primera columna, derecha en la última), conservando los bordes que cada
+   * celda ya tenga. Sirve para cajas con borde exterior distinto al interior
+   * (p. ej. un cuadro LIBRO/FOLIO con contorno medio y divisor fino), líneas
+   * horizontales de separación y líneas de firma (`style: 'dotted'`).
+   *
+   * @param {number} r1
+   * @param {number} c1
+   * @param {number} r2
+   * @param {number} c2
+   * @param {Object} [opts]
+   * @param {'thin'|'medium'|'dotted'|'hair'} [opts.style='thin']
+   * @param {string} [opts.color] ARGB (default: color de borde del theme)
+   * @param {{top?:boolean,bottom?:boolean,left?:boolean,right?:boolean}} [opts.sides]
+   *        lados a pintar (default: los cuatro)
+   */
+  outline(r1, c1, r2, c2, { style = 'thin', color, sides } = {}) {
+    const side = { style, color: { argb: color ?? EXCEL_BORDER.thin.color.argb } };
+    const want = { top: true, bottom: true, left: true, right: true, ...(sides ?? {}) };
+    for (let r = r1; r <= r2; r += 1) {
+      for (let c = c1; c <= c2; c += 1) {
+        const cell = this.ws.getCell(r, c);
+        const border = { ...(cell.border ?? {}) };
+        if (want.top && r === r1) border.top = side;
+        if (want.bottom && r === r2) border.bottom = side;
+        if (want.left && c === c1) border.left = side;
+        if (want.right && c === c2) border.right = side;
+        cell.border = border;
+      }
+    }
+    return this;
   }
 
   /** Congela las primeras `rows` filas y `cols` columnas. */

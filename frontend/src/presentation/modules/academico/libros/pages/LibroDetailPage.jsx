@@ -24,6 +24,7 @@ import { LIBROS_PERMISOS } from '@application-academico/libros/utils/librosPermi
 import { formatLibroEstado, getLibroEstadoPillClass } from '@application-academico/libros/utils/librosEstados';
 import { libroAnuladosPath } from '@application-academico/libros/utils/librosPaths';
 import LibroFoliosSection from '../components/organisms/LibroFoliosSection.jsx';
+import CerrarLibroPendientesModal from '../components/organisms/CerrarLibroPendientesModal.jsx';
 import '@presentation/styles/pages/detail-page.css';
 
 const LibroDetailPage = () => {
@@ -45,6 +46,10 @@ const LibroDetailPage = () => {
     handleCerrarLibro,
     handleReabrirLibro,
     actualizando,
+
+    cierrePendientes,
+    handleConfirmarCierreForzado,
+    handleCancelarCierreForzado,
 
     handleExportar,
     exportando,
@@ -164,6 +169,14 @@ const LibroDetailPage = () => {
           </>
         ) : null}
       </DetailPageShell>
+
+      <CerrarLibroPendientesModal
+        open={Boolean(cierrePendientes)}
+        pendientes={cierrePendientes}
+        cerrando={actualizando}
+        onConfirmar={handleConfirmarCierreForzado}
+        onCancelar={handleCancelarCierreForzado}
+      />
     </PageTemplate>
   );
 };

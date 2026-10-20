@@ -76,6 +76,42 @@ export class InscripcionRepository extends IInscripcionRepository {
   }
 
   /**
+   * Obtiene el contexto de matrícula para el wizard de inscripción.
+   * GET /v1/inscripciones/contexto-matricula?estudiante_id=&carrera_id=&plan_estudio_id=
+   *
+   * dataFieldName del backend: 'contexto' (estudiante, gestion, carrera, planes,
+   * plan, periodos con asignaturas y resumenHistorial).
+   *
+   * @param {Object} params
+   * @param {string|number} params.estudianteId - ID del estudiante (requerido)
+   * @param {string|number} [params.carreraId] - Requerido solo si el estudiante no tiene carrera fija
+   * @param {string|number} [params.planEstudioId] - Plan solicitado (default: plan del estudiante o vigente)
+   * @returns {Promise<{success: boolean, data?: { contexto: Object }, error?: string}>}
+   */
+  async obtenerContextoMatricula(params = {}) {
+    try {
+      const { estudianteId, carreraId, planEstudioId, excluirInscripcionId } = params;
+      if (!estudianteId) {
+        return { success: false, error: 'ID del estudiante es requerido' };
+      }
+
+      const queryParams = { estudiante_id: estudianteId };
+      if (carreraId != null) queryParams.carrera_id = carreraId;
+      if (planEstudioId != null) queryParams.plan_estudio_id = planEstudioId;
+      // Modo edición del wizard: la inscripción en edición no cuenta para el
+      // perfil del estudiante (esNuevoSistema / yaMatriculadoGestionActual).
+      if (excluirInscripcionId != null) queryParams.excluir_inscripcion_id = excluirInscripcionId;
+
+      const response = await apiClient.get(INSCRIPCIONES_ENDPOINTS.CONTEXTO_MATRICULA, {
+        params: queryParams,
+      });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al cargar el contexto de matrícula');
+    }
+  }
+
+  /**
    * Crea una nueva inscripción
    * POST /v1/inscripciones
    * 

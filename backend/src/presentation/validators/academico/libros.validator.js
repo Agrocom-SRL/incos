@@ -43,6 +43,19 @@ export const editarLibroValidator = [
   body('fechaApertura').optional({ nullable: true }).isISO8601().withMessage('Fecha de apertura inválida'),
   body('estado').optional().isIn(ESTADOS_LIBRO_VALUES).withMessage('Estado de libro inválido'),
   body('observaciones').optional({ nullable: true }).isString().isLength({ max: 2000 }),
+  // Cierre con notas pendientes (estado: CERRADO): `forzarCierre` asienta los
+  // pendientes como ABANDONO y exige `motivo` (mínimo lo valida el use case).
+  body('forzarCierre')
+    .optional()
+    .isBoolean()
+    .withMessage('forzarCierre inválido')
+    .toBoolean(),
+  body('motivo')
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .isLength({ max: 2000 })
+    .withMessage('Motivo inválido (máximo 2000 caracteres)'),
 ];
 
 export const listParalelosLibroValidator = [libroIdParam];

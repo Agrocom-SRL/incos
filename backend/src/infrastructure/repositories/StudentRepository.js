@@ -468,22 +468,35 @@ export class StudentRepository extends BaseRepository {
    * NO excluye a los ya matriculados en la gestión vigente: los prioriza al
    * final (ORDER BY) y la vista expone inscripcion_gestion_actual_id para que
    * el use case anote yaMatriculadoGestionActual.
+   * Prioridad del ORDER BY (misma que aplica la lista del paso «Buscar»):
+   * 1) sin matrícula en la gestión vigente, 2) nuevos en el sistema
+   * (total_inscripciones = 0), 3) registro más reciente.
    *
    * @param {Object} options
    * @param {boolean} [options.preliminar=false] - Si true: muestra recientes sin texto de búsqueda
-   * @param {string} [options.q] - Término LIKE; mín. 2 caracteres si no es preliminar
+   * @param {boolean} [options.soloNuevos=false] - Si true: solo estudiantes con
+   *   total_inscripciones = 0 (nuevos en el sistema), orden created_at DESC;
+   *   no exige texto de búsqueda (q opcional)
+   * @param {string} [options.q] - Término LIKE; mín. 2 caracteres si no es preliminar/soloNuevos
    * @param {number} [options.limit=50] - Máximo de filas (1–100)
    * @returns {Promise<Array<Object>>}
    */
   async buscarParaInscripcion(options = {}) {
-    const { preliminar = false, q, limit = 50 } = options;
+    const { preliminar = false, soloNuevos = false, q, limit = 50 } = options;
     const lim = Math.min(Math.max(parseInt(limit, 10) || 50, 1), 100);
+
+    if (soloNuevos) {
+      return this._buscarSoloNuevosParaInscripcion({ q, lim });
+    }
 
     if (preliminar) {
       const queryPrelim = `
         SELECT *
         FROM vista_estudiante_busqueda_inscripcion b
-        ORDER BY CASE WHEN b.inscripcion_gestion_actual_id IS NULL THEN 0 ELSE 1 END, b.created_at DESC
+        ORDER BY
+          CASE WHEN b.inscripcion_gestion_actual_id IS NULL THEN 0 ELSE 1 END,
+          CASE WHEN COALESCE(b.total_inscripciones, 0) = 0 THEN 0 ELSE 1 END,
+          b.created_at DESC
         LIMIT ?
       `;
       return sequelize.query(queryPrelim, {
@@ -527,7 +540,10 @@ export class StudentRepository extends BaseRepository {
           OR COALESCE(b.carrera_codigo, '') LIKE ?
         )
       ${tokenSql}
-      ORDER BY CASE WHEN b.inscripcion_gestion_actual_id IS NULL THEN 0 ELSE 1 END, b.created_at DESC
+      ORDER BY
+        CASE WHEN b.inscripcion_gestion_actual_id IS NULL THEN 0 ELSE 1 END,
+        CASE WHEN COALESCE(b.total_inscripciones, 0) = 0 THEN 0 ELSE 1 END,
+        b.created_at DESC
       LIMIT ?
     `;
 
@@ -547,6 +563,51 @@ export class StudentRepository extends BaseRepository {
       );
     }
     replacements.push(lim);
+
+    return sequelize.query(querySql, {
+      replacements,
+      type: sequelize.QueryTypes.SELECT,
+    });
+  }
+
+  /**
+   * Modo solo_nuevos del wizard de Inscripción nueva: estudiantes sin ninguna
+   * inscripción activa en cualquier gestión (total_inscripciones = 0 en la
+   * vista 153), orden created_at DESC (los recién registrados primero).
+   * Si llega un término q (≥ 2 caracteres) se filtra además por LIKE.
+   *
+   * @private
+   * @param {{ q?: string, lim: number }} params
+   * @returns {Promise<Array<Object>>}
+   */
+  async _buscarSoloNuevosParaInscripcion({ q, lim }) {
+    const raw = String(q ?? '').trim();
+    const safe = raw.replace(/%/g, '').replace(/_/g, '');
+    const hasTerm = safe.length >= 2;
+    const term = `%${safe}%`;
+
+    const searchSql = hasTerm
+      ? `AND (
+          COALESCE(b.codigo_estudiante, '') LIKE ?
+          OR COALESCE(b.ci, '') LIKE ?
+          OR COALESCE(b.nombres, '') LIKE ?
+          OR COALESCE(b.apellido_paterno, '') LIKE ?
+          OR COALESCE(b.apellido_materno, '') LIKE ?
+          OR CONCAT_WS(' ', b.nombres, b.apellido_paterno, b.apellido_materno) LIKE ?
+          OR CONCAT_WS(' ', b.apellido_paterno, b.apellido_materno, b.nombres) LIKE ?
+        )`
+      : '';
+
+    const querySql = `
+      SELECT *
+      FROM vista_estudiante_busqueda_inscripcion b
+      WHERE b.total_inscripciones = 0
+      ${searchSql}
+      ORDER BY b.created_at DESC
+      LIMIT ?
+    `;
+
+    const replacements = hasTerm ? [term, term, term, term, term, term, term, lim] : [lim];
 
     return sequelize.query(querySql, {
       replacements,

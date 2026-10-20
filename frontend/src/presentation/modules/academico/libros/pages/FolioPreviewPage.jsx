@@ -242,7 +242,11 @@ const FolioPreviewPage = () => {
                   </div>
                 )}
 
-                <div className="folio-sheet__leyenda">{LIBRO_DOC.leyendaNotas}</div>
+                <div className="folio-sheet__leyenda">
+                  {LIBRO_DOC.leyendaNotas.map((linea) => (
+                    <div key={linea}>{linea}</div>
+                  ))}
+                </div>
               </article>
             </>
           ) : null}

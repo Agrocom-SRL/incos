@@ -45,6 +45,7 @@ export class UpdateEnrollmentController {
       observations: body.observations ?? body.observaciones ?? undefined,
       enrollmentDate: body.enrollment_date ?? body.enrollmentDate ?? body.fechaInscripcion ?? undefined,
       parallelId: body.parallel_id ?? body.parallelId ?? undefined,
+      requestedPlanId: body.plan_estudio_id ?? body.planEstudioId ?? undefined,
       teacherAssignmentIds: Array.isArray(body.teacher_assignment_ids)
         ? body.teacher_assignment_ids
         : Array.isArray(body.teacherAssignmentIds)

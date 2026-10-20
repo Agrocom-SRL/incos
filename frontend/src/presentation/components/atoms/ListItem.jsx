@@ -1,34 +1,39 @@
 /**
  * ListItem - Componente atómico para items de lista
- * 
- * Single Responsibility: Renderizar un item de lista con estructura estándar (avatar, title, caption)
- * 
+ *
+ * Single Responsibility: Renderizar un item de lista con estructura estándar
+ * (avatar, title, caption, extra) y sus estados de selección/bloqueo.
+ *
  * Atomic Design: Atom
  * - Componente básico reutilizable
  * - Implementación propia usando Flex y Space de Ant Design (no usa List.Item deprecado)
- * 
+ *
  * SOLID Principles:
- * - Single Responsibility: Solo renderiza UI de un item de lista con estructura estándar
- * - Open/Closed: Extensible mediante props, pero mantiene estructura consistente
- * 
+ * - Single Responsibility: Solo renderiza UI de un item de lista con estructura consistente
+ * - Open/Closed: Extensible mediante props (extra, blocked, className), sin variantes por módulo
+ *
  * Estructura estándar:
- * - avatar: Icono o imagen (opcional)
+ * - avatar: Icono, iniciales o imagen (opcional)
  * - title: Título principal del item (string o ReactNode, requerido si no hay children)
  * - caption: Descripción o información adicional (ReactNode, opcional)
- * - children: Contenido personalizado (opcional, si se proporciona, se renderiza dentro del item)
- * 
+ * - extra: Contenido alineado a la derecha (check de selección, pista de acción, opcional)
+ * - children: Contenido personalizado (opcional)
+ *
+ * Estados (los pinta `list-item.css` con tokens del theme, sin estilos inline):
+ * - normal → superficie del contenedor
+ * - hover/focus (solo si es clickeable) → borde primario + elevación
+ * - active (seleccionado) → fondo primario suave + barra de acento + texto primario
+ * - blocked → item presente pero NO elegible (p. ej. estudiante ya matriculado):
+ *   atenuado y `aria-disabled`, pero conserva el click para poder explicar el motivo.
+ *
  * NOTA: No usa List.Item de Ant Design porque List está deprecado.
- * Implementación propia usando Flex y Space de Ant Design.
- * 
+ *
  * Props:
- * - avatar: Icono, imagen o componente para el avatar (ReactNode, opcional)
- * - title: Título principal del item (string o ReactNode, requerido si no hay children)
- * - caption: Descripción o información adicional (ReactNode, opcional)
- * - onClick: Callback cuando se hace click (opcional)
- * - active: Si el item está activo/seleccionado (boolean, opcional)
- * - style: Estilos personalizados (opcional)
- * - className: Clase CSS adicional (opcional)
- * - children: Contenido personalizado (opcional, si se proporciona, se renderiza dentro del item)
+ * - avatar, title, caption, extra, children
+ * - onClick: Callback al seleccionar (click o Enter/Espacio)
+ * - active: Si el item está seleccionado
+ * - blocked: Si el item no es elegible (mantiene el click para informar el motivo)
+ * - style / className: extensiones puntuales
  */
 
 import { Flex, Typography } from 'antd';
@@ -39,52 +44,70 @@ const ListItem = ({
     avatar,
     title,
     caption,
+    extra = null,
     children,
     onClick = null,
     active = false,
+    blocked = false,
     style = null,
     className = '',
     ...props
 }) => {
-    // Solo agregar cursor pointer si hay onClick, los demás estilos vienen de CSS
-    const itemStyle = onClick ? { cursor: 'pointer', ...style } : style;
+    const isClickable = typeof onClick === 'function';
 
-    // Agregar clase 'active' si el item está activo
-    const itemClassName = active 
-        ? (className ? `list-item active ${className}`.trim() : 'list-item active')
-        : (className ? `list-item ${className}`.trim() : 'list-item');
+    // Clases: base + estado. Se conserva `active` (sin prefijo) por compatibilidad
+    // con los consumidores actuales de DataList/SelectableDataList.
+    const itemClassName = [
+        'list-item',
+        isClickable ? 'list-item--clickable' : '',
+        active ? 'active' : '',
+        blocked ? 'list-item--blocked' : '',
+        className,
+    ]
+        .filter(Boolean)
+        .join(' ');
 
-    // Convertir title a ReactNode si es string
-    // Si está activo, el color se maneja en CSS (blanco)
-    // Si no está activo, usar color primario
-    const titleContent = typeof title === 'string' ? (
-        <Text strong style={active ? {} : { color: 'var(--color-primary)' }}>{title}</Text>
-    ) : title;
+    // Teclado: el item seleccionable se comporta como botón (Enter / Espacio).
+    const handleKeyDown = (event) => {
+        if (!isClickable) return;
+        if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+            event.preventDefault();
+            onClick(event);
+        }
+    };
+
+    // Convertir title a ReactNode si es string (el color lo resuelve el CSS por estado)
+    const titleContent = typeof title === 'string' ? <Text strong>{title}</Text> : title;
 
     // Determinar si hay contenido para mostrar
-    const hasMeta = avatar || title || caption;
+    const hasMeta = avatar || title || caption || extra;
 
     return (
         <Flex
             vertical={!hasMeta && !!children}
-            align={hasMeta ? "flex-start" : undefined}
-            gap={hasMeta ? "middle" : undefined}
-            style={itemStyle}
+            align={hasMeta ? 'flex-start' : undefined}
+            gap={hasMeta ? 'middle' : undefined}
+            style={style}
             onClick={onClick}
+            onKeyDown={isClickable ? handleKeyDown : undefined}
             className={itemClassName}
+            role={isClickable ? 'button' : undefined}
+            tabIndex={isClickable ? 0 : undefined}
+            aria-pressed={isClickable ? active : undefined}
+            aria-disabled={blocked || undefined}
             {...props}
         >
             {hasMeta && (
-                <Flex align="flex-start" gap="middle" style={{ width: '100%' }}>
+                <Flex align="center" gap="middle" style={{ width: '100%' }}>
                     {/* Avatar */}
                     {avatar && (
                         <Flex className="list-item-avatar" align="center" justify="center">
                             {avatar}
                         </Flex>
                     )}
-                    
+
                     {/* Contenido: title y caption */}
-                    <Flex vertical style={{ flex: 1 }}>
+                    <Flex vertical style={{ flex: 1, minWidth: 0 }}>
                         {titleContent || <Text type="secondary">Sin título</Text>}
                         {caption && (
                             <Flex className="list-item-caption" vertical>
@@ -92,9 +115,16 @@ const ListItem = ({
                             </Flex>
                         )}
                     </Flex>
+
+                    {/* Zona derecha: check de selección, pista de acción o estado */}
+                    {extra && (
+                        <Flex className="list-item__extra" align="center" justify="flex-end">
+                            {extra}
+                        </Flex>
+                    )}
                 </Flex>
             )}
-            
+
             {/* Renderizar children si se proporciona */}
             {children}
         </Flex>

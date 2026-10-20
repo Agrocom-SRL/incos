@@ -35,6 +35,7 @@ import {
   FileDoneOutlined,
   FilePdfOutlined,
   FileTextOutlined,
+  SafetyCertificateOutlined,
   TeamOutlined,
   UploadOutlined,
   UserSwitchOutlined,
@@ -81,6 +82,7 @@ const ProyectoGradoDetail = () => {
     tutorModal,
     etapaModal,
     cancelarModal,
+    exencionDefensa,
     integrantes,
     bitacora,
     avances,
@@ -192,9 +194,22 @@ const ProyectoGradoDetail = () => {
   );
 
   const sidebarAction =
-    etapaAction || cancelarModal.puedeCancelar ? (
+    etapaAction || cancelarModal.puedeCancelar || exencionDefensa.puede ? (
       <Flex vertical gap={8} style={{ width: '100%' }}>
         {etapaAction}
+        {exencionDefensa.puede ? (
+          <ActionButton
+            permiso={TITULACION_PERMISOS.proyecto}
+            accion="APROBAR"
+            variant="info"
+            icon={<SafetyCertificateOutlined />}
+            block
+            loading={exencionDefensa.declarando}
+            onClick={exencionDefensa.confirmar}
+          >
+            Declarar exento de defensa
+          </ActionButton>
+        ) : null}
         {cancelarModal.puedeCancelar ? (
           <ActionButton
             permiso={TITULACION_PERMISOS.proyecto}
@@ -235,7 +250,7 @@ const ProyectoGradoDetail = () => {
           key: 'bitacora',
           label: (
             <DetailTabLabel icon={<FileTextOutlined />}>
-              Bitácora ({bitacora.entradas.length})
+              Cronograma de progreso ({bitacora.entradas.length})
             </DetailTabLabel>
           ),
           children: (

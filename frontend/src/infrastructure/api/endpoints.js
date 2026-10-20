@@ -530,6 +530,8 @@ export const DOCUMENTACION_ENDPOINTS = {
 // ============================================
 export const INSCRIPCIONES_ENDPOINTS = {
   ...createCRUDEndpoints('/inscripciones'),
+  /** GET — Contexto de matrícula del wizard (estudiante + gestión + planes + periodos/asignaturas); query estudiante_id, carrera_id?, plan_estudio_id? */
+  CONTEXTO_MATRICULA: `${API_BASE}/inscripciones/contexto-matricula`,
   // Endpoint específico para generar formulario de inscripción (se usará desde el módulo de inscripciones)
   GENERATE_FORMULARIO: (studentId) => `${API_BASE}/inscripciones/${studentId}/generar-formulario`,
   HISTORIAL_PREVIO: (inscripcionId) =>

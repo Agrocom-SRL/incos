@@ -11,7 +11,7 @@ export class AbrirLibroController {
   async handle(req, res, next) {
     try {
       const resultado = await this.abrirLibroUseCase.execute({
-        usuarioId: req.user?.id ?? null,
+        usuarioId: req.usuario?.id ?? null,
         body: req.body,
       });
       return this.responseFormatter._success(

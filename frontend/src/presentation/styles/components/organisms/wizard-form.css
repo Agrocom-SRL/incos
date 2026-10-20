@@ -1,0 +1,53 @@
+/**
+ * WizardForm (organismo compartido) — estilos del variant "tabs".
+ * Antes vivían en seguridad/usuarios/styles/usuarios.css, lo que dejaba el badge
+ * de pestaña sin estilo en los demás consumidores (Matrícula, Capacitación).
+ */
+
+/* Índice/check dentro del label de la pestaña. */
+.wizard-form__tab-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: var(--font-size-sm, 12px);
+  font-weight: 700;
+  line-height: 1;
+  background: color-mix(in srgb, var(--primary, #196b45) 12%, transparent);
+  color: var(--primary, #196b45);
+}
+
+.cfg-academico-workspace__tabs.ant-tabs .ant-tabs-tab-active .wizard-form__tab-index {
+  background: var(--primary, #196b45);
+  color: var(--surface, #fff);
+}
+
+/* Error puntual del wizard, junto al footer de navegación. */
+.wizard-form__footer-error {
+  margin-bottom: 16px;
+}
+
+/* El footer del workspace ya separa con margin+border; evitar doble margen de WizardActions. */
+.cfg-academico-form-workspace__footer .wizard-actions {
+  margin-top: 0;
+}
+
+/* Alinear el contenido de la pestaña con el header del workspace (28px), solo en
+   workspaces de formulario (los listados en tabs conservan su padding compacto). */
+.cfg-academico-form-workspace .cfg-academico-tab-panel {
+  padding: 24px 28px 28px;
+}
+
+/* Aire entre el final de una sección y el separador (border-top) de la siguiente:
+   sin esto, la línea queda pegada al último campo y parece un subrayado suelto. */
+.cfg-academico-form-workspace .cfg-academico-tab-panel .cfg-academico-form-workspace__section:not(:first-child) {
+  margin-top: 16px;
+}
+
+@media (max-width: 768px) {
+  .cfg-academico-form-workspace .cfg-academico-tab-panel {
+    padding: 16px;
+  }
+}

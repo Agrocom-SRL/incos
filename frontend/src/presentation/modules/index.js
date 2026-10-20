@@ -9,19 +9,17 @@
  * - Presentation Layer: Contiene metadata de UI (labels del menú, orden, estructura visual)
  * 
  * Nota: Solo exporta getAllRoutes(). Si necesitas rutas individuales,
- * impórtalas directamente desde los módulos (ej: '@modules/estudiantes/routes')
+ * impórtalas directamente desde los módulos (ej: '@matricula/admision/routes')
  */
 
 // Importar todas las rutas desde los módulos
 import { authRoutes } from './auth/routes.jsx';
 import { dashboardRoutes } from './dashboard/routes.jsx';
 import { dominiosRoutes } from './dominios/routes.jsx';
-import { estudiantesRoutes } from '@estudiantes/routes';
 import { matriculaRoutes } from './matricula/routes.jsx';
 import { academicoRoutes } from './academico/routes.jsx';
 import { docentesRoutes } from './docentes/routes.jsx';
 import { institucionalRoutes } from './institucional/routes.jsx';
-import { pagosRoutes } from './pagos/routes.jsx';
 import { finanzasRoutes } from './finanzas/routes.jsx';
 import { configuracionRoutes } from './configuracion/routes.jsx';
 import { seguridadRoutes } from './seguridad/routes.jsx';
@@ -38,12 +36,10 @@ export const getAllRoutes = () => {
         ...authRoutes,
         ...dashboardRoutes,
         ...dominiosRoutes,
-        ...estudiantesRoutes,
         ...matriculaRoutes,
         ...academicoRoutes,
         ...docentesRoutes,
         ...institucionalRoutes,
-        ...pagosRoutes,
         ...finanzasRoutes,
         ...configuracionRoutes,
         ...seguridadRoutes,

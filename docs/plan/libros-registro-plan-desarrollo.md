@@ -420,3 +420,72 @@ Excel) puede mostrar LIBRO/FOLIO reales consultando `folios_libro` por
   - No queda ningún pendiente de código en este plan. Iteración 2 (frontend)
     confirmada completa por evidencia de commits (`035ed101` e integración
     Centralizador↔Libros posteriores) — no se reabre.
+- **2026-08-21 (cierre del libro con notas pendientes — backend + frontend):**
+  el 409 de `_asegurarSinPendientes` solo devolvía el total; ahora el cierre
+  (`PATCH /libros/:id`, `estado: CERRADO`) es la compuerta completa:
+  1. **Análisis** (`cierreLibroPendientesHelper.js`, sin SQL nuevo: vista 176
+     `total_cursando` → nómina `listarEstudiantesFolio` → vista 135 por
+     paralelo): cada fila CURSANDO se clasifica contra las notas VIVAS en
+     *pendiente* (≥1 materia sin `nota_final`, `esMateriaPendienteDeNota`) o
+     *desactualizada* (el folio se generó antes de que el docente cargara las
+     notas; hoy la 135 ya las tiene). Medido en BD dev: 391 CURSANDO = 377
+     pendientes + 14 desactualizadas — sin esta distinción el cierre forzado
+     habría marcado ABANDONO a 14 estudiantes con notas completas.
+  2. **409 CONFLICT con `details`** (`ConflictError(message, details)`, ya lo
+     serializa `ErrorFormatter`): `{ pendientes: { total, totalParalelos,
+     paralelos[] }, desactualizadas: { total } }`; cada paralelo trae cabecera
+     (carrera/curso/paralelo/turno/folioDesde–folioHasta) y `folios[]` =
+     `{ numeroFolio, totalEstudiantes, apellidoDesde, apellidoHasta }`. A
+     pedido del usuario NO viaja la lista de estudiantes ni materias/docentes
+     (una primera versión los mandaba: 412 KB; el resumen por folio pesa
+     unos pocos KB).
+  3. **Cierre forzado** (`forzarCierre: true` + `motivo` ≥ 10 caracteres):
+     pendientes → `estado_academico = ABANDONO` + observación `SIN NOTAS AL
+     CIERRE DE GESTIÓN` (concatenada con " · ", truncada a 255);
+     desactualizadas → estado re-derivado (`derivarEstadoAcademico`, misma
+     regla que la generación). Todo en UNA transacción
+     (`LibroRegistroRepository.cerrarLibro`), con sello de auditoría anexado a
+     `libros_registro.observaciones` (`[Cierre YYYY-MM-DD] … Motivo: … Usuario:
+     username.`) y log `[Libros] Libro cerrado con pendientes` (warn).
+  4. **Sin pendientes reales** (solo desactualizadas): cierra sin 409 y
+     sincroniza esas filas — antes la guardia bloqueaba el cierre aunque las
+     notas ya estuvieran completas (había que regenerar folios = renumerar).
+  5. **Respuesta** del PATCH al cerrar: `{ libro, cierre: { forzado,
+     pendientesAsentados, filasSincronizadas } }`.
+  6. **Frontend**: `useEditarLibroApi` propaga `errorDetails`/`cierre`;
+     `useLibroDetail.handleCerrarLibro` abre `CerrarLibroPendientesModal`
+     (organismo: resumen, lista compacta por paralelo con sus folios
+     "Folio 12 · AÑEZ – CASTRO" — sin estudiantes/materias/docentes —,
+     explicación previa, motivo obligatorio, "Cerrar de todos modos" danger
+     + `modal.confirm` final) y reintenta con `forzarCierre`.
+     `mapCierrePendientes` agrega `cursoLabel` y, por folio, `label`/`rangoLabel`.
+  7. RBAC: misma acción `academico.libro · EDITAR` (decisión pendiente del
+     usuario si se acota a Dirección/Rectorado con una acción nueva). Export
+     sin cambios (celda sin nota → NP; estadísticas cuentan ABANDONO).
+  - **Bug preexistente corregido en el módulo**: los 6 controllers de libros
+    leían `req.user?.id` pero `auth.middleware.js` asigna `req.usuario` →
+    `usuarioId` siempre `null` (`created_by/updated_by` vacíos). Quedan ~32
+    controllers de OTROS módulos con el mismo patrón (fuera de alcance aquí).
+  - Pendiente (segundo paso independiente): acción administrativa "registrar
+    abandono" por matrícula de materia, para que no todo caiga en el cierre
+    forzado.
+- **2026-08-21 (página de firmas de docentes — ajuste contra el físico):**
+  el usuario comparó el export con la foto del libro real: el primer renglón
+  de docentes quedaba casi pegado al logo del Ministerio. Medido en el xlsx
+  físico (hoja "3RO A SIST", página de docentes en la fila 69): primer
+  nombre en la 79 → offset **11** (el builder usaba 9). `FILA_DOCENTES.primerNombre`
+  = 11; los grupos siguientes bajan con él. Con 8 filas por firma la página
+  (3 grupos + ESTADÍSTICAS) desbordaba a una 2da hoja por ~12pt, así que
+  `FILAS_POR_FIRMA` baja a 7 (espacio de firma 5 filas ≈ 2,9 cm) y vuelve a
+  entrar en UNA hoja oficio horizontal — verificado renderizando con soffice
+  + pdftoppm (3 páginas: 2 folios + docentes). Además, a
+  pedido del usuario, cada nombre de docente lleva una **línea fina de firma
+  encima** (`LINEA_FIRMA`, borde superior de la celda del nombre);
+  el papel real no la trae, es una mejora explícita. Por pedido posterior del
+  mismo día, las firmas de AUTORIDADES al pie del folio (JEFE DE CARRERA /
+  DIRECTOR / RECTOR) dejan la línea punteada del físico y usan la MISMA
+  `LINEA_FIRMA` fina sólida y negra que los docentes (se veían muy tenues). Como en el físico las
+  zonas 1 y 2 de la grilla eran contiguas (C:D / E:J) y las líneas de dos
+  docentes vecinos se fundían en una sola raya, `computeTresZonasDocentes`
+  deja una columna de aire entre zonas: C:D / F:K / M:Q con 8 materias (la
+  2da corrida una columna, la 3ra = ESTADO + OBSERVACIONES).
