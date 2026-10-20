@@ -1,6 +1,6 @@
 # Guía de pruebas automáticas
 
-> Espejo del skill `incos-testing` (`.claude/` no se versiona). El CI ejecuta estas pruebas en cada PR.
+> Espejo del skill `incos-testing` (el original vive en `.claude/skills/incos-testing/`). El CI ejecuta estas pruebas en cada PR.
 
 Toda lógica nueva o modificada lleva su prueba **en el mismo PR**. El CI (`.github/workflows/ci.yml`)
 corre `npm run test:unit` (backend) y `npm test` (frontend); si falla una, el PR no se fusiona.

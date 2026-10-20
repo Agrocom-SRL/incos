@@ -12,7 +12,7 @@ Dos capas con distinto ciclo de vida: **permanente** (contexto del agente, guía
 | **Guías de implementación** | `docs/guias/` | Paso a paso al crear pantallas/endpoints |
 | **Referencia operativa** | `docs/referencia/` | Datos vivos (permisos, flujo operativo, estilo de textos) |
 
-> `.claude/` está en `.gitignore`: el contexto de skills y agentes vive en cada máquina y no se versiona. Por eso las guías de `docs/` (por ejemplo `pruebas.md`) repiten lo esencial de los skills equivalentes.
+> `CLAUDE.md` y `.claude/` (agentes, skills y prompt maestro) **sí se versionan**, para seguir con el mismo contexto en cualquier máquina; solo `.claude/settings.local.json` es local. Las guías de `docs/` (por ejemplo `pruebas.md`) repiten lo esencial de los skills equivalentes.
 
 ### Skills (`.claude/skills/`)
 
