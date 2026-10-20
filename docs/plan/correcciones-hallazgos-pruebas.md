@@ -18,9 +18,11 @@ Respondidas por el dueño del proyecto:
 - **Estados de `paralelos_gestion` (pregunta 4):** no existe "cancelado". Un paralelo PUBLICADO solo se puede despublicar o pasar a "no ofertado". Estados reales: BORRADOR → OFERTADO → PUBLICADO → CERRADO. Máquina propuesta (confirmar al implementar): BORRADOR→OFERTADO; OFERTADO→PUBLICADO o →BORRADOR; PUBLICADO→OFERTADO (despublicar) o →BORRADOR (no ofertado); CERRADO es terminal (no se reabre). Con CERRADO no se cambia aula, cupos ni turno.
 - **Estados de `GestionPlan` y `OfertaCurso` (pregunta 5):** el dueño cree que sí tiene máquina de estados, pero no lo recuerda. El código no la tiene hoy (acepta cualquier estado desde cualquiera), mientras que nivelación, folio, proyecto de grado y pasantía sí tienen sus `TRANSICIONES_*` en `domain/constants`. → Seguir ese patrón: definir `TRANSICIONES_*` para ambos y validarlas, empezando por flujos lineales (p. ej. oferta: PROGRAMADA→ACTIVA→CERRADA, y CANCELADA desde PROGRAMADA/ACTIVA) y **confirmar con el dueño antes de bloquear**.
 
-Aún sin responder:
-1. Compuertas de bimestre: `Update/Delete/ResetNotas` de evaluación usan "bimestre vigente o reabierto" y `Create/Upsert/Guardar` usan `assertBimestreEditable` (estado institucional). ¿Unificar?
-6. `docentes.licencia.*` está sembrado pero apagado (no existe `licencias_docentes`): ¿mover a "fuera de alcance"?
+- **Licencias del docente (pregunta 6):** se eliminan. `docentes.licencia.{ver,crear,aprobar}` (sembrados y apagados en el seed 60; no existe la tabla `licencias_docentes`) pasan a "fuera de alcance"; hay que quitarlos del seed y de la matriz. Las licencias de **estudiantes** (`academico.asistencia.licencia.*`) no cambian.
+
+Aún sin resolver:
+1. **Compuertas de bimestre.** Hoy `Update/Delete/ResetNotas` de evaluación exigen "bimestre vigente o reabierto" y `Create/Upsert/Guardar` usan `assertBimestreEditable` (estado institucional EN_CURSO o REABIERTO). La pregunta es si las seis acciones de *editar* deben usar la misma regla. El dueño respondió pensando en *consultar* las notas de todos los bimestres aunque no sea el vigente (eso ya es lectura y es válido); falta aclarar que **editar** un bimestre cerrado sigue requiriendo reapertura.
+- **Estados de `paralelos_gestion`:** el dueño explicó el sentido de BORRADOR y OFERTADO (OFERTADO = ya pueden empezar las inscripciones) pero el mensaje quedó cortado antes de definir PUBLICADO; completar antes de implementar la máquina de estados.
 
 ## Bloque 1 — Dinero y recibos (pagos)
 | Prioridad | Archivo | Defecto |
