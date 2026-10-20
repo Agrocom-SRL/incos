@@ -9,10 +9,10 @@ export class Language extends BaseEntity {
     super(data);
     // Solo inicializar campos si fueron proporcionados explícitamente
     // Esto permite usar attributes limitados sin inicializar campos no solicitados
-    if (data.hasOwnProperty('name')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'name')) {
       this.name = data.name;
     }
-    if (data.hasOwnProperty('isoCode')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'isoCode')) {
       this.isoCode = data.isoCode;
     }
   }
@@ -26,10 +26,10 @@ export class Language extends BaseEntity {
     const plainObject = super.toPlainObject();
 
     // Solo incluir campos que fueron inicializados (existen en this)
-    if (this.hasOwnProperty('name')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'name')) {
       plainObject.name = this.name;
     }
-    if (this.hasOwnProperty('isoCode')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'isoCode')) {
       plainObject.isoCode = this.isoCode;
     }
 

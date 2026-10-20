@@ -68,7 +68,6 @@ export class ErrorFormatter {
    * @returns {Object} Respuesta formateada
    */
   formatUnexpectedError(error, req, isProduction = false) {
-    const statusCode = error.statusCode || 500;
     const message = isProduction
       ? 'Error interno del servidor'
       : error.message;

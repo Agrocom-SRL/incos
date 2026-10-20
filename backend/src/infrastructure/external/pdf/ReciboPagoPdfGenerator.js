@@ -24,7 +24,7 @@
  * @module ReciboPagoPdfGenerator
  */
 
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { PDFDocument, rgb } from 'pdf-lib';
 import { IncosPDFLibBase } from './IncosPDFLibBase.js';
 import { IncosPDFBase } from './IncosPDFBase.js';
 import fs from 'fs';
@@ -330,7 +330,6 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
         // =========================
         const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
         const normalFont = await this._pdfDoc.embedFont(normalFontName);
-        const smallFontSize = IncosPDFBase.FONTS.small.size;
         const textRgb = this._hexToRgb(IncosPDFBase.COLORS.textLight);
 
         const fechaFormateada = this._formatFecha(data?.fechaPago || data?.fecha_pago || new Date());
@@ -471,7 +470,7 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
         this._currentPage.drawLine({
             start: { x: margins.left, y: this._currentY },
             end: { x: pageWidth - margins.right, y: this._currentY },
-            thickness: thickness,
+            thickness,
             color: lineRgb,
         });
     }
@@ -555,8 +554,8 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
                 // Normalizar anchos
                 const totalWidth = columns.reduce((sum, col) => sum + col.width, 0);
                 if (totalWidth > 0) {
-                    columns.forEach(col => {
-                        col.width = col.width / totalWidth;
+                    columns.forEach((col) => {
+                        col.width /= totalWidth;
                     });
                 }
                 await this._addTableRowMultipleColumns(columns);
@@ -877,7 +876,7 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
 
         // Calcular altura necesaria para el contenido antes de dibujar el cuadro
         // Estimación: cada párrafo tiene aproximadamente 3-4 líneas, más espacio para firmas
-        const parrafosEstimados = declaracionTexto.split(/\n\s*\n/).filter(p => p.trim() !== '');
+        const parrafosEstimados = declaracionTexto.split(/\n\s*\n/).filter((p) => p.trim() !== '');
         const estimatedLines = parrafosEstimados.length * 3.5; // Estimación de líneas por párrafo
         const espacioFirmas = 60; // Espacio para las firmas
         const boxHeightBase = 220; // Altura base suficiente para texto y firmas
@@ -903,7 +902,7 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
 
         // Dividir texto en párrafos (respetar saltos de línea dobles)
         // Ya calculamos parrafos arriba, pero lo recalculamos aquí para usar en el loop
-        const parrafos = declaracionTexto.split(/\n\s*\n/).filter(p => p.trim() !== '');
+        const parrafos = declaracionTexto.split(/\n\s*\n/).filter((p) => p.trim() !== '');
 
         let currentY = this._currentY - 12; // Empezar un poco más arriba
 
@@ -922,7 +921,7 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
                     });
                 }
                 // Fallback: dividir por espacios
-                parrafoLines = parrafo.split(' ').filter(w => w.trim() !== '');
+                parrafoLines = parrafo.split(' ').filter((w) => w.trim() !== '');
             }
 
             // Dibujar cada línea del párrafo
@@ -1004,7 +1003,6 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
             font: normalFont,
             color: textRgb,
         });
-
     }
 
     /**
@@ -1029,7 +1027,7 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
      * @param {Object} data - Datos del recibo
      * @returns {string}
      */
-    _getDeclaracionTexto(data) {
+    _getDeclaracionTexto(_data) {
         return `Yo, el estudiante arriba descrito, declaro de manera voluntaria y consciente que realizo el presente aporte económico, sin que exista ningún tipo de obligación, presión o condicionamiento académico.
 
 Manifiesto que tengo pleno conocimiento de que este aporte será destinado exclusivamente a cubrir gastos de equipamiento, mantenimiento, materiales, suministros y actividades necesarias, los cuales serán ejecutados de manera gradual durante la gestión, en función a la planificación del POA institucional, con el objetivo de fortalecer mi formación y desarrollo profesional.
@@ -1070,9 +1068,9 @@ En conformidad, firmo la presente para los fines que correspondan.`;
             // (caso: se registra un recibo con monto 0 solo para dejar constancia/observación,
             // no un pago gratuito real).
             const saldoPendiente = data.saldoPendiente != null ? Number(data.saldoPendiente) : null;
-            const haySaldoPendiente = saldoPendiente != null && !isNaN(saldoPendiente) && saldoPendiente > 0;
+            const haySaldoPendiente = saldoPendiente != null && !Number.isNaN(Number(saldoPendiente)) && saldoPendiente > 0;
 
-            if ((monto === 0 || monto < 0 || isNaN(monto)) && !haySaldoPendiente) {
+            if ((monto === 0 || monto < 0 || Number.isNaN(Number(monto))) && !haySaldoPendiente) {
                 const becaInfo = data.becaInfo;
                 const nombreDescuento = becaInfo?.nombre ?? becaInfo?.name ?? '';
                 if (nombreDescuento && String(nombreDescuento).trim() !== '') {
@@ -1082,7 +1080,7 @@ En conformidad, firmo la presente para los fines que correspondan.`;
                 return 'GRATIS';
             }
 
-            if (monto === 0 || isNaN(monto)) {
+            if (monto === 0 || Number.isNaN(Number(monto))) {
                 // Con saldo pendiente, pero monto de esta cuota 0: mostrar 0.00 Bs
                 return this._formatMonto(0);
             }
@@ -1160,7 +1158,7 @@ En conformidad, firmo la presente para los fines que correspondan.`;
 
             // Si es Date object
             if (fecha instanceof Date) {
-                if (isNaN(fecha.getTime())) {
+                if (Number.isNaN(Number(fecha.getTime()))) {
                     const hoy = new Date();
                     return `${String(hoy.getDate()).padStart(2, '0')}/${String(hoy.getMonth() + 1).padStart(2, '0')}/${hoy.getFullYear()}`;
                 }

@@ -1,4 +1,3 @@
-import { IMetodoPagoRepository } from '../../domain/interfaces/repositories/IMetodoPagoRepository.js';
 import { MetodoPago as MetodoPagoModel } from '../database/models/metodo_pago.js';
 import { BaseRepository } from './BaseRepository.js';
 import { PaymentMethodMapper } from '../mappers/PaymentMethodMapper.js';
@@ -40,11 +39,11 @@ export class PaymentMethodRepository extends BaseRepository {
     return [['nombre', 'ASC']];
   }
 
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return PaymentMethodMapper.toModel(data);
   }
 
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return PaymentMethodMapper.toModelForUpdate(data);
   }
 

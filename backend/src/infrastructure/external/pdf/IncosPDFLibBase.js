@@ -424,7 +424,7 @@ export class IncosPDFLibBase {
      * @param {string} [photoPath] - Ruta opcional a una imagen para insertar (futuro)
      * @returns {Promise<void>}
      */
-    async _drawPhotoBox(photoPath = null) {
+    async _drawPhotoBox(_photoPath = null) {
         if (!this._pdfDoc || !this._currentPage) {
             throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
         }
@@ -668,6 +668,7 @@ export class IncosPDFLibBase {
         const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
         const boldFont = await this._pdfDoc.embedFont(boldFontName);
         const normalFont = await this._pdfDoc.embedFont(normalFontName);
+        // eslint-disable-next-line no-param-reassign -- valor por defecto del tamano de fuente
         fontSize = fontSize ?? IncosPDFBase.FONTS.normal.size;
         const lineSpacing = IncosPDFBase.LAYOUT.spacing.line;
         const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
@@ -1491,7 +1492,6 @@ rightColX;
 
         // Calcular posición inicial
         let currentY = this._currentY;
-        const startY = currentY;
 
         // Encabezado con wrap: calcular líneas por columna y altura dinámica
         const headerLinesByCol = [];

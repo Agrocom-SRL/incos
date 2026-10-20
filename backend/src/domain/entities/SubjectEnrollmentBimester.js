@@ -9,40 +9,40 @@ export class SubjectEnrollmentBimester extends BaseEntity {
     constructor(data = {}) {
         super(data);
 
-        if (data.hasOwnProperty('subjectEnrollmentId')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'subjectEnrollmentId')) {
             this.subjectEnrollmentId = data.subjectEnrollmentId;
         }
-        if (data.hasOwnProperty('bimester')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'bimester')) {
             this.bimester = data.bimester;
         }
-        if (data.hasOwnProperty('theoryGrade')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'theoryGrade')) {
             this.theoryGrade = data.theoryGrade;
         }
-        if (data.hasOwnProperty('practiceGrade')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'practiceGrade')) {
             this.practiceGrade = data.practiceGrade;
         }
-        if (data.hasOwnProperty('bimesterGrade')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'bimesterGrade')) {
             this.bimesterGrade = data.bimesterGrade;
         }
-        if (data.hasOwnProperty('bimesterWeight')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'bimesterWeight')) {
             this.bimesterWeight = data.bimesterWeight;
         }
-        if (data.hasOwnProperty('makeupGrade')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'makeupGrade')) {
             this.makeupGrade = data.makeupGrade;
         }
-        if (data.hasOwnProperty('makeupDate')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'makeupDate')) {
             this.makeupDate = data.makeupDate;
         }
-        if (data.hasOwnProperty('status')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'status')) {
             this.status = data.status;
         }
-        if (data.hasOwnProperty('closedAt')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'closedAt')) {
             this.closedAt = data.closedAt;
         }
-        if (data.hasOwnProperty('closedBy')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'closedBy')) {
             this.closedBy = data.closedBy;
         }
-        if (data.hasOwnProperty('observations')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'observations')) {
             this.observations = data.observations;
         }
     }
@@ -55,20 +55,20 @@ export class SubjectEnrollmentBimester extends BaseEntity {
     toPlainObject() {
         const plainObject = super.toPlainObject();
 
-        if (this.hasOwnProperty('subjectEnrollmentId')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'subjectEnrollmentId')) {
             plainObject.subjectEnrollmentId = this.subjectEnrollmentId;
         }
-        if (this.hasOwnProperty('bimester')) plainObject.bimester = this.bimester;
-        if (this.hasOwnProperty('theoryGrade')) plainObject.theoryGrade = this.theoryGrade;
-        if (this.hasOwnProperty('practiceGrade')) plainObject.practiceGrade = this.practiceGrade;
-        if (this.hasOwnProperty('bimesterGrade')) plainObject.bimesterGrade = this.bimesterGrade;
-        if (this.hasOwnProperty('bimesterWeight')) plainObject.bimesterWeight = this.bimesterWeight;
-        if (this.hasOwnProperty('makeupGrade')) plainObject.makeupGrade = this.makeupGrade;
-        if (this.hasOwnProperty('makeupDate')) plainObject.makeupDate = this.makeupDate;
-        if (this.hasOwnProperty('status')) plainObject.status = this.status;
-        if (this.hasOwnProperty('closedAt')) plainObject.closedAt = this.closedAt;
-        if (this.hasOwnProperty('closedBy')) plainObject.closedBy = this.closedBy;
-        if (this.hasOwnProperty('observations')) plainObject.observations = this.observations;
+        if (Object.prototype.hasOwnProperty.call(this, 'bimester')) plainObject.bimester = this.bimester;
+        if (Object.prototype.hasOwnProperty.call(this, 'theoryGrade')) plainObject.theoryGrade = this.theoryGrade;
+        if (Object.prototype.hasOwnProperty.call(this, 'practiceGrade')) plainObject.practiceGrade = this.practiceGrade;
+        if (Object.prototype.hasOwnProperty.call(this, 'bimesterGrade')) plainObject.bimesterGrade = this.bimesterGrade;
+        if (Object.prototype.hasOwnProperty.call(this, 'bimesterWeight')) plainObject.bimesterWeight = this.bimesterWeight;
+        if (Object.prototype.hasOwnProperty.call(this, 'makeupGrade')) plainObject.makeupGrade = this.makeupGrade;
+        if (Object.prototype.hasOwnProperty.call(this, 'makeupDate')) plainObject.makeupDate = this.makeupDate;
+        if (Object.prototype.hasOwnProperty.call(this, 'status')) plainObject.status = this.status;
+        if (Object.prototype.hasOwnProperty.call(this, 'closedAt')) plainObject.closedAt = this.closedAt;
+        if (Object.prototype.hasOwnProperty.call(this, 'closedBy')) plainObject.closedBy = this.closedBy;
+        if (Object.prototype.hasOwnProperty.call(this, 'observations')) plainObject.observations = this.observations;
 
         return plainObject;
     }

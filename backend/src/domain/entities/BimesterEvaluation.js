@@ -10,31 +10,31 @@ export class BimesterEvaluation extends BaseEntity {
     constructor(data = {}) {
         super(data);
 
-        if (data.hasOwnProperty('teacherAssignmentId')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'teacherAssignmentId')) {
             this.teacherAssignmentId = data.teacherAssignmentId;
         }
-        if (data.hasOwnProperty('academicPeriodId')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'academicPeriodId')) {
             this.academicPeriodId = data.academicPeriodId;
         }
-        if (data.hasOwnProperty('evaluationTypeId')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'evaluationTypeId')) {
             this.evaluationTypeId = data.evaluationTypeId;
         }
-        if (data.hasOwnProperty('component')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'component')) {
             this.component = data.component;
         }
-        if (data.hasOwnProperty('evaluationName')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'evaluationName')) {
             this.evaluationName = data.evaluationName;
         }
-        if (data.hasOwnProperty('description')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'description')) {
             this.description = data.description;
         }
-        if (data.hasOwnProperty('points')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'points')) {
             this.points = data.points;
         }
-        if (data.hasOwnProperty('date')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'date')) {
             this.date = data.date;
         }
-        if (data.hasOwnProperty('gradesClosed')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'gradesClosed')) {
             this.gradesClosed = data.gradesClosed;
         }
     }
@@ -47,23 +47,23 @@ export class BimesterEvaluation extends BaseEntity {
     toPlainObject() {
         const plainObject = super.toPlainObject();
 
-        if (this.hasOwnProperty('teacherAssignmentId')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'teacherAssignmentId')) {
             plainObject.teacherAssignmentId = this.teacherAssignmentId;
         }
-        if (this.hasOwnProperty('academicPeriodId')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'academicPeriodId')) {
             plainObject.academicPeriodId = this.academicPeriodId;
         }
-        if (this.hasOwnProperty('evaluationTypeId')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'evaluationTypeId')) {
             plainObject.evaluationTypeId = this.evaluationTypeId;
         }
-        if (this.hasOwnProperty('component')) plainObject.component = this.component;
-        if (this.hasOwnProperty('evaluationName')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'component')) plainObject.component = this.component;
+        if (Object.prototype.hasOwnProperty.call(this, 'evaluationName')) {
             plainObject.evaluationName = this.evaluationName;
         }
-        if (this.hasOwnProperty('description')) plainObject.description = this.description;
-        if (this.hasOwnProperty('points')) plainObject.points = this.points;
-        if (this.hasOwnProperty('date')) plainObject.date = this.date;
-        if (this.hasOwnProperty('gradesClosed')) plainObject.gradesClosed = this.gradesClosed;
+        if (Object.prototype.hasOwnProperty.call(this, 'description')) plainObject.description = this.description;
+        if (Object.prototype.hasOwnProperty.call(this, 'points')) plainObject.points = this.points;
+        if (Object.prototype.hasOwnProperty.call(this, 'date')) plainObject.date = this.date;
+        if (Object.prototype.hasOwnProperty.call(this, 'gradesClosed')) plainObject.gradesClosed = this.gradesClosed;
 
         return plainObject;
     }

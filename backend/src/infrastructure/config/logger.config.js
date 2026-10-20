@@ -124,7 +124,7 @@ if (!serverConfig.isTest) {
             datePattern: 'YYYY-MM-DD',
             level: 'error',
             maxSize: getEnv('LOG_MAX_SIZE', '20m'),
-            maxFiles: getEnvAsNumber('LOG_MAX_FILES', 14) + 'd',
+            maxFiles: `${getEnvAsNumber('LOG_MAX_FILES', 14)}d`,
             format: customFormat,
         })
     );
@@ -135,7 +135,7 @@ if (!serverConfig.isTest) {
             filename: path.join(logsDir, 'combined-%DATE%.log'),
             datePattern: 'YYYY-MM-DD',
             maxSize: getEnv('LOG_MAX_SIZE', '20m'),
-            maxFiles: getEnvAsNumber('LOG_MAX_FILES', 14) + 'd',
+            maxFiles: `${getEnvAsNumber('LOG_MAX_FILES', 14)}d`,
             format: customFormat,
         })
     );

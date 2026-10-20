@@ -26,7 +26,7 @@ function buildWhere(filters = {}) {
 }
 
 export class AulasHorariosSemanaRepository extends IAulasHorariosSemanaRepository {
-  async findAll(filters = {}, page = null, limit = null) {
+  async findAll(filters = {}, _page = null, _limit = null) {
     const { whereClause, replacements } = buildWhere(filters);
     const sql = `
       SELECT *

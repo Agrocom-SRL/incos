@@ -1,4 +1,3 @@
-import { IAsignaturaPlanRepository } from '../../domain/interfaces/repositories/IAsignaturaPlanRepository.js';
 import { AsignaturaPlan as AsignaturaPlanModel } from '../database/models/asignatura_plan.js';
 import { BaseRepository } from './BaseRepository.js';
 import { PlanSubjectMapper } from '../mappers/PlanSubjectMapper.js';
@@ -125,7 +124,7 @@ export class PlanSubjectRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return PlanSubjectMapper.toModel(data);
   }
 
@@ -137,7 +136,7 @@ export class PlanSubjectRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return PlanSubjectMapper.toModelForUpdate(data);
   }
 

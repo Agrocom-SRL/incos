@@ -7,6 +7,7 @@
 class ExcelStyleManager {
   /** Columna B (inicio tabla de datos) hasta AS (fin de totales por género). La A queda fuera del color. */
   static COL_TABLA_INICIO = 2;
+
   static COL_TABLA_FIN = 45;
 
   /** Tamaño de fuente del cuerpo de la tabla (encabezados de columnas y filas de datos). */
@@ -38,7 +39,7 @@ class ExcelStyleManager {
    * Aplica estilos a las filas de encabezados
    */
   static aplicarEstilosEncabezados(worksheet) {
-    [7, 8, 9].forEach(row => {
+    [7, 8, 9].forEach((row) => {
       for (let col = this.COL_TABLA_INICIO; col <= this.COL_TABLA_FIN; col++) {
         const cell = worksheet.getCell(row, col);
         cell.fill = {

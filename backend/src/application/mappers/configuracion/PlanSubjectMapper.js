@@ -23,6 +23,7 @@ export class PlanSubjectMapper {
   static entityToPresentation(asig) {
     return entityToPresentation(asig);
   }
+
   static entitiesToPresentation(asigs) {
     return entitiesToPresentation(asigs);
   }

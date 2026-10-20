@@ -8,29 +8,29 @@ export class EvaluationConfiguration extends BaseEntity {
     constructor(data = {}) {
         super(data);
 
-        if (data.hasOwnProperty('managementId')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'managementId')) {
             this.managementId = data.managementId;
         }
-        if (data.hasOwnProperty('key')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'key')) {
             this.key = data.key;
         }
-        if (data.hasOwnProperty('value')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'value')) {
             this.value = data.value;
         }
-        if (data.hasOwnProperty('valueType')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'valueType')) {
             this.valueType = data.valueType;
         }
-        if (data.hasOwnProperty('isCurrent')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'isCurrent')) {
             this.isCurrent = data.isCurrent;
         }
-        if (data.hasOwnProperty('description')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'description')) {
             this.description = data.description;
         }
         // Compat lectura legacy en mappers de política
-        if (data.hasOwnProperty('theoryQuota')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'theoryQuota')) {
             this.theoryQuota = data.theoryQuota;
         }
-        if (data.hasOwnProperty('practiceQuota')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'practiceQuota')) {
             this.practiceQuota = data.practiceQuota;
         }
     }
@@ -38,14 +38,14 @@ export class EvaluationConfiguration extends BaseEntity {
     toPlainObject() {
         const plainObject = super.toPlainObject();
 
-        if (this.hasOwnProperty('managementId')) plainObject.managementId = this.managementId;
-        if (this.hasOwnProperty('key')) plainObject.key = this.key;
-        if (this.hasOwnProperty('value')) plainObject.value = this.value;
-        if (this.hasOwnProperty('valueType')) plainObject.valueType = this.valueType;
-        if (this.hasOwnProperty('isCurrent')) plainObject.isCurrent = this.isCurrent;
-        if (this.hasOwnProperty('description')) plainObject.description = this.description;
-        if (this.hasOwnProperty('theoryQuota')) plainObject.theoryQuota = this.theoryQuota;
-        if (this.hasOwnProperty('practiceQuota')) plainObject.practiceQuota = this.practiceQuota;
+        if (Object.prototype.hasOwnProperty.call(this, 'managementId')) plainObject.managementId = this.managementId;
+        if (Object.prototype.hasOwnProperty.call(this, 'key')) plainObject.key = this.key;
+        if (Object.prototype.hasOwnProperty.call(this, 'value')) plainObject.value = this.value;
+        if (Object.prototype.hasOwnProperty.call(this, 'valueType')) plainObject.valueType = this.valueType;
+        if (Object.prototype.hasOwnProperty.call(this, 'isCurrent')) plainObject.isCurrent = this.isCurrent;
+        if (Object.prototype.hasOwnProperty.call(this, 'description')) plainObject.description = this.description;
+        if (Object.prototype.hasOwnProperty.call(this, 'theoryQuota')) plainObject.theoryQuota = this.theoryQuota;
+        if (Object.prototype.hasOwnProperty.call(this, 'practiceQuota')) plainObject.practiceQuota = this.practiceQuota;
 
         return plainObject;
     }

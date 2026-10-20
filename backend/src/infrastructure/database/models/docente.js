@@ -2,8 +2,7 @@ import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
 import { GENEROS_VALUES } from '../../../domain/constants/estudiantes.constants.js';
-import { NIVELES_ACADEMICOS, NIVELES_ACADEMICOS_PERSONAL_VALUES, ESTADOS_LABORALES } from '../../../domain/constants/docentes.constants.js';
-import { TIPOS_CONTRATO_DOCENTE_VALUES, TIPOS_CONTRATO_DOCENTE, ESTADOS_LABORALES_VALUES } from '../../../domain/constants/docentes.constants.js';
+import { NIVELES_ACADEMICOS, NIVELES_ACADEMICOS_PERSONAL_VALUES, ESTADOS_LABORALES, TIPOS_CONTRATO_DOCENTE_VALUES, TIPOS_CONTRATO_DOCENTE, ESTADOS_LABORALES_VALUES } from '../../../domain/constants/docentes.constants.js';
 
 export const Docente = sequelize.define(
   'Docente',

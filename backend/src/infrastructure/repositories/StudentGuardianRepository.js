@@ -1,4 +1,3 @@
-import { IEstudianteApoderadoRepository } from '../../domain/interfaces/repositories/IEstudianteApoderadoRepository.js';
 import { EstudianteApoderado as EstudianteApoderadoModel } from '../database/models/estudiante_apoderado.js';
 import { BaseRepository } from './BaseRepository.js';
 import { StudentGuardianMapper } from '../mappers/StudentGuardianMapper.js';
@@ -124,7 +123,7 @@ export class StudentGuardianRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return StudentGuardianMapper.toModel(data);
   }
 
@@ -136,7 +135,7 @@ export class StudentGuardianRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return StudentGuardianMapper.toModelForUpdate(data);
   }
 

@@ -16,12 +16,6 @@ export class ListEnrollmentsUseCase extends BaseListUseCase {
    */
   constructor({
     enrollmentRepository,
-    subjectEnrollmentRepository,
-    studentAcademicDataRepository,
-    studentRepository,
-    careerRepository,
-    managementRepository,
-    priorEnrollmentHistoryRepository,
     logger,
   }) {
     super({
@@ -47,8 +41,8 @@ export class ListEnrollmentsUseCase extends BaseListUseCase {
       ? this.buildSpecificFilters(queryParams, baseFilters)
       : baseFilters;
     const filters = await this.prepareFilters(initialFilters, queryParams);
-    const pageNum = parseInt(page) || 1;
-    const limitNum = parseInt(limit) || 50;
+    const pageNum = parseInt(page, 10) || 1;
+    const limitNum = parseInt(limit, 10) || 50;
 
     this.logger.info(`[${this.moduleName}] Iniciando listado de ${this.resourceName} (vista)`, {
       filters,

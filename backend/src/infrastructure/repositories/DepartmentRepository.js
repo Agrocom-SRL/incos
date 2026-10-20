@@ -1,4 +1,3 @@
-import { IDepartamentoRepository } from '../../domain/interfaces/repositories/IDepartamentoRepository.js';
 import { Departamento as DepartamentoModel } from '../database/models/departamento.js';
 import { BaseRepository } from './BaseRepository.js';
 import { DepartmentMapper } from '../mappers/DepartmentMapper.js';
@@ -114,7 +113,7 @@ export class DepartmentRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return DepartmentMapper.toModel(data);
   }
 
@@ -126,7 +125,7 @@ export class DepartmentRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return DepartmentMapper.toModelForUpdate(data);
   }
 

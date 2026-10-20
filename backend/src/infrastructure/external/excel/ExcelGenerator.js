@@ -699,7 +699,7 @@ class ExcelGenerator {
 
   static _toSafeWorksheetName(name) {
     const raw = String(name ?? 'Hoja1').trim() || 'Hoja1';
-    const sanitized = raw.replace(/[\\/:*?\[\]]/g, ' ').replace(/\s+/g, ' ').trim();
+    const sanitized = raw.replace(/[\\/:*?[\]]/g, ' ').replace(/\s+/g, ' ').trim();
     // Excel: máximo 31 caracteres por nombre de hoja
     return sanitized.slice(0, 31) || 'Hoja1';
   }

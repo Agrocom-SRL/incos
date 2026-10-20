@@ -1,5 +1,4 @@
 import { Op } from 'sequelize';
-import { IClaseNoDictadaRepository } from '../../domain/interfaces/repositories/IClaseNoDictadaRepository.js';
 import { ClaseNoDictada as ClaseNoDictadaModel } from '../database/models/clase_no_dictada.js';
 import { BaseRepository } from './BaseRepository.js';
 import { MissedClassMapper } from '../mappers/MissedClassMapper.js';
@@ -62,11 +61,11 @@ export class MissedClassRepository extends BaseRepository {
         return [['fechaClase', 'DESC'], ['id', 'DESC']];
     }
 
-    mapDataToModel(data, userId = null) {
+    mapDataToModel(data, _userId = null) {
         return MissedClassMapper.toModel(data);
     }
 
-    mapDataToUpdate(data, userId = null) {
+    mapDataToUpdate(data, _userId = null) {
         return MissedClassMapper.toModelForUpdate(data);
     }
 

@@ -8,31 +8,31 @@ import { BaseEntity } from './BaseEntity.js';
 export class ContributionPaymentInstallment extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    if (data.hasOwnProperty('contributionPaymentId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'contributionPaymentId')) {
       this.contributionPaymentId = data.contributionPaymentId;
     }
-    if (data.hasOwnProperty('receiptNumber')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'receiptNumber')) {
       this.receiptNumber = data.receiptNumber;
     }
-    if (data.hasOwnProperty('paymentDate')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'paymentDate')) {
       this.paymentDate = data.paymentDate;
     }
-    if (data.hasOwnProperty('amount')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'amount')) {
       this.amount = parseFloat(data.amount) ?? 0;
     }
-    if (data.hasOwnProperty('paymentMethodId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'paymentMethodId')) {
       this.paymentMethodId = data.paymentMethodId;
     }
-    if (data.hasOwnProperty('paymentAccountId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'paymentAccountId')) {
       this.paymentAccountId = data.paymentAccountId;
     }
-    if (data.hasOwnProperty('transactionNumber')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'transactionNumber')) {
       this.transactionNumber = data.transactionNumber;
     }
-    if (data.hasOwnProperty('comprobanteCode')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'comprobanteCode')) {
       this.comprobanteCode = data.comprobanteCode;
     }
-    if (data.hasOwnProperty('description')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'description')) {
       this.description = data.description;
     }
   }
@@ -40,31 +40,31 @@ export class ContributionPaymentInstallment extends BaseEntity {
   toPlainObject() {
     const plainObject = super.toPlainObject();
 
-    if (this.hasOwnProperty('contributionPaymentId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'contributionPaymentId')) {
       plainObject.contributionPaymentId = this.contributionPaymentId;
     }
-    if (this.hasOwnProperty('receiptNumber')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'receiptNumber')) {
       plainObject.receiptNumber = this.receiptNumber;
     }
-    if (this.hasOwnProperty('paymentDate')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'paymentDate')) {
       plainObject.paymentDate = this.paymentDate;
     }
-    if (this.hasOwnProperty('amount')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'amount')) {
       plainObject.amount = this.amount;
     }
-    if (this.hasOwnProperty('paymentMethodId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'paymentMethodId')) {
       plainObject.paymentMethodId = this.paymentMethodId;
     }
-    if (this.hasOwnProperty('paymentAccountId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'paymentAccountId')) {
       plainObject.paymentAccountId = this.paymentAccountId;
     }
-    if (this.hasOwnProperty('transactionNumber')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'transactionNumber')) {
       plainObject.transactionNumber = this.transactionNumber;
     }
-    if (this.hasOwnProperty('comprobanteCode')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'comprobanteCode')) {
       plainObject.comprobanteCode = this.comprobanteCode;
     }
-    if (this.hasOwnProperty('description')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'description')) {
       plainObject.description = this.description;
     }
 

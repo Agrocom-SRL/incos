@@ -15,28 +15,28 @@ export class StudentDocumentDelivery extends BaseEntity {
     super(data);
     // Solo inicializar campos si fueron proporcionados explícitamente
     // Esto permite usar attributes limitados sin inicializar campos no solicitados
-    if (data.hasOwnProperty('studentId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'studentId')) {
       this.studentId = data.studentId;
     }
-    if (data.hasOwnProperty('documentacionId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'documentacionId')) {
       this.documentacionId = data.documentacionId;
     }
-    if (data.hasOwnProperty('entregado')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'entregado')) {
       this.entregado = data.entregado;
-    } else if (!data.hasOwnProperty('studentId')) {
+    } else if (!Object.prototype.hasOwnProperty.call(data, 'studentId')) {
       // Solo usar valor por defecto si no se está usando attributes limitados
       this.entregado = false;
     }
-    if (data.hasOwnProperty('enTramite')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'enTramite')) {
       this.enTramite = data.enTramite;
-    } else if (!data.hasOwnProperty('studentId')) {
+    } else if (!Object.prototype.hasOwnProperty.call(data, 'studentId')) {
       // Solo usar valor por defecto si no se está usando attributes limitados
       this.enTramite = false;
     }
-    if (data.hasOwnProperty('fechaEntrega')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'fechaEntrega')) {
       this.fechaEntrega = data.fechaEntrega;
     }
-    if (data.hasOwnProperty('observaciones')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'observaciones')) {
       this.observaciones = data.observaciones;
     }
   }
@@ -66,22 +66,22 @@ export class StudentDocumentDelivery extends BaseEntity {
     const plainObject = super.toPlainObject();
 
     // Solo incluir campos que fueron inicializados (existen en this)
-    if (this.hasOwnProperty('studentId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'studentId')) {
       plainObject.studentId = this.studentId;
     }
-    if (this.hasOwnProperty('documentacionId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'documentacionId')) {
       plainObject.documentacionId = this.documentacionId;
     }
-    if (this.hasOwnProperty('entregado')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'entregado')) {
       plainObject.entregado = this.entregado;
     }
-    if (this.hasOwnProperty('enTramite')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'enTramite')) {
       plainObject.enTramite = this.enTramite;
     }
-    if (this.hasOwnProperty('fechaEntrega')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'fechaEntrega')) {
       plainObject.fechaEntrega = this.fechaEntrega;
     }
-    if (this.hasOwnProperty('observaciones')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'observaciones')) {
       plainObject.observaciones = this.observaciones;
     }
 

@@ -49,7 +49,7 @@ export class ListMateriasUseCase extends BaseListUseCase {
    * @param {Object} baseFilters - Filtros base ya extraídos por ListRequestDTO (search, sort)
    * @returns {Object} Filtros combinados con filtros específicos normalizados
    */
-  buildSpecificFilters(queryParams = {}, baseFilters = {}) {
+  buildSpecificFilters(_queryParams = {}, baseFilters = {}) {
     const filters = { ...baseFilters };
 
     // periodo_id: se maneja en prepareFilters() para obtener IDs de materias
@@ -71,7 +71,7 @@ export class ListMateriasUseCase extends BaseListUseCase {
   async prepareFilters(filters = {}, queryParams = {}) {
     // Si hay filtro por periodo_id, obtener IDs de materias primero
     if (queryParams.periodo_id) {
-      const periodoId = parseInt(queryParams.periodo_id);
+      const periodoId = parseInt(queryParams.periodo_id, 10);
 
       // Obtener todas las asignaturas_plan con ese periodo_id
       // Usar el repositorio de la misma forma que ListParalelosUseCase usa periodRepository

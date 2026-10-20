@@ -1,5 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
-import { TURNOS_VALUES, TURNOS } from '../constants/cursos.constants.js';
+import { TURNOS_VALUES } from '../constants/cursos.constants.js';
 
 /**
  * Entidad de Dominio: Parallel
@@ -11,19 +11,19 @@ export class Parallel extends BaseEntity {
     super(data);
     // Solo inicializar campos si fueron proporcionados explícitamente
     // Esto permite usar attributes limitados sin inicializar campos no solicitados
-    if (data.hasOwnProperty('careerId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'careerId')) {
       this.careerId = data.careerId;
     }
-    if (data.hasOwnProperty('periodId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'periodId')) {
       this.periodId = data.periodId;
     }
-    if (data.hasOwnProperty('name')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'name')) {
       this.name = data.name;
     }
-    if (data.hasOwnProperty('shift')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'shift')) {
       this.shift = data.shift;
     }
-    if (data.hasOwnProperty('description')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'description')) {
       this.description = data.description;
     }
   }
@@ -46,19 +46,19 @@ export class Parallel extends BaseEntity {
     const plainObject = super.toPlainObject();
 
     // Solo incluir campos que fueron inicializados (existen en this)
-    if (this.hasOwnProperty('careerId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'careerId')) {
       plainObject.careerId = this.careerId;
     }
-    if (this.hasOwnProperty('periodId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'periodId')) {
       plainObject.periodId = this.periodId;
     }
-    if (this.hasOwnProperty('name')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'name')) {
       plainObject.name = this.name;
     }
-    if (this.hasOwnProperty('shift')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'shift')) {
       plainObject.shift = this.shift;
     }
-    if (this.hasOwnProperty('description')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'description')) {
       plainObject.description = this.description;
     }
 

@@ -107,7 +107,7 @@ export class ListStudentScholarshipsController extends BaseListController {
     // Filtro por ID de estudiante
     if (query.studentId) {
       const studentId = parseInt(query.studentId, 10);
-      if (!isNaN(studentId)) {
+      if (!Number.isNaN(Number(studentId))) {
         filters.studentId = studentId;
       }
     }
@@ -115,7 +115,7 @@ export class ListStudentScholarshipsController extends BaseListController {
     // Filtro por ID de gestión
     if (query.managementId) {
       const managementId = parseInt(query.managementId, 10);
-      if (!isNaN(managementId)) {
+      if (!Number.isNaN(Number(managementId))) {
         filters.managementId = managementId;
       }
     }
@@ -128,7 +128,7 @@ export class ListStudentScholarshipsController extends BaseListController {
     // Filtro por ID de beca/descuento
     if (query.scholarshipId) {
       const scholarshipId = parseInt(query.scholarshipId, 10);
-      if (!isNaN(scholarshipId)) {
+      if (!Number.isNaN(Number(scholarshipId))) {
         filters.scholarshipId = scholarshipId;
       }
     }

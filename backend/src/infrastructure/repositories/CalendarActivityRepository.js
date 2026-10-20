@@ -1,4 +1,3 @@
-import { IActividadCalendarioRepository } from '../../domain/interfaces/repositories/IActividadCalendarioRepository.js';
 import { ActividadCalendario as ActividadCalendarioModel } from '../database/models/actividad_calendario.js';
 import { BaseRepository } from './BaseRepository.js';
 import { CalendarActivityMapper } from '../mappers/CalendarActivityMapper.js';
@@ -130,7 +129,7 @@ export class CalendarActivityRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return CalendarActivityMapper.toModel(data);
   }
 
@@ -142,7 +141,7 @@ export class CalendarActivityRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return CalendarActivityMapper.toModelForUpdate(data);
   }
 

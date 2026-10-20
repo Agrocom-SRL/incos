@@ -1,5 +1,4 @@
 import { Op } from 'sequelize';
-import { IAsistenciaRepository } from '../../domain/interfaces/repositories/IAsistenciaRepository.js';
 import { Asistencia as AsistenciaModel } from '../database/models/asistencia.js';
 import { BaseRepository } from './BaseRepository.js';
 import { AttendanceMapper } from '../mappers/AttendanceMapper.js';
@@ -56,11 +55,11 @@ export class AttendanceRepository extends BaseRepository {
         return [['fechaRegistro', 'DESC'], ['id', 'DESC']];
     }
 
-    mapDataToModel(data, userId = null) {
+    mapDataToModel(data, _userId = null) {
         return AttendanceMapper.toModel(data);
     }
 
-    mapDataToUpdate(data, userId = null) {
+    mapDataToUpdate(data, _userId = null) {
         return AttendanceMapper.toModelForUpdate(data);
     }
 

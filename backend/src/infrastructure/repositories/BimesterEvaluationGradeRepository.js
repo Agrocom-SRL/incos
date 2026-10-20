@@ -1,5 +1,4 @@
 import { Op } from 'sequelize';
-import { IEvaluacionNotaRepository } from '../../domain/interfaces/repositories/IEvaluacionNotaRepository.js';
 import { EvaluacionNota as EvaluacionNotaModel } from '../database/models/evaluacion_nota.js';
 import { BaseRepository } from './BaseRepository.js';
 import { BimesterEvaluationGradeMapper } from '../mappers/BimesterEvaluationGradeMapper.js';
@@ -58,11 +57,11 @@ export class BimesterEvaluationGradeRepository extends BaseRepository {
         return [['id', 'ASC']];
     }
 
-    mapDataToModel(data, userId = null) {
+    mapDataToModel(data, _userId = null) {
         return BimesterEvaluationGradeMapper.toModel(data);
     }
 
-    mapDataToUpdate(data, userId = null) {
+    mapDataToUpdate(data, _userId = null) {
         return BimesterEvaluationGradeMapper.toModelForUpdate(data);
     }
 
@@ -116,7 +115,7 @@ export class BimesterEvaluationGradeRepository extends BaseRepository {
                 { replacements: [nota, usuarioId, existente.id], type: sequelize.QueryTypes.UPDATE, transaction },
             );
             const rows = await sequelize.query(
-                `SELECT nota FROM evaluaciones_notas WHERE id = ? LIMIT 1`,
+                'SELECT nota FROM evaluaciones_notas WHERE id = ? LIMIT 1',
                 { replacements: [existente.id], type: sequelize.QueryTypes.SELECT, transaction },
             );
             return { id: Number(existente.id), nota: rows[0]?.nota ?? nota };

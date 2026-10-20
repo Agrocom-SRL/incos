@@ -332,7 +332,7 @@ export class UpdateEnrollmentUseCase {
     );
 
     // prior_history: payload (reemplazo) o el persistido de la inscripción.
-    let priorHistoryItems = Array.isArray(priorHistory) ? priorHistory : null;
+    const priorHistoryItems = Array.isArray(priorHistory) ? priorHistory : null;
     let priorCurriculumSubjectIds = null;
     if (!priorHistoryItems && this.priorEnrollmentHistoryRepository) {
       const existing = await this.priorEnrollmentHistoryRepository.findAll(

@@ -116,7 +116,7 @@ export class DeleteStudentScholarshipUseCase {
       // Buscar pagos activos vinculados a esta beca
       const paymentsResult = await this.contributionPaymentRepository.findAll(
         {
-          studentScholarshipId: studentScholarshipId,
+          studentScholarshipId,
           active: true, // Solo pagos activos (no eliminados)
         },
         null,
@@ -154,7 +154,7 @@ export class DeleteStudentScholarshipUseCase {
         throw new ValidationError(
           `No se puede eliminar la beca porque está vinculada a ${payments.length} pago(s) vigente(s). ` +
             `Número de recibo: ${receiptNumber || 'N/A'}. ` +
-            `Solo se pueden eliminar becas que no tengan pagos asociados.`
+            'Solo se pueden eliminar becas que no tengan pagos asociados.'
         );
       }
 

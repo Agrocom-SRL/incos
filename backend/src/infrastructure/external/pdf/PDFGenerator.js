@@ -144,5 +144,4 @@ export class PDFGenerator extends IPDFGenerator {
 
         return await this.formularioInscripcionPdfGenerator.generate(options);
     }
-
 }

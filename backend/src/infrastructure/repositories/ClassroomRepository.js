@@ -1,5 +1,4 @@
 import { Op } from 'sequelize';
-import { IAulaRepository } from '../../domain/interfaces/repositories/IAulaRepository.js';
 import { Aula as AulaModel } from '../database/models/aula.js';
 import { BaseRepository } from './BaseRepository.js';
 import { ClassroomMapper } from '../mappers/ClassroomMapper.js';
@@ -108,11 +107,11 @@ export class ClassroomRepository extends BaseRepository {
     return []; // Usa el orden por defecto de BaseRepository: [['id', 'ASC']]
   }
 
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return ClassroomMapper.toModel(data);
   }
 
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return ClassroomMapper.toModelForUpdate(data);
   }
 

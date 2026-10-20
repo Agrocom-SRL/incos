@@ -1,4 +1,3 @@
-import { ICarreraRepository } from '../../domain/interfaces/repositories/ICarreraRepository.js';
 import { Carrera as CarreraModel } from '../database/models/carrera.js';
 import { BaseRepository } from './BaseRepository.js';
 import { CareerMapper } from '../mappers/CareerMapper.js';
@@ -129,7 +128,7 @@ export class CareerRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return CareerMapper.toModel(data);
   }
 
@@ -141,7 +140,7 @@ export class CareerRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return CareerMapper.toModelForUpdate(data);
   }
 

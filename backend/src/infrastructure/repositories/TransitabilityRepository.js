@@ -1,4 +1,3 @@
-import { ITransitabilidadRepository } from '../../domain/interfaces/repositories/ITransitabilidadRepository.js';
 import { Transitabilidad as TransitabilidadModel } from '../database/models/transitabilidad.js';
 import { BaseRepository } from './BaseRepository.js';
 import { TransitabilityMapper } from '../mappers/TransitabilityMapper.js';
@@ -82,14 +81,14 @@ export class TransitabilityRepository extends BaseRepository {
   /**
    * Mapeo de datos de dominio → modelo Sequelize (INSERT).
    */
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return TransitabilityMapper.toModel(data);
   }
 
   /**
    * Mapeo de datos de dominio → modelo Sequelize (UPDATE).
    */
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return TransitabilityMapper.toModelForUpdate(data);
   }
 

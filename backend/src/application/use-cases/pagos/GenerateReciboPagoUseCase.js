@@ -77,7 +77,7 @@ export class GenerateReciboPagoUseCase {
      * @throws {NotFoundError} Si no existe cuota ni cabecera con ese id/numero de recibo
      * @throws {Error} Si falla la generación del recibo
      */
-    async execute(paymentId, options = {}) {
+    async execute(paymentId, _options = {}) {
         this.logger.info('[Pagos] Iniciando generación/obtención de recibo de pago', {
             paymentId,
         });
@@ -148,11 +148,11 @@ export class GenerateReciboPagoUseCase {
                         : path.resolve(serverConfig.backendRoot, uploadDir, relativePath);
 
                     return {
-                        filePath: filePath,
+                        filePath,
                         fileName: existingRecibo.fileName,
-                        absolutePath: absolutePath,
+                        absolutePath,
                     };
-                } else {
+                }
                     // El registro existe en BD pero el archivo físico NO existe, debe regenerarse
                     this.logger.warn('[Pagos] Recibo existe en BD pero archivo físico no encontrado en el sistema de archivos, regenerando PDF', {
                         paymentId,
@@ -162,7 +162,6 @@ export class GenerateReciboPagoUseCase {
                     });
                     existingDocumentId = existingRecibo.id;
                     shouldRegenerate = true;
-                }
             } else {
                 // No existe registro en BD, debe generarse desde cero
                 this.logger.info('[Pagos] Recibo no existe en BD, generando nuevo recibo', {
@@ -181,7 +180,7 @@ export class GenerateReciboPagoUseCase {
                 });
 
                 // 4. Obtener datos necesarios para generar el recibo
-                const [student, management, paymentMethod, studentScholarship, scholarship] = await Promise.all([
+                const [student, management, paymentMethod, studentScholarship] = await Promise.all([
                     this.studentRepository.findById(studentId),
                     this.managementRepository.findById(paymentPlain.managementId || paymentPlain.management_id),
                     paymentPlain.paymentMethodId || paymentPlain.payment_method_id
@@ -459,7 +458,7 @@ export class GenerateReciboPagoUseCase {
                 this.logger.warn('[Pagos] Archivo físico del recibo no encontrado', {
                     documentId: plain.id,
                     filePath: plain.filePath,
-                    absolutePath: absolutePath,
+                    absolutePath,
                 });
             }
 
@@ -621,7 +620,7 @@ export class GenerateReciboPagoUseCase {
                 filePath: result.filePath,
                 fileName: result.fileName,
                 absolutePath: result.absolutePath,
-                relativePath: relativeScope + '/' + fileName, // Para compatibilidad
+                relativePath: `${relativeScope}/${fileName}`, // Para compatibilidad
             };
         } catch (error) {
             this.logger.error('[Pagos] Error al generar recibo PDF', {
@@ -661,7 +660,7 @@ export class GenerateReciboPagoUseCase {
                 studentId,
                 tipoDocumento: 'PAGO', // El recibo es parte del proceso de pago
                 documentacionId: null, // No hay documento específico en catálogo para "Recibo de Pago"
-                fileName: fileName,
+                fileName,
                 filePath: relativePath, // Guardar sin prefijo /uploads/
                 extension: 'pdf',
                 tipoMime: 'application/pdf',
@@ -676,7 +675,7 @@ export class GenerateReciboPagoUseCase {
             this.logger.info('[Pagos] Recibo PDF guardado como documento', {
                 studentId,
                 documentId: document.id,
-                fileName: fileName,
+                fileName,
                 filePath: relativePath,
             });
 

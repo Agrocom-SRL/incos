@@ -232,7 +232,7 @@ export class GetStudentByIdUseCase {
           const documentos = documentosResult.studentDocuments || [];
 
           // Buscar el más reciente que contenga ACTA_COMPROMISO en el nombre
-          const actaDoc = documentos.find(doc => {
+          const actaDoc = documentos.find((doc) => {
             const docPlain = doc.toPlainObject ? doc.toPlainObject() : doc;
             return docPlain.fileName?.includes('ACTA_COMPROMISO') ||
                    docPlain.tipoDocumento === 'ACTA_COMPROMISO';
@@ -245,7 +245,7 @@ export class GetStudentByIdUseCase {
               ? docPlain.filePath
               : `/${uploadDir}/${docPlain.filePath}`.replace(/\\/g, '/');
             actaCompromiso = {
-              filePath: filePath,
+              filePath,
               fileName: docPlain.fileName || 'acta_compromiso.pdf',
             };
           }
@@ -529,7 +529,7 @@ export class GetStudentByIdUseCase {
 
       // 9. Retornar el estudiante con todos sus datos relacionados
       const result = {
-        student: student,
+        student,
         guardians,
         disabilities,
         origins,

@@ -94,7 +94,6 @@ export class BaseDocumentController {
       // 4. Formatear respuesta exitosa usando ResponseFormatter
       // Pasar result directamente en data (sin envolver en subdivisión) para homogeneizar con listado
       return this.responseFormatter.generated(res, result, this.resourceName, id, req);
-
     } catch (error) {
       // 5. Manejo de errores consistente
       this.logger.error(`Error al generar ${this.resourceName}`, {

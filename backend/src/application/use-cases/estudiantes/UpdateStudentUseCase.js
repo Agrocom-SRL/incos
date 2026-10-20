@@ -512,7 +512,7 @@ export class UpdateStudentUseCase {
       tipoAdmisionAnterior: existingAcademicPlain?.admissionType ?? existingAcademicPlain?.tipoAdmision ?? null,
       tipoAdmisionNuevo: tipoAdmision,
       gestionIngresoIdAnterior: existingAcademicPlain?.managementId ?? existingAcademicPlain?.gestionIngresoId ?? null,
-      gestionIngresoIdNuevo: gestionIngresoIdNuevo,
+      gestionIngresoIdNuevo,
     });
   }
 
@@ -863,7 +863,7 @@ export class UpdateStudentUseCase {
           for (const disabilityData of data.disabilities) {
             const disabilityToCreate = {
               ...disabilityData,
-              studentId: studentId,
+              studentId,
             };
             // NOTA: userId no se pasa porque actualmente no hay autenticación
             const disability = await this.studentDisabilityRepository.create(disabilityToCreate);
@@ -921,7 +921,7 @@ export class UpdateStudentUseCase {
             } else {
               // Crear nuevo origen
               const createPayload = {
-                studentId: studentId,
+                studentId,
                 countryId: originData.countryId || null,
                 birthMunicipalityId: originData.birthMunicipalityId || null,
                 birthCity: originData.birthCity || null,
@@ -948,7 +948,7 @@ export class UpdateStudentUseCase {
         this.logger.info('[Estudiantes] Orígenes procesados', {
           studentId,
           total: origins.length,
-          tipos: origins.map(o => {
+          tipos: origins.map((o) => {
             const plain = o.toPlainObject ? o.toPlainObject() : o;
             return { tipo: plain.originType, principal: plain.isPrincipal };
           }),
@@ -1009,7 +1009,7 @@ export class UpdateStudentUseCase {
           for (const [docKey, docData] of Object.entries(data.documentation)) {
             const documentacionId = parseInt(docKey.replace('doc_', ''), 10);
 
-            if (!isNaN(documentacionId) && docData) {
+            if (!Number.isNaN(Number(documentacionId)) && docData) {
               if (tipoAdmisionParaDoc !== 'TRASPASO' && traspasoDocumentacionIds.includes(documentacionId)) {
                 continue;
               }
@@ -1053,7 +1053,7 @@ export class UpdateStudentUseCase {
                 // 6.2.2. Crear nueva entrega
                 const deliveryToCreate = {
                   ...deliveryData,
-                  studentId: studentId,
+                  studentId,
                   documentacionId,
                 };
                 // NOTA: userId no se pasa porque actualmente no hay autenticación
@@ -1086,11 +1086,11 @@ export class UpdateStudentUseCase {
 
           this.logger.info('[Estudiantes] Entregas de documentos procesadas', {
             studentId,
-            actualizadas: documentDeliveries.filter(d => {
+            actualizadas: documentDeliveries.filter((d) => {
               const plain = d.toPlainObject ? d.toPlainObject() : d;
               return deliveryMapByDocumentacionId.has(plain.documentacionId);
             }).length,
-            creadas: documentDeliveries.filter(d => {
+            creadas: documentDeliveries.filter((d) => {
               const plain = d.toPlainObject ? d.toPlainObject() : d;
               return !deliveryMapByDocumentacionId.has(plain.documentacionId);
             }).length,

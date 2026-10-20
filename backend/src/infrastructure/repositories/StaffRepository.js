@@ -1,4 +1,3 @@
-import { IPersonalRepository } from '../../domain/interfaces/repositories/IPersonalRepository.js';
 import { Personal as PersonalModel } from '../database/models/personal.js';
 import { BaseRepository } from './BaseRepository.js';
 import { StaffMapper } from '../mappers/StaffMapper.js';
@@ -93,7 +92,7 @@ export class StaffRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return StaffMapper.toModel(data);
   }
 
@@ -105,7 +104,7 @@ export class StaffRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return StaffMapper.toModelForUpdate(data);
   }
 

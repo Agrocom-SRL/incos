@@ -41,8 +41,8 @@ export class ListPagosAportesUseCase {
      * @returns {Promise<{pagos: Array, total: number, page: number, limit: number, totalPages: number}>}
      */
     async execute(baseFilters = {}, page = 1, limit = 50, queryParams = {}) {
-        const pageNum = parseInt(page) || 1;
-        const limitNum = parseInt(limit) || 50;
+        const pageNum = parseInt(page, 10) || 1;
+        const limitNum = parseInt(limit, 10) || 50;
 
         this.logger.info('[Pagos] Iniciando listado de pagos de aportes (vista)', {
             baseFilters,

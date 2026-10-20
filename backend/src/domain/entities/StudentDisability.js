@@ -9,19 +9,19 @@ export class StudentDisability extends BaseEntity {
     super(data);
     // Solo inicializar campos si fueron proporcionados explícitamente
     // Esto permite usar attributes limitados sin inicializar campos no solicitados
-    if (data.hasOwnProperty('studentId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'studentId')) {
       this.studentId = data.studentId;
     }
-    if (data.hasOwnProperty('disabilityTypeId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'disabilityTypeId')) {
       this.disabilityTypeId = data.disabilityTypeId;
     }
-    if (data.hasOwnProperty('description')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'description')) {
       this.description = data.description;
     }
-    if (data.hasOwnProperty('disabilityDegree')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'disabilityDegree')) {
       this.disabilityDegree = data.disabilityDegree; // LEVE, MODERADO, SEVERO, PROFUNDO
     }
-    if (data.hasOwnProperty('cause')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'cause')) {
       this.cause = data.cause;
     }
   }
@@ -35,19 +35,19 @@ export class StudentDisability extends BaseEntity {
     const plainObject = super.toPlainObject();
 
     // Solo incluir campos que fueron inicializados (existen en this)
-    if (this.hasOwnProperty('studentId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'studentId')) {
       plainObject.studentId = this.studentId;
     }
-    if (this.hasOwnProperty('disabilityTypeId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'disabilityTypeId')) {
       plainObject.disabilityTypeId = this.disabilityTypeId;
     }
-    if (this.hasOwnProperty('description')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'description')) {
       plainObject.description = this.description;
     }
-    if (this.hasOwnProperty('disabilityDegree')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'disabilityDegree')) {
       plainObject.disabilityDegree = this.disabilityDegree;
     }
-    if (this.hasOwnProperty('cause')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'cause')) {
       plainObject.cause = this.cause;
     }
 

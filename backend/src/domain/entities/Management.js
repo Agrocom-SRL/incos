@@ -11,30 +11,30 @@ export class Management extends BaseEntity {
     super(data);
     // Solo inicializar campos si fueron proporcionados explícitamente
     // Esto permite usar attributes limitados sin inicializar campos no solicitados
-    if (data.hasOwnProperty('code')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'code')) {
       this.code = data.code;
     }
-    if (data.hasOwnProperty('name')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'name')) {
       this.name = data.name;
     }
-    if (data.hasOwnProperty('year')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'year')) {
       this.year = data.year;
     }
-    if (data.hasOwnProperty('type')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'type')) {
       this.type = data.type;
-    } else if (!data.hasOwnProperty('code')) {
+    } else if (!Object.prototype.hasOwnProperty.call(data, 'code')) {
       // Solo usar valor por defecto si no se está usando attributes limitados
       this.type = TIPOS_GESTION.REGULAR;
     }
-    if (data.hasOwnProperty('startDate')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'startDate')) {
       this.startDate = data.startDate;
     }
-    if (data.hasOwnProperty('endDate')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'endDate')) {
       this.endDate = data.endDate;
     }
-    if (data.hasOwnProperty('vigente')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'vigente')) {
       this.vigente = data.vigente;
-    } else if (!data.hasOwnProperty('code')) {
+    } else if (!Object.prototype.hasOwnProperty.call(data, 'code')) {
       // Solo usar valor por defecto si no se está usando attributes limitados
       this.vigente = false;
     }
@@ -98,25 +98,25 @@ export class Management extends BaseEntity {
     const plainObject = super.toPlainObject();
 
     // Solo incluir campos que fueron inicializados (existen en this)
-    if (this.hasOwnProperty('code')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'code')) {
       plainObject.code = this.code;
     }
-    if (this.hasOwnProperty('name')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'name')) {
       plainObject.name = this.name;
     }
-    if (this.hasOwnProperty('year')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'year')) {
       plainObject.year = this.year;
     }
-    if (this.hasOwnProperty('type')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'type')) {
       plainObject.type = this.type;
     }
-    if (this.hasOwnProperty('startDate')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'startDate')) {
       plainObject.startDate = this.startDate;
     }
-    if (this.hasOwnProperty('endDate')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'endDate')) {
       plainObject.endDate = this.endDate;
     }
-    if (this.hasOwnProperty('vigente')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'vigente')) {
       plainObject.vigente = this.vigente;
     }
 

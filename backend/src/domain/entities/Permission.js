@@ -19,25 +19,25 @@ export class Permission extends BaseEntity {
     super(data);
     // Solo inicializar campos si fueron proporcionados explícitamente
     // Esto permite usar attributes limitados sin inicializar campos no solicitados
-    if (data.hasOwnProperty('code')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'code')) {
       this.code = data.code;
     }
-    if (data.hasOwnProperty('name')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'name')) {
       this.name = data.name;
     }
-    if (data.hasOwnProperty('description')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'description')) {
       this.description = data.description;
     }
-    if (data.hasOwnProperty('domain')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'domain')) {
       this.domain = data.domain;
     }
-    if (data.hasOwnProperty('module')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'module')) {
       this.module = data.module;
     }
-    if (data.hasOwnProperty('uiGroup')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'uiGroup')) {
       this.uiGroup = data.uiGroup;
     }
-    if (data.hasOwnProperty('sidebarRoute')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'sidebarRoute')) {
       this.sidebarRoute = data.sidebarRoute;
     }
   }
@@ -58,25 +58,25 @@ export class Permission extends BaseEntity {
   toPlainObject() {
     const plainObject = super.toPlainObject();
 
-    if (this.hasOwnProperty('code')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'code')) {
       plainObject.code = this.code;
     }
-    if (this.hasOwnProperty('name')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'name')) {
       plainObject.name = this.name;
     }
-    if (this.hasOwnProperty('description')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'description')) {
       plainObject.description = this.description;
     }
-    if (this.hasOwnProperty('domain')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'domain')) {
       plainObject.domain = this.domain;
     }
-    if (this.hasOwnProperty('module')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'module')) {
       plainObject.module = this.module;
     }
-    if (this.hasOwnProperty('uiGroup')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'uiGroup')) {
       plainObject.uiGroup = this.uiGroup;
     }
-    if (this.hasOwnProperty('sidebarRoute')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'sidebarRoute')) {
       plainObject.sidebarRoute = this.sidebarRoute;
     }
 

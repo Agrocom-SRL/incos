@@ -13,19 +13,19 @@ import { ACCIONES_PERMISOS_VALUES, TIPOS_USUARIO_PERMISO_VALUES } from '../const
 export class UserPermission extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    if (data.hasOwnProperty('userId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'userId')) {
       this.userId = data.userId;
     }
-    if (data.hasOwnProperty('permissionId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'permissionId')) {
       this.permissionId = data.permissionId;
     }
-    if (data.hasOwnProperty('action')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'action')) {
       this.action = data.action;
     }
-    if (data.hasOwnProperty('overrideType')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'overrideType')) {
       this.overrideType = data.overrideType;
     }
-    if (data.hasOwnProperty('reason')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'reason')) {
       this.reason = data.reason;
     }
   }
@@ -42,11 +42,11 @@ export class UserPermission extends BaseEntity {
 
   toPlainObject() {
     const plainObject = super.toPlainObject();
-    if (this.hasOwnProperty('userId')) plainObject.userId = this.userId;
-    if (this.hasOwnProperty('permissionId')) plainObject.permissionId = this.permissionId;
-    if (this.hasOwnProperty('action')) plainObject.action = this.action;
-    if (this.hasOwnProperty('overrideType')) plainObject.overrideType = this.overrideType;
-    if (this.hasOwnProperty('reason')) plainObject.reason = this.reason;
+    if (Object.prototype.hasOwnProperty.call(this, 'userId')) plainObject.userId = this.userId;
+    if (Object.prototype.hasOwnProperty.call(this, 'permissionId')) plainObject.permissionId = this.permissionId;
+    if (Object.prototype.hasOwnProperty.call(this, 'action')) plainObject.action = this.action;
+    if (Object.prototype.hasOwnProperty.call(this, 'overrideType')) plainObject.overrideType = this.overrideType;
+    if (Object.prototype.hasOwnProperty.call(this, 'reason')) plainObject.reason = this.reason;
     return plainObject;
   }
 

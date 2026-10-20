@@ -58,8 +58,6 @@ export class RegisterStudentRequestDTO {
       telefonoFijo,
       direccion,
       municipioResidenciaId,
-      departamentoResidenciaId,
-      provinciaResidenciaId,
       zona,
       trabaja,
       empresaInstitucion,
@@ -160,7 +158,7 @@ export class RegisterStudentRequestDTO {
     // 3. Orígenes (array, opcional)
     // IMPORTANTE: tipoOrigen puede ser 0 (BOLIVIANA), que es falsy, por lo que debemos verificar explícitamente !== undefined
     const hasOriginData = paisId || ciudadNacimiento || municipioId || localidadComunidad || idiomaMaternoId || idiomaSecundarioId || (tipoOrigen !== undefined && tipoOrigen !== null);
-    let origins = [];
+    const origins = [];
 
     if (hasOriginData) {
       // Normalizar tipoOrigen a string

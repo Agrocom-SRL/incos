@@ -16,25 +16,25 @@ export class Session extends BaseEntity {
     super(data);
     // Solo inicializar campos si fueron proporcionados explícitamente
     // Esto permite usar attributes limitados sin inicializar campos no solicitados
-    if (data.hasOwnProperty('userId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'userId')) {
       this.userId = data.userId;
     }
-    if (data.hasOwnProperty('sessionToken')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'sessionToken')) {
       this.sessionToken = data.sessionToken;
     }
-    if (data.hasOwnProperty('recoveryToken')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'recoveryToken')) {
       this.recoveryToken = data.recoveryToken;
     }
-    if (data.hasOwnProperty('expirationDate')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'expirationDate')) {
       this.expirationDate = data.expirationDate;
     }
-    if (data.hasOwnProperty('lastLogin')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'lastLogin')) {
       this.lastLogin = data.lastLogin;
     }
-    if (data.hasOwnProperty('lastLoginIp')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'lastLoginIp')) {
       this.lastLoginIp = data.lastLoginIp;
     }
-    if (data.hasOwnProperty('device')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'device')) {
       this.device = data.device; // MOVIL, TABLET, DESKTOP
     }
   }
@@ -66,25 +66,25 @@ export class Session extends BaseEntity {
     const plainObject = super.toPlainObject();
 
     // Solo incluir campos que fueron inicializados (existen en this)
-    if (this.hasOwnProperty('userId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'userId')) {
       plainObject.userId = this.userId;
     }
-    if (this.hasOwnProperty('sessionToken')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'sessionToken')) {
       plainObject.sessionToken = this.sessionToken;
     }
-    if (this.hasOwnProperty('recoveryToken')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'recoveryToken')) {
       plainObject.recoveryToken = this.recoveryToken;
     }
-    if (this.hasOwnProperty('expirationDate')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'expirationDate')) {
       plainObject.expirationDate = this.expirationDate;
     }
-    if (this.hasOwnProperty('lastLogin')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'lastLogin')) {
       plainObject.lastLogin = this.lastLogin;
     }
-    if (this.hasOwnProperty('lastLoginIp')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'lastLoginIp')) {
       plainObject.lastLoginIp = this.lastLoginIp;
     }
-    if (this.hasOwnProperty('device')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'device')) {
       plainObject.device = this.device;
     }
 

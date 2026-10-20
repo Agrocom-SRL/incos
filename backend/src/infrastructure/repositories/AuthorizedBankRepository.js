@@ -1,4 +1,3 @@
-import { IBancoAutorizadoRepository } from '../../domain/interfaces/repositories/IBancoAutorizadoRepository.js';
 import { BancoAutorizado as BancoAutorizadoModel } from '../database/models/banco_autorizado.js';
 import { BaseRepository } from './BaseRepository.js';
 import { AuthorizedBankMapper } from '../mappers/AuthorizedBankMapper.js';
@@ -43,11 +42,11 @@ export class AuthorizedBankRepository extends BaseRepository {
     return [['nombre', 'ASC']];
   }
 
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return AuthorizedBankMapper.toModel(data);
   }
 
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return AuthorizedBankMapper.toModelForUpdate(data);
   }
 

@@ -1,4 +1,3 @@
-import { ITipoParentescoRepository } from '../../domain/interfaces/repositories/ITipoParentescoRepository.js';
 import { TipoParentesco as TipoParentescoModel } from '../database/models/tipo_parentesco.js';
 import { BaseRepository } from './BaseRepository.js';
 import { RelationshipTypeMapper } from '../mappers/RelationshipTypeMapper.js';
@@ -104,7 +103,7 @@ export class RelationshipTypeRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return RelationshipTypeMapper.toModel(data);
   }
 
@@ -116,7 +115,7 @@ export class RelationshipTypeRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return RelationshipTypeMapper.toModelForUpdate(data);
   }
 

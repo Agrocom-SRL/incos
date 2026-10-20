@@ -29,7 +29,7 @@ export class GetEstadoAporteRegistroController {
             const estudianteId = req.query.estudiante_id != null ? parseInt(req.query.estudiante_id, 10) : null;
             const gestionId = req.query.gestion_id != null && req.query.gestion_id !== '' ? parseInt(req.query.gestion_id, 10) : null;
 
-            if (!estudianteId || isNaN(estudianteId) || estudianteId < 1) {
+            if (!estudianteId || Number.isNaN(Number(estudianteId)) || estudianteId < 1) {
                 return res.status(400).json({
                     success: false,
                     error: { message: 'estudiante_id es requerido y debe ser un número válido mayor a 0', code: 'INVALID_ESTUDIANTE_ID' },

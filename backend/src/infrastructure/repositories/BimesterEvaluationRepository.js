@@ -1,5 +1,4 @@
 import { Op } from 'sequelize';
-import { IEvaluacionRepository } from '../../domain/interfaces/repositories/IEvaluacionRepository.js';
 import { Evaluacion as EvaluacionModel } from '../database/models/evaluacion.js';
 import { BaseRepository } from './BaseRepository.js';
 import { BimesterEvaluationMapper } from '../mappers/BimesterEvaluationMapper.js';
@@ -67,11 +66,11 @@ export class BimesterEvaluationRepository extends BaseRepository {
         return [['fecha', 'DESC'], ['id', 'DESC']];
     }
 
-    mapDataToModel(data, userId = null) {
+    mapDataToModel(data, _userId = null) {
         return BimesterEvaluationMapper.toModel(data);
     }
 
-    mapDataToUpdate(data, userId = null) {
+    mapDataToUpdate(data, _userId = null) {
         return BimesterEvaluationMapper.toModelForUpdate(data);
     }
 
