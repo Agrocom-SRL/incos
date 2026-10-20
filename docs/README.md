@@ -19,6 +19,7 @@ Dos capas con distinto ciclo de vida: **permanente** (reglas + guías + referenc
 | `checklist-listado.md` | Checklist de una página — listado |
 | `implementacion-detalle-modulo.md` | Cookbook ficha / detalle |
 | `checklist-detalle.md` | Checklist de una página — detalle |
+| `pruebas.md` | Pruebas automáticas: Jest (backend) y Vitest (frontend), qué probar y cómo |
 
 ### `docs/referencia/`
 
