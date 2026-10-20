@@ -11,6 +11,9 @@ Decisiones del negocio ya tomadas:
 ## Ya corregido (PR #21, #22)
 folioFinal (Abrir/EditarLibro), horasRequeridas (pasantías), ids de ValidarConflicto/UpdateAsignacionHorario, mover bloque entre paralelos, calendario `null` en ListCursosCalificaciones, evaluaciones del cuaderno limitadas a su bimestre y reglas de asistencia en Update.
 
+## Corregido en `fix/pagos-bloque-1`
+Bloque 1 completo (recibo sin 400 inventado —el recibo por cabecera nunca leía `baseAmount`—, cuota con monto `''`, `monto_base` `''`/`Infinity`, cuentas por cobrar con `monto_total_deuda` nulo, booleanos `activo`, fechas de compromiso `2026-02-31`, `metodo_pago_id`/`banco_id` no numéricos, edición parcial de cuota en el controller, mensaje de capacitación). Se crea el helper `application/utils/validacionEntrada.js` para los bloques siguientes. Decisiones: recibo y cuota con monto 0 son válidos (generan compromiso de pago); `monto_base` 0 es válido.
+
 ## Decisiones y preguntas (actualizado 2026-10-20)
 Respondidas por el dueño del proyecto:
 - **Integrantes de proyecto de grado (pregunta 2):** no se pueden agregar integrantes a un proyecto en estado final (CANCELADO/APROBADO/REPROBADO). → `AddIntegranteProyecto` debe rechazarlo.

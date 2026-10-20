@@ -151,4 +151,23 @@ describe('UpdatePaymentInstallmentUseCase', () => {
     await expect(useCase.execute(11, { amount: 1 })).rejects.toBeInstanceOf(NotFoundError);
     expect(installmentRepo.update).not.toHaveBeenCalled();
   });
+
+  it.each([[''], ['   '], ['abc'], [-1]])('rechaza monto %p sin modificar nada (no se vuelve cuota gratuita)', async (amount) => {
+    const { useCase, installmentRepo, paymentRepo } = crear();
+    await expect(useCase.execute(11, { amount })).rejects.toBeInstanceOf(ValidationError);
+    expect(installmentRepo.update).not.toHaveBeenCalled();
+    expect(paymentRepo.update).not.toHaveBeenCalled();
+  });
+
+  it('un monto 0 explícito sigue siendo válido (cuota gratuita con compromiso)', async () => {
+    const { useCase, installmentRepo } = crear();
+    await useCase.execute(11, { amount: 0 });
+    expect(installmentRepo.update).toHaveBeenCalledWith(11, expect.objectContaining({ amount: 0 }));
+  });
+
+  it('sin monto en el payload conserva el de la cuota', async () => {
+    const { useCase, installmentRepo } = crear();
+    await useCase.execute(11, { descripcion: 'nota' });
+    expect(installmentRepo.update).toHaveBeenCalledWith(11, expect.objectContaining({ amount: 40 }));
+  });
 });

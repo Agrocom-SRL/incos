@@ -1,4 +1,5 @@
 import { ValidationError } from '../../../domain/errors/AppError.js';
+import { parseNumero } from '../../utils/validacionEntrada.js';
 
 /**
  * Use Case: CreateContributionConfigurationUseCase
@@ -31,10 +32,7 @@ export class CreateContributionConfigurationUseCase {
     if (montoBase === undefined || montoBase === null || montoBase === '') {
       throw new ValidationError('monto_base es requerido');
     }
-    const baseAmount = Number(montoBase);
-    if (Number.isNaN(baseAmount) || baseAmount < 0) {
-      throw new ValidationError('monto_base debe ser un número mayor o igual a 0');
-    }
+    const baseAmount = parseNumero(montoBase, 'monto_base', { min: 0 });
 
     const fechaInicio = body.fecha_inicio ?? body.fechaInicio ?? body.startDate;
     if (!fechaInicio) {

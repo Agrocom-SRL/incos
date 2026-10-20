@@ -18,15 +18,12 @@ export class UpdatePaymentInstallmentController {
     try {
       const id = parseInt(req.params.id, 10);
       const body = req.body || {};
-      const payload = {
-        amount: body.amount,
-        payment_method_id: body.payment_method_id,
-        payment_account_id: body.payment_account_id ?? null,
-        payment_date: body.payment_date,
-        transaction_number: body.transaction_number ?? null,
-        codigo_comprobante: body.codigo_comprobante ?? null,
-        descripcion: body.descripcion ?? null,
-      };
+      // Edición parcial: solo se reenvían las claves presentes; omitir un campo no lo borra.
+      const CAMPOS = [
+        'amount', 'payment_method_id', 'payment_account_id', 'payment_date',
+        'transaction_number', 'codigo_comprobante', 'descripcion',
+      ];
+      const payload = Object.fromEntries(CAMPOS.filter((k) => body[k] !== undefined).map((k) => [k, body[k]]));
       const data = await this.updatePaymentInstallmentUseCase.execute(id, payload);
       return this.responseFormatter.updated(res, { cuota: data }, 'cuota de pago', id, req);
     } catch (err) {

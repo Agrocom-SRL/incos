@@ -58,4 +58,10 @@ describe('UpdateCompromisoUseCase', () => {
     await useCase.execute(4, { observacion: 'x'.repeat(500) });
     expect(repo.update).toHaveBeenCalled();
   });
+
+  it.each([['2026-02-31'], ['2026-13-01'], ['abc']])('rechaza fecha %p (no rueda a otro mes)', async (fecha) => {
+    const { useCase, repo } = crear();
+    await expect(useCase.execute(4, { fechaCompromiso: fecha })).rejects.toBeInstanceOf(ValidationError);
+    expect(repo.update).not.toHaveBeenCalled();
+  });
 });

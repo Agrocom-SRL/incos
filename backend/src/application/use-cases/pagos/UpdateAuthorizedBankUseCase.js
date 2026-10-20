@@ -1,4 +1,5 @@
 import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
+import { parseBooleano, parseIdOpcional } from '../../utils/validacionEntrada.js';
 
 /**
  * Use Case: UpdateAuthorizedBankUseCase
@@ -54,12 +55,12 @@ export class UpdateAuthorizedBankUseCase {
 
     const metodoPagoId = body.metodo_pago_id ?? body.metodoPagoId ?? body.paymentMethodId;
     if (metodoPagoId !== undefined) {
-      payload.paymentMethodId = metodoPagoId != null && metodoPagoId !== '' ? Number(metodoPagoId) : null;
+      payload.paymentMethodId = parseIdOpcional(metodoPagoId, 'metodo_pago_id');
     }
 
     const activo = body.activo ?? body.active;
     if (activo !== undefined) {
-      payload.active = Boolean(activo);
+      payload.active = parseBooleano(activo, 'activo');
     }
 
     if (Object.keys(payload).length === 0) {

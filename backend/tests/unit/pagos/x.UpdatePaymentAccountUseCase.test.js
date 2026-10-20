@@ -53,4 +53,17 @@ describe('UpdatePaymentAccountUseCase', () => {
     await expect(useCase.execute({ id: 4, body })).rejects.toBeInstanceOf(ValidationError);
     expect(repo.update).not.toHaveBeenCalled();
   });
+
+  it.each([['metodo_pago_id', 'abc'], ['banco_id', 'abc'], ['banco_id', '5abc']])('rechaza %s=%p (no se guarda NaN)', async (campo, valor) => {
+    const { useCase, repo } = crear();
+    await expect(useCase.execute({ id: 4, body: { [campo]: valor } })).rejects.toBeInstanceOf(ValidationError);
+    expect(repo.update).not.toHaveBeenCalled();
+  });
+
+  it("activo 'false' desactiva y un valor inválido se rechaza", async () => {
+    const { useCase, repo } = crear();
+    await useCase.execute({ id: 4, body: { activo: 'false' } });
+    expect(repo.update).toHaveBeenCalledWith(4, { active: false }, null);
+    await expect(useCase.execute({ id: 4, body: { activo: 'x' } })).rejects.toBeInstanceOf(ValidationError);
+  });
 });

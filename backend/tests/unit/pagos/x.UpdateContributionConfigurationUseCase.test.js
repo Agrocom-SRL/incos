@@ -58,4 +58,28 @@ describe('UpdateContributionConfigurationUseCase', () => {
     await expect(useCase.execute(4, {})).rejects.toBeInstanceOf(ValidationError);
     expect(repo.update).not.toHaveBeenCalled();
   });
+
+  it.each([[''], ['   '], [Infinity], [null]])('rechaza monto_base %p (no se guarda como 0)', async (monto) => {
+    const { useCase, repo } = crear();
+    await expect(useCase.execute(4, { monto_base: monto })).rejects.toBeInstanceOf(ValidationError);
+    expect(repo.update).not.toHaveBeenCalled();
+  });
+
+  it.each([['false', false], ['true', true]])('activo %p se interpreta de forma estricta', async (activo, esperado) => {
+    const { useCase, repo } = crear();
+    await useCase.execute(4, { activo, aporte_activo: activo });
+    expect(repo.update).toHaveBeenCalledWith(4, { active: esperado, contributionActive: esperado }, null);
+  });
+
+  it('rechaza activo no booleano', async () => {
+    const { useCase, repo } = crear();
+    await expect(useCase.execute(4, { activo: 'quizás' })).rejects.toBeInstanceOf(ValidationError);
+    expect(repo.update).not.toHaveBeenCalled();
+  });
+
+  it.each([['2026-02-31'], ['abc']])('rechaza fecha_inicio %p', async (fecha) => {
+    const { useCase, repo } = crear();
+    await expect(useCase.execute(4, { fecha_inicio: fecha })).rejects.toBeInstanceOf(ValidationError);
+    expect(repo.update).not.toHaveBeenCalled();
+  });
 });

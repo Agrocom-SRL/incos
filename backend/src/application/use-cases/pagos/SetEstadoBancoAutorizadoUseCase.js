@@ -1,5 +1,6 @@
 import { NotFoundError } from '../../../domain/errors/AppError.js';
 import { AuthorizedBankMapper } from '../../mappers/pagos/index.js';
+import { parseBooleano } from '../../utils/validacionEntrada.js';
 
 /**
  * Use Case: SetEstadoBancoAutorizadoUseCase
@@ -25,7 +26,7 @@ export class SetEstadoBancoAutorizadoUseCase {
     const existing = await this.authorizedBankRepository.findById(id);
     if (!existing) throw new NotFoundError('banco autorizado');
 
-    const estado = Boolean(activo);
+    const estado = parseBooleano(activo, 'activo');
     const updated = await this.authorizedBankRepository.update(id, { active: estado }, userId);
 
     this.logger.info('[Pagos] Estado de banco autorizado actualizado', { id, activo: estado });

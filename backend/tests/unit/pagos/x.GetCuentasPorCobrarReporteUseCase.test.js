@@ -170,4 +170,15 @@ describe('GetCuentasPorCobrarReporteUseCase', () => {
     const { useCase } = crear();
     await expect(useCase.execute({ gestionId })).rejects.toBeInstanceOf(ValidationError);
   });
+
+  it('matriculado sin cabecera (monto_total_deuda null) cae al monto máximo y no queda AL_DIA con deuda 0', async () => {
+    const { useCase } = crear({
+      rows: [fila({ pago_aporte_id: null, monto_total_deuda: null, monto_pagado: null, saldo_pendiente: null })],
+    });
+    const res = await useCase.execute({ gestionId: 3 });
+    const est = res.carreras[0].paralelos[0].estudiantes[0];
+    expect(est.montoTotal).toBe(1000);
+    expect(est.saldoPendiente).toBe(1000);
+    expect(est.estado).not.toBe('AL_DIA');
+  });
 });
