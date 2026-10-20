@@ -1,5 +1,8 @@
 # Rediseño del wizard de inscripción de materias (matrícula) — plan de desarrollo
 
+> **Estado: parcial — verificado 2026-10-20.** Comprobado contra el código: Fases A (backend, `enrollmentBusinessRules.js`) y C (frontend, `MateriasPlanillaSelector`) hechas. Falta: Fase D (prueba manual de los 6 perfiles y `revisor-ui`), recrear la vista 153 en BD, y los hallazgos menores de lint (§Hallazgos) y de carpetas `WizardForm/Wizardform`.
+
+
 > Plan (2026-08-13) para revisar, mejorar y adaptar `/matricula/nueva`
 > (`InscripcionesNueva.jsx`) siguiendo el precedente de los formularios ya
 > refactorizados (aporte voluntario, becas, nuevo estudiante).

@@ -1,5 +1,8 @@
 # Migraciones (`05-migrations`) vs servidor hoy
 
+> **Estado: implementado (informe) — verificado 2026-10-20.** Comprobado contra el código: informe del 2026-10-19 sobre `05-migrations/10-28`, que existen en el repo. No es un plan ejecutable; el detalle por fila vive fuera del repo (`_reportes/`). Falta: decidir qué diferencias se reconcilian.
+
+
 > Generado el 2026-10-19 comparando por `id` los `INSERT` de `05-migrations/10–25` (4.ª migración: snapshot del
 > servidor de su época; solo filas vivas) contra `backend/database/instituto_incos/tablas/` (servidor hoy).
 > Las columnas de auditoría (`created_*`, `updated_*`, `deleted_*`) no cuentan como cambio.

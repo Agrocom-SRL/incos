@@ -1,5 +1,8 @@
 # Titulación — avance y modalidad de graduación (extensión del módulo TIT) — plan de desarrollo
 
+> **Estado: implementado — verificado 2026-10-20.** Comprobado contra el código: formulario de modalidad (`RegistrarMiModalidadGradoUseCase`, PDF), reporte de avance por carrera (`GetAvanceTutoriaCarreraUseCase`, vistas 178-181) y seguimiento de tutorías a docentes (reemplaza la planilla 10-en-10; `SeguimientoTutoriaDocentesPage`). Falta: confirmar vistas 178-181 y migración `28-migrate-titulacion-suficiencia.sql` en BD.
+
+
 > NOTA (2026-07-31): este plan se escribió antes del rename `tutorias` →
 > `titulacion`; las rutas/códigos ya están actualizados a la nomenclatura
 > nueva.

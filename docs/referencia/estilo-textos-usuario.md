@@ -5,6 +5,8 @@
 > catálogo vivo de conversiones ya aplicadas — úsalo como referencia rápida
 > antes de redactar texto nuevo o al auditar un módulo pendiente.
 
+> Nota (2026-10-20): las rutas de archivo de las tablas son históricas (momento de la conversión); p. ej. el módulo `reportes/` fue disuelto el 2026-07-29 y `actual/` se reorganizó. Búsquelas por nombre de archivo.
+
 ## Origen
 
 2026-07-16 — un usuario reportó (captura de pantalla) un `Alert` con

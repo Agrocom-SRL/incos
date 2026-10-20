@@ -4,7 +4,7 @@
 
 **Audiencia:** desarrollo, QA y coordinación académica que valida el sistema tras el refactor de oferta + horarios (Sprints 1–5).
 
-**Referencias cruzadas:** `docs/plan/PLAN_MAESTRO.md` (decisiones de modelo), `docs/referencia/matriz-permisos-sistema.md` (permisos por pantalla).
+**Referencias cruzadas:** `backend/database/01-schemas/` y `CLAUDE.md` (decisiones de modelo; el antiguo `PLAN_MAESTRO.md` ya no existe), `docs/referencia/matriz-permisos-sistema.md` (permisos por pantalla).
 
 ---
 
@@ -328,6 +328,6 @@ Usar las rutas **canónicas** de las fases 1–6 mientras tanto.
 
 - Actualizar cuando se implemente una pantalla 🚧 → ✅.
 - Añadir fila en §4 si aparece un sub-flujo nuevo en `institucional/routes.jsx` o `matricula/routes.jsx`.
-- No duplicar decisiones de schema: enlazar a `PLAN_MAESTRO.md` §2.
+- No duplicar decisiones de schema: enlazar a `backend/database/01-schemas/` y a `CLAUDE.md` (cadena de datos).
 
 **Última revisión:** 2026-06-01 — alineado a cierre Sprint 5 (grilla, conflictos, publicación, matrícula `oferta_curso_id`).

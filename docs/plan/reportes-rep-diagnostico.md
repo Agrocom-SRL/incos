@@ -1,5 +1,8 @@
 # Módulo Reportes (REP) — diagnóstico y recomendación
 
+> **Estado: implementado — verificado 2026-10-20.** Comprobado contra el código: la recomendación se aplicó: módulo REP disuelto (no existe `presentation/modules/reportes`), avance/deserción/consolidado bajo ACA (`avance-academico.routes.js`, `desercion.routes.js`), `63-seed-permisos-rep.sql` solo conservado como historial. Falta: avance/deserción están ocultos por el seed 59 desde 2026-08-03 hasta que se rehabiliten.
+
+
 > Informe del `arquitecto` (2026-07-29), a pedido del usuario: cruzar el seed
 > 63 contra las exportaciones ya existentes en EstudiantesList,
 > InscripcionesList, PagosList y BecasList (+ resto del sistema).

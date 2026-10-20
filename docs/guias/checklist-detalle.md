@@ -1,8 +1,8 @@
 # Checklist de una página — nuevo detalle / ficha (INCOS)
 
 **Complemento de:** `docs/guias/implementacion-detalle-modulo.md`  
-**Arquitectura frontend:** `.cursor/rules/incos-frontend-module.mdc`  
-**Arquitectura backend:** `.cursor/rules/incos-backend-module.mdc`  
+**Arquitectura frontend:** `.claude/skills/incos-frontend-module/SKILL.md`  
+**Arquitectura backend:** `.claude/skills/incos-backend-module/SKILL.md`  
 
 Marca en orden. Si un ítem no aplica, táchalo y anota por qué (ej. detalle embebido en modal sin `/:id`).
 

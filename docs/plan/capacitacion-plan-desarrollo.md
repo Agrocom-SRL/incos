@@ -1,5 +1,8 @@
 # Plan de desarrollo — Módulo "Cursos de Capacitación"
 
+> **Estado: implementado — verificado 2026-10-20.** Comprobado contra el código: backend (`cursos-capacitacion`, `participantes`, `inscripciones-capacitacion`), schema con pago por cuotas (`01-schemas/21-cursos-capacitacion.sql`, hoy numerado 21, no 25) y frontend completo en `modules/capacitacion/`. Falta: confirmar la siembra en BD (schema 21, `64-seed-permisos-cap.sql`, vistas 154/155). Notas y certificado quedaron descartados.
+
+
 > **Estado (2026-07-22): PAGO POR CUOTAS — schema editado y aprobado,
 > backend en implementación.** El negocio pidió que el pago de una
 > capacitación se pueda hacer en cuotas (primera cuota parcial permitida) y
