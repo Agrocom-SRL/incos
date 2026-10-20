@@ -413,7 +413,6 @@ export class RegisterAporteVoluntarioUseCase {
         let cabecera = await this.contributionPaymentRepository.findBy({
             studentId,
             managementId,
-            activo: true,
         });
         if (cabecera) {
             return cabecera;
@@ -489,7 +488,6 @@ export class RegisterAporteVoluntarioUseCase {
     async _getCurrentManagement() {
         const management = await this.managementRepository.findBy({
             vigente: true, // Solo gestiones vigentes
-            activo: true,
         });
 
         if (!management) {
@@ -558,7 +556,6 @@ export class RegisterAporteVoluntarioUseCase {
         const existingPayment = await this.contributionPaymentRepository.findBy({
             studentId,
             managementId,
-            activo: true, // Solo pagos activos (no eliminados)
         });
 
         if (existingPayment) {
