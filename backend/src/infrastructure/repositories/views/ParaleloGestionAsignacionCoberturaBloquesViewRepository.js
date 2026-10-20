@@ -7,7 +7,8 @@ const VIEW = 'vista_base_paralelo_gestion_asignacion_cobertura_bloques';
 /**
  * Lectura: vista_base_paralelo_gestion_asignacion_cobertura_bloques (03-views/123).
  */
-export class ParaleloGestionAsignacionCoberturaBloquesViewRepository extends IParaleloGestionAsignacionCoberturaBloquesViewRepository {
+export class ParaleloGestionAsignacionCoberturaBloquesViewRepository
+  extends IParaleloGestionAsignacionCoberturaBloquesViewRepository {
   /**
    * @param {number} paraleloGestionId
    * @returns {Promise<Array<Object>>}

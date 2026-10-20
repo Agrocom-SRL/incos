@@ -68,14 +68,18 @@ export function registerPlanesEstudiosResource(container) {
     logger: c.resolve(SERVICIOS_TOKENS.logger),
   }));
 
-  registerComponent(container, CONFIGURACION_TOKENS.getPlanEstudiosMatrizUseCase, (c) => new GetPlanEstudiosMatrizUseCase({
+  registerComponent(
+    container,
+    CONFIGURACION_TOKENS.getPlanEstudiosMatrizUseCase,
+    (c) => new GetPlanEstudiosMatrizUseCase({
     studyPlanRepository: c.resolve(REPOSITORIOS_TOKENS.studyPlanRepository),
     careerRepository: c.resolve(REPOSITORIOS_TOKENS.careerRepository),
     periodRepository: c.resolve(REPOSITORIOS_TOKENS.periodRepository),
     planSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.planSubjectRepository),
     subjectRepository: c.resolve(REPOSITORIOS_TOKENS.subjectRepository),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
-  }));
+  }),
+  );
 
   registerComponent(container, CONFIGURACION_TOKENS.validarPlanEstudiosUseCase, (c) => new ValidarPlanEstudiosUseCase({
     studyPlanRepository: c.resolve(REPOSITORIOS_TOKENS.studyPlanRepository),
@@ -94,10 +98,14 @@ export function registerPlanesEstudiosResource(container) {
     logger: c.resolve(SERVICIOS_TOKENS.logger),
   }));
 
-  registerComponent(container, CONFIGURACION_TOKENS.marcarPlanEstudiosVigenteUseCase, (c) => new MarcarPlanEstudiosVigenteUseCase({
+  registerComponent(
+    container,
+    CONFIGURACION_TOKENS.marcarPlanEstudiosVigenteUseCase,
+    (c) => new MarcarPlanEstudiosVigenteUseCase({
     studyPlanRepository: c.resolve(REPOSITORIOS_TOKENS.studyPlanRepository),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
-  }));
+  }),
+  );
 
   registerComponent(container, CONFIGURACION_TOKENS.clonarPlanEstudiosUseCase, (c) => new ClonarPlanEstudiosUseCase({
     studyPlanRepository: c.resolve(REPOSITORIOS_TOKENS.studyPlanRepository),
@@ -107,10 +115,14 @@ export function registerPlanesEstudiosResource(container) {
     logger: c.resolve(SERVICIOS_TOKENS.logger),
   }));
 
-  registerComponent(container, CONFIGURACION_TOKENS.setEstadoPlanEstudiosUseCase, (c) => new SetEstadoPlanEstudiosUseCase({
+  registerComponent(
+    container,
+    CONFIGURACION_TOKENS.setEstadoPlanEstudiosUseCase,
+    (c) => new SetEstadoPlanEstudiosUseCase({
     studyPlanRepository: c.resolve(REPOSITORIOS_TOKENS.studyPlanRepository),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
-  }));
+  }),
+  );
 
   registerComponent(container, CONFIGURACION_TOKENS.listPeriodosByPlanUseCase, (c) => new ListPeriodosByPlanUseCase({
     periodRepository: c.resolve(REPOSITORIOS_TOKENS.periodRepository),
@@ -132,40 +144,68 @@ export function registerPlanesEstudiosResource(container) {
     logger: c.resolve(SERVICIOS_TOKENS.logger),
   }));
 
-  registerComponent(container, CONFIGURACION_TOKENS.listAsignaturasPlanByPlanUseCase, (c) => new ListAsignaturasPlanByPlanUseCase({
+  registerComponent(
+    container,
+    CONFIGURACION_TOKENS.listAsignaturasPlanByPlanUseCase,
+    (c) => new ListAsignaturasPlanByPlanUseCase({
     planSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.planSubjectRepository),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
-  }));
+  }),
+  );
 
-  registerComponent(container, CONFIGURACION_TOKENS.listAsignaturasPlanByPeriodoUseCase, (c) => new ListAsignaturasPlanByPeriodoUseCase({
+  registerComponent(
+    container,
+    CONFIGURACION_TOKENS.listAsignaturasPlanByPeriodoUseCase,
+    (c) => new ListAsignaturasPlanByPeriodoUseCase({
     planSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.planSubjectRepository),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
-  }));
+  }),
+  );
 
-  registerComponent(container, CONFIGURACION_TOKENS.createAsignaturaPlanUseCase, (c) => new CreateAsignaturaPlanUseCase({
+  registerComponent(
+    container,
+    CONFIGURACION_TOKENS.createAsignaturaPlanUseCase,
+    (c) => new CreateAsignaturaPlanUseCase({
     planSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.planSubjectRepository),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
-  }));
+  }),
+  );
 
-  registerComponent(container, CONFIGURACION_TOKENS.updateAsignaturaPlanUseCase, (c) => new UpdateAsignaturaPlanUseCase({
+  registerComponent(
+    container,
+    CONFIGURACION_TOKENS.updateAsignaturaPlanUseCase,
+    (c) => new UpdateAsignaturaPlanUseCase({
     planSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.planSubjectRepository),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
-  }));
+  }),
+  );
 
-  registerComponent(container, CONFIGURACION_TOKENS.deleteAsignaturaPlanUseCase, (c) => new DeleteAsignaturaPlanUseCase({
+  registerComponent(
+    container,
+    CONFIGURACION_TOKENS.deleteAsignaturaPlanUseCase,
+    (c) => new DeleteAsignaturaPlanUseCase({
     planSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.planSubjectRepository),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
-  }));
+  }),
+  );
 
-  registerComponent(container, CONFIGURACION_TOKENS.listPrerrequisitosByAsignaturaUseCase, (c) => new ListPrerrequisitosByAsignaturaUseCase({
+  registerComponent(
+    container,
+    CONFIGURACION_TOKENS.listPrerrequisitosByAsignaturaUseCase,
+    (c) => new ListPrerrequisitosByAsignaturaUseCase({
     prerequisiteRepository: c.resolve(REPOSITORIOS_TOKENS.prerequisiteRepository),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
-  }));
+  }),
+  );
 
-  registerComponent(container, CONFIGURACION_TOKENS.listEsPrerrequisitoDeUseCase, (c) => new ListEsPrerrequisitoDeUseCase({
+  registerComponent(
+    container,
+    CONFIGURACION_TOKENS.listEsPrerrequisitoDeUseCase,
+    (c) => new ListEsPrerrequisitoDeUseCase({
     prerequisiteRepository: c.resolve(REPOSITORIOS_TOKENS.prerequisiteRepository),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
-  }));
+  }),
+  );
 
   registerComponent(container, CONFIGURACION_TOKENS.createPrerrequisitoUseCase, (c) => new CreatePrerrequisitoUseCase({
     prerequisiteRepository: c.resolve(REPOSITORIOS_TOKENS.prerequisiteRepository),
@@ -178,65 +218,105 @@ export function registerPlanesEstudiosResource(container) {
   }));
 
   // Controllers
-  registerComponent(container, CONFIGURACION_TOKENS.listPlanesEstudiosController, (c) => new ListPlanesEstudiosController({
+  registerComponent(
+    container,
+    CONFIGURACION_TOKENS.listPlanesEstudiosController,
+    (c) => new ListPlanesEstudiosController({
     listPlanesEstudiosUseCase: c.resolve(CONFIGURACION_TOKENS.listPlanesEstudiosUseCase),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
     responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
-  }));
+  }),
+  );
 
-  registerComponent(container, CONFIGURACION_TOKENS.getPlanEstudiosByIdController, (c) => new GetPlanEstudiosByIdController({
+  registerComponent(
+    container,
+    CONFIGURACION_TOKENS.getPlanEstudiosByIdController,
+    (c) => new GetPlanEstudiosByIdController({
     getPlanEstudiosByIdUseCase: c.resolve(CONFIGURACION_TOKENS.getPlanEstudiosByIdUseCase),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
     responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
-  }));
+  }),
+  );
 
-  registerComponent(container, CONFIGURACION_TOKENS.getPlanEstudiosMatrizController, (c) => new GetPlanEstudiosMatrizController({
+  registerComponent(
+    container,
+    CONFIGURACION_TOKENS.getPlanEstudiosMatrizController,
+    (c) => new GetPlanEstudiosMatrizController({
     getPlanEstudiosMatrizUseCase: c.resolve(CONFIGURACION_TOKENS.getPlanEstudiosMatrizUseCase),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
     responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
-  }));
+  }),
+  );
 
-  registerComponent(container, CONFIGURACION_TOKENS.validarPlanEstudiosController, (c) => new ValidarPlanEstudiosController({
+  registerComponent(
+    container,
+    CONFIGURACION_TOKENS.validarPlanEstudiosController,
+    (c) => new ValidarPlanEstudiosController({
     validarPlanEstudiosUseCase: c.resolve(CONFIGURACION_TOKENS.validarPlanEstudiosUseCase),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
     responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
-  }));
+  }),
+  );
 
-  registerComponent(container, CONFIGURACION_TOKENS.createPlanEstudiosController, (c) => new CreatePlanEstudiosController({
+  registerComponent(
+    container,
+    CONFIGURACION_TOKENS.createPlanEstudiosController,
+    (c) => new CreatePlanEstudiosController({
     createPlanEstudiosUseCase: c.resolve(CONFIGURACION_TOKENS.createPlanEstudiosUseCase),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
     responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
-  }));
+  }),
+  );
 
-  registerComponent(container, CONFIGURACION_TOKENS.updatePlanEstudiosController, (c) => new UpdatePlanEstudiosController({
+  registerComponent(
+    container,
+    CONFIGURACION_TOKENS.updatePlanEstudiosController,
+    (c) => new UpdatePlanEstudiosController({
     updatePlanEstudiosUseCase: c.resolve(CONFIGURACION_TOKENS.updatePlanEstudiosUseCase),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
     responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
-  }));
+  }),
+  );
 
-  registerComponent(container, CONFIGURACION_TOKENS.marcarPlanEstudiosVigenteController, (c) => new MarcarPlanEstudiosVigenteController({
+  registerComponent(
+    container,
+    CONFIGURACION_TOKENS.marcarPlanEstudiosVigenteController,
+    (c) => new MarcarPlanEstudiosVigenteController({
     marcarPlanEstudiosVigenteUseCase: c.resolve(CONFIGURACION_TOKENS.marcarPlanEstudiosVigenteUseCase),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
     responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
-  }));
+  }),
+  );
 
-  registerComponent(container, CONFIGURACION_TOKENS.clonarPlanEstudiosController, (c) => new ClonarPlanEstudiosController({
+  registerComponent(
+    container,
+    CONFIGURACION_TOKENS.clonarPlanEstudiosController,
+    (c) => new ClonarPlanEstudiosController({
     clonarPlanEstudiosUseCase: c.resolve(CONFIGURACION_TOKENS.clonarPlanEstudiosUseCase),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
     responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
-  }));
+  }),
+  );
 
-  registerComponent(container, CONFIGURACION_TOKENS.setEstadoPlanEstudiosController, (c) => new SetEstadoPlanEstudiosController({
+  registerComponent(
+    container,
+    CONFIGURACION_TOKENS.setEstadoPlanEstudiosController,
+    (c) => new SetEstadoPlanEstudiosController({
     setEstadoPlanEstudiosUseCase: c.resolve(CONFIGURACION_TOKENS.setEstadoPlanEstudiosUseCase),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
     responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
-  }));
+  }),
+  );
 
-  registerComponent(container, CONFIGURACION_TOKENS.listPeriodosByPlanController, (c) => new ListPeriodosByPlanController({
+  registerComponent(
+    container,
+    CONFIGURACION_TOKENS.listPeriodosByPlanController,
+    (c) => new ListPeriodosByPlanController({
     listPeriodosByPlanUseCase: c.resolve(CONFIGURACION_TOKENS.listPeriodosByPlanUseCase),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
     responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
-  }));
+  }),
+  );
   registerComponent(container, CONFIGURACION_TOKENS.createPeriodoController, (c) => new CreatePeriodoController({
     createPeriodoUseCase: c.resolve(CONFIGURACION_TOKENS.createPeriodoUseCase),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
@@ -253,52 +333,88 @@ export function registerPlanesEstudiosResource(container) {
     responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
   }));
 
-  registerComponent(container, CONFIGURACION_TOKENS.listAsignaturasPlanByPlanController, (c) => new ListAsignaturasPlanByPlanController({
+  registerComponent(
+    container,
+    CONFIGURACION_TOKENS.listAsignaturasPlanByPlanController,
+    (c) => new ListAsignaturasPlanByPlanController({
     listAsignaturasPlanByPlanUseCase: c.resolve(CONFIGURACION_TOKENS.listAsignaturasPlanByPlanUseCase),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
     responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
-  }));
-  registerComponent(container, CONFIGURACION_TOKENS.listAsignaturasPlanByPeriodoController, (c) => new ListAsignaturasPlanByPeriodoController({
+  }),
+  );
+  registerComponent(
+    container,
+    CONFIGURACION_TOKENS.listAsignaturasPlanByPeriodoController,
+    (c) => new ListAsignaturasPlanByPeriodoController({
     listAsignaturasPlanByPeriodoUseCase: c.resolve(CONFIGURACION_TOKENS.listAsignaturasPlanByPeriodoUseCase),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
     responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
-  }));
-  registerComponent(container, CONFIGURACION_TOKENS.createAsignaturaPlanController, (c) => new CreateAsignaturaPlanController({
+  }),
+  );
+  registerComponent(
+    container,
+    CONFIGURACION_TOKENS.createAsignaturaPlanController,
+    (c) => new CreateAsignaturaPlanController({
     createAsignaturaPlanUseCase: c.resolve(CONFIGURACION_TOKENS.createAsignaturaPlanUseCase),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
     responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
-  }));
-  registerComponent(container, CONFIGURACION_TOKENS.updateAsignaturaPlanController, (c) => new UpdateAsignaturaPlanController({
+  }),
+  );
+  registerComponent(
+    container,
+    CONFIGURACION_TOKENS.updateAsignaturaPlanController,
+    (c) => new UpdateAsignaturaPlanController({
     updateAsignaturaPlanUseCase: c.resolve(CONFIGURACION_TOKENS.updateAsignaturaPlanUseCase),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
     responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
-  }));
-  registerComponent(container, CONFIGURACION_TOKENS.deleteAsignaturaPlanController, (c) => new DeleteAsignaturaPlanController({
+  }),
+  );
+  registerComponent(
+    container,
+    CONFIGURACION_TOKENS.deleteAsignaturaPlanController,
+    (c) => new DeleteAsignaturaPlanController({
     deleteAsignaturaPlanUseCase: c.resolve(CONFIGURACION_TOKENS.deleteAsignaturaPlanUseCase),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
     responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
-  }));
+  }),
+  );
 
-  registerComponent(container, CONFIGURACION_TOKENS.listPrerrequisitosByAsignaturaController, (c) => new ListPrerrequisitosByAsignaturaController({
+  registerComponent(
+    container,
+    CONFIGURACION_TOKENS.listPrerrequisitosByAsignaturaController,
+    (c) => new ListPrerrequisitosByAsignaturaController({
     listPrerrequisitosByAsignaturaUseCase: c.resolve(CONFIGURACION_TOKENS.listPrerrequisitosByAsignaturaUseCase),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
     responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
-  }));
-  registerComponent(container, CONFIGURACION_TOKENS.listEsPrerrequisitoDeController, (c) => new ListEsPrerrequisitoDeController({
+  }),
+  );
+  registerComponent(
+    container,
+    CONFIGURACION_TOKENS.listEsPrerrequisitoDeController,
+    (c) => new ListEsPrerrequisitoDeController({
     listEsPrerrequisitoDeUseCase: c.resolve(CONFIGURACION_TOKENS.listEsPrerrequisitoDeUseCase),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
     responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
-  }));
-  registerComponent(container, CONFIGURACION_TOKENS.createPrerrequisitoController, (c) => new CreatePrerrequisitoController({
+  }),
+  );
+  registerComponent(
+    container,
+    CONFIGURACION_TOKENS.createPrerrequisitoController,
+    (c) => new CreatePrerrequisitoController({
     createPrerrequisitoUseCase: c.resolve(CONFIGURACION_TOKENS.createPrerrequisitoUseCase),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
     responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
-  }));
-  registerComponent(container, CONFIGURACION_TOKENS.deletePrerrequisitoController, (c) => new DeletePrerrequisitoController({
+  }),
+  );
+  registerComponent(
+    container,
+    CONFIGURACION_TOKENS.deletePrerrequisitoController,
+    (c) => new DeletePrerrequisitoController({
     deletePrerrequisitoUseCase: c.resolve(CONFIGURACION_TOKENS.deletePrerrequisitoUseCase),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
     responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
-  }));
+  }),
+  );
 
   // Router
   registerComponent(container, CONFIGURACION_TOKENS.planesEstudiosRouter, (c) => {
@@ -321,7 +437,8 @@ export function registerPlanesEstudiosResource(container) {
       createAsignaturaPlanController: c.resolve(CONFIGURACION_TOKENS.createAsignaturaPlanController),
       updateAsignaturaPlanController: c.resolve(CONFIGURACION_TOKENS.updateAsignaturaPlanController),
       deleteAsignaturaPlanController: c.resolve(CONFIGURACION_TOKENS.deleteAsignaturaPlanController),
-      listPrerrequisitosByAsignaturaController: c.resolve(CONFIGURACION_TOKENS.listPrerrequisitosByAsignaturaController),
+      listPrerrequisitosByAsignaturaController:
+        c.resolve(CONFIGURACION_TOKENS.listPrerrequisitosByAsignaturaController),
       listEsPrerrequisitoDeController: c.resolve(CONFIGURACION_TOKENS.listEsPrerrequisitoDeController),
       createPrerrequisitoController: c.resolve(CONFIGURACION_TOKENS.createPrerrequisitoController),
       deletePrerrequisitoController: c.resolve(CONFIGURACION_TOKENS.deletePrerrequisitoController),
@@ -346,7 +463,8 @@ export function registerPlanesEstudiosResource(container) {
       createAsignaturaPlanController: c.resolve(CONFIGURACION_TOKENS.createAsignaturaPlanController),
       updateAsignaturaPlanController: c.resolve(CONFIGURACION_TOKENS.updateAsignaturaPlanController),
       deleteAsignaturaPlanController: c.resolve(CONFIGURACION_TOKENS.deleteAsignaturaPlanController),
-      listPrerrequisitosByAsignaturaController: c.resolve(CONFIGURACION_TOKENS.listPrerrequisitosByAsignaturaController),
+      listPrerrequisitosByAsignaturaController:
+        c.resolve(CONFIGURACION_TOKENS.listPrerrequisitosByAsignaturaController),
       listEsPrerrequisitoDeController: c.resolve(CONFIGURACION_TOKENS.listEsPrerrequisitoDeController),
     };
     const middlewares = { validateRequest: c.resolve(SERVICIOS_TOKENS.validateRequest) };

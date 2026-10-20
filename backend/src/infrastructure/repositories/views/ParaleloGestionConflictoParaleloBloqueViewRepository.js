@@ -7,7 +7,8 @@ const VIEW = 'vista_base_paralelo_gestion_conflicto_paralelo_bloque';
 /**
  * Lectura: vista_base_paralelo_gestion_conflicto_paralelo_bloque (03-views/124).
  */
-export class ParaleloGestionConflictoParaleloBloqueViewRepository extends IParaleloGestionConflictoParaleloBloqueViewRepository {
+export class ParaleloGestionConflictoParaleloBloqueViewRepository
+  extends IParaleloGestionConflictoParaleloBloqueViewRepository {
   /**
    * @param {number} paraleloGestionId
    * @returns {Promise<Array<Object>>}

@@ -63,7 +63,8 @@ export class StudentDocumentMapper {
       specificFields.tipoMime = dataValues.tipoMime;
     }
     if ('contieneMultipleDocumentos' in dataValues && dataValues.contieneMultipleDocumentos !== undefined) {
-      specificFields.contieneMultipleDocumentos = dataValues.contieneMultipleDocumentos === 1 || dataValues.contieneMultipleDocumentos === true;
+      specificFields.contieneMultipleDocumentos = dataValues.contieneMultipleDocumentos === 1
+        || dataValues.contieneMultipleDocumentos === true;
     }
     if ('verificado' in dataValues && dataValues.verificado !== undefined) {
       specificFields.verified = dataValues.verificado === 1 || dataValues.verificado === true;
@@ -114,7 +115,8 @@ export class StudentDocumentMapper {
       rutaArchivo: data.filePath,
       extension: data.extension || null,
       tipoMime: data.tipoMime || null,
-      contieneMultipleDocumentos: data.contieneMultipleDocumentos !== undefined ? data.contieneMultipleDocumentos : false,
+      contieneMultipleDocumentos: data.contieneMultipleDocumentos !== undefined ? data.contieneMultipleDocumentos
+        : false,
       verificado: data.verified !== undefined ? data.verified : false,
       verificadoPor: data.verifiedBy || null,
       fechaVerificacion: data.verificationDate || null,

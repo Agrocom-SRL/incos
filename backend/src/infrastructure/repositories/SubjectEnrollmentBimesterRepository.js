@@ -325,7 +325,8 @@ export class SubjectEnrollmentBimesterRepository extends BaseRepository {
     }
 
     /** Componentes calculados del bimestre. @returns {Promise<void>} */
-    async actualizarComponentesBimestreMatricula(bimestreMatriculaId, { teorico, practico, bimestre }, usuarioId, { transaction } = {}) {
+    async actualizarComponentesBimestreMatricula(bimestreMatriculaId, { teorico, practico, bimestre }, usuarioId,
+      { transaction } = {}) {
         await sequelize.query(
             `
             UPDATE bimestres_matricula

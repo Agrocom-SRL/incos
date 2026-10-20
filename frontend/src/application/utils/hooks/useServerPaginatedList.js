@@ -110,6 +110,7 @@ export function useServerPaginatedList({
         if (seq === fetchSeq.current) setLoading(false);
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- extra se versiona vía extraKey; mapResponse inestable provocaría recargas en bucle
     [enabled, fetch, buildRequest, extraKey, loadAll],
   );
 
@@ -173,11 +174,13 @@ export function useServerPaginatedList({
             sort,
             onSortChange: handleSortChange,
           },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- se usan solo campos puntuales de pagination
     [loadAll, pagination.current, pagination.pageSize, pagination.total, load, debouncedSearch, sort, handleSortChange],
   );
 
   const refetch = useCallback(() => {
     load(pagination.current, pagination.pageSize, debouncedSearch);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- se usan solo campos puntuales de pagination
   }, [load, pagination.current, pagination.pageSize, debouncedSearch]);
 
   return {

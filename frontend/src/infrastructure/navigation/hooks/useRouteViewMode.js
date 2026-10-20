@@ -70,6 +70,7 @@ export function useRouteViewMode(routeKey) {
 
   const stored = useMemo(
     () => leerStorage(storageKey),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- stateSlice fuerza releer el storage al cambiar el state de la ruta
     [storageKey, stateSlice],
   );
 

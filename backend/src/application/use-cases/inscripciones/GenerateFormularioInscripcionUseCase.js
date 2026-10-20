@@ -125,7 +125,13 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
             const entregas = await this._fetchDocumentDeliveries(studentId);
 
             // 6. Generar PDF con gestión activa, datos del estudiante, datos académicos, inscripción y entregas
-            const pdfBuffer = await this._generatePdfBuffer(gestionYear, student, academicData, enrollmentData, entregas);
+            const pdfBuffer = await this._generatePdfBuffer(
+              gestionYear,
+              student,
+              academicData,
+              enrollmentData,
+              entregas,
+            );
 
             // 7. Guardar archivo y persistir en BD
             const result = await this._persistDocument(studentId, pdfBuffer, student);

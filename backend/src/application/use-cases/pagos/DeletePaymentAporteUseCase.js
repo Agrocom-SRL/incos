@@ -78,7 +78,8 @@ export class DeletePaymentAporteUseCase {
       }
 
       const paymentPlain = payment.toPlainObject ? payment.toPlainObject() : payment;
-      const enrollmentId = paymentPlain.enrollmentId ?? paymentPlain.enrollment_id ?? paymentPlain.inscripcionId ?? paymentPlain.inscripcion_id;
+      const enrollmentId = paymentPlain.enrollmentId ?? paymentPlain.enrollment_id ?? paymentPlain.inscripcionId
+        ?? paymentPlain.inscripcion_id;
       const studentId = paymentPlain.studentId ?? paymentPlain.student_id ?? paymentPlain.estudianteId;
       const paymentDate = paymentPlain.paymentDate ?? paymentPlain.fecha_pago ?? paymentPlain.fechaPago;
       const concept = paymentPlain.concept ?? paymentPlain.concepto;

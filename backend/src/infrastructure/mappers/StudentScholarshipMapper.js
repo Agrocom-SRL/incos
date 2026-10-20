@@ -57,7 +57,8 @@ export class StudentScholarshipMapper {
       specificFields.state = dataValues.estado;
     }
     if ('documentosCompletos' in dataValues && dataValues.documentosCompletos !== undefined) {
-      specificFields.documentsComplete = dataValues.documentosCompletos === 1 || dataValues.documentosCompletos === true;
+      specificFields.documentsComplete = dataValues.documentosCompletos === 1
+        || dataValues.documentosCompletos === true;
     }
     if ('fechaInicioEntregaDocumentos' in dataValues && dataValues.fechaInicioEntregaDocumentos !== undefined) {
       specificFields.documentDeliveryStartDate = dataValues.fechaInicioEntregaDocumentos;

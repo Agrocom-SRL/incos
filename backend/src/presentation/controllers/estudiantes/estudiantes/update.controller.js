@@ -305,7 +305,8 @@ export class UpdateStudentController {
     } = body;
 
     // IMPORTANTE: tipoOrigen puede ser 0 (BOLIVIANA), que es falsy, por lo que debemos verificar explícitamente !== undefined
-    const hasOriginData = paisId || ciudadNacimiento || municipioId || localidadComunidad || idiomaMaternoId || idiomaSecundarioId || (tipoOrigen !== undefined && tipoOrigen !== null);
+    const hasOriginData = paisId || ciudadNacimiento || municipioId || localidadComunidad || idiomaMaternoId
+      || idiomaSecundarioId || (tipoOrigen !== undefined && tipoOrigen !== null);
 
     if (hasOriginData) {
       // Normalizar tipoOrigen a string

@@ -89,7 +89,8 @@ export class DeleteEnrollmentUseCase {
         });
       }
 
-      const studentAcademicDataPlain = studentAcademicData?.toPlainObject ? studentAcademicData.toPlainObject() : studentAcademicData;
+      const studentAcademicDataPlain = studentAcademicData?.toPlainObject ? studentAcademicData.toPlainObject()
+        : studentAcademicData;
       const studentId = studentAcademicDataPlain?.studentId || studentAcademicDataPlain?.estudianteId;
 
       // 4. Buscar y eliminar inscripciones de materias relacionadas
@@ -145,7 +146,8 @@ export class DeleteEnrollmentUseCase {
         null
       );
 
-      const subjectEnrollments = subjectEnrollmentsResult.subjectEnrollments || subjectEnrollmentsResult.enrollmentMaterias || [];
+      const subjectEnrollments = subjectEnrollmentsResult.subjectEnrollments
+        || subjectEnrollmentsResult.enrollmentMaterias || [];
 
       if (subjectEnrollments.length === 0) {
         this.logger.info('[Inscripciones] No se encontraron materias inscritas para eliminar', {

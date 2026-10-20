@@ -22,7 +22,7 @@
  * - Separa la lógica del Provider (Provider solo orquesta)
  */
 
-import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useBecasDescuentosApi } from '@application-matricula/becas/hooks/api/useBecasDescuentosApi';
 
 /**
@@ -86,16 +86,13 @@ export const useAsignarBecaBecasDescuentos = (options = {}) => {
     if (selectedBecaDescuento?.id === Number(initialBecaDescuentoId)) return;
     const initial = becasDescuentos.find((b) => Number(b.id) === Number(initialBecaDescuentoId));
     if (initial) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sincroniza la beca inicial con el formulario al cargar el catálogo
       handleSelectBeca(initial);
     }
   }, [initialBecaDescuentoId, becasDescuentos, selectedBecaDescuento?.id, handleSelectBeca]);
 
-  // MANTENER REFERENCIA ESTABLE
-  // Comparar valores, no solo referencias, para evitar recálculos innecesarios
-  const prevResultRef = useRef(null);
-  
-  return useMemo(() => {
-    const current = {
+  // Referencia estable: useMemo solo recrea el objeto si cambia alguna dependencia
+  return useMemo(() => ({
       becasDescuentos,
       loading,
       error,
@@ -103,23 +100,5 @@ export const useAsignarBecaBecasDescuentos = (options = {}) => {
       selectedBecaDescuento,
       onSelectBecaDescuento,
       handleSelectBeca,
-    };
-
-    const prev = prevResultRef.current;
-    
-    // Comparar valores, no solo referencias
-    if (prev &&
-        prev.loading === current.loading &&
-        prev.error === current.error &&
-        prev.refetch === current.refetch &&
-        prev.becasDescuentos === current.becasDescuentos &&
-        prev.selectedBecaDescuento?.id === current.selectedBecaDescuento?.id &&
-        prev.onSelectBecaDescuento === current.onSelectBecaDescuento &&
-        prev.handleSelectBeca === current.handleSelectBeca) {
-      return prev;
-    }
-
-    prevResultRef.current = current;
-    return current;
-  }, [becasDescuentos, loading, error, refetch, selectedBecaDescuento, onSelectBecaDescuento, handleSelectBeca]);
+    }), [becasDescuentos, loading, error, refetch, selectedBecaDescuento, onSelectBecaDescuento, handleSelectBeca]);
 };

@@ -44,7 +44,8 @@ const PoliticaInstitucionalPage = () => {
 
   const cuotaTeorico = Form.useWatch('cuotaTeorico', form);
   const cuotaPractico = Form.useWatch('cuotaPractico', form);
-  const pesosBimestres = Form.useWatch('pesosBimestres', form) ?? [];
+  const pesosBimestresWatch = Form.useWatch('pesosBimestres', form);
+  const pesosBimestres = useMemo(() => pesosBimestresWatch ?? [], [pesosBimestresWatch]);
   const notaMinimaAprobacion = Form.useWatch('notaMinimaAprobacion', form);
   const asistenciaWatch = Form.useWatch('politicaAsistenciaDefault', form);
 
@@ -159,6 +160,7 @@ const PoliticaInstitucionalPage = () => {
     navigate(CALIFICACIONES_PATH);
   }, [navigate]);
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization -- el compilador no preserva la memoización; sin cambio de comportamiento
   const handleUsarGestionAnterior = useCallback(async () => {
     if (!politicaGestionAnterior || isSaving) return;
     try {
@@ -182,6 +184,7 @@ const PoliticaInstitucionalPage = () => {
     aplicarPoliticaAlFormulario,
     gestionVigente,
     politica?.gestionNombre,
+    notification,
   ]);
 
   return (

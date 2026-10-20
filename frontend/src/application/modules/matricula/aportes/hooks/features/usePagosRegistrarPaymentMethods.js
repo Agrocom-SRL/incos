@@ -21,7 +21,7 @@
  * - Optimizado para evitar renders redundantes
  */
 
-import { useState, useCallback, useMemo, useRef } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { usePaymentMethodsApi } from '../api/usePaymentMethodsApi';
 
 /**
@@ -65,34 +65,13 @@ export const usePagosRegistrarPaymentMethods = () => {
   // TODO: Aquí se puede agregar lógica específica de registro de pagos si es necesario
   // Por ejemplo: filtrar métodos según el tipo de pago, validaciones específicas, etc.
 
-  // MANTENER REFERENCIA ESTABLE
-  // Comparar valores, no solo referencias, para evitar recálculos innecesarios
-  const prevResultRef = useRef(null);
-  
-  return useMemo(() => {
-    const current = {
+  // Referencia estable: useMemo solo recrea el objeto si cambia alguna dependencia
+  return useMemo(() => ({
       metodosPago,
       loading,
       error,
       refetch,
       selectedMetodoPago,
       onSelectMetodoPago,
-    };
-
-    const prev = prevResultRef.current;
-    
-    // Comparar valores, no referencias
-    if (prev &&
-        prev.loading === current.loading &&
-        prev.error === current.error &&
-        prev.refetch === current.refetch &&
-        prev.metodosPago === current.metodosPago &&
-        prev.selectedMetodoPago?.id === current.selectedMetodoPago?.id &&
-        prev.onSelectMetodoPago === current.onSelectMetodoPago) {
-      return prev;
-    }
-
-    prevResultRef.current = current;
-    return current;
-  }, [metodosPago, loading, error, refetch, selectedMetodoPago, onSelectMetodoPago]);
+    }), [metodosPago, loading, error, refetch, selectedMetodoPago, onSelectMetodoPago]);
 };

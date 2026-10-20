@@ -24,7 +24,7 @@
  * Para CONSUMIR el contexto, usa useAsignarBecaContext en context/.
  */
 
-import { useMemo, useRef, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
 import { useAsignarBecaPageData } from '@application-matricula/becas/hooks/features/useAsignarBecaPageData';
 import { useAsignarBecaFormHandlers } from '@application-matricula/becas/hooks/features/useAsignarBecaFormHandlers';
 import { useAsignarBecaBecasDescuentos } from '@application-matricula/becas/hooks/features/useAsignarBecaBecasDescuentos';
@@ -58,72 +58,40 @@ export const useAsignarBecaData = (studentId, options = {}) => {
     });
     
     // Crear un wrapper para handleFinish que use selectedBecaDescuento actualizado
+    const { handleFinish } = formHandlers;
+    const { selectedBecaDescuento } = becasDescuentosData;
     const handleFinishWrapper = useCallback(async (values) => {
-        return formHandlers.handleFinish(values, becasDescuentosData.selectedBecaDescuento);
-    }, [formHandlers.handleFinish, becasDescuentosData.selectedBecaDescuento]);
+        return handleFinish(values, selectedBecaDescuento);
+    }, [handleFinish, selectedBecaDescuento]);
 
-    // 2. MANTENER REFERENCIA ESTABLE
-    // Comparar valores, no solo referencias, para evitar recálculos innecesarios
-    const prevResultRef = useRef(null);
+    // 2. Componer value final del contexto (useMemo mantiene la referencia mientras no cambien las dependencias)
+    return useMemo(() => ({
+        // ID del estudiante
+        studentId,
+        isEditMode,
 
-    // 3. Componer value final del contexto
-    return useMemo(() => {
-        const current = {
-            // ID del estudiante
-            studentId,
-            isEditMode,
+        // Datos de página (incluye handleVolver)
+        ...pageData,
 
-            // Datos de página (incluye handleVolver)
-            ...pageData,
+        // Handlers de formulario (usar wrapper para handleFinish)
+        form: formHandlers.form,
+        handleFinish: handleFinishWrapper,
+        getFormValues: formHandlers.getFormValues,
+        loading: formHandlers.loading,
+        error: formHandlers.error,
+        validationErrors: formHandlers.validationErrors,
+        asignarBecaResult: formHandlers.asignarBecaResult,
 
-            // Handlers de formulario (usar wrapper para handleFinish)
-            form: formHandlers.form,
-            handleFinish: handleFinishWrapper,
-            getFormValues: formHandlers.getFormValues,
-            loading: formHandlers.loading,
-            error: formHandlers.error,
-            validationErrors: formHandlers.validationErrors,
-            asignarBecaResult: formHandlers.asignarBecaResult,
-
-            // Becas y descuentos (incluye handleSelectBeca)
-            becasDescuentosData: {
-                becasDescuentos: becasDescuentosData.becasDescuentos,
-                loading: becasDescuentosData.loading,
-                error: becasDescuentosData.error,
-                refetch: becasDescuentosData.refetch,
-                selectedBecaDescuento: becasDescuentosData.selectedBecaDescuento,
-                handleSelectBeca: becasDescuentosData.handleSelectBeca,
-            },
-        };
-
-        const prev = prevResultRef.current;
-        
-        // Comparar valores, no solo referencias
-        if (prev &&
-            prev.studentId === current.studentId &&
-            prev.isEditMode === current.isEditMode &&
-            prev.pageTitle === current.pageTitle &&
-            prev.breadcrumbItems === current.breadcrumbItems &&
-            prev.handleVolver === current.handleVolver &&
-            prev.form === current.form &&
-            prev.handleFinish === current.handleFinish &&
-            prev.getFormValues === current.getFormValues &&
-            prev.loading === current.loading &&
-            prev.error === current.error &&
-            prev.validationErrors === current.validationErrors &&
-            prev.asignarBecaResult === current.asignarBecaResult &&
-            prev.becasDescuentosData.becasDescuentos === current.becasDescuentosData.becasDescuentos &&
-            prev.becasDescuentosData.loading === current.becasDescuentosData.loading &&
-            prev.becasDescuentosData.error === current.becasDescuentosData.error &&
-            prev.becasDescuentosData.refetch === current.becasDescuentosData.refetch &&
-            prev.becasDescuentosData.selectedBecaDescuento?.id === current.becasDescuentosData.selectedBecaDescuento?.id &&
-            prev.becasDescuentosData.handleSelectBeca === current.becasDescuentosData.handleSelectBeca) {
-            return prev;
-        }
-
-        prevResultRef.current = current;
-        return current;
-    }, [
+        // Becas y descuentos (incluye handleSelectBeca)
+        becasDescuentosData: {
+            becasDescuentos: becasDescuentosData.becasDescuentos,
+            loading: becasDescuentosData.loading,
+            error: becasDescuentosData.error,
+            refetch: becasDescuentosData.refetch,
+            selectedBecaDescuento: becasDescuentosData.selectedBecaDescuento,
+            handleSelectBeca: becasDescuentosData.handleSelectBeca,
+        },
+    }), [
         studentId,
         isEditMode,
         pageData,

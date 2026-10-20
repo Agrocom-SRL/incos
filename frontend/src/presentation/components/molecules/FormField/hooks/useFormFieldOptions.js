@@ -87,6 +87,7 @@ export const useFormFieldOptions = ({
     }
 
     return options;
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- tipoAdmision fuerza re-resolver opciones (p. ej. gestiones) al cambiar
   }, [fieldType, fieldOptions, excludeFrom, resolveOptions, excludeFieldValue, tipoAdmision, form]);
 
   return selectOptions;

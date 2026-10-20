@@ -739,6 +739,7 @@ const PagosDetail = () => {
       items.push({ key: 'inscripcion', label: <span className="sd-tab-label"><FileTextOutlined /> Inscripción</span>, children: inscripcionChildren });
     }
     return items;
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- dependencias adicionales mantienen la recomputación ante cambios de estudiante/cuota
   }, [
     pago,
     estadoAporte,

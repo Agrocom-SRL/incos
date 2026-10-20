@@ -125,7 +125,8 @@ export class GenerateDeclaracionJuradaUseCase extends GenerateFormularioInscripc
      * @param {Object} options - Opciones adicionales (ej: { tipoAdmision })
      * @returns {Promise<Buffer>}
      */
-    async _generatePdfBuffer(gestionYear, student, academicData, enrollmentData, entregas, documentosPresentadosTraspaso, options = {}) {
+    async _generatePdfBuffer(gestionYear, student, academicData, enrollmentData, entregas,
+      documentosPresentadosTraspaso, options = {}) {
         const fechaActual = this._getCurrentDate();
         const fechaNacimientoLiteral = this._formatFechaLiteral(student.fechaNacimiento);
         const edad = this._calcEdad(student.fechaNacimiento);

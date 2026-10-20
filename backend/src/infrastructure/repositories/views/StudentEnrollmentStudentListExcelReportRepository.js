@@ -5,7 +5,8 @@ import { IStudentEnrollmentStudentListExcelReportRepository } from '../../../dom
  * Consultas para el reporte Excel de lista de inscritos (vista SQL).
  * Repositorio de SOLO LECTURA para reportes (arquetipo views/).
  */
-export class StudentEnrollmentStudentListExcelReportRepository extends IStudentEnrollmentStudentListExcelReportRepository {
+export class StudentEnrollmentStudentListExcelReportRepository
+  extends IStudentEnrollmentStudentListExcelReportRepository {
   /**
    * Filas de vista_reporte_excel_lista_inscritos para una gestión y carrera.
    *

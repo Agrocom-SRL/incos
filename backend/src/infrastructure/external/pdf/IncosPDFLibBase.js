@@ -837,7 +837,8 @@ export class IncosPDFLibBase {
         // Dibujar cada línea del valor centrado dentro del recuadro
         if (valueStr && valueLines.length > 0) {
             const totalTextHeight = numLines * lineHeight;
-            const startTextY = boxY + (calculatedBoxHeight - totalTextHeight) / 2 + finalValueFontSize * verticalCenterFactor;
+            const startTextY = boxY + (calculatedBoxHeight - totalTextHeight) / 2
+              + finalValueFontSize * verticalCenterFactor;
 
             for (let lineIdx = 0; lineIdx < numLines; lineIdx++) {
                 const lineText = valueLines[lineIdx];
@@ -877,7 +878,8 @@ export class IncosPDFLibBase {
      * @param {number} [rightLabelWidth=100] - Ancho fijo para los labels de la columna derecha
      * @returns {Promise<void>}
      */
-    async _addBoxedFieldGrid(leftColumnItems, rightColumnItems = [], leftColumnWidthPercent = 40, leftLabelWidth = 60, rightLabelWidth = 90) {
+    async _addBoxedFieldGrid(leftColumnItems, rightColumnItems = [], leftColumnWidthPercent = 40,
+      leftLabelWidth = 60, rightLabelWidth = 90) {
         if (!this._pdfDoc || !this._currentPage) {
             throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
         }
@@ -1780,7 +1782,8 @@ rightColX;
      * @param {number} [options.topOffset] - Puntos a subir el Y de inicio (positivo = contenido más pegado al título de sección; ahorra espacio)
      * @returns {Promise<void>}
      */
-    async _addTwoColumnLayout(leftColumnItems, rightTableConfig, leftColumnWidthPercent = 40, leftLabelWidth = 60, options = {}) {
+    async _addTwoColumnLayout(leftColumnItems, rightTableConfig, leftColumnWidthPercent = 40, leftLabelWidth = 60,
+      options = {}) {
         if (!this._pdfDoc || !this._currentPage) {
             throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
         }
@@ -1854,7 +1857,21 @@ rightColX;
      * @param {RGB} borderRgb - Color del borde
      * @returns {Promise<number>} Altura real del cuadro (puede ser mayor que boxHeight si hay múltiples líneas)
      */
-    async _drawBoxedFieldInColumn(colX, rowY, colWidth, labelWidth, labelBoxGap, boxHeight, borderWidth, label, value, font, fontSize, textRgb, borderRgb) {
+    async _drawBoxedFieldInColumn(
+      colX,
+      rowY,
+      colWidth,
+      labelWidth,
+      labelBoxGap,
+      boxHeight,
+      borderWidth,
+      label,
+      value,
+      font,
+      fontSize,
+      textRgb,
+      borderRgb,
+    ) {
         const labelStr = String(label ?? '').trim();
         const valueStr = String(value ?? '').trim();
 

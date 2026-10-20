@@ -1068,7 +1068,8 @@ En conformidad, firmo la presente para los fines que correspondan.`;
             // (caso: se registra un recibo con monto 0 solo para dejar constancia/observación,
             // no un pago gratuito real).
             const saldoPendiente = data.saldoPendiente != null ? Number(data.saldoPendiente) : null;
-            const haySaldoPendiente = saldoPendiente != null && !Number.isNaN(Number(saldoPendiente)) && saldoPendiente > 0;
+            const haySaldoPendiente = saldoPendiente != null && !Number.isNaN(Number(saldoPendiente))
+              && saldoPendiente > 0;
 
             if ((monto === 0 || monto < 0 || Number.isNaN(Number(monto))) && !haySaldoPendiente) {
                 const becaInfo = data.becaInfo;

@@ -339,7 +339,8 @@ export class GetStudentByIdUseCase {
                     const enrollmentPlain = enrollment.toPlainObject ? enrollment.toPlainObject() : enrollment;
                     const enrollmentDate = enrollmentPlain.createdAt || enrollmentPlain.fechaInscripcion;
 
-                    if (enrollmentDate && (!latestEnrollmentDate || new Date(enrollmentDate) > new Date(latestEnrollmentDate))) {
+                    if (enrollmentDate && (!latestEnrollmentDate
+                      || new Date(enrollmentDate) > new Date(latestEnrollmentDate))) {
                       latestEnrollment = enrollmentPlain;
                       latestEnrollmentDate = enrollmentDate;
                     }
@@ -428,7 +429,8 @@ export class GetStudentByIdUseCase {
                 const dep = await this.departmentRepository.findById(depId, { paranoid: false });
                 if (dep) {
                   const dPlain = dep.toPlainObject ? dep.toPlainObject() : dep;
-                  departamentoNombre = (dPlain && (dPlain.name ?? dPlain.nombre)) ? (dPlain.name ?? dPlain.nombre) : null;
+                  departamentoNombre = (dPlain && (dPlain.name ?? dPlain.nombre)) ? (dPlain.name ?? dPlain.nombre)
+                    : null;
                 }
               } catch (err) {
                 this.logger.warn('[Estudiantes] Error al obtener departamento de transitabilidad', {
@@ -444,7 +446,8 @@ export class GetStudentByIdUseCase {
               codigoSie: institution?.codigoSie || null,
               tipoInstitucion: institution?.tipo || null,
               dependencia: institution?.dependencia || null,
-              departamentoId: institution?.departamentoId ?? institution?.departmentId ?? institution?.departamento_id ?? null,
+              departamentoId: institution?.departamentoId ?? institution?.departmentId
+                ?? institution?.departamento_id ?? null,
               departamento: departamentoNombre,
               distritoEducativo: institution?.distritoEducativo || null,
               carreraOrigen: tPlain.carreraOrigen || null,
@@ -494,7 +497,8 @@ export class GetStudentByIdUseCase {
                 const dep = await this.departmentRepository.findById(trDepId, { paranoid: false });
                 if (dep) {
                   const dPlain = dep.toPlainObject ? dep.toPlainObject() : dep;
-                  transferDepartamentoNombre = (dPlain && (dPlain.name ?? dPlain.nombre)) ? (dPlain.name ?? dPlain.nombre) : null;
+                  transferDepartamentoNombre = (dPlain && (dPlain.name ?? dPlain.nombre))
+                    ? (dPlain.name ?? dPlain.nombre) : null;
                 }
               } catch (err) {
                 this.logger.warn('[Estudiantes] Error al obtener departamento de traspaso', {
@@ -509,7 +513,8 @@ export class GetStudentByIdUseCase {
               institucionNombre: institution?.nombre || null,
               codigoRude: tPlain.codigoRude || null,
               dependencia: institution?.dependencia || null,
-              departamentoId: institution?.departamentoId ?? institution?.departmentId ?? institution?.departamento_id ?? null,
+              departamentoId: institution?.departamentoId ?? institution?.departmentId
+                ?? institution?.departamento_id ?? null,
               departamento: transferDepartamentoNombre,
               distritoEducativo: institution?.distritoEducativo || null,
               carreraOrigen: tPlain.carreraOrigen || null,

@@ -260,7 +260,8 @@ export class RegisterStudentUseCase {
    * @param {number} studentId - ID del estudiante recién creado
    */
   async _createPagoAporteIfNeeded(studentId) {
-    if (!this.contributionPaymentRepository || !this.managementRepository || !this.contributionConfigurationRepository) {
+    if (!this.contributionPaymentRepository || !this.managementRepository
+      || !this.contributionConfigurationRepository) {
       this.logger.warn('[Estudiantes] Repositorios de pago/gestión/config no inyectados; no se crea pago_aporte');
       return;
     }

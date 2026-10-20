@@ -81,7 +81,7 @@ const PaymentMethodSelectionSection = ({
       // Establecer el valor en el formulario cuando cambie la selección del contexto
       form.setFieldsValue({ metodoPagoId: metodosPagoData.selectedMetodoPago.id });
     }
-  }, [form, metodosPagoData.selectedMetodoPago?.id]);
+  }, [form, metodosPagoData.selectedMetodoPago]);
 
   // Acentos categóricos por método de pago (identidad de cada medio, no estados del sistema)
   const getMethodConfig = (codigo) => {
