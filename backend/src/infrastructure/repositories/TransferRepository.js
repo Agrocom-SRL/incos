@@ -104,4 +104,3 @@ export class TransferRepository extends BaseRepository {
     return 'transfers';
   }
 }
-

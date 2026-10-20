@@ -3,39 +3,39 @@ import { UPLOAD } from '../../../infrastructure/config/uploads.config.js';
 
 /**
  * Use Case Base para generación de documentos PDF
- * 
+ *
  * Implementa el patrón Template Method para proporcionar funcionalidad común
  * a todos los casos de uso de generación de documentos (actas, recibos, boletas, etc.)
- * 
+ *
  * RESPONSABILIDADES DEL BASE (solo orquestación):
  * - Preparar el uso del generador PDF (inyectado)
  * - Preparar el uso del storage de uploads (inyectado)
  * - Guardar información del documento en BD usando StudentDocumentRepository
  * - Obtener gestión activa del sistema (método común)
  * - Logging durante la operación
- * 
+ *
  * RESPONSABILIDADES DE CADA CASO DE USO (implementación específica):
  * - Validar estudiante (cada caso tiene su propia lógica de validación)
  * - Buscar sus propios datos (sin importar cuántos repositorios necesite)
  * - Construir la información que se va a escribir en el archivo
  * - Llamar al método específico del PDFGenerator con los datos preparados
  * - Definir nombre del archivo y ruta relativa
- * 
+ *
  * REPOSITORIOS COMUNES:
  * - StudentDocumentRepository: Para guardar información del archivo generado
  * - ConfiguracionSistemaRepository: Para obtener gestión activa (opcional, se inyecta si se necesita)
  * - ManagementRepository: Para obtener gestión activa (opcional, se inyecta si se necesita)
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: El base solo orquesta PDF y storage, cada caso maneja sus datos
  * - Template Method: Define el algoritmo común con hook methods
  * - Open/Closed: Permite personalizar el comportamiento mediante hook methods
- * 
+ *
  * Clean Architecture:
  * - Application Layer: Orquesta la lógica de casos de uso
  * - Depende de Repositories y servicios (Infrastructure) vía inyección
  * - No importa infraestructura; consume interfaces inyectadas
- * 
+ *
  * @abstract
  * @example
  * class GenerateActaCompromisoUseCase extends BaseDocumentGenerationUseCase {
@@ -45,24 +45,24 @@ import { UPLOAD } from '../../../infrastructure/config/uploads.config.js';
  *     this.studentRepository = studentRepository;
  *     this.studentDocumentDeliveryRepository = studentDocumentDeliveryRepository;
  *   }
- * 
+ *
  *   async execute(studentId, options = {}) {
  *     // 1. Validar estudiante (lógica propia)
  *     const student = await this.studentRepository.findById(studentId);
  *     if (!student) throw new NotFoundError(`Estudiante con ID ${studentId}`);
- * 
+ *
  *     // 2. Buscar tus propios datos (lógica específica)
  *     const entregas = await this.studentDocumentDeliveryRepository.obtenerEntregasConDetalle({...});
- * 
+ *
  *     // 3. Generar PDF usando el método específico del PDFGenerator (lógica específica)
  *     const pdfBuffer = await this.pdfGenerator.generateActaCompromiso();
- * 
+ *
  *     // 4. Guardar en uploads (usa método del base)
  *     const result = await this._saveToUploads(student, pdfBuffer, relativeScope, fileName);
- * 
+ *
  *     // 5. Guardar en BD (usa método del base)
  *     await this._saveDocumentToDatabase(studentId, {...});
- * 
+ *
  *     return result;
  *   }
  * }
@@ -120,9 +120,9 @@ export class BaseDocumentGenerationUseCase {
 
     /**
      * Guarda el documento en uploads y retorna las rutas
-     * 
+     *
      * Método helper común usado por todas las subclases
-     * 
+     *
      * @protected
      * @param {number} studentId - ID del estudiante (para logging)
      * @param {Buffer} pdfBuffer - Buffer del PDF generado
@@ -144,10 +144,10 @@ export class BaseDocumentGenerationUseCase {
 
     /**
      * Guarda la información del documento en la base de datos
-     * 
+     *
      * Método helper común usado por todas las subclases que necesitan guardar en BD.
      * Recibe el resultado de _saveToUploads y los metadatos específicos del documento.
-     * 
+     *
      * @protected
      * @param {number} studentId - ID del estudiante
      * @param {Object} uploadResult - Resultado de _saveToUploads (contiene fileName, filePath, absolutePath)
@@ -228,10 +228,10 @@ export class BaseDocumentGenerationUseCase {
 
     /**
      * Obtiene la gestión vigente actual desde la configuración del sistema
-     * 
+     *
      * Método común usado por casos de uso que necesitan la gestión activa
      * Similar al método en CreateStudentScholarshipUseCase, RegisterAporteVoluntarioUseCase y GenerateBoletaInscripcionUseCase
-     * 
+     *
      * @protected
      * @returns {Promise<Object>} Entidad Management
      * @throws {NotFoundError} Si no se encuentra la configuración o la gestión
@@ -283,10 +283,10 @@ export class BaseDocumentGenerationUseCase {
 
     /**
      * Obtiene el año de la gestión vigente actual
-     * 
+     *
      * Método helper que extrae el año de la gestión activa con fallback
      * Usa _getCurrentManagement() internamente y maneja la extracción del año
-     * 
+     *
      * @protected
      * @returns {Promise<number>} Año de la gestión activa
      * @throws {NotFoundError} Si no se encuentra la configuración o la gestión
@@ -306,10 +306,10 @@ export class BaseDocumentGenerationUseCase {
 
     /**
      * Obtiene la fecha actual formateada para documentos
-     * 
+     *
      * Método helper común usado por casos de uso que necesitan la fecha de generación del documento.
      * Retorna la fecha actual en formato: "día de mes de año" (ej: "25 de enero de 2026").
-     * 
+     *
      * @protected
      * @returns {string} Fecha actual formateada (ej: "25 de enero de 2026")
      */
@@ -329,10 +329,10 @@ export class BaseDocumentGenerationUseCase {
 
     /**
      * Ejecuta el caso de uso de generación de documento
-     * 
+     *
      * NOTA: Este método debe ser sobrescrito por cada caso de uso particular.
      * El base solo proporciona métodos helper (_saveToUploads, _saveDocumentToDatabase, _getCurrentManagement, _getCurrentManagementYear).
-     * 
+     *
      * Cada caso de uso es responsable de:
      * 1. Validar estudiante (lógica propia, cada caso tiene sus necesidades)
      * 2. Buscar sus propios datos (lógica específica)
@@ -340,7 +340,7 @@ export class BaseDocumentGenerationUseCase {
      * 4. Llamar al método específico del PDFGenerator (lógica específica)
      * 5. Guardar en uploads (usar _saveToUploads)
      * 6. Guardar en BD si es necesario (usar _saveDocumentToDatabase con el result de _saveToUploads y los metadatos)
-     * 
+     *
      * @abstract
      * @param {number} studentId - ID del estudiante
      * @param {Object} options - Opciones adicionales (por defecto vacío)

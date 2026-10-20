@@ -147,17 +147,17 @@ class ExcelContentBuilder {
     worksheet.getCell(`C${row}`).value = 'TOTAL';
     ExcelStyleManager.aplicarNegrita(worksheet.getCell(`C${row}`));
     ExcelFormulaBuilder.agregarTotalGeneral(worksheet, row, firstRow, lastRow, filasTotalesPorCarrera);
-    
+
     const columnas = ['D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
       'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U',
       'V', 'W', 'X', 'Y', 'Z', 'AA', 'AB', 'AC', 'AD',
       'AE', 'AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AL', 'AM',
       'AN', 'AO', 'AP', 'AQ', 'AR', 'AS'];
-    
+
     columnas.forEach(col => {
       ExcelStyleManager.aplicarNegrita(worksheet.getCell(`${col}${row}`));
     });
-    
+
     ExcelStyleManager.aplicarEstiloTotalGeneral(worksheet, row);
     ExcelStyleManager.aplicarBordesFila(worksheet, row);
   }

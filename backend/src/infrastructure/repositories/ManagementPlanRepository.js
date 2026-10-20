@@ -8,21 +8,21 @@ import { ManagementPlanMapper } from '../mappers/ManagementPlanMapper.js';
 /**
  * Implementación del repositorio de planes habilitados por gestión usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
- * 
+ *
  * Responsabilidades:
  * - Acceso a datos (consultas, persistencia)
  * - Delegar conversión ORM ↔ Entidad a ManagementPlanMapper
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja acceso a datos
  * - Dependency Inversion: Usa ManagementPlanMapper para conversiones (depende de abstracción)
- * 
+ *
  * Clean Architecture:
  * - Infrastructure Layer: Implementación concreta de IGestionPlanRepository
  * - Usa ManagementPlanMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
- * 
+ *
  * @implements {IGestionPlanRepository}
- * 
+ *
  * Esta clase cumple con el contrato IGestionPlanRepository:
  * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
  * - La especialización está en buildWhereClause(), no en métodos adicionales
@@ -40,15 +40,15 @@ export class ManagementPlanRepository extends BaseRepository {
   /**
    * Construye la cláusula WHERE para filtros específicos
    * Maneja todos los criterios de búsqueda de la entidad ManagementPlan
-   * 
+   *
    * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
    * sin necesidad de crear métodos adicionales en el repositorio.
-   * 
+   *
    * Ejemplos de uso:
    * - findAll({ managementId: 1 }) → Busca planes habilitados de una gestión
    * - findAll({ studyPlanId: 2, state: 'VIGENTE' }) → Busca planes vigentes de un plan de estudios
    * - findBy({ managementId: 1, studyPlanId: 2 }) → Busca plan habilitado específico
-   * 
+   *
    * @param {Object} filters - Filtros de búsqueda
    *   - managementId: ID de la gestión
    *   - studyPlanId: ID del plan de estudios
@@ -83,7 +83,7 @@ export class ManagementPlanRepository extends BaseRepository {
   /**
    * Retorna los campos que se usarán para búsqueda de texto
    * Estos campos se usan en el método search() para búsqueda por término
-   * 
+   *
    * @returns {string[]} Array de nombres de campos del modelo Sequelize
    */
   getSearchFields() {
@@ -93,7 +93,7 @@ export class ManagementPlanRepository extends BaseRepository {
   /**
    * Retorna el orden por defecto para las consultas
    * Delega el orden al BaseRepository que ordena por ID ASC
-   * 
+   *
    * @returns {Array} Array vacío para usar el orden por defecto del BaseRepository (id ASC)
    */
   getDefaultSort() {
@@ -110,7 +110,7 @@ export class ManagementPlanRepository extends BaseRepository {
 
   /**
    * Retorna el nombre de la colección en la respuesta JSON
-   * 
+   *
    * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {

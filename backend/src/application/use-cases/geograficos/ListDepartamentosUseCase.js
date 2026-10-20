@@ -47,7 +47,7 @@ export class ListDepartamentosUseCase extends BaseListUseCase {
   //       this.municipalityRepository.count({ departmentId: depto.id }),
   //       this.studentRepository.count({ departmentId: depto.id }),
   //     ]);
-  //     
+  //
   //     // Agregar todos los campos que necesites
   //     return {
   //       ...depto,
@@ -62,4 +62,3 @@ export class ListDepartamentosUseCase extends BaseListUseCase {
   //   return enriched;
   // }
 }
-

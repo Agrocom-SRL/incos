@@ -2,22 +2,22 @@ import { body } from 'express-validator';
 
 /**
  * Validador para actualización de estudiantes (PUT /api/v1/estudiantes/:id)
- * 
+ *
  * Valida la estructura de datos que viene del frontend para actualizar un estudiante.
  * Todos los campos son OPCIONALES ya que es una actualización parcial.
- * 
+ *
  * NOTA: Este validator valida la estructura del frontend.
  * El controller transformará estos datos a la estructura que espera el use case.
- * 
+ *
  * Campos opcionales (actualización parcial):
  * - Todos los campos son opcionales, pero cuando están presentes deben cumplir las validaciones
- * 
+ *
  * Ubicación: presentation/validators/estudiantes (validators específicos del módulo)
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo valida estructura y tipos de datos del request
  * - La lógica de negocio (validaciones complejas) está en el use case
- * 
+ *
  * @example
  * import { updateStudentValidator } from '../validators/estudiantes/index.js';
  * router.put('/:id', updateStudentValidator, validateRequest, controller);
@@ -104,16 +104,16 @@ export const updateStudentValidator = [
         if (!fechaRegex.test(value)) {
           throw new Error('Fecha de nacimiento debe ser una fecha válida (ISO 8601)');
         }
-        
+
         const fecha = new Date(value);
         if (isNaN(fecha.getTime())) {
           throw new Error('Fecha de nacimiento debe ser una fecha válida');
         }
-        
+
         const hoy = new Date();
         const edadMinima = new Date();
         edadMinima.setFullYear(hoy.getFullYear() - 100);
-        
+
         if (fecha > hoy) {
           throw new Error('La fecha de nacimiento no puede ser futura');
         }

@@ -96,7 +96,7 @@ export class StudentAcademicData extends BaseEntity {
    */
   toPlainObject() {
     const plainObject = super.toPlainObject();
-    
+
     // Solo incluir campos que fueron inicializados (existen en this)
     if (this.hasOwnProperty('studentId')) {
       plainObject.studentId = this.studentId;

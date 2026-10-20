@@ -1,19 +1,19 @@
 /**
  * Registrador de dependencias de todos los repositorios de infraestructura
  * Centraliza la configuración de todos los repositorios de la aplicación
- * 
+ *
  * Responsabilidades:
  * - Registrar todos los repositorios como singletons
  * - Organizar repositorios por categoría funcional
  * - Proveer punto único de configuración para la capa de persistencia
  * - Validar que no se registren duplicados
- * 
+ *
  * Todos los repositorios se registran como singletons porque:
  * - No mantienen estado mutable entre requests
  * - Son thread-safe (Node.js es single-threaded)
  * - Comparten la misma instancia de conexión a BD (Sequelize pool)
  * - Mejora el rendimiento (una sola instancia por tipo)
- * 
+ *
  * @param {Container} container - Contenedor de inyección de dependencias
  * @returns {Container} El mismo contenedor (para encadenamiento)
  */
@@ -170,7 +170,7 @@ import { AulasHorariosSemanaRepository } from '../../repositories/views/AulasHor
 
 /**
  * Registra todas las dependencias de repositorios
- * 
+ *
  * @param {Container} container - Contenedor de DI
  * @returns {Container} Contenedor con repositorios registrados
  */
@@ -490,5 +490,3 @@ export function registerRepositoriesModule(container) {
 
     return container;
 }
-
-

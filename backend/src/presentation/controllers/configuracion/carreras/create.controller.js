@@ -16,4 +16,3 @@ export class CreateCarreraController extends BaseCreateController {
     return body;
   }
 }
-

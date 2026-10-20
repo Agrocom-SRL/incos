@@ -5,13 +5,14 @@ import { multerConfig } from '../../infrastructure/config/multer.config.js';
 import { serverConfig } from '../../infrastructure/config/server.config.js';
 import { UPLOAD } from '../../infrastructure/config/uploads.config.js';
 import { getEnvAsNumber } from '../../infrastructure/config/env.validator.js';
+import { logger } from '../../infrastructure/services/WinstonLoggerFactory.js';
 
 /**
  * Middleware de upload para documentos de pago
- * 
+ *
  * Configura multer para subir archivos de documentos de respaldo de pagos
  * Los archivos se guardan en: uploads/documentos/estudiantes/{studentId}/pagos/
- * 
+ *
  * @param {string} fieldName - Nombre del campo del formulario que contiene el archivo (default: 'documentoRespaldo')
  * @returns {Function} Middleware de multer
  */
@@ -21,11 +22,11 @@ export function createUploadMiddleware(fieldName = 'documentoRespaldo') {
         destination: (req, file, cb) => {
             // Obtener student_id del body o params
             const studentId = req.body.student_id || req.params.studentId || 'temp';
-            
+
             // Usar configuración centralizada para construir la ruta
             const relativeScope = UPLOAD.studentPayments(studentId);
             const relativePath = path.join(relativeScope);
-            
+
             // Resolver ruta absoluta usando serverConfig
             const uploadPath = path.isAbsolute(multerConfig.uploadDir)
                 ? path.join(multerConfig.uploadDir, relativePath)
@@ -312,7 +313,7 @@ export const uploadAvanceProyecto = (req, res, next) => {
 
 export const uploadPaymentDocument = (req, res, next) => {
     // Log antes de procesar el upload
-    console.log('[Upload] Iniciando procesamiento de archivo', {
+    logger.debug('[Upload] Iniciando procesamiento de archivo', {
         fieldName: 'documentoRespaldo',
         hasBody: !!req.body,
         bodyKeys: req.body ? Object.keys(req.body) : [],
@@ -321,12 +322,12 @@ export const uploadPaymentDocument = (req, res, next) => {
 
     baseUploadMiddleware(req, res, (err) => {
         if (err) {
-            console.error('[Upload] Error en multer:', err.message, err.code);
+            logger.error('[Upload] Error en multer', { error: err.message, code: err.code });
             return next(err);
         }
 
         // Log después de procesar el upload
-        console.log('[Upload] Archivo procesado', {
+        logger.debug('[Upload] Archivo procesado', {
             hasFile: !!req.file,
             fileInfo: req.file ? {
                 fieldname: req.file.fieldname,

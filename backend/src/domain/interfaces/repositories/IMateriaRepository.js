@@ -3,10 +3,10 @@ import { IRepository } from './IRepository.js';
 /**
  * Interfaz de Repositorio: IMateriaRepository
  * Define el contrato que debe cumplir el repositorio de materias
- * 
+ *
  * NOTA: Solo extiende IRepository sin métodos adicionales.
  * La especialización está en la implementación (buildWhereClause), no en la interfaz.
- * 
+ *
  * Métodos heredados de IRepository:
  * - findById(id)
  * - findBy(criteria, options)

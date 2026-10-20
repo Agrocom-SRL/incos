@@ -514,7 +514,7 @@ export class RegisterStudentUseCase {
 
   /**
    * Ejecuta el caso de uso de registro de estudiante
-   * 
+   *
    * @param {Object} data - Datos del estudiante a registrar
    * @param {Object} data.student - Datos del estudiante principal
    * @param {Array} data.guardians - Array de apoderados
@@ -522,7 +522,7 @@ export class RegisterStudentUseCase {
    * @param {Array} data.origins - Array de orígenes
    * @param {Object} data.documentation - Objeto con entregas de documentos (key: documentacionId)
    * @returns {Promise<Object>} Estudiante creado con todos sus datos relacionados
-   * 
+   *
    * NOTA: Los datos académicos se manejan en otro módulo, no se incluyen aquí
    * NOTA: userId no se pasa porque actualmente no hay autenticación
    * Los repositorios tienen userId = null como default para los campos de auditoría
@@ -803,4 +803,3 @@ export class RegisterStudentUseCase {
     }
   }
 }
-

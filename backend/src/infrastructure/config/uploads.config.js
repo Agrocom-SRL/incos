@@ -2,10 +2,10 @@ import path from 'path';
 
 /**
  * Configuración de rutas relativas para uploads
- * 
+ *
  * Define la estructura de directorios dentro de uploads/ para diferentes tipos de documentos.
  * Estas rutas son relativas a uploads/ y se usan en use cases para organizar archivos.
- * 
+ *
  * Ejemplo:
  *   uploads/documentos/estudiantes/{studentId}/acta_compromiso.pdf
  *   uploads/documentos/estudiantes/{studentId}/pagos/comprobante.pdf

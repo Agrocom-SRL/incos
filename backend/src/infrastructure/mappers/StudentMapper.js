@@ -3,23 +3,23 @@ import { BaseMapper } from './BaseMapper.js';
 
 /**
  * Mapper: StudentMapper
- * 
+ *
  * Responsabilidad única: Conversión entre Modelo ORM (Sequelize) ↔ Entidad de Dominio (Student)
- * 
+ *
  * Patrón: Usa BaseMapper para campos comunes, solo maneja campos específicos de Student
- * 
+ *
  * Ubicación: Infrastructure Layer (es un detalle de implementación específico de Sequelize)
- * 
+ *
  * Principios SOLID aplicados:
  * - Single Responsibility: Solo se encarga de mapear campos específicos de Student
  * - Open/Closed: Extiende funcionalidad de BaseMapper sin modificarlo
  * - Dependency Inversion: Depende de la entidad de dominio, no de implementaciones concretas
- * 
+ *
  * Clean Architecture:
  * - Domain Layer: Student (entidad pura)
  * - Infrastructure Layer: BaseMapper (campos comunes) + StudentMapper (campos específicos)
  * - Infrastructure Layer: StudentRepository (usa el mapper para conversiones)
- * 
+ *
  * NOTA: El modelo Estudiante no incluye algunos campos que están en la entidad Student
  * (nationality, birthMunicipalityId, birthCity, nativeLanguageId, disabilityTypeId).
  * Estos campos se manejan en otras tablas relacionadas (estudiantes_origenes, estudiantes_discapacidades).
@@ -29,9 +29,9 @@ export class StudentMapper {
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de Student
    * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
-   * 
+   *
    * Flujo: Base de Datos → ORM Model → Domain Entity
-   * 
+   *
    * @param {Object|null} model - Modelo Sequelize de Estudiante
    * @returns {Student|null} Entidad de dominio Student
    */
@@ -46,7 +46,7 @@ export class StudentMapper {
     // se manejan en otras tablas relacionadas
     const dataValues = model.dataValues || model;
     const specificFields = {};
-    
+
     // Mapeo: BD (snake_case español) → Dominio (camelCase inglés)
     if ('usuarioId' in dataValues && dataValues.usuarioId !== undefined) {
       specificFields.userId = dataValues.usuarioId;
@@ -120,18 +120,18 @@ export class StudentMapper {
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
-    
+
     return new Student(entityData);
   }
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
-   * 
+   *
    * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
-   * 
+   *
    * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
    * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
-   * 
+   *
    * @param {Student|Object} entity - Entidad Student o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
@@ -173,9 +173,9 @@ export class StudentMapper {
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
    * Solo incluye los campos que están definidos (que existen en la entidad)
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de Student
-   * 
+   *
    * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
-   * 
+   *
    * @param {Student|Object} entity - Entidad Student o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
@@ -268,7 +268,7 @@ export class StudentMapper {
 
   /**
    * Convierte un array de modelos Sequelize a array de entidades de dominio
-   * 
+   *
    * @param {Array} models - Array de modelos Sequelize
    * @returns {Student[]} Array de entidades Student
    */
@@ -277,4 +277,3 @@ export class StudentMapper {
     return models.map((model) => this.toEntity(model)).filter((entity) => entity !== null);
   }
 }
-

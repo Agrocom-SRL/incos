@@ -8,7 +8,7 @@ import { SERVICIOS_TOKENS } from '../container/tokens/index.js';
 
 /**
  * Clase de configuración de Express
- * 
+ *
  * Responsabilidades:
  * - Crear instancia de Express
  * - Orquestar la configuración de middleware, rutas y archivos estáticos
@@ -27,7 +27,7 @@ export class ExpressApp {
         // Obtener dependencias del container (únicamente aquí en la raíz)
         const logger = container.resolve(SERVICIOS_TOKENS.logger);
         const errorFormatter = container.resolve(SERVICIOS_TOKENS.errorFormatter);
-        
+
         logger.info('Configurando Express...');
 
         // 1. Middleware global (seguridad, parsing, logging) - logger inyectado

@@ -8,17 +8,17 @@ import { serverConfig } from '../../../infrastructure/config/server.config.js';
  * Use Case: GenerateReciboPagoUseCase
  * Módulo: Pagos Académicos
  * Genera o obtiene el recibo de pago de un aporte académico
- * 
+ *
  * Responsabilidades:
  * - Verificar si el recibo ya existe en documentos_estudiante
  * - Si existe, retornar la información del archivo existente
  * - Si no existe, generarlo usando la misma lógica que RegisterAporteVoluntarioUseCase
  * - Guardar el recibo generado en documentos_estudiante
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja la generación/obtención del recibo de pago
  * - Dependency Inversion: Depende de abstracciones (repositorios)
- * 
+ *
  * Clean Architecture:
  * - Application Layer: Orquesta la lógica de negocio
  * - Depende de Repositories (Infrastructure) a través de abstracciones
@@ -63,14 +63,14 @@ export class GenerateReciboPagoUseCase {
 
     /**
      * Ejecuta el caso de uso de generación/obtención del recibo de pago
-     * 
+     *
      * Flujo:
      * 1. Validar que el pago exista
      * 2. Verificar si el recibo ya existe en documentos_estudiante
      * 3. Si existe, retornar la información del archivo
      * 4. Si no existe, generar el recibo usando la misma lógica que RegisterAporteVoluntarioUseCase
      * 5. Guardar el recibo generado en documentos_estudiante
-     * 
+     *
      * @param {number|string} paymentId - ID de cuota (numérico), número de recibo (string, ej. "REC-1-1", "000004") o ID de cabecera (numérico)
      * @param {Object} options - Opciones adicionales (por defecto vacío)
      * @returns {Promise<{filePath: string, fileName: string, absolutePath: string}>} Rutas del recibo

@@ -140,10 +140,10 @@ class ExcelDataProcessor {
    * Obtiene un valor con fallback
    */
   static obtenerValor(reg, campoPrincipal, campoFallback) {
-    return reg[campoPrincipal] || 
-           reg[this.toCamelCase(campoPrincipal)] || 
-           reg[campoFallback] || 
-           reg[this.toCamelCase(campoFallback)] || 
+    return reg[campoPrincipal] ||
+           reg[this.toCamelCase(campoPrincipal)] ||
+           reg[campoFallback] ||
+           reg[this.toCamelCase(campoFallback)] ||
            0;
   }
 
@@ -160,7 +160,7 @@ class ExcelDataProcessor {
   static calcularAprobados(reg, genero) {
     const prefijo = genero === 'mujeres' ? 'mujeres' : 'hombres';
     const aprobado = reg[`total_${prefijo}_aprobado`] || reg[`total${prefijo.charAt(0).toUpperCase() + prefijo.slice(1)}Aprobado`];
-    
+
     if (aprobado !== undefined) {
       return aprobado;
     }
@@ -178,13 +178,13 @@ class ExcelDataProcessor {
    */
   static determinarParalelo(nombre, turno) {
     const n = (nombre || '').toUpperCase().trim();
-    
+
     // 1. Buscar letra explícita
     const letraMatch = n.match(/\b([ABCD])\b/);
     if (letraMatch) {
       return letraMatch[1];
     }
-    
+
     // 2. Buscar patrones específicos
     const patrones = {
       'A': ['PRIMERO A', 'SEGUNDO A', 'TERCERO A', 'CUARTO A', 'QUINTO A', 'SEXTO A'],

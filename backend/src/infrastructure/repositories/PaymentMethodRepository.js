@@ -6,7 +6,7 @@ import { PaymentMethodMapper } from '../mappers/PaymentMethodMapper.js';
 /**
  * Implementación del repositorio de métodos de pago usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
- * 
+ *
  * @implements {IMetodoPagoRepository}
  */
 export class PaymentMethodRepository extends BaseRepository {

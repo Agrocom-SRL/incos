@@ -2,9 +2,9 @@
  * ReciboPagoPdfGenerator
  *
  * Servicio de infraestructura que genera el RECIBO DE PAGO a partir de una plantilla PDF en blanco.
- * 
+ *
  * Tecnología: Usa pdf-lib para crear el documento desde cero (similar a ReciboPagoMejorado pero con pdf-lib).
- * 
+ *
  * Diseño:
  * - Documento vertical (portrait)
  * - Logo a la izquierda
@@ -15,7 +15,7 @@
  * Arquitectura:
  * - Extiende IncosPDFLibBase para reutilizar métodos comunes de pdf-lib
  * - Crea el documento desde cero (no edita plantilla)
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja lógica específica del recibo de pago
  * - Open/Closed: Extiende IncosPDFLibBase sin modificar la clase base
@@ -201,7 +201,7 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
     /**
      * Construye el encabezado del documento
      * Logo a la izquierda, título al centro, fecha y FAV a la derecha
-     * 
+     *
      * @private
      * @param {Object} data - Datos del recibo
      * @returns {Promise<void>}
@@ -361,11 +361,11 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
         const gestion = data?.gestion || data?.gestionYear || new Date().getFullYear();
         const favText = `FAV-${gestion}`;
         const favFontSize = 16; // Mismo tamaño que el número del registro
-        
+
         // Cargar fuente bold para el FAV
         const boldFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
         const boldFont = await this._pdfDoc.embedFont(boldFontName);
-        
+
         let favTextWidth = 0;
         try {
             favTextWidth = boldFont.widthOfTextAtSize(favText, favFontSize);
@@ -478,7 +478,7 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
 
     /**
      * Construye la sección de datos personales del estudiante
-     * 
+     *
      * @private
      * @param {Object} data - Datos del recibo
      * @returns {Promise<void>}
@@ -829,7 +829,7 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
 
     /**
      * Construye la sección de declaración jurada
-     * 
+     *
      * @private
      * @param {Object} data - Datos del recibo
      * @returns {Promise<void>}
@@ -1009,7 +1009,7 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
 
     /**
      * Construye el bloque de firma (footer)
-     * 
+     *
      * @private
      * @param {Object} data - Datos del recibo
      * @returns {Promise<void>}

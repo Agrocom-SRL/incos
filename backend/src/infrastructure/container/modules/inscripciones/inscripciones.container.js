@@ -1,13 +1,13 @@
 /**
  * Registro de dependencias del recurso Inscripciones (CRUD básico)
- * 
+ *
  * Responsabilidades:
  * - Registrar Use Cases del recurso Inscripciones (List, Create, GetById, Update, Delete)
  * - Registrar Controllers del recurso Inscripciones
  * - Construir y registrar el router del recurso Inscripciones
- * 
+ *
  * Principio SRP: Cada container maneja solo UN recurso/entidad
- * 
+ *
  * @param {Container} container - Contenedor de DI
  * @returns {Container} Contenedor con recurso Inscripciones registrado
  */
@@ -30,7 +30,7 @@ import { buildInscripcionesRouter } from '../../../../presentation/routes/inscri
 
 /**
  * Registra el recurso Inscripciones en el contenedor
- * 
+ *
  * @param {Container} container - Contenedor de DI
  * @returns {Container} Contenedor actualizado
  */

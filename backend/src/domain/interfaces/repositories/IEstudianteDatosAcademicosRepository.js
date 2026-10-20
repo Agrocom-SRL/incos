@@ -3,7 +3,7 @@ import { IRepository } from './IRepository.js';
 /**
  * Interfaz de Repositorio: IEstudianteDatosAcademicosRepository
  * Define el contrato que debe cumplir el repositorio de datos académicos de estudiantes
- * 
+ *
  * Métodos heredados de IRepository:
  * - findById(id)
  * - findBy(criteria, options)
@@ -13,7 +13,7 @@ import { IRepository } from './IRepository.js';
  * - delete(id, userId)
  * - search(searchTerm, options)
  * - count(filters)
- * 
+ *
  * Métodos específicos:
  * - obtenerDatosAcademicos(filters) - Obtiene datos académicos completos desde vista_estudiante_datos_academicos
  * - obtenerResumenAcademicoPorEstudianteIds(estudianteIds) - Resumen académico (periodo/paralelo actual, promedio historial) desde vista_estudiante_resumen_academico
@@ -54,4 +54,3 @@ export class IEstudianteDatosAcademicosRepository extends IRepository {
     throw new Error('Method obtenerResumenAcademicoPorEstudianteIds must be implemented by subclass');
   }
 }
-

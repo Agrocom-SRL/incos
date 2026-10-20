@@ -33,4 +33,3 @@ export class CreatePlanEstudiosUseCase {
     return { plan_estudio: created };
   }
 }
-

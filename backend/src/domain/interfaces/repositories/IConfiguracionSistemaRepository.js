@@ -11,7 +11,7 @@ import { IRepository } from './IRepository.js';
  * NOTA: Solo extiende IRepository sin métodos adicionales.
  * La especialización está en la implementación (buildWhereClause), no en la interfaz.
  * La lógica de negocio (findOrCreate, incrementValue) debe estar en casos de uso.
- * 
+ *
  * Métodos heredados de IRepository:
  * - findById(id)
  * - findBy(criteria, options)
@@ -25,4 +25,3 @@ import { IRepository } from './IRepository.js';
 export class IConfiguracionSistemaRepository extends IRepository {
   // Solo hereda métodos de IRepository
 }
-

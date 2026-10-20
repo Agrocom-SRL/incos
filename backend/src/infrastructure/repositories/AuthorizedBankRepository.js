@@ -6,7 +6,7 @@ import { AuthorizedBankMapper } from '../mappers/AuthorizedBankMapper.js';
 /**
  * Implementación del repositorio de bancos autorizados usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
- * 
+ *
  * @implements {IBancoAutorizadoRepository}
  */
 export class AuthorizedBankRepository extends BaseRepository {

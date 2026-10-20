@@ -1,22 +1,22 @@
 /**
  * GET /api/v1/pagos-aportes/:id
  * Controller para obtener el detalle de un pago de aporte por ID
- * 
+ *
  * Responsabilidades:
  * - Recibir peticiones HTTP GET para obtener un pago por ID
  * - Delegar lógica de negocio a GetPaymentAporteByIdUseCase
  * - Formatear respuesta JSON estandarizada
- * 
+ *
  * Endpoint:
  * GET /api/v1/pagos-aportes/:id
- * 
+ *
  * Route Parameters:
  * - id: ID del pago a obtener (requerido)
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja la comunicación HTTP para obtener un pago
  * - Dependency Inversion: Depende de GetPaymentAporteByIdUseCase (abstracción)
- * 
+ *
  * Clean Architecture:
  * - Presentation Layer: Maneja HTTP request/response
  * - Depende de Application Layer (Use Cases inyectados)
@@ -37,7 +37,7 @@ export class GetPaymentAporteByIdController {
 
   /**
    * Maneja la petición HTTP GET para obtener un pago por ID
-   * 
+   *
    * @param {Object} req - Request de Express
    * @param {Object} req.params - Parámetros de ruta
    * @param {string} req.params.id - ID del pago

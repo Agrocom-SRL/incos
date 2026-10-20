@@ -1,25 +1,25 @@
 /**
  * GET /api/v1/inscripciones
  * Controller para listar inscripciones con filtros y paginación
- * 
+ *
  * Responsabilidades:
  * - Recibir peticiones HTTP GET para listar inscripciones
  * - Delegar lógica de negocio a ListEnrollmentsUseCase
  * - Formatear respuesta JSON estandarizada
- * 
+ *
  * Endpoint:
  * GET /api/v1/inscripciones?page=1&limit=50&search=texto&sort=id:ASC
- * 
+ *
  * Query Parameters:
  * - page: Número de página (default: 1)
  * - limit: Cantidad de resultados por página (default: 50, max: 100)
  * - search: Término de búsqueda general (opcional)
  * - sort: Ordenamiento (opcional, formato: "campo:DIRECCION")
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja la comunicación HTTP para listar inscripciones
  * - Dependency Inversion: Depende de ListEnrollmentsUseCase (abstracción), no de implementación concreta
- * 
+ *
  * Clean Architecture:
  * - Presentation Layer: Maneja HTTP request/response
  * - Usa DTOs genéricos de Application Layer (ListRequestDTO) para normalización común

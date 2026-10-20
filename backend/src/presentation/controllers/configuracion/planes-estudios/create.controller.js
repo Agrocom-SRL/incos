@@ -11,4 +11,3 @@ export class CreatePlanEstudiosController extends BaseCreateController {
     });
   }
 }
-

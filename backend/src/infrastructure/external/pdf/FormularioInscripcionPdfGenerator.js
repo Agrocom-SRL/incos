@@ -89,7 +89,7 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
         const T = IncosPDFBase.FORMULARIO_TEXTS;
         const codigo = (options.student?.codigoEstudiante ?? options.student?.codigo_estudiante ?? '').toString().trim();
         await this._drawRegistrationBox(T.REGISTRO_HEADER_LABEL, codigo || '—');
-        
+
         // Dibujar cuadro de foto 3x3 debajo del código de registro
         await this._drawPhotoBox(options.photoPath || null);
 
@@ -653,7 +653,7 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
     /**
      * Construye el bloque de firma (footer) al final del documento.
      * Usa IncosPDFBase.SIGNATURE para los textos y options.student (ci, expedicion).
-     * 
+     *
      * Opcionalmente puede usar firma en 2 columnas si se pasa options.signatureTwoColumns = true.
      *
      * @private
@@ -677,7 +677,7 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
 
     /**
      * Construye bloque de firma en 2 columnas (estudiante y responsable).
-     * 
+     *
      * @private
      * @param {Object} options - Opciones de generación
      * @returns {Promise<void>}

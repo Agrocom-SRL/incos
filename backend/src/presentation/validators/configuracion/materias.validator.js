@@ -63,4 +63,3 @@ export const updateMateriaValidator = [
     .isBoolean()
     .withMessage('activo debe ser boolean'),
 ];
-

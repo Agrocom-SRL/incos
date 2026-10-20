@@ -4,17 +4,17 @@ import { listValidator } from '../validators/common/index.js';
 
 /**
  * Construye el router del módulo Países
- * 
+ *
  * Responsabilidades:
  * - Definir rutas y métodos HTTP
  * - Vincular validators y middlewares
  * - Delegar lógica a controllers inyectados
- * 
+ *
  * @param {Object} params - Dependencias inyectadas
  * @param {Object} params.controllers - Controllers del módulo
  * @param {Object} params.middlewares - Middlewares (validateRequest, upload, auth, etc.)
  * @returns {Router} Router configurado de Express
- * 
+ *
  * @example
  * const router = buildPaisesRouter({ controllers, middlewares });
  * app.use('/api/v1/paises', router);
@@ -31,7 +31,7 @@ export function buildPaisesRouter({ controllers, middlewares }) {
     /**
      * GET /api/v1/paises
      * Listar todos los países con filtros y paginación
-     * 
+     *
      * Query params según IBaseRepository.obtenerTodos:
      * - pagina: número de página (paginación)
      * - limite: cantidad por página (paginación)
@@ -83,4 +83,3 @@ export function buildPaisesRouter({ controllers, middlewares }) {
 
     return router;
 }
-

@@ -48,4 +48,3 @@ export const EstudianteDiscapacidad = sequelize.define(
 );
 
 export default EstudianteDiscapacidad;
-

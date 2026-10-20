@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { Application } from './infrastructure/bootstrap/Application.js';
 import app from './app.js';
+import { logger } from './infrastructure/services/WinstonLoggerFactory.js';
 
 /**
  * Punto de entrada de la aplicación
@@ -11,7 +12,7 @@ application
     .initialize()
     .then(() => application.start(app))
     .catch((error) => {
-        console.error('Error fatal:', error);
+        logger.error('Error fatal al iniciar', { error: error.message, stack: error.stack });
         process.exit(1);
     });
 

@@ -1,26 +1,26 @@
 /**
  * Controlador base para operaciones de listado
- * 
+ *
  * Implementa el patrón Template Method para proporcionar funcionalidad común
  * a todos los controladores de listado (países, departamentos, idiomas, etc.)
- * 
+ *
  * Responsabilidades:
  * - Extraer y normalizar parámetros de query usando ListRequestDTO
  * - Pasar queryParams al Use Case para construcción de filtros específicos
  * - Ejecutar el caso de uso correspondiente
  * - Formatear respuesta JSON estandarizada
  * - Manejar errores de manera consistente
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Maneja solo la lógica común de listado
  * - Template Method: Define el algoritmo común
  * - Dependency Inversion: La transformación de filtros específicos está en el Use Case (Application Layer)
- * 
+ *
  * Clean Architecture:
  * - Presentation Layer: Maneja la comunicación HTTP (request/response)
  * - Usa DTOs de Application Layer para transformar datos
  * - Depende de Use Cases (Application Layer) a través de abstracción
- * 
+ *
  * @abstract
  * @example
  * class ListPaisesController extends BaseListController {
@@ -32,7 +32,7 @@
  *       dataFieldName: 'paises'
  *     });
  *   }
- * 
+ *
  *   // Nota: Los filtros específicos se manejan en el Use Case (buildSpecificFilters)
  *   // para mantener consistencia con el patrón de Search donde la transformación
  *   // está en el Use Case (Application Layer)
@@ -74,17 +74,16 @@ export class BaseListController {
     this.dataFieldName = dataFieldName;
   }
 
-
   /**
    * Maneja la petición HTTP GET para listar recursos
-   * 
+   *
  * Template Method: Define el algoritmo común de:
  * 1. Extraer y validar parámetros comunes (page, limit, search)
  * 2. Pasar queryParams al Use Case para construcción de filtros específicos
  * 3. Ejecutar use case
  * 4. Formatear respuesta
  * 5. Manejar errores
-   * 
+   *
    * @param {Object} req - Request de Express
    * @param {Object} res - Response de Express
    * @param {Function} next - Next middleware de Express
@@ -134,4 +133,3 @@ export class BaseListController {
     }
   }
 }
-

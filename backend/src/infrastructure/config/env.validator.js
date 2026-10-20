@@ -2,7 +2,7 @@ import 'dotenv/config';
 
 /**
  * Helpers para obtener variables de entorno con valores por defecto
- * 
+ *
  * Cada archivo de configuración (database.config.js, server.config.js, etc.)
  * usa estos helpers y define sus propios valores por defecto.
  */

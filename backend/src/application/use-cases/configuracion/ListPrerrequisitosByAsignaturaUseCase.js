@@ -12,4 +12,3 @@ export class ListPrerrequisitosByAsignaturaUseCase {
     return { prerrequisitos };
   }
 }
-

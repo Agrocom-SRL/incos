@@ -1,23 +1,23 @@
 /**
  * Controlador base para operaciones de obtención por ID
- * 
+ *
  * Implementa el patrón Template Method para proporcionar funcionalidad común
  * a todos los controladores de obtención por ID
- * 
+ *
  * Responsabilidades:
  * - Extraer y validar el ID de los parámetros de ruta
  * - Ejecutar el caso de uso correspondiente
  * - Formatear respuesta JSON estandarizada
  * - Manejar errores de manera consistente
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Maneja solo la lógica común de obtención por ID
  * - Template Method: Define el algoritmo común
- * 
+ *
  * Clean Architecture:
  * - Presentation Layer: Maneja la comunicación HTTP (request/response)
  * - Depende de Use Cases (Application Layer) a través de abstracción
- * 
+ *
  * @abstract
  */
 import { NotFoundError } from '../../../domain/errors/AppError.js';
@@ -57,7 +57,7 @@ export class BaseGetController {
 
   /**
    * Maneja la petición HTTP GET para obtener un recurso por ID
-   * 
+   *
    * @param {Object} req - Request de Express
    * @param {Object} res - Response de Express
    * @param {Function} next - Next middleware
@@ -89,7 +89,7 @@ export class BaseGetController {
       // múltiples entidades directamente sin anidamiento doble.
       const isComplexResult = result && typeof result === 'object' && !Array.isArray(result) && Object.keys(result).length > 1;
       const responseData = (this.dataFieldName && !isComplexResult) ? { [this.dataFieldName]: result } : result;
-      
+
       return this.responseFormatter.retrieved(res, responseData, this.resourceName, id, req);
     } catch (error) {
       // 6. Manejo de errores consistente
@@ -105,4 +105,3 @@ export class BaseGetController {
     }
   }
 }
-

@@ -138,4 +138,3 @@ export class TransferMapper {
     return models.map((m) => this.toEntity(m)).filter((e) => e !== null);
   }
 }
-

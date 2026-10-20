@@ -31,4 +31,3 @@ export class StudyPlanMapper {
     return entitiesToPresentation(plans);
   }
 }
-

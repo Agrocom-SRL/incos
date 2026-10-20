@@ -1,8 +1,8 @@
 /**
  * Mappers del módulo Pagos (Application Layer)
- * 
+ *
  * Exportaciones centralizadas de mappers para el módulo Pagos
- * 
+ *
  * Responsabilidad: Domain ↔ Presentation (API/Español)
  */
 

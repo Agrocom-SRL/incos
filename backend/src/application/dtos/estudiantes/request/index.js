@@ -3,4 +3,3 @@
  */
 
 export { RegisterStudentRequestDTO } from './RegisterStudentRequestDTO.js';
-

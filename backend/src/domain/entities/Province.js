@@ -27,7 +27,7 @@ export class Province extends BaseEntity {
    */
   toPlainObject() {
     const plainObject = super.toPlainObject();
-    
+
     // Solo incluir campos que fueron inicializados (existen en this)
     if (this.hasOwnProperty('departmentId')) {
       plainObject.departmentId = this.departmentId;

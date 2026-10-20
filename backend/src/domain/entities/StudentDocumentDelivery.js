@@ -4,7 +4,7 @@ import { BaseEntity } from './BaseEntity.js';
  * Entidad de Dominio: StudentDocumentDelivery
  * Representa la relación entre un estudiante y un documento requerido
  * (entrega física de documentos)
- * 
+ *
  * IMPORTANTE: Esta entidad representa la relación entre un estudiante y un tipo de documento requerido.
  * Indica si el documento fue entregado, si está en trámite, fecha de entrega, etc.
  * NO almacena archivos digitales, solo el estado de la relación estudiante-documento.
@@ -57,7 +57,6 @@ export class StudentDocumentDelivery extends BaseEntity {
     return this.enTramite === true;
   }
 
-
   /**
    * Convierte la entidad a objeto plano
    * Solo incluye campos que existen en la instancia (fueron inicializados)
@@ -65,7 +64,7 @@ export class StudentDocumentDelivery extends BaseEntity {
    */
   toPlainObject() {
     const plainObject = super.toPlainObject();
-    
+
     // Solo incluir campos que fueron inicializados (existen en this)
     if (this.hasOwnProperty('studentId')) {
       plainObject.studentId = this.studentId;

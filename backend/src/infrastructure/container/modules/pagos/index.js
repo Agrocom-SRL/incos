@@ -10,7 +10,7 @@ import { registerPagosAportesResource } from './pagos-aportes.container.js';
 
 /**
  * Registra el módulo completo de Pagos en el contenedor
- * 
+ *
  * @param {Container} container - Contenedor de DI
  * @returns {Container} Contenedor actualizado
  */

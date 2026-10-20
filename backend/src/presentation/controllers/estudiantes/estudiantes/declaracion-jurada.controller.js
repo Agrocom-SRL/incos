@@ -78,4 +78,3 @@ export class DeclaracionJuradaController extends BaseDocumentController {
     }
   }
 }
-

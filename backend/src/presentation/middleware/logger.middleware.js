@@ -7,10 +7,10 @@ const morganFormat = ':method :url :status :response-time ms - :user-id';
 
 /**
  * Factory function para crear el middleware de logging HTTP
- * 
+ *
  * @param {ILogger} logger - Logger inyectado del container (debe tener propiedad stream)
  * @returns {Function} Middleware de logging HTTP
- * 
+ *
  * Middleware genérico para logging de peticiones HTTP
  * Registra todas las peticiones usando Morgan integrado con Winston
  *

@@ -15,17 +15,17 @@ import {
 
 /**
  * Construye el router del módulo Estudiantes
- * 
+ *
  * Responsabilidades:
  * - Definir rutas y métodos HTTP
  * - Vincular validators y middlewares
  * - Delegar lógica a controllers inyectados
- * 
+ *
  * @param {Object} params - Dependencias inyectadas
  * @param {Object} params.controllers - Controllers del módulo
  * @param {Object} params.middlewares - Middlewares (validateRequest, upload, auth, etc.)
  * @returns {Router} Router configurado de Express
- * 
+ *
  * @example
  * const router = buildEstudiantesRouter({ controllers, middlewares });
  * app.use('/api/v1/estudiantes', router);
@@ -103,7 +103,7 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      * Body: student (opcional - actualización parcial), guardians (opcional - reemplazo completo),
      *       disabilities (opcional - reemplazo completo), origins (opcional - reemplazo completo),
      *       documentation (opcional - reemplazo completo)
-     * 
+     *
      * NOTA: Similar a RegisterStudentUseCase, actualiza estudiante y todas sus relaciones.
      * - Datos básicos: actualización parcial (solo campos proporcionados)
      * - Relaciones: reemplazo completo (si se proporcionan, elimina todas las existentes y crea las nuevas)
@@ -186,7 +186,7 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      * GET /api/v1/estudiantes/search
      * Buscar estudiante por texto libre
      * Query: query (busca en codigo, ci, nombres, apellidos), limit (opcional)
-     * 
+     *
      * IMPORTANTE: Esta ruta debe estar ANTES de /:id para evitar conflictos
      */
     router.get(
@@ -259,10 +259,10 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      * GET /api/v1/estudiantes/becas
      * Listar todas las becas asignadas a estudiantes con datos enriquecidos
      * Query: page, limit, search, studentId, managementId, state, scholarshipId
-     * 
+     *
      * Retorna todas las becas asignadas con información del estudiante, tipo de beca y gestión.
      * Útil para el listado general de becas asignadas.
-     * 
+     *
      * IMPORTANTE: Esta ruta debe estar ANTES de /:id/scholarships para evitar conflictos
      */
     router.get(
@@ -316,7 +316,7 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      * Asignar una beca/descuento a un estudiante
      * Path: id (ID del estudiante)
      * Body: student_id, scholarship_id, observations? (opcional)
-     * 
+     *
      * NOTA: La gestión se obtiene automáticamente de la configuración del sistema.
      * La fecha de solicitud se establece automáticamente como la fecha actual.
      * El estado se establece automáticamente como PENDIENTE.
@@ -333,10 +333,10 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      * DELETE /api/v1/estudiantes/becas/:id
      * Eliminar una beca asignada a un estudiante (soft delete)
      * Path: id (ID de la beca asignada - estudiantes_becas.id)
-     * 
+     *
      * Regla de negocio: Solo se pueden eliminar becas que NO tengan pagos vigentes asociados.
      * Las becas vinculadas a pagos no se eliminan (RegisterAporteVoluntarioUseCase las usa).
-     * 
+     *
      * IMPORTANTE: Esta ruta debe estar ANTES de /:id para evitar conflictos
      */
     router.delete(
@@ -409,12 +409,12 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      * DELETE /api/v1/estudiantes/:id
      * Eliminar un estudiante y todas sus relaciones (soft delete)
      * Path: id (ID del estudiante)
-     * 
+     *
      * Regla de negocio: Solo se pueden eliminar estudiantes que NO tengan:
      * - Inscripciones activas
      * - Pagos activos vinculados
      * - Becas activas asignadas
-     * 
+     *
      * Elimina (soft delete):
      * - Apoderados (estudiantes_apoderados)
      * - Discapacidades (estudiantes_discapacidades)
@@ -422,7 +422,7 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      * - Entregas de documentos (estudiantes_documentos_entrega)
      * - Documentos del estudiante (documentos_estudiante) - incluyendo actas de compromiso
      * - Estudiante principal (estudiantes)
-     * 
+     *
      * IMPORTANTE: Esta ruta debe estar ANTES de GET /:id para evitar conflictos
      */
     router.delete(
@@ -441,7 +441,7 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      * GET /api/v1/estudiantes/:id
      * Obtener estudiante por ID con datos relacionados
      * Path: id
-     * 
+     *
      * IMPORTANTE: Esta ruta genérica debe estar AL FINAL para evitar conflictos
      * con rutas más específicas como /search o /:id/scholarships
      */
@@ -457,4 +457,3 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
 
     return router;
 }
-

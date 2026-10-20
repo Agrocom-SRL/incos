@@ -5,4 +5,3 @@ import { IRepository } from './IRepository.js';
  * Contrato para operaciones sobre traspasos.
  */
 export class ITraspasoRepository extends IRepository {}
-

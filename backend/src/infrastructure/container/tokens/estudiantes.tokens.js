@@ -1,6 +1,6 @@
 /**
  * Tokens del Módulo Estudiantes
- * 
+ *
  * Convenciones:
  * - Use Cases: {modulo}_list{Entity}UseCase (ej: 'estudiantes.listStudentsUseCase')
  * - Controllers: {modulo}_list{Entity}Controller (ej: 'estudiantes.listStudentsController')
@@ -76,4 +76,3 @@ export const ESTUDIANTES_TOKENS = {
     estudiantesRouter: 'estudiantes.estudiantesRouter',
     becasDescuentosRouter: 'estudiantes.becasDescuentosRouter',
 };
-

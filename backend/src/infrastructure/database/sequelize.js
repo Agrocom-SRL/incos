@@ -6,11 +6,11 @@ import { logger } from '../services/WinstonLoggerFactory.js';
 
 /**
  * Instancia única de Sequelize
- * 
+ *
  * Usa configuración centralizada y logger singleton (no puede usar container
  * aquí por dependencia circular: sequelize se importa antes de que el container esté listo).
  * Esta es la ÚNICA instancia de conexión a la base de datos en toda la aplicación
- * 
+ *
  * Usa la misma instancia singleton que el container para consistencia.
  */
 

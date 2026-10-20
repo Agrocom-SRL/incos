@@ -2,17 +2,17 @@
  * Use Case: GetStudentScholarshipsByStudentIdUseCase
  * Módulo: Estudiantes
  * Obtiene las becas de un estudiante con datos enriquecidos
- * 
+ *
  * Responsabilidades:
  * - Validar que el estudiante exista
  * - Obtener todas las becas asignadas al estudiante
  * - Enriquecer las becas con información de tipo de beca y gestión
  * - Retornar las becas enriquecidas para uso en el módulo de pagos
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja la obtención de becas de un estudiante
  * - Dependency Inversion: Depende de abstracciones (repositorios)
- * 
+ *
  * Clean Architecture:
  * - Application Layer: Orquesta la lógica de negocio
  * - Depende de Repositories (Infrastructure) a través de abstracciones
@@ -45,7 +45,7 @@ export class GetStudentScholarshipsByStudentIdUseCase {
 
   /**
    * Ejecuta el caso de uso de obtención de becas por ID de estudiante
-   * 
+   *
    * @param {number} studentId - ID del estudiante
    * @returns {Promise<Object>} Becas del estudiante con datos enriquecidos
    */
@@ -83,7 +83,7 @@ export class GetStudentScholarshipsByStudentIdUseCase {
       // 3. Obtener IDs únicos de becas y gestiones para enriquecer
       const scholarshipIds = new Set();
       const managementIds = new Set();
-      
+
       scholarships.forEach((scholarship) => {
         const scholarshipPlain = scholarship.toPlainObject ? scholarship.toPlainObject() : scholarship;
         if (scholarshipPlain.scholarshipId) scholarshipIds.add(scholarshipPlain.scholarshipId);
@@ -127,13 +127,13 @@ export class GetStudentScholarshipsByStudentIdUseCase {
       // 6. Enriquecer becas con información de catálogos
       const enrichedScholarships = scholarships.map((scholarship) => {
         const scholarshipPlain = scholarship.toPlainObject ? scholarship.toPlainObject() : scholarship;
-        const scholarshipType = scholarshipPlain.scholarshipId 
-          ? scholarshipsCatalog[scholarshipPlain.scholarshipId] 
+        const scholarshipType = scholarshipPlain.scholarshipId
+          ? scholarshipsCatalog[scholarshipPlain.scholarshipId]
           : null;
-        const management = scholarshipPlain.managementId 
-          ? managements[scholarshipPlain.managementId] 
+        const management = scholarshipPlain.managementId
+          ? managements[scholarshipPlain.managementId]
           : null;
-        
+
         return {
           ...scholarshipPlain,
           scholarshipName: scholarshipType?.name || null,

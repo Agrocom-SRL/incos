@@ -29,4 +29,3 @@ export class CreateMateriaUseCase {
     return { materia: created };
   }
 }
-

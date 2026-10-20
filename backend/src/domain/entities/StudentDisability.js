@@ -33,7 +33,7 @@ export class StudentDisability extends BaseEntity {
    */
   toPlainObject() {
     const plainObject = super.toPlainObject();
-    
+
     // Solo incluir campos que fueron inicializados (existen en this)
     if (this.hasOwnProperty('studentId')) {
       plainObject.studentId = this.studentId;
@@ -63,4 +63,3 @@ export class StudentDisability extends BaseEntity {
     return this.toPlainObject();
   }
 }
-

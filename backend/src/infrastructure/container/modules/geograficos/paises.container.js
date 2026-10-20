@@ -1,13 +1,13 @@
 /**
  * Registro de dependencias del recurso Países
- * 
+ *
  * Responsabilidades:
  * - Registrar Use Cases del recurso Países
  * - Registrar Controllers del recurso Países
  * - Construir y registrar el router del recurso Países
- * 
+ *
  * Principio SRP: Cada container maneja solo UN recurso/entidad
- * 
+ *
  * @param {Container} container - Contenedor de DI
  * @returns {Container} Contenedor con recurso Países registrado
  */
@@ -20,7 +20,7 @@ import { buildPaisesRouter } from '../../../../presentation/routes/paises.routes
 
 /**
  * Registra el recurso Países en el contenedor
- * 
+ *
  * @param {Container} container - Contenedor de DI
  * @returns {Container} Contenedor actualizado
  */
@@ -92,4 +92,3 @@ export function registerPaisesResource(container) {
 
     return container;
 }
-

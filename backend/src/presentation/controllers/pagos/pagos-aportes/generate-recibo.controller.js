@@ -1,18 +1,18 @@
 /**
  * GET /api/v1/pagos-aportes/:id/recibo
  * Controller para generar u obtener el recibo de pago de un aporte académico
- * 
+ *
  * Responsabilidades:
  * - Recibir peticiones HTTP GET para generar/obtener el recibo de pago
  * - Delegar lógica común a BaseDocumentController
  * - Configurar nombre del recurso y campo de respuesta
- * 
+ *
  * Endpoint:
  * GET /api/v1/pagos-aportes/:id/recibo
- * 
+ *
  * Path Parameters:
  * - id: ID del pago (número entero mayor a 0)
- * 
+ *
  * Response:
  * {
  *   success: true,
@@ -23,11 +23,11 @@
  *   },
  *   message: "Recibo de pago generado correctamente"
  * }
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja la configuración específica del recibo
  * - Dependency Inversion: Depende de GenerateReciboPagoUseCase (abstracción)
- * 
+ *
  * Clean Architecture:
  * - Presentation Layer: Maneja HTTP request/response
  * - Depende de Application Layer (Use Cases inyectados)

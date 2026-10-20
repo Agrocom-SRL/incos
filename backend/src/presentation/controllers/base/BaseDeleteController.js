@@ -1,24 +1,24 @@
 /**
  * Controlador base para operaciones de eliminación
- * 
+ *
  * Implementa el patrón Template Method para proporcionar funcionalidad común
  * a todos los controladores de eliminación
- * 
+ *
  * Responsabilidades:
  * - Extraer ID del parámetro de ruta
  * - Ejecutar el caso de uso correspondiente
  * - Formatear respuesta JSON estandarizada
  * - Manejar errores de manera consistente
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Maneja solo la lógica común de eliminación
  * - Template Method: Define el algoritmo común
  * - Dependency Inversion: Depende de Use Cases (Application Layer)
- * 
+ *
  * Clean Architecture:
  * - Presentation Layer: Maneja la comunicación HTTP (request/response)
  * - Depende de Use Cases (Application Layer) a través de abstracción
- * 
+ *
  * @abstract
  */
 export class BaseDeleteController {
@@ -38,7 +38,7 @@ export class BaseDeleteController {
 
   /**
    * Maneja la petición HTTP DELETE
-   * 
+   *
    * @param {Object} req - Request de Express
    * @param {Object} res - Response de Express
    * @param {Function} next - Next middleware

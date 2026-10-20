@@ -36,4 +36,3 @@ export class ListPaisesUseCase extends BaseListUseCase {
     return CountryMapper;
   }
 }
-

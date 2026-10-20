@@ -42,4 +42,3 @@ export class IEstudianteRepository extends IRepository {
     throw new Error('Method obtenerDatosPersonales must be implemented by subclass');
   }
 }
-

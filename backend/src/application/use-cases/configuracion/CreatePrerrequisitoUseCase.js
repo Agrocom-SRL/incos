@@ -21,4 +21,3 @@ export class CreatePrerrequisitoUseCase {
     return { prerrequisito: created };
   }
 }
-

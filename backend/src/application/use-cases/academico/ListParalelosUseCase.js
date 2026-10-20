@@ -2,12 +2,12 @@
  * Use Case: ListParalelosUseCase
  * Módulo: Académico
  * Lista paralelos con filtros, paginación y ordenamiento
- * 
+ *
  * Filtros específicos: periodo (número), periodo_id (ID), carrera_id
- * 
+ *
  * Si se proporciona periodo (número), busca todos los periodos con ese número
  * y luego filtra paralelos por los IDs obtenidos (devuelve paralelos de todas las carreras)
- * 
+ *
  * Enriquece los paralelos con estadísticas de inscripciones:
  * - Total de estudiantes inscritos
  * - Total por género (hombres y mujeres)
@@ -24,12 +24,12 @@ export class ListParalelosUseCase extends BaseListUseCase {
    * @param {Object} params.managementRepository - Repositorio de gestiones
    * @param {ILogger} params.logger - Logger para registro de eventos
    */
-  constructor({ 
-    parallelRepository, 
-    periodRepository, 
+  constructor({
+    parallelRepository,
+    periodRepository,
     configuracionSistemaRepository,
     managementRepository,
-    logger 
+    logger
   }) {
     super({
       repository: parallelRepository,
@@ -89,10 +89,10 @@ export class ListParalelosUseCase extends BaseListUseCase {
 
   /**
    * Prepara filtros cuando hay filtro por periodo (número)
-   * 
+   *
    * Si viene periodo (número), busca todos los periodos con ese número,
    * obtiene sus IDs y modifica los filtros para usar esos IDs
-   * 
+   *
    * @param {Object} filters - Filtros ya construidos por buildSpecificFilters
    * @param {Object} queryParams - Query parameters originales (para detectar periodo)
    * @returns {Promise<Object>} Filtros modificados con periodId como array de IDs
@@ -130,7 +130,7 @@ export class ListParalelosUseCase extends BaseListUseCase {
   /**
    * Enriquece los paralelos con estadísticas de inscripciones
    * Agrega: totalInscritos, totalHombres, totalMujeres
-   * 
+   *
    * @param {Array} data - Array de paralelos ya convertidos a formato de presentación
    * @param {Object} repositoryResult - Resultado completo del repository
    * @returns {Promise<Array>} Array de paralelos enriquecidos con estadísticas

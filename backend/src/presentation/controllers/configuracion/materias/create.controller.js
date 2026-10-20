@@ -15,4 +15,3 @@ export class CreateMateriaController extends BaseCreateController {
     return body;
   }
 }
-

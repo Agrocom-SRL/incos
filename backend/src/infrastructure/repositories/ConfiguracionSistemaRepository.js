@@ -8,24 +8,24 @@ import { SystemConfigurationMapper } from '../mappers/SystemConfigurationMapper.
  * Utiliza el patrón Template Method heredando de BaseRepository
  *
  * @implements {IConfiguracionSistemaRepository}
- * 
+ *
  * Responsabilidades:
  * - Acceso a datos (consultas, persistencia)
  * - Delegar conversión ORM ↔ Entidad a SystemConfigurationMapper
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja acceso a datos
  * - Dependency Inversion: Usa SystemConfigurationMapper para conversiones (depende de abstracción)
- * 
+ *
  * Clean Architecture:
  * - Infrastructure Layer: Implementación concreta
  * - Usa SystemConfigurationMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
- * 
+ *
  * Esta clase cumple con el contrato del repositorio:
  * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
  * - La especialización está en buildWhereClause(), no en métodos adicionales
  * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda
- * 
+ *
  * IMPORTANTE: Se eliminaron findByClave(), findOrCreate() e incrementValue() porque son redundantes o deben estar en casos de uso.
  * Usar en su lugar:
  * - findBy({ key: 'CONFIG_KEY' }) → Reemplaza findByClave()
@@ -44,7 +44,7 @@ export class ConfiguracionSistemaRepository extends BaseRepository {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Delega la responsabilidad de mapeo a SystemConfigurationMapper
-   * 
+   *
    * @param {Object} model - Modelo Sequelize
    * @returns {SystemConfiguration|null} Entidad de dominio
    */
@@ -55,14 +55,14 @@ export class ConfiguracionSistemaRepository extends BaseRepository {
   /**
    * Construye la cláusula WHERE para filtros específicos
    * Maneja todos los criterios de búsqueda de la entidad SystemConfiguration
-   * 
+   *
    * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
    * sin necesidad de crear métodos adicionales en el repositorio.
-   * 
+   *
    * Ejemplos de uso:
    * - findBy({ key: 'MAX_STUDENTS' }) → Busca configuración por clave
    * - findAll({ type: 'NUMBER' }) → Busca configuraciones numéricas
-   * 
+   *
    * @param {Object} filters - Filtros de búsqueda
    *   - key: Clave de la configuración (búsqueda exacta, para búsqueda de texto usar search())
    *   - value: Valor de la configuración (búsqueda exacta)
@@ -93,7 +93,7 @@ export class ConfiguracionSistemaRepository extends BaseRepository {
   /**
    * Retorna los campos que se usarán para búsqueda de texto
    * Estos campos se usan en el método search() para búsqueda por término
-   * 
+   *
    * @returns {string[]} Array de nombres de campos del modelo Sequelize
    */
   getSearchFields() {
@@ -103,7 +103,7 @@ export class ConfiguracionSistemaRepository extends BaseRepository {
   /**
    * Retorna el orden por defecto para las consultas
    * Delega el orden al BaseRepository que ordena por ID ASC
-   * 
+   *
    * @returns {Array} Array vacío para usar el orden por defecto del BaseRepository (id ASC)
    */
   getDefaultSort() {
@@ -113,7 +113,7 @@ export class ConfiguracionSistemaRepository extends BaseRepository {
   /**
    * Mapea datos de dominio a formato del modelo Sequelize (para creación)
    * Delega la responsabilidad de mapeo a SystemConfigurationMapper
-   * 
+   *
    * @param {SystemConfiguration|Object} data - Entidad SystemConfiguration o objeto con datos de dominio
    * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
    * @returns {Object} Objeto con formato del modelo Sequelize
@@ -125,7 +125,7 @@ export class ConfiguracionSistemaRepository extends BaseRepository {
   /**
    * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
    * Delega la responsabilidad de mapeo a SystemConfigurationMapper
-   * 
+   *
    * @param {SystemConfiguration|Object} data - Entidad SystemConfiguration o objeto con datos de dominio
    * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)

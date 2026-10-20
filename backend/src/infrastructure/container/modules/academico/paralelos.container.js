@@ -1,13 +1,13 @@
 /**
  * Registro de dependencias del recurso Paralelos
- * 
+ *
  * Responsabilidades:
  * - Registrar Use Cases del recurso Paralelos
  * - Registrar Controllers del recurso Paralelos
  * - Construir y registrar el router del recurso Paralelos
- * 
+ *
  * Principio SRP: Cada container maneja solo UN recurso/entidad
- * 
+ *
  * @param {Container} container - Contenedor de DI
  * @returns {Container} Contenedor con recurso Paralelos registrado
  */
@@ -50,7 +50,7 @@ import { buildParalelosRouter } from '../../../../presentation/routes/paralelos.
 
 /**
  * Registra el recurso Paralelos en el contenedor
- * 
+ *
  * @param {Container} container - Contenedor de DI
  * @returns {Container} Contenedor actualizado
  */

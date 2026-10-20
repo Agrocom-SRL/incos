@@ -1,13 +1,13 @@
 /**
  * Factory function para crear el middleware de manejo de errores
- * 
+ *
  * @param {ILogger} logger - Logger inyectado del container
  * @param {ErrorFormatter} errorFormatter - Formatter de errores inyectado del container
  * @returns {Function} Middleware de manejo de errores
- * 
+ *
  * Middleware genérico para manejo global de errores
  * Captura todos los errores no manejados y formatea respuestas según el estándar de la API
- * 
+ *
  * Responsabilidades:
  * - Coordinar el logging de errores
  * - Delegar el formateo a ErrorFormatter

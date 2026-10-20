@@ -4,7 +4,7 @@ import { NotFoundError } from '../../../domain/errors/AppError.js';
  * Use Case: UpdateStudentUseCase
  * Módulo: Estudiantes
  * Actualiza un estudiante existente con todos sus datos relacionados
- * 
+ *
  * Responsabilidades:
  * - Validar que el estudiante exista
  * - Validar que no exista otro estudiante con el mismo CI (si se actualiza CI)
@@ -25,7 +25,7 @@ import { NotFoundError } from '../../../domain/errors/AppError.js';
  * Principios SOLID aplicados:
  * - Single Responsibility: Solo maneja la actualización completa de estudiantes
  * - Dependency Inversion: Depende de abstracciones (repositorios inyectados)
- * 
+ *
  * Clean Architecture:
  * - Application Layer: Orquesta la lógica de negocio
  * - Depende de Repositories (Infrastructure) a través de abstracciones
@@ -597,7 +597,7 @@ export class UpdateStudentUseCase {
   /**
    * Genera un nuevo código de estudiante basado en la gestión de ingreso y el correlativo.
    * Misma lógica que RegisterStudentUseCase.generateStudentCode.
-   * 
+   *
    * @param {number|null} gestionIngresoId - ID de la gestión de ingreso (null para estudiantes nuevos)
    * @returns {Promise<string>} Código del estudiante generado (YYYYNNNN)
    */
@@ -688,7 +688,7 @@ export class UpdateStudentUseCase {
 
   /**
    * Ejecuta el caso de uso de actualización de estudiante
-   * 
+   *
    * @param {number} studentId - ID del estudiante a actualizar
    * @param {Object} data - Datos a actualizar
    * @param {Object} data.student - Datos básicos del estudiante (opcional, actualización parcial)
@@ -697,11 +697,11 @@ export class UpdateStudentUseCase {
    * @param {Array} data.origins - Array de orígenes (opcional, reemplazo completo)
    * @param {Object} data.documentation - Objeto con entregas de documentos (opcional, reemplazo completo)
    * @returns {Promise<Object>} Estudiante actualizado con todos sus datos relacionados
-   * 
+   *
    * NOTA: Los datos académicos se manejan en otro módulo, no se incluyen aquí
    * NOTA: userId no se pasa porque actualmente no hay autenticación
    * Los repositorios tienen userId = null como default para los campos de auditoría
-   * 
+   *
    * ESTRATEGIA DE ACTUALIZACIÓN:
    * - Datos básicos del estudiante: actualización parcial (solo campos proporcionados)
    * - Relaciones (guardians, disabilities, origins, documentDeliveries): reemplazo completo
@@ -967,7 +967,7 @@ export class UpdateStudentUseCase {
           null
         );
         const existingDeliveries = existingDeliveriesResult.studentDocumentDeliveries || [];
-        
+
         // Crear mapa de entregas existentes por documentacionId
         // NOTA: Un estudiante puede tener múltiples entregas para el mismo documento (historial)
         // Pero para actualización, tomamos la última entrega activa por documentacionId
@@ -976,7 +976,7 @@ export class UpdateStudentUseCase {
           const deliveryPlain = delivery.toPlainObject ? delivery.toPlainObject() : delivery;
           const docId = deliveryPlain.documentacionId;
           // Si ya existe una entrega para este documentacionId, mantener la más reciente (mayor ID)
-          if (!deliveryMapByDocumentacionId.has(docId) || 
+          if (!deliveryMapByDocumentacionId.has(docId) ||
               deliveryPlain.id > deliveryMapByDocumentacionId.get(docId).id) {
             deliveryMapByDocumentacionId.set(docId, deliveryPlain);
           }
@@ -1035,7 +1035,7 @@ export class UpdateStudentUseCase {
 
               // Verificar si ya existe una entrega para este documentacionId
               const existingDelivery = deliveryMapByDocumentacionId.get(documentacionId);
-              
+
               if (existingDelivery) {
                 // 6.2.1. Actualizar entrega existente
                 // NOTA: userId no se pasa porque actualmente no hay autenticación
@@ -1136,7 +1136,7 @@ export class UpdateStudentUseCase {
         const existingAcademicPlain = existingAcademic
           ? (existingAcademic.toPlainObject ? existingAcademic.toPlainObject() : existingAcademic)
           : null;
-        
+
         const tipoAdmisionActual = existingAcademicPlain?.admissionType || existingAcademicPlain?.tipoAdmision || null;
         const gestionIngresoIdActual = existingAcademicPlain?.managementId || existingAcademicPlain?.gestionIngresoId || null;
 

@@ -2,14 +2,14 @@ import { ILogger } from '../../domain/interfaces/services/ILogger.js';
 
 /**
  * Adaptador de Winston Logger que implementa ILogger
- * 
+ *
  * Este adaptador permite que Winston cumpla con el contrato ILogger del dominio,
  * manteniendo la inversión de dependencias (Dependency Inversion Principle).
- * 
+ *
  * Clean Architecture:
  * - Domain Layer: Define ILogger (interfaz)
  * - Infrastructure Layer: WinstonLoggerAdapter implementa ILogger usando Winston
- * 
+ *
  * @implements {ILogger}
  */
 export class WinstonLoggerAdapter extends ILogger {
@@ -99,4 +99,3 @@ export class WinstonLoggerAdapter extends ILogger {
     };
   }
 }
-

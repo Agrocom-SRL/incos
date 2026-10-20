@@ -27,4 +27,3 @@ export class PlanSubjectMapper {
     return entitiesToPresentation(asigs);
   }
 }
-

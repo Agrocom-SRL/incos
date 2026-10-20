@@ -1,11 +1,11 @@
 /**
  * Mapper de aplicación: DisabilityType
  * Convierte entidades de dominio (DisabilityType) a formato de presentación (API/Spanish)
- * 
+ *
  * Clean Architecture:
  * - Application Layer: Convierte Domain Entities → Presentation Format
  * - Depende de Domain Layer (DisabilityType entity)
- * 
+ *
  * Responsabilidades:
  * - Mapear propiedades de dominio (English/camelCase) a presentación (Spanish/snake_case)
  * - Formatear datos para consumo por el frontend
@@ -51,4 +51,3 @@ export class DisabilityTypeMapper {
     return entitiesToPresentation(disabilityTypes);
   }
 }
-

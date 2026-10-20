@@ -1,6 +1,6 @@
 /**
  * Validators del módulo Inscripciones
- * 
+ *
  * Exporta todos los validators específicos del módulo Inscripciones
  */
 

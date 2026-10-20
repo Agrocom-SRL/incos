@@ -1,9 +1,9 @@
 /**
  * Constantes del dominio relacionadas con Materias y Asignaturas
- * 
+ *
  * Estas constantes son parte del dominio de negocio y pueden ser usadas
  * por entidades, value objects y servicios de dominio relacionados con materias.
- * 
+ *
  * Nota: TIPOS_MATERIA está definido en configuracion.constants.js
  */
 

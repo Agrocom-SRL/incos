@@ -2,18 +2,18 @@
  * Use Case: DeleteEnrollmentUseCase
  * Módulo: Inscripciones
  * Elimina una inscripción y sus boletas asociadas
- * 
+ *
  * Responsabilidades:
  * - Validar que la inscripción exista
  * - Buscar y eliminar boletas de inscripción asociadas (DOCX y PDF)
  * - Eliminar archivos físicos del sistema de archivos
  * - Eliminar registros de documentos en BD (soft delete)
  * - Eliminar la inscripción (soft delete)
- * 
+ *
  * Principios SOLID aplicados:
  * - Single Responsibility: Solo elimina inscripciones y boletas asociadas
  * - Dependency Inversion: Depende de abstracciones (repositorios inyectados)
- * 
+ *
  * Clean Architecture:
  * - Application Layer: Orquesta la lógica de negocio
  * - Depende de Repositories (Infrastructure) a través de abstracciones
@@ -65,7 +65,7 @@ export class DeleteEnrollmentUseCase {
     try {
       // 1. Validar y obtener inscripción
       const enrollment = await this.enrollmentRepository.findById(enrollmentId);
-      
+
       if (!enrollment) {
         throw new NotFoundError(`Inscripción con ID ${enrollmentId} no encontrada`);
       }
@@ -250,7 +250,7 @@ export class DeleteEnrollmentUseCase {
    * Actualiza el estado de registro de los datos académicos si no hay otras inscripciones activas
    * Si se elimina la inscripción y el estudiante no tiene otras inscripciones activas en la misma gestión,
    * el estado de registro vuelve a PENDIENTE (ya no está ADMITIDO)
-   * 
+   *
    * @private
    * @param {number} academicDataId - ID de los datos académicos
    * @param {number} enrollmentId - ID de la inscripción que se está eliminando
@@ -270,7 +270,7 @@ export class DeleteEnrollmentUseCase {
       );
 
       const otherEnrollments = otherEnrollmentsResult.enrollments || [];
-      
+
       // Filtrar la inscripción actual que se está eliminando
       const activeEnrollments = otherEnrollments.filter(
         (enrollment) => {

@@ -62,7 +62,7 @@ export class CreateStudentScholarshipUseCase {
   /**
    * Método interno para verificar que no exista una asignación duplicada
    * Valida que no exista una asignación con el mismo estudiante, beca y gestión
-   * 
+   *
    * @private
    * @param {number} studentId - ID del estudiante
    * @param {number} scholarshipId - ID de la beca/descuento
@@ -87,7 +87,7 @@ export class CreateStudentScholarshipUseCase {
   /**
    * Obtiene la gestión actual desde la configuración del sistema
    * La configuración almacena el año académico, no el ID de la gestión
-   * 
+   *
    * @private
    * @returns {Promise<Object>} Entidad Management
    * @throws {NotFoundError} Si no se encuentra la configuración o la gestión
@@ -127,14 +127,14 @@ export class CreateStudentScholarshipUseCase {
   /**
    * Método interno para preparar los datos de la asignación
    * Solo incluye campos que NO tienen valores por defecto en el schema
-   * 
+   *
    * Campos sin DEFAULT (SÍ se envían):
    * - estudiante_id: NOT NULL (requerido)
    * - beca_descuento_id: NOT NULL (requerido)
    * - gestion_id: NOT NULL (requerido)
    * - fecha_solicitud: NOT NULL sin DEFAULT (requerido)
    * - observaciones: NULL por defecto, solo si tiene valor
-   * 
+   *
    * @private
    * @param {Object} data - Datos de entrada
    * @param {number} data.studentId - ID del estudiante
@@ -305,20 +305,20 @@ export class CreateStudentScholarshipUseCase {
 
   /**
    * Ejecuta el caso de uso de crear una asignación de beca
-   * 
+   *
    * Sigue el patrón de GetEnrollmentByIdUseCase:
    * - Logging inicial
    * - Try-catch para manejo de errores
    * - Logging de éxito/error
    * - Métodos internos para separar responsabilidades
    * - Mapeo a formato de presentación
-   * 
+   *
    * @param {Object} data - Datos de la asignación de beca a crear
    * @param {number} data.studentId - ID del estudiante (requerido)
    * @param {number} data.scholarshipId - ID de la beca/descuento (requerido)
    * @param {string} [data.observations] - Observaciones (opcional)
    * @returns {Promise<Object>} Asignación de beca creada en formato de presentación
-   * 
+   *
    * NOTA: userId no se pasa porque actualmente no hay autenticación
    * Los repositorios tienen userId = null como default para los campos de auditoría
    */

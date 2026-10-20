@@ -32,4 +32,3 @@ export class UpdatePlanEstudiosUseCase {
     return { plan_estudio: updated };
   }
 }
-
