@@ -64,23 +64,66 @@ describe('DeletePaymentAporteUseCase', () => {
     expect(deps.contributionPaymentRepository.delete).not.toHaveBeenCalled();
   });
 
-  it('elimina los documentos de pago del estudiante (sin archivo físico) y sus entregas', async () => {
-    const { useCase, deps } = crear();
-    deps.studentDocumentRepository.findAll.mockResolvedValue({
-      studentDocuments: [{ id: 30, fileName: 'RECIBO_PAGO_1.pdf', createdAt: '2020-01-01' }],
+  describe('documentos de pago', () => {
+    const conRecibo = (documentos) => {
+      const ctx = crear();
+      ctx.deps.contributionPaymentRepository.findById.mockResolvedValue({
+        id: 1, studentId: 7, paymentDate: '2026-03-10', concept: 'Aporte', receiptNumber: '55',
+      });
+      ctx.deps.studentDocumentRepository.findAll.mockResolvedValue({ studentDocuments: documentos });
+      return ctx;
+    };
+
+    it('busca los documentos PAGO del estudiante y elimina las entregas del concepto', async () => {
+      const { useCase, deps } = conRecibo([
+        { id: 30, fileName: 'RECIBO_PAGO_123_55_1700000000.pdf', createdAt: '2020-01-01' },
+      ]);
+      deps.studentDocumentDeliveryRepository.findAll.mockResolvedValue({
+        studentDocumentDeliveries: [
+          { id: 40, observaciones: 'Comprobante de pago aporte', fechaEntrega: '2026-03-10' },
+          { id: 41, observaciones: 'Otra cosa', fechaEntrega: '2026-03-10' },
+        ],
+      });
+      await useCase.execute(1);
+      expect(deps.studentDocumentRepository.findAll)
+        .toHaveBeenCalledWith({ studentId: 7, tipoDocumento: 'PAGO' }, null, null);
+      expect(deps.studentDocumentDeliveryRepository.delete).toHaveBeenCalledTimes(1);
+      expect(deps.studentDocumentDeliveryRepository.delete).toHaveBeenCalledWith(40);
     });
-    deps.studentDocumentDeliveryRepository.findAll.mockResolvedValue({
-      studentDocumentDeliveries: [
-        { id: 40, observaciones: 'Comprobante de pago aporte', fechaEntrega: '2026-03-10' },
-        { id: 41, observaciones: 'Otra cosa', fechaEntrega: '2026-03-10' },
-      ],
+
+    it('elimina el recibo de ESTE pago (por número) y no el de otro pago del estudiante', async () => {
+      const { useCase, deps } = conRecibo([
+        { id: 30, fileName: 'RECIBO_PAGO_123_55_1700000000.pdf', createdAt: '2020-01-01' },
+        { id: 31, fileName: 'RECIBO_PAGO_123_99_1700000001.pdf', createdAt: '2020-01-01' },
+      ]);
+      await useCase.execute(1);
+      expect(deps.studentDocumentRepository.delete).toHaveBeenCalledWith(30);
+      expect(deps.studentDocumentRepository.delete).not.toHaveBeenCalledWith(31);
     });
-    await useCase.execute(1);
-    expect(deps.studentDocumentRepository.findAll)
-      .toHaveBeenCalledWith({ studentId: 7, tipoDocumento: 'PAGO' }, null, null);
-    expect(deps.studentDocumentRepository.delete).toHaveBeenCalledWith(30);
-    expect(deps.studentDocumentDeliveryRepository.delete).toHaveBeenCalledTimes(1);
-    expect(deps.studentDocumentDeliveryRepository.delete).toHaveBeenCalledWith(40);
+
+    it('un documento de respaldo se elimina solo si se creó el mismo día del pago', async () => {
+      const { useCase, deps } = conRecibo([
+        { id: 32, fileName: 'comprobante.jpg', createdAt: '2026-03-10T15:00:00' },
+        { id: 33, fileName: 'otro-comprobante.jpg', createdAt: '2026-01-02T10:00:00' },
+      ]);
+      await useCase.execute(1);
+      expect(deps.studentDocumentRepository.delete).toHaveBeenCalledWith(32);
+      expect(deps.studentDocumentRepository.delete).not.toHaveBeenCalledWith(33);
+    });
+
+    it('un documento sin fecha NO se elimina (antes se borraban todos los PAGO del estudiante)', async () => {
+      const { useCase, deps } = conRecibo([{ id: 34, fileName: 'pagos/sin-fecha.pdf' }]);
+      await useCase.execute(1);
+      expect(deps.studentDocumentRepository.delete).not.toHaveBeenCalled();
+    });
+
+    it('un nombre que solo contiene "pagos" no basta para eliminar el documento', async () => {
+      const { useCase, deps } = conRecibo([
+        { id: 35, fileName: 'documentos/estudiantes/7/pagos/viejo.pdf', createdAt: '2019-05-05' },
+      ]);
+      await useCase.execute(1);
+      expect(deps.studentDocumentRepository.delete).not.toHaveBeenCalled();
+    });
   });
 
   it('un fallo al borrar documentos no impide eliminar el pago', async () => {

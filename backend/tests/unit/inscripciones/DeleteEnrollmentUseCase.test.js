@@ -88,11 +88,11 @@ describe('DeleteEnrollmentUseCase', () => {
     await expect(useCase.execute(4)).rejects.toBeInstanceOf(NotFoundError);
   });
 
-  it('un fallo al borrar materias se registra pero no impide eliminar la inscripción', async () => {
+  it('si falla el borrado de materias aborta sin eliminar la inscripción (evita huérfanos)', async () => {
     const { useCase, deps } = crear();
     deps.subjectEnrollmentRepository.findAll.mockRejectedValue(new Error('db'));
-    await useCase.execute(4);
+    await expect(useCase.execute(4)).rejects.toThrow('db');
     expect(deps.logger.error).toHaveBeenCalled();
-    expect(deps.enrollmentRepository.delete).toHaveBeenCalledWith(4);
+    expect(deps.enrollmentRepository.delete).not.toHaveBeenCalled();
   });
 });

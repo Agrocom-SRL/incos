@@ -180,8 +180,9 @@ export class DeleteEnrollmentUseCase {
         error: error.message,
         stack: error.stack,
       });
-      // No lanzar error para no interrumpir la eliminación de la inscripción
-      // Solo loguear el error
+      // Se aborta: eliminar la inscripción con materias inscritas pendientes dejaría
+      // registros huérfanos en matriculas_materia.
+      throw error;
     }
   }
 

@@ -83,6 +83,8 @@ export class DeletePaymentAporteUseCase {
       const studentId = paymentPlain.studentId ?? paymentPlain.student_id ?? paymentPlain.estudianteId;
       const paymentDate = paymentPlain.paymentDate ?? paymentPlain.fecha_pago ?? paymentPlain.fechaPago;
       const concept = paymentPlain.concept ?? paymentPlain.concepto;
+      const receiptNumber =
+        paymentPlain.receiptNumber ?? paymentPlain.numero_recibo ?? paymentPlain.numeroRecibo;
 
       // 2. Validar que el pago NO esté vinculado a una inscripción
       if (enrollmentId != null && enrollmentId !== '') {
@@ -102,7 +104,7 @@ export class DeletePaymentAporteUseCase {
       // 4. Buscar y eliminar documentos de tipo 'PAGO' asociados al estudiante
       // Incluye: recibo PDF generado y documento de respaldo subido
       if (studentId) {
-        await this._deletePaymentDocuments(studentId, paymentDate, concept);
+        await this._deletePaymentDocuments(studentId, paymentDate, concept, receiptNumber);
       }
 
       // 5. Ejecutar eliminación del pago principal (soft delete)
@@ -125,6 +127,26 @@ export class DeletePaymentAporteUseCase {
       });
       throw error;
     }
+  }
+
+  /**
+   * Día calendario (AAAA-MM-DD) de una fecha. Las cadenas de solo fecha o sin zona horaria se
+   * toman tal cual; `new Date('2026-03-10')` se interpreta como UTC y en Bolivia (UTC-4)
+   * caería en el día anterior.
+   *
+   * @private
+   * @param {string|Date|null|undefined} value
+   * @returns {string|null}
+   */
+  _dayKey(value) {
+    if (!value) return null;
+    if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}(?!.*(Z|[+-]\d{2}:?\d{2})$)/.test(value)) {
+      return value.slice(0, 10);
+    }
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return null;
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   }
 
   /**
@@ -186,7 +208,7 @@ export class DeletePaymentAporteUseCase {
    * @param {string} paymentDate - Fecha del pago (para relacionar entregas)
    * @param {string} concept - Concepto del pago (para relacionar entregas)
    */
-  async _deletePaymentDocuments(studentId, paymentDate, concept) {
+  async _deletePaymentDocuments(studentId, paymentDate, concept, receiptNumber) {
     try {
       // Buscar documentos de tipo 'PAGO' del estudiante
       const documentosResult = await this.studentDocumentRepository.findAll(
@@ -210,29 +232,24 @@ export class DeletePaymentAporteUseCase {
       // Filtrar documentos que corresponden a este pago específico
       // Los documentos de pago se crean en la misma fecha que el pago
       // Usar la fecha de creación del documento para relacionarlo con el pago
-      const paymentDateObj = paymentDate ? new Date(paymentDate) : null;
+      const paymentDay = this._dayKey(paymentDate);
       const documentosDelPago = documentos.filter((documento) => {
         const docPlain = documento.toPlainObject ? documento.toPlainObject() : documento;
         const fechaCreacion = docPlain.createdAt || docPlain.created_at;
 
-        if (!paymentDateObj || !fechaCreacion) {
-          // Si no hay fecha del pago o del documento, incluir todos (fallback)
-          return true;
+        const fileName = docPlain.fileName || docPlain.nombre_archivo || '';
+        // Los recibos PDF tienen formato: RECIBO_PAGO_{CI}_{numeroRecibo}_{timestamp}.pdf:
+        // se identifican por el número exacto del recibo de ESTE pago.
+        if (receiptNumber != null && receiptNumber !== '' && fileName.includes('RECIBO_PAGO_')) {
+          if (fileName.includes(`_${receiptNumber}_`)) return true;
         }
 
-        // Comparar fechas (solo día, mes y año, ignorar hora)
-        const docDate = new Date(fechaCreacion);
-        const sameDate =
-          docDate.getFullYear() === paymentDateObj.getFullYear() &&
-          docDate.getMonth() === paymentDateObj.getMonth() &&
-          docDate.getDate() === paymentDateObj.getDate();
+        // Otros documentos de respaldo: solo si se creó el mismo día que el pago.
+        // Sin fecha del pago o del documento NO se borra (antes se borraban todos).
+        const docDay = this._dayKey(fechaCreacion);
+        if (!paymentDay || !docDay) return false;
 
-        // También verificar si el nombre del archivo contiene el número de recibo (si está disponible)
-        const fileName = docPlain.fileName || docPlain.nombre_archivo || '';
-        // Los recibos PDF tienen formato: RECIBO_PAGO_{CI}_{numeroRecibo}_{timestamp}.pdf
-        // Los documentos de respaldo están en: documentos/estudiantes/{studentId}/pagos/{filename}
-
-        return sameDate || fileName.includes('RECIBO_PAGO') || fileName.includes('pagos');
+        return paymentDay === docDay && !fileName.includes('RECIBO_PAGO_');
       });
 
       if (documentosDelPago.length === 0) {
