@@ -1,4 +1,5 @@
 import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
+import { parseBooleano } from '../../utils/validacionEntrada.js';
 
 /**
  * Use Case: UpdatePaymentMethodUseCase
@@ -46,7 +47,7 @@ export class UpdatePaymentMethodUseCase {
 
     const activo = body.activo ?? body.active;
     if (activo !== undefined) {
-      payload.active = Boolean(activo);
+      payload.active = parseBooleano(activo, 'activo');
     }
 
     if (Object.keys(payload).length === 0) {

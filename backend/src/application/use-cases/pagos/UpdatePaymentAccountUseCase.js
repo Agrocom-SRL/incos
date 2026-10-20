@@ -1,5 +1,6 @@
 import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
 import { UPLOAD } from '../../../infrastructure/config/uploads.config.js';
+import { parseBooleano, parseIdOpcional } from '../../utils/validacionEntrada.js';
 
 /**
  * Use Case: UpdatePaymentAccountUseCase
@@ -52,12 +53,12 @@ export class UpdatePaymentAccountUseCase {
 
     const metodoPagoId = body.metodo_pago_id ?? body.metodoPagoId ?? body.paymentMethodId;
     if (metodoPagoId !== undefined) {
-      payload.paymentMethodId = metodoPagoId != null && metodoPagoId !== '' ? Number(metodoPagoId) : null;
+      payload.paymentMethodId = parseIdOpcional(metodoPagoId, 'metodo_pago_id');
     }
 
     const bancoId = body.banco_id ?? body.bancoId ?? body.bankId;
     if (bancoId !== undefined) {
-      payload.bankId = bancoId != null && bancoId !== '' ? Number(bancoId) : null;
+      payload.bankId = parseIdOpcional(bancoId, 'banco_id');
     }
 
     const numeroCuenta = body.numero_cuenta ?? body.numeroCuenta ?? body.accountNumber;
@@ -77,7 +78,7 @@ export class UpdatePaymentAccountUseCase {
 
     const activo = body.activo ?? body.active;
     if (activo !== undefined) {
-      payload.active = Boolean(activo);
+      payload.active = parseBooleano(activo, 'activo');
     }
 
     if (Object.keys(payload).length === 0) {

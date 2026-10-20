@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 import fs from 'fs';
-import { NotFoundError } from '../../../src/domain/errors/AppError.js';
+import { NotFoundError, ValidationError } from '../../../src/domain/errors/AppError.js';
 
 const mockSave = jest.fn((scope, fileName) => ({
   filePath: `/uploads/${scope}/${fileName}`,
@@ -57,6 +57,66 @@ describe('GenerateReciboPagoUseCase', () => {
 
   beforeEach(() => mockSave.mockClear());
   afterEach(() => jest.restoreAllMocks());
+
+  describe('montos reales (sin 400 inventado)', () => {
+    const porCabecera = (over) => {
+      const r = crear({
+        contributionPaymentInstallmentRepository: {
+          findById: jest.fn().mockResolvedValue(null),
+          findBy: jest.fn().mockResolvedValue(null),
+          findAll: jest.fn().mockResolvedValue({ contributionPaymentInstallments: [cuotas[0], cuotas[1]] }),
+        },
+      });
+      r.deps.contributionPaymentRepository.findById.mockResolvedValue({ ...cabecera, ...over });
+      return r;
+    };
+    const dataPdf = (deps) => deps.pdfGenerator.generateReciboPago.mock.calls[0][0];
+
+    it('amountPaid = 0 imprime 0 y no el total', async () => {
+      const { useCase, deps } = porCabecera({ totalAmount: 200, amountPaid: 0 });
+      await useCase.execute(1);
+      expect(dataPdf(deps)).toMatchObject({ montoTotal: 200, montoPagado: 0 });
+    });
+
+    it('un aporte de monto total 0 es válido y se imprime 0 (no 400)', async () => {
+      const { useCase, deps } = porCabecera({ totalAmount: 0, baseAmount: undefined, amountPaid: undefined });
+      await useCase.execute(1);
+      expect(dataPdf(deps)).toMatchObject({ montoTotal: 0, montoPagado: 0 });
+    });
+
+    it('sin amountPaid el pagado cae al total del registro', async () => {
+      const { useCase, deps } = porCabecera({ totalAmount: 120, amountPaid: undefined });
+      await useCase.execute(1);
+      expect(dataPdf(deps)).toMatchObject({ montoTotal: 120, montoPagado: 120 });
+    });
+
+    it('usa baseAmount de la cabecera como total cuando no hay totalAmount', async () => {
+      const { useCase, deps } = porCabecera({ totalAmount: undefined, baseAmount: 350, amountPaid: 100 });
+      await useCase.execute(1);
+      expect(dataPdf(deps)).toMatchObject({ montoTotal: 350, montoPagado: 100 });
+    });
+
+    it('sin ningún monto total lanza ValidationError y no genera PDF ni documento', async () => {
+      const { useCase, deps } = porCabecera({ totalAmount: undefined, baseAmount: undefined });
+      await expect(useCase.execute(1)).rejects.toBeInstanceOf(ValidationError);
+      expect(deps.pdfGenerator.generateReciboPago).not.toHaveBeenCalled();
+      expect(deps.studentDocumentRepository.create).not.toHaveBeenCalled();
+    });
+
+    it('por cuota: monto base 0 se imprime 0 y monto base ausente lanza ValidationError', async () => {
+      const { useCase, deps } = crear({
+        contributionPaymentRepository: { findById: jest.fn().mockResolvedValue({ ...cabecera, baseAmount: 0 }) },
+      });
+      await useCase.execute(12);
+      expect(dataPdf(deps).montoTotal).toBe(0);
+
+      const sinBase = crear({
+        contributionPaymentRepository: { findById: jest.fn().mockResolvedValue({ ...cabecera, baseAmount: undefined }) },
+      });
+      await expect(sinBase.useCase.execute(12)).rejects.toBeInstanceOf(ValidationError);
+      expect(sinBase.deps.pdfGenerator.generateReciboPago).not.toHaveBeenCalled();
+    });
+  });
 
   describe('recibo por cuota', () => {
     it('genera el PDF con saldo y total pagado acumulado hasta esa cuota', async () => {

@@ -1,4 +1,4 @@
-import { NotFoundError } from '../../../domain/errors/AppError.js';
+import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
 import { UploadsStorageHelper } from '../../../infrastructure/external/storage/UploadsStorageHelper.js';
 import path from 'path';
 import fs from 'fs';
@@ -231,6 +231,15 @@ export class GenerateReciboPagoUseCase {
                     }
                 }
 
+                // El total debe venir del registro: no se inventa un monto si falta (0 es válido).
+                const totalRecibo = this._primerMonto([
+                  paymentPlain.totalAmount, paymentPlain.total_amount, paymentPlain.montoTotal,
+                  paymentPlain.monto_total, paymentPlain.baseAmount, paymentPlain.montoBase,
+                ]);
+                if (totalRecibo == null) {
+                    throw new ValidationError(`El aporte ${paymentId} no tiene monto total registrado`);
+                }
+
                 // 5. Generar el recibo PDF usando la misma lógica que RegisterAporteVoluntarioUseCase
                 const reciboResult = await this._generateReciboPDF(
                     payment,
@@ -238,12 +247,15 @@ export class GenerateReciboPagoUseCase {
                     management,
                     paymentMethod,
                     scholarshipInfo,
-                    paymentPlain.totalAmount || paymentPlain.total_amount || paymentPlain.montoTotal
-                      || paymentPlain.monto_total || 400.00,
-                    paymentPlain.scholarshipDiscount || paymentPlain.scholarship_discount
-                      || paymentPlain.descuentoBeca || paymentPlain.descuento_beca || 0.00,
-                    paymentPlain.amountPaid || paymentPlain.amount_paid || paymentPlain.montoPagado
-                      || paymentPlain.monto_pagado || (paymentPlain.totalAmount || paymentPlain.total_amount || 400.00),
+                    totalRecibo,
+                    this._primerMonto([
+                      paymentPlain.scholarshipDiscount, paymentPlain.scholarship_discount,
+                      paymentPlain.descuentoBeca, paymentPlain.descuento_beca,
+                    ]) ?? 0,
+                    this._primerMonto([
+                      paymentPlain.amountPaid, paymentPlain.amount_paid, paymentPlain.montoPagado,
+                      paymentPlain.monto_pagado,
+                    ]) ?? totalRecibo,
                     observacionCabecera
                 );
 
@@ -314,6 +326,21 @@ export class GenerateReciboPagoUseCase {
     }
 
     /**
+     * Primer candidato numérico finito (null/undefined/''/NaN se saltan; 0 cuenta como valor real).
+     * @private
+     * @param {Array<*>} candidatos
+     * @returns {number|null}
+     */
+    _primerMonto(candidatos) {
+        for (const c of candidatos) {
+            if (c === undefined || c === null || (typeof c === 'string' && c.trim() === '')) continue;
+            const n = Number(c);
+            if (Number.isFinite(n)) return n;
+        }
+        return null;
+    }
+
+    /**
      * Genera el recibo de pago para una cuota (pago_cuotas).
      * Usado cuando el id recibido en execute() corresponde a una cuota.
      * @private
@@ -334,7 +361,10 @@ export class GenerateReciboPagoUseCase {
         const cabeceraPlain = cabecera.toPlainObject ? cabecera.toPlainObject() : cabecera;
         const studentId = cabeceraPlain.studentId ?? cabeceraPlain.estudianteId ?? cabeceraPlain.student_id;
         const montoObligatorio = Number(cabeceraPlain.mandatoryAmount ?? cabeceraPlain.montoObligatorio ?? 0);
-        const montoBase = Number(cabeceraPlain.baseAmount ?? cabeceraPlain.montoBase ?? 0);
+        const montoBase = this._primerMonto([cabeceraPlain.baseAmount, cabeceraPlain.montoBase]);
+        if (montoBase == null) {
+            throw new ValidationError(`La cabecera de aporte ${cabeceraId} no tiene monto base registrado`);
+        }
         const descuentoBeca = Number(cabeceraPlain.scholarshipDiscount ?? cabeceraPlain.descuentoBeca ?? 0);
 
         const resultCuotas = await this.contributionPaymentInstallmentRepository.findAll(
@@ -410,7 +440,7 @@ export class GenerateReciboPagoUseCase {
             carrera: null,
             cursoParalelo: null,
             anio: null,
-            montoTotal: montoBase || 400,
+            montoTotal: montoBase,
             descuentoBeca,
             montoObligatorio,
             totalPagadoAntes,
@@ -598,9 +628,9 @@ export class GenerateReciboPagoUseCase {
                 anio: null, // No mostrar si no existe
 
                 // Datos del pago
-                montoTotal: totalAmount || 400.00,
-                descuentoBeca: scholarshipDiscount || 0,
-                montoPagado: amountToPay || totalAmount || 400.00,
+                montoTotal: totalAmount,
+                descuentoBeca: scholarshipDiscount ?? 0,
+                montoPagado: amountToPay ?? totalAmount,
                 concepto: paymentPlain.concepto || paymentPlain.concept || 'Aporte voluntario anual',
                 metodoPago: paymentMethod?.nombre || paymentMethod?.name || 'N/A',
                 numeroTransaccion: paymentPlain.numeroTransaccion || paymentPlain.numero_transaccion

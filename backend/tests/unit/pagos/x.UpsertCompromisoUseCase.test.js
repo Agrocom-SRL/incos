@@ -67,4 +67,11 @@ describe('UpsertCompromisoUseCase', () => {
     expect(compromisoRepo.delete).not.toHaveBeenCalled();
     expect(compromisoRepo.create).not.toHaveBeenCalled();
   });
+
+  it.each([['2026-02-31'], ['2026-04-31'], ['abc']])('rechaza fecha %p sin tocar nada', async (fecha) => {
+    const { useCase, compromisoRepo } = crear({ vigente: { id: 5 } });
+    await expect(useCase.execute({ pagoAporteId: 8, data: { fechaCompromiso: fecha } })).rejects.toBeInstanceOf(ValidationError);
+    expect(compromisoRepo.delete).not.toHaveBeenCalled();
+    expect(compromisoRepo.create).not.toHaveBeenCalled();
+  });
 });

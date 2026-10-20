@@ -99,8 +99,9 @@ export class RegisterPagoCapacitacionUseCase {
     const montoObligatorio = Number(inscripcion.montoObligatorio ?? 0);
     const saldo = Math.max(0, montoObligatorio - totalPagadoPrevio);
     if (monto > saldo) {
+      const limite = totalPagadoPrevio > 0 ? 'el saldo pendiente' : 'el costo del curso';
       throw new ValidationError(
-        `El monto del pago (Bs. ${monto.toFixed(2)}) no puede superar el saldo pendiente (Bs. ${saldo.toFixed(2)})`
+        `El monto del pago (Bs. ${monto.toFixed(2)}) no puede superar ${limite} (Bs. ${saldo.toFixed(2)})`
       );
     }
 

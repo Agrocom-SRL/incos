@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 import { SetEstadoBancoAutorizadoUseCase } from '../../../src/application/use-cases/pagos/SetEstadoBancoAutorizadoUseCase.js';
-import { NotFoundError } from '../../../src/domain/errors/AppError.js';
+import { NotFoundError, ValidationError } from '../../../src/domain/errors/AppError.js';
 
 describe('SetEstadoBancoAutorizadoUseCase', () => {
   const crear = (existing = { id: 4 }) => {
@@ -23,5 +23,17 @@ describe('SetEstadoBancoAutorizadoUseCase', () => {
     const { useCase, repo } = crear(null);
     await expect(useCase.execute(99, true)).rejects.toBeInstanceOf(NotFoundError);
     expect(repo.update).not.toHaveBeenCalled();
+  });
+
+  it.each([[undefined], [null], [''], ['abc']])('rechaza activo %p sin tocar el estado', async (activo) => {
+    const { useCase, repo } = crear();
+    await expect(useCase.execute(4, activo)).rejects.toBeInstanceOf(ValidationError);
+    expect(repo.update).not.toHaveBeenCalled();
+  });
+
+  it.each([['false', false], ['true', true], ['0', false], [1, true]])('interpreta activo %p como %p', async (activo, esperado) => {
+    const { useCase, repo } = crear();
+    await useCase.execute(4, activo);
+    expect(repo.update).toHaveBeenCalledWith(4, { active: esperado }, null);
   });
 });

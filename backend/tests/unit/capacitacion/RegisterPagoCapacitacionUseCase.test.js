@@ -119,4 +119,9 @@ observaciones: 'o',
       crear({ cuenta: null }).useCase.execute(7, { ...body, cuentaPagoId: 9 })
     ).rejects.toBeInstanceOf(NotFoundError);
   });
+
+  it('si aún no hay pagos, el mensaje habla del costo del curso y no de un saldo pendiente', async () => {
+    const { useCase } = crear({ pagado: 0 });
+    await expect(useCase.execute(7, { ...body, monto: 100000 })).rejects.toThrow(/costo del curso/);
+  });
 });
