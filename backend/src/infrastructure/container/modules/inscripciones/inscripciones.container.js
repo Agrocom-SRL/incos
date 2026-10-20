@@ -287,7 +287,8 @@ export function registerInscripcionesResource(container) {
         INSCRIPCIONES_TOKENS.generateFormularioInscripcionController,
         (c) =>
             new GenerateFormularioInscripcionController({
-                generateFormularioInscripcionUseCase: c.resolve(INSCRIPCIONES_TOKENS.generateFormularioInscripcionUseCase),
+                generateFormularioInscripcionUseCase:
+                  c.resolve(INSCRIPCIONES_TOKENS.generateFormularioInscripcionUseCase),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
                 responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
             })
@@ -351,7 +352,8 @@ export function registerInscripcionesResource(container) {
                 createEnrollmentController: c.resolve(INSCRIPCIONES_TOKENS.createEnrollmentController),
                 getEnrollmentByIdController: c.resolve(INSCRIPCIONES_TOKENS.getEnrollmentByIdController),
                 deleteEnrollmentController: c.resolve(INSCRIPCIONES_TOKENS.deleteEnrollmentController),
-                generateFormularioInscripcionController: c.resolve(INSCRIPCIONES_TOKENS.generateFormularioInscripcionController),
+                generateFormularioInscripcionController:
+                  c.resolve(INSCRIPCIONES_TOKENS.generateFormularioInscripcionController),
                 updateEnrollmentController: c.resolve(INSCRIPCIONES_TOKENS.updateEnrollmentController),
                 updateEnrollmentPriorHistoryController: c.resolve(
                   INSCRIPCIONES_TOKENS.updateEnrollmentPriorHistoryController

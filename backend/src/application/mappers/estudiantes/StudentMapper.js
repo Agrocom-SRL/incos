@@ -100,9 +100,15 @@ export function viewRowToPresentation(row) {
   map('empresa_institucion', 'empresaInstitucion');
   map('cargo', 'cargo');
   map('observaciones', 'observaciones');
-  if (row.residencia_municipio_nombre !== undefined) presentation.residenciaMunicipioNombre = row.residencia_municipio_nombre;
-  if (row.residencia_provincia_nombre !== undefined) presentation.residenciaProvinciaNombre = row.residencia_provincia_nombre;
-  if (row.residencia_departamento_nombre !== undefined) presentation.residenciaDepartamentoNombre = row.residencia_departamento_nombre;
+  if (row.residencia_municipio_nombre !== undefined) {
+    presentation.residenciaMunicipioNombre = row.residencia_municipio_nombre;
+  }
+  if (row.residencia_provincia_nombre !== undefined) {
+    presentation.residenciaProvinciaNombre = row.residencia_provincia_nombre;
+  }
+  if (row.residencia_departamento_nombre !== undefined) {
+    presentation.residenciaDepartamentoNombre = row.residencia_departamento_nombre;
+  }
   if (row.estado_civil_nombre !== undefined) presentation.estadoCivilNombre = row.estado_civil_nombre;
 
   return presentation;

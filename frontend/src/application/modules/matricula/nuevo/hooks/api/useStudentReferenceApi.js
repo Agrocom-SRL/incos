@@ -13,7 +13,7 @@
  * - Proporciona funciones para cargar datos cuando se necesitan
  */
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useCasesFactory } from '@container';
 import { GRADO_DISCAPACIDAD } from '@infrastructure/config/constants';
 import { createOptimizedArraySetter, useStableApiResult } from '@application/utils';
@@ -26,16 +26,10 @@ export const useStudentReferenceApi = () => {
   const [discapacidades, setDiscapacidades] = useState([]);
   const [tiposParentesco, setTiposParentesco] = useState([]);
 
-  // Setters optimizados para evitar actualizaciones innecesarias
-  // Usar useRef para mantener referencias estables (setState de React ya es estable)
-  const optimizedSetDiscapacidadesRef = useRef(null);
-  const optimizedSetTiposParentescoRef = useRef(null);
+  // Setters optimizados creados una sola vez (memoizados, referencia estable)
+  const optimizedSetDiscapacidades = useMemo(() => createOptimizedArraySetter(setDiscapacidades), []);
+  const optimizedSetTiposParentesco = useMemo(() => createOptimizedArraySetter(setTiposParentesco), []);
 
-  // Inicializar los setters optimizados una sola vez
-  if (!optimizedSetDiscapacidadesRef.current) {
-    optimizedSetDiscapacidadesRef.current = createOptimizedArraySetter(setDiscapacidades);
-    optimizedSetTiposParentescoRef.current = createOptimizedArraySetter(setTiposParentesco);
-  }
 
   /**
    * Carga tipos de discapacidad (solo si tiene discapacidad)
@@ -47,18 +41,18 @@ export const useStudentReferenceApi = () => {
 
       if (result.success) {
         // OPTIMIZACIÓN: Solo actualizar si los datos realmente cambiaron
-        optimizedSetDiscapacidadesRef.current(result.data || []);
+        optimizedSetDiscapacidades(result.data || []);
       } else {
         console.error('[useStudentReferenceData] Error al cargar discapacidades:', result.error);
         // OPTIMIZACIÓN: Solo actualizar si los datos realmente cambiaron
-        optimizedSetDiscapacidadesRef.current([]);
+        optimizedSetDiscapacidades([]);
       }
     } catch (err) {
       console.error('[useStudentReferenceData] Error inesperado al cargar discapacidades:', err);
       // OPTIMIZACIÓN: Solo actualizar si los datos realmente cambiaron
-      optimizedSetDiscapacidadesRef.current([]);
+      optimizedSetDiscapacidades([]);
     }
-  }, []);
+  }, [optimizedSetDiscapacidades]);
 
   /**
    * Carga tipos de parentesco (solo si hay contacto de emergencia)
@@ -70,18 +64,18 @@ export const useStudentReferenceApi = () => {
 
       if (result.success) {
         // OPTIMIZACIÓN: Solo actualizar si los datos realmente cambiaron
-        optimizedSetTiposParentescoRef.current(result.data || []);
+        optimizedSetTiposParentesco(result.data || []);
       } else {
         console.error('[useStudentReferenceData] Error al cargar tipos de parentesco:', result.error);
         // OPTIMIZACIÓN: Solo actualizar si los datos realmente cambiaron
-        optimizedSetTiposParentescoRef.current([]);
+        optimizedSetTiposParentesco([]);
       }
     } catch (err) {
       console.error('[useStudentReferenceData] Error inesperado al cargar tipos de parentesco:', err);
       // OPTIMIZACIÓN: Solo actualizar si los datos realmente cambiaron
-      optimizedSetTiposParentescoRef.current([]);
+      optimizedSetTiposParentesco([]);
     }
-  }, []);
+  }, [optimizedSetTiposParentesco]);
 
   // Usar helper para mantener referencia estable del resultado
   return useStableApiResult(

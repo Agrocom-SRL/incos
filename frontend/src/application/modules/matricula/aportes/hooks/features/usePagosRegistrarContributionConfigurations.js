@@ -21,7 +21,7 @@
  * - Optimizado para evitar renders redundantes
  */
 
-import { useState, useCallback, useMemo, useRef } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useContributionConfigurationsApi } from '../api/useContributionConfigurationsApi';
 
 /**
@@ -65,34 +65,13 @@ export const usePagosRegistrarContributionConfigurations = () => {
   // TODO: Aquí se puede agregar lógica específica de registro de pagos si es necesario
   // Por ejemplo: filtrar configuraciones según el estudiante o gestión, validaciones específicas, etc.
 
-  // MANTENER REFERENCIA ESTABLE
-  // Comparar valores, no solo referencias, para evitar recálculos innecesarios
-  const prevResultRef = useRef(null);
-  
-  return useMemo(() => {
-    const current = {
+  // Referencia estable: useMemo solo recrea el objeto si cambia alguna dependencia
+  return useMemo(() => ({
       configuracionAportes,
       loading,
       error,
       refetch,
       selectedConfiguracion,
       onSelectConfiguracion,
-    };
-
-    const prev = prevResultRef.current;
-    
-    // Comparar valores, no referencias
-    if (prev &&
-        prev.loading === current.loading &&
-        prev.error === current.error &&
-        prev.refetch === current.refetch &&
-        prev.configuracionAportes === current.configuracionAportes &&
-        prev.selectedConfiguracion?.id === current.selectedConfiguracion?.id &&
-        prev.onSelectConfiguracion === current.onSelectConfiguracion) {
-      return prev;
-    }
-
-    prevResultRef.current = current;
-    return current;
-  }, [configuracionAportes, loading, error, refetch, selectedConfiguracion, onSelectConfiguracion]);
+    }), [configuracionAportes, loading, error, refetch, selectedConfiguracion, onSelectConfiguracion]);
 };

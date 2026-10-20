@@ -216,6 +216,7 @@ export const useGestionHorariosArmadoState = (notification) => {
             },
             { replace: true },
         );
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- searchParams se lee puntualmente; incluirlo causaria bucle al reescribir la URL
     }, [paraleloGestionId, tab, resolver.loading, pgDirectLoading, setSearchParams]);
 
     const breadcrumbItems = useMemo(

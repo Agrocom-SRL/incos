@@ -10,7 +10,7 @@
  * Usado por: StudentRegisterProvider
  */
 
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import { Form } from 'antd';
 import { useDocumentacionDinamica } from './useDocumentacionDinamica';
 
@@ -26,29 +26,15 @@ export const useDocumentacionProcesada = (documentacion = [], formRef) => {
 
   const documentacionProcesadaResult = useDocumentacionDinamica(documentacion, formValues);
 
-  const prevResultRef = useRef(null);
-
-  return useMemo(() => {
-    const current = {
-      documentacion: documentacionProcesadaResult.documentacion,
-      documentosRequeridos: documentacionProcesadaResult.documentosRequeridos,
-      documentosOpcionales: documentacionProcesadaResult.documentosOpcionales,
-      cantidadDocumentos: documentacionProcesadaResult.cantidadDocumentos,
-      cantidadRequeridos: documentacionProcesadaResult.cantidadRequeridos,
-      cantidadOpcionales: documentacionProcesadaResult.cantidadOpcionales,
-    };
-    const prev = prevResultRef.current;
-    if (prev &&
-        prev.cantidadDocumentos === current.cantidadDocumentos &&
-        prev.cantidadRequeridos === current.cantidadRequeridos &&
-        prev.cantidadOpcionales === current.cantidadOpcionales) {
-      const prevDocIds = prev.documentacion?.map(d => d.id).sort().join(',') || '';
-      const currentDocIds = current.documentacion?.map(d => d.id).sort().join(',') || '';
-      if (prevDocIds === currentDocIds) return prev;
-    }
-    prevResultRef.current = current;
-    return current;
-  }, [documentacionProcesadaResult]);
+  // useMemo mantiene la referencia mientras el resultado procesado no cambie
+  return useMemo(() => ({
+    documentacion: documentacionProcesadaResult.documentacion,
+    documentosRequeridos: documentacionProcesadaResult.documentosRequeridos,
+    documentosOpcionales: documentacionProcesadaResult.documentosOpcionales,
+    cantidadDocumentos: documentacionProcesadaResult.cantidadDocumentos,
+    cantidadRequeridos: documentacionProcesadaResult.cantidadRequeridos,
+    cantidadOpcionales: documentacionProcesadaResult.cantidadOpcionales,
+  }), [documentacionProcesadaResult]);
 };
 
 /**

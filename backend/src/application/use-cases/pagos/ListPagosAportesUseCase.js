@@ -52,7 +52,12 @@ export class ListPagosAportesUseCase {
         });
 
         try {
-            const result = await this.repository.obtenerListadoPagosAportes(baseFilters, pageNum, limitNum, queryParams);
+            const result = await this.repository.obtenerListadoPagosAportes(
+              baseFilters,
+              pageNum,
+              limitNum,
+              queryParams,
+            );
             const rows = result.contributionPayments || [];
             const total = result.total ?? 0;
 

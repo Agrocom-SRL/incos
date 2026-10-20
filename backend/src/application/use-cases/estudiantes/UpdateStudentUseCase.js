@@ -427,7 +427,8 @@ export class UpdateStudentUseCase {
       try {
         const existingTransitability = await this.transitabilityRepository.findBy({ studentId });
         if (existingTransitability) {
-          const plain = existingTransitability.toPlainObject ? existingTransitability.toPlainObject() : existingTransitability;
+          const plain = existingTransitability.toPlainObject ? existingTransitability.toPlainObject()
+            : existingTransitability;
           await this.transitabilityRepository.delete(plain.id);
           this.logger.info('[Estudiantes] Registro de transitabilidad eliminado (tipo de admisión no es TRANSITABILIDAD)', {
             studentId,
@@ -477,7 +478,14 @@ export class UpdateStudentUseCase {
    * @param {number|null} gestionIngresoIdActual - Gestión actual en BD
    * @returns {boolean}
    */
-  _shouldUpdateStudentCode(existingAcademic, data, tipoAdmision, gestionIngresoId, tipoAdmisionActual, gestionIngresoIdActual) {
+  _shouldUpdateStudentCode(
+    existingAcademic,
+    data,
+    tipoAdmision,
+    gestionIngresoId,
+    tipoAdmisionActual,
+    gestionIngresoIdActual,
+  ) {
     const tieneDatosAcademicosPrevios = existingAcademic !== null;
     const tipoAdmisionCambio = tieneDatosAcademicosPrevios &&
       data.tipoAdmision !== undefined &&
@@ -502,7 +510,14 @@ export class UpdateStudentUseCase {
    * @param {number|null} gestionIngresoIdNuevo - Gestión que quedará
    * @throws {Error} Si falla la generación o actualización del código
    */
-  async _updateStudentCodeForNewManagement(studentId, gestionIngresoIdForCode, existingStudent, existingAcademicPlain, tipoAdmision, gestionIngresoIdNuevo) {
+  async _updateStudentCodeForNewManagement(
+    studentId,
+    gestionIngresoIdForCode,
+    existingStudent,
+    existingAcademicPlain,
+    tipoAdmision,
+    gestionIngresoIdNuevo,
+  ) {
     const nuevoCodigoEstudiante = await this.generateStudentCode(gestionIngresoIdForCode);
     await this.studentRepository.update(studentId, { studentCode: nuevoCodigoEstudiante });
     this.logger.info('[Estudiantes] Código de estudiante actualizado por cambio de tipo admisión/gestión (año de gestión)', {
@@ -907,10 +922,12 @@ export class UpdateStudentUseCase {
               // Actualizar origen existente
               const updatePayload = {
                 countryId: originData.countryId !== undefined ? originData.countryId : null,
-                birthMunicipalityId: originData.birthMunicipalityId !== undefined ? originData.birthMunicipalityId : null,
+                birthMunicipalityId: originData.birthMunicipalityId !== undefined ? originData.birthMunicipalityId
+                  : null,
                 birthCity: originData.birthCity !== undefined ? originData.birthCity : null,
                 motherTongueId: originData.motherTongueId !== undefined ? originData.motherTongueId : null,
-                secondaryLanguageId: originData.secondaryLanguageId !== undefined ? originData.secondaryLanguageId : null,
+                secondaryLanguageId: originData.secondaryLanguageId !== undefined ? originData.secondaryLanguageId
+                  : null,
                 originType: originData.originType,
                 isPrincipal: originData.isPrincipal !== undefined ? originData.isPrincipal : true,
               };
@@ -1138,10 +1155,12 @@ export class UpdateStudentUseCase {
           : null;
 
         const tipoAdmisionActual = existingAcademicPlain?.admissionType || existingAcademicPlain?.tipoAdmision || null;
-        const gestionIngresoIdActual = existingAcademicPlain?.managementId || existingAcademicPlain?.gestionIngresoId || null;
+        const gestionIngresoIdActual = existingAcademicPlain?.managementId || existingAcademicPlain?.gestionIngresoId
+          || null;
 
         // Resolver tipo, gestión y carrera (NUEVO → gestión vigente; resto → valores enviados)
-        const { tipoAdmision, gestionIngresoId, carreraId } = await this._resolveGestionAndCarreraForAcademicUpdate(data, studentId);
+        const { tipoAdmision, gestionIngresoId,
+          carreraId } = await this._resolveGestionAndCarreraForAcademicUpdate(data, studentId);
 
         // Eliminar transitabilidad/traspaso si el tipo final no corresponde
         await this._removeTransitabilidadAndTraspasoIfNotApplicable(studentId, data, tipoAdmision);
@@ -1180,7 +1199,14 @@ export class UpdateStudentUseCase {
         await this._ensureAdmisionCorrelativoForGestionIfNeeded(gestionIngresoId);
 
         // Persistir datos académicos (update o create)
-        await this._updateOrCreateAcademicData(studentId, data, existingAcademic, tipoAdmision, gestionIngresoId, carreraId);
+        await this._updateOrCreateAcademicData(
+          studentId,
+          data,
+          existingAcademic,
+          tipoAdmision,
+          gestionIngresoId,
+          carreraId,
+        );
       }
 
       // 8. Obtener el estudiante actualizado con todas sus relaciones

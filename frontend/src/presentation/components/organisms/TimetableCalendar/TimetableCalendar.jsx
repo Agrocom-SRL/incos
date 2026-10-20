@@ -111,7 +111,7 @@ export const TimetableCalendar = ({
   loading = false,
 }) => {
   // Validar schedule
-  const validSchedule = Array.isArray(schedule) ? schedule : [];
+  const validSchedule = useMemo(() => (Array.isArray(schedule) ? schedule : []), [schedule]);
 
   // Convertir schedule a eventos
   const events = useMemo(

@@ -87,7 +87,11 @@ export class AsignacionHorarioRepository extends BaseRepository {
 
   async hasClassroomConflict({ scheduleId, classroomId, excludeAsignacionHorarioId = null }) {
     const excludeId = excludeAsignacionHorarioId;
-    const conflictId = await this.findClassroomConflict({ scheduleId, classroomId, excludeAsignacionHorarioId: excludeId });
+    const conflictId = await this.findClassroomConflict({
+      scheduleId,
+      classroomId,
+      excludeAsignacionHorarioId: excludeId,
+    });
     return conflictId != null;
   }
 

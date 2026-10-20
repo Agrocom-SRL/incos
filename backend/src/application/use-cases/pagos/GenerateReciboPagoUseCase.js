@@ -93,7 +93,9 @@ export class GenerateReciboPagoUseCase {
                     }
                 }
                 if (paymentId != null && String(paymentId).trim() !== '') {
-                    const installmentByRecibo = await this.contributionPaymentInstallmentRepository.findBy({ receiptNumber: String(paymentId).trim() });
+                    const installmentByRecibo = await this.contributionPaymentInstallmentRepository.findBy(
+                      { receiptNumber: String(paymentId).trim() },
+                    );
                     if (installmentByRecibo) {
                         return await this._executeReciboPorCuota(installmentByRecibo);
                     }
@@ -184,10 +186,12 @@ export class GenerateReciboPagoUseCase {
                     this.studentRepository.findById(studentId),
                     this.managementRepository.findById(paymentPlain.managementId || paymentPlain.management_id),
                     paymentPlain.paymentMethodId || paymentPlain.payment_method_id
-                        ? this.paymentMethodRepository.findById(paymentPlain.paymentMethodId || paymentPlain.payment_method_id)
+                        ? this.paymentMethodRepository.findById(paymentPlain.paymentMethodId
+                          || paymentPlain.payment_method_id)
                         : null,
                     paymentPlain.studentScholarshipId || paymentPlain.student_scholarship_id
-                        ? this.studentScholarshipRepository.findById(paymentPlain.studentScholarshipId || paymentPlain.student_scholarship_id)
+                        ? this.studentScholarshipRepository.findById(paymentPlain.studentScholarshipId
+                          || paymentPlain.student_scholarship_id)
                         : null,
                     null, // Se obtendrá después si hay studentScholarship
                 ]);
@@ -203,7 +207,8 @@ export class GenerateReciboPagoUseCase {
                 // Obtener beca si hay studentScholarship
                 let scholarshipInfo = null;
                 if (studentScholarship) {
-                    const scholarshipId = studentScholarship.scholarshipId || studentScholarship.becaDescuentoId || studentScholarship.beca_descuento_id;
+                    const scholarshipId = studentScholarship.scholarshipId || studentScholarship.becaDescuentoId
+                      || studentScholarship.beca_descuento_id;
                     if (scholarshipId) {
                         scholarshipInfo = await this.scholarshipRepository.findById(scholarshipId);
                     }
@@ -217,7 +222,8 @@ export class GenerateReciboPagoUseCase {
                         1,
                         100
                     );
-                    const cuotas = resultCuotas.contributionPaymentInstallments ?? resultCuotas.contributionPaymentInstallment ?? [];
+                    const cuotas = resultCuotas.contributionPaymentInstallments
+                      ?? resultCuotas.contributionPaymentInstallment ?? [];
                     if (cuotas.length > 0) {
                         const ultima = cuotas[cuotas.length - 1];
                         const plain = ultima.toPlainObject ? ultima.toPlainObject() : ultima;
@@ -232,9 +238,12 @@ export class GenerateReciboPagoUseCase {
                     management,
                     paymentMethod,
                     scholarshipInfo,
-                    paymentPlain.totalAmount || paymentPlain.total_amount || paymentPlain.montoTotal || paymentPlain.monto_total || 400.00,
-                    paymentPlain.scholarshipDiscount || paymentPlain.scholarship_discount || paymentPlain.descuentoBeca || paymentPlain.descuento_beca || 0.00,
-                    paymentPlain.amountPaid || paymentPlain.amount_paid || paymentPlain.montoPagado || paymentPlain.monto_pagado || (paymentPlain.totalAmount || paymentPlain.total_amount || 400.00),
+                    paymentPlain.totalAmount || paymentPlain.total_amount || paymentPlain.montoTotal
+                      || paymentPlain.monto_total || 400.00,
+                    paymentPlain.scholarshipDiscount || paymentPlain.scholarship_discount
+                      || paymentPlain.descuentoBeca || paymentPlain.descuento_beca || 0.00,
+                    paymentPlain.amountPaid || paymentPlain.amount_paid || paymentPlain.montoPagado
+                      || paymentPlain.monto_pagado || (paymentPlain.totalAmount || paymentPlain.total_amount || 400.00),
                     observacionCabecera
                 );
 
@@ -353,9 +362,12 @@ export class GenerateReciboPagoUseCase {
 
         const [student, management, paymentMethod] = await Promise.all([
             this.studentRepository.findById(studentId),
-            this.managementRepository.findById(cabeceraPlain.managementId ?? cabeceraPlain.gestionId ?? cabeceraPlain.management_id),
+            this.managementRepository.findById(
+              cabeceraPlain.managementId ?? cabeceraPlain.gestionId ?? cabeceraPlain.management_id,
+            ),
             (cuotaPlain.paymentMethodId ?? cuotaPlain.metodoPagoId ?? cuotaPlain.metodo_pago_id)
-                ? this.paymentMethodRepository.findById(cuotaPlain.paymentMethodId ?? cuotaPlain.metodoPagoId ?? cuotaPlain.metodo_pago_id)
+                ? this.paymentMethodRepository.findById(cuotaPlain.paymentMethodId ?? cuotaPlain.metodoPagoId
+                  ?? cuotaPlain.metodo_pago_id)
                 : null,
         ]);
 
@@ -367,11 +379,13 @@ export class GenerateReciboPagoUseCase {
         }
 
         let scholarshipInfo = null;
-        const studentScholarshipId = cabeceraPlain.studentScholarshipId ?? cabeceraPlain.estudianteBecaId ?? cabeceraPlain.estudiante_beca_id;
+        const studentScholarshipId = cabeceraPlain.studentScholarshipId ?? cabeceraPlain.estudianteBecaId
+          ?? cabeceraPlain.estudiante_beca_id;
         if (studentScholarshipId) {
             const studentScholarship = await this.studentScholarshipRepository.findById(studentScholarshipId);
             if (studentScholarship) {
-                const plainSs = studentScholarship.toPlainObject ? studentScholarship.toPlainObject() : studentScholarship;
+                const plainSs = studentScholarship.toPlainObject ? studentScholarship.toPlainObject()
+                  : studentScholarship;
                 const scholarshipId = plainSs.scholarshipId ?? plainSs.becaDescuentoId ?? plainSs.beca_descuento_id;
                 if (scholarshipId) {
                     scholarshipInfo = await this.scholarshipRepository.findById(scholarshipId);
@@ -404,8 +418,14 @@ export class GenerateReciboPagoUseCase {
             saldoPendiente,
             concepto: 'Aporte académico',
             metodoPago: paymentMethod?.nombre ?? paymentMethod?.name ?? 'N/A',
-            numeroTransaccion: cuotaPlain.transactionNumber ?? cuotaPlain.numeroTransaccion ?? cuotaPlain.numero_transaccion ?? null,
-            becaInfo: scholarshipInfo ? { nombre: scholarshipInfo.nombre ?? scholarshipInfo.name, porcentaje: scholarshipInfo.porcentaje ?? scholarshipInfo.percentage } : null,
+            numeroTransaccion: cuotaPlain.transactionNumber ?? cuotaPlain.numeroTransaccion
+              ?? cuotaPlain.numero_transaccion ?? null,
+            becaInfo: scholarshipInfo
+              ? {
+                nombre: scholarshipInfo.nombre ?? scholarshipInfo.name,
+                porcentaje: scholarshipInfo.porcentaje ?? scholarshipInfo.percentage,
+              }
+              : null,
             observacion: observacionCuota,
         };
 
@@ -566,7 +586,8 @@ export class GenerateReciboPagoUseCase {
             const reciboData = {
                 // Datos del recibo
                 numeroRecibo: paymentPlain.receiptNumber || paymentPlain.numeroRecibo || paymentPlain.numero_recibo || String(paymentPlain.id).padStart(6, '0'),
-                fechaPago: paymentPlain.fechaPago || paymentPlain.fecha_pago || paymentPlain.paymentDate || paymentPlain.payment_date,
+                fechaPago: paymentPlain.fechaPago || paymentPlain.fecha_pago || paymentPlain.paymentDate
+                  || paymentPlain.payment_date,
 
                 // Datos del estudiante
                 nombreCompleto: `${studentPlain.lastName || studentPlain.apellido_paterno || ''} ${studentPlain.motherLastName || studentPlain.apellido_materno || ''} ${studentPlain.firstName || studentPlain.nombres || ''}`.trim().toUpperCase(),
@@ -582,7 +603,8 @@ export class GenerateReciboPagoUseCase {
                 montoPagado: amountToPay || totalAmount || 400.00,
                 concepto: paymentPlain.concepto || paymentPlain.concept || 'Aporte voluntario anual',
                 metodoPago: paymentMethod?.nombre || paymentMethod?.name || 'N/A',
-                numeroTransaccion: paymentPlain.numeroTransaccion || paymentPlain.numero_transaccion || paymentPlain.transactionNumber || paymentPlain.transaction_number || null,
+                numeroTransaccion: paymentPlain.numeroTransaccion || paymentPlain.numero_transaccion
+                  || paymentPlain.transactionNumber || paymentPlain.transaction_number || null,
 
                 // Observación (pago_cuotas.descripcion): plazo, datos adicionales; en UI se llama "Observación"
                 observacion,

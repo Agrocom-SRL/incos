@@ -57,7 +57,7 @@ export const useCarreraDetallePage = () => {
     load();
   }, [load]);
 
-  const periodos = carrera?.periodos ?? [];
+  const periodos = useMemo(() => carrera?.periodos ?? [], [carrera?.periodos]);
 
   const totalMaterias = useMemo(() => {
     const ids = new Set();

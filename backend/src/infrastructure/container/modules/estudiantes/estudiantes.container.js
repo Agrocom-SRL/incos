@@ -239,7 +239,8 @@ export function registerEstudiantesResource(container) {
                 scholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.scholarshipRepository),
                 contributionConfigurationRepository: c.resolve(REPOSITORIOS_TOKENS.contributionConfigurationRepository),
                 contributionPaymentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentRepository),
-                contributionPaymentInstallmentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentInstallmentRepository),
+                contributionPaymentInstallmentRepository:
+                  c.resolve(REPOSITORIOS_TOKENS.contributionPaymentInstallmentRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );
@@ -307,7 +308,8 @@ export function registerEstudiantesResource(container) {
                 enrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentRepository),
                 subjectEnrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.subjectEnrollmentRepository),
                 contributionPaymentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentRepository),
-                contributionPaymentInstallmentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentInstallmentRepository),
+                contributionPaymentInstallmentRepository:
+                  c.resolve(REPOSITORIOS_TOKENS.contributionPaymentInstallmentRepository),
                 studentScholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.studentScholarshipRepository),
                 licenseRepository: c.resolve(REPOSITORIOS_TOKENS.licenseRepository),
                 transferRepository: c.resolve(REPOSITORIOS_TOKENS.transferRepository),
@@ -536,7 +538,8 @@ export function registerEstudiantesResource(container) {
         ESTUDIANTES_TOKENS.getStudentScholarshipsController,
         (c) =>
             new GetStudentScholarshipsController({
-                getStudentScholarshipsByStudentIdUseCase: c.resolve(ESTUDIANTES_TOKENS.getStudentScholarshipsByStudentIdUseCase),
+                getStudentScholarshipsByStudentIdUseCase:
+                  c.resolve(ESTUDIANTES_TOKENS.getStudentScholarshipsByStudentIdUseCase),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
                 responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
             })

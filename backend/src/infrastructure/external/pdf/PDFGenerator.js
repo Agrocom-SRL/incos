@@ -33,7 +33,8 @@ export class PDFGenerator extends IPDFGenerator {
      * @param {Object} params.reciboPagoPdfGenerator - Generador de recibos de pago (DI)
      * @param {ILogger} [params.logger] - Logger para registro de eventos
      */
-    constructor({ actaCompromisoPdfGenerator, formularioInscripcionPdfGenerator, declaracionJuradaPdfGenerator, reciboPagoPdfGenerator, logger } = {}) {
+    constructor({ actaCompromisoPdfGenerator, formularioInscripcionPdfGenerator, declaracionJuradaPdfGenerator,
+      reciboPagoPdfGenerator, logger } = {}) {
         super();
         this.actaCompromisoPdfGenerator = actaCompromisoPdfGenerator;
         this.formularioInscripcionPdfGenerator = formularioInscripcionPdfGenerator;

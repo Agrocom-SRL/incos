@@ -145,7 +145,7 @@ const WizardForm = React.forwardRef(({
       onBeforeNextStep?.(currentStepNumber, form);
       next();
     }
-  }, [currentStep, form, next, onValidateBeforeNext, onBeforeNextStep]);
+  }, [currentStep, form, next, onValidateBeforeNext, onBeforeNextStep, onValidationError]);
 
   // Anterior: notificar al padre con stepNumber 1-based (ej. al volver desde paso 2, stepNumber es 2)
   // IMPORTANTE: Usar currentStep directamente para calcular stepNumber dentro del callback

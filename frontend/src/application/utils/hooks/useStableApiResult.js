@@ -22,43 +22,19 @@
  * );
  */
 
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 
 export const useStableApiResult = (result, enableLogs = false, hookName = 'Hook') => {
-  const prevResultRef = useRef(null);
-
   // Extraer todas las propiedades como dependencias para useMemo
-  // Esto permite que React detecte cambios en cualquier propiedad
+  // Esto permite que React detecte cambios en cualquier propiedad:
+  // si ninguna cambió, useMemo devuelve la misma referencia anterior
   const dependencies = Object.values(result);
 
   return useMemo(() => {
-    const prev = prevResultRef.current;
-
-    // Comparar todas las propiedades
-    if (prev) {
-      const hasChanges = Object.keys(result).some(key => {
-        return prev[key] !== result[key];
-      });
-
-      if (!hasChanges) {
-        if (enableLogs) {
-          console.log(`✅ [${hookName}] - MANTENIENDO referencia`);
-        }
-        return prev;
-      }
-
-      if (enableLogs) {
-        const changes = {};
-        Object.keys(result).forEach(key => {
-          changes[`${key}Changed`] = prev[key] !== result[key];
-        });
-        console.log(`✅ [${hookName}] - RECREANDO objeto retornado`, changes);
-      }
-    } else if (enableLogs) {
-      console.log(`✅ [${hookName}] - CREANDO (primera vez)`);
+    if (enableLogs) {
+      console.log(`✅ [${hookName}] - RECREANDO objeto retornado`);
     }
-
-    prevResultRef.current = result;
     return result;
-  }, dependencies); // Dependencias dinámicas basadas en los valores del objeto
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- dependencias dinámicas por diseño (valores del objeto)
+  }, dependencies);
 };

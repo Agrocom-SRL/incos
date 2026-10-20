@@ -318,7 +318,8 @@ export function registerParalelosResource(container) {
         ACADEMICO_TOKENS.getDashboardAsignaturasSinCursoController,
         (c) =>
             new GetDashboardAsignaturasSinCursoController({
-                getAsignaturasSinCursoDashboardUseCase: c.resolve(ACADEMICO_TOKENS.getAsignaturasSinCursoDashboardUseCase),
+                getAsignaturasSinCursoDashboardUseCase:
+                  c.resolve(ACADEMICO_TOKENS.getAsignaturasSinCursoDashboardUseCase),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
                 responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
             })
@@ -398,11 +399,15 @@ export function registerParalelosResource(container) {
                 listParalelosGestionByParaleloController: c.resolve(
                     ACADEMICO_TOKENS.listParalelosGestionByParaleloController,
                 ),
-                getDashboardParalelosEstadoController: c.resolve(ACADEMICO_TOKENS.getDashboardParalelosEstadoController),
-                getDashboardAsignaturasSinCursoController: c.resolve(ACADEMICO_TOKENS.getDashboardAsignaturasSinCursoController),
+                getDashboardParalelosEstadoController:
+                  c.resolve(ACADEMICO_TOKENS.getDashboardParalelosEstadoController),
+                getDashboardAsignaturasSinCursoController:
+                  c.resolve(ACADEMICO_TOKENS.getDashboardAsignaturasSinCursoController),
                 getDashboardCapacidadTurnoController: c.resolve(ACADEMICO_TOKENS.getDashboardCapacidadTurnoController),
-                getDashboardHorariosPendientesController: c.resolve(ACADEMICO_TOKENS.getDashboardHorariosPendientesController),
-                getHorariosPublicacionPlanesController: c.resolve(ACADEMICO_TOKENS.getHorariosPublicacionPlanesController),
+                getDashboardHorariosPendientesController:
+                  c.resolve(ACADEMICO_TOKENS.getDashboardHorariosPendientesController),
+                getHorariosPublicacionPlanesController:
+                  c.resolve(ACADEMICO_TOKENS.getHorariosPublicacionPlanesController),
                 getParaleloScheduleController: c.resolve(ACADEMICO_TOKENS.getParaleloScheduleController),
                 putParaleloScheduleController: c.resolve(ACADEMICO_TOKENS.putParaleloScheduleController),
             };

@@ -479,6 +479,7 @@ const EstudiantesDetail = () => {
         </div>
       ),
     }]),
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- dependencias adicionales mantienen la recomputación de pestañas ante cambios de permisos
   ], [
     esVistaPropiaEstudiante,
     studentData, residenciaCompleta, guardians, documentDeliveries, scholarships, inscripcion, origins,

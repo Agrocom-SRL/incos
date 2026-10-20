@@ -287,6 +287,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
 
         // Sincronizar tipo para la lista de pasos (modo edición)
         if (formData.tipoAdmision != null) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect -- sincroniza tipo de admisión en modo edición al cargar datos
           setTipoAdmisionForSteps(formData.tipoAdmision);
         }
 

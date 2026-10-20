@@ -109,6 +109,7 @@ export const CuadernoAutosaveProvider = ({ children }) => {
     }
 
     return { tipo: 'sin-cambios' };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- los ticks fuerzan recalcular el reloj y el registro mutable de celdas
   }, [footerClockTick, registryTick, lastGuardadoAt, guardandoBimestre]);
 
   const registryValue = useMemo(

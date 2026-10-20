@@ -22,7 +22,7 @@ export const useGestionHorariosDashboardState = () => {
     const navigate = useNavigate();
     const { gestiones } = useGestionesCatalogApi();
     const { paralelosEstadoDashboard, loading: estadoLoading, error: estadoError } = useParalelosEstadoApi();
-    const paralelosEstado = paralelosEstadoDashboard?.paralelos ?? [];
+    const paralelosEstado = useMemo(() => paralelosEstadoDashboard?.paralelos ?? [], [paralelosEstadoDashboard?.paralelos]);
     const {
         data: pendientesSidebarRaw,
         loading: pendientesSidebarLoading,

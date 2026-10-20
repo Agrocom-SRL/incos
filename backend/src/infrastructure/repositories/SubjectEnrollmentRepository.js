@@ -269,7 +269,11 @@ export class SubjectEnrollmentRepository extends BaseRepository {
             SET nota_final = ?, updated_by = ?, updated_at = NOW()
             WHERE id = ? AND deleted_at IS NULL
             `,
-            { replacements: [notaFinal, usuarioId, matriculaMateriaId], type: sequelize.QueryTypes.UPDATE, transaction },
+            {
+                replacements: [notaFinal, usuarioId, matriculaMateriaId],
+                type: sequelize.QueryTypes.UPDATE,
+                transaction,
+            },
         );
     }
 }

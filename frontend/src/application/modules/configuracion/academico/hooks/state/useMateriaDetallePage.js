@@ -67,7 +67,7 @@ export const useMateriaDetallePage = () => {
 
   const avatarInitials = useMemo(() => initialsFromMateria(materia), [materia]);
 
-  const asignaturas = materia?.asignaturas ?? [];
+  const asignaturas = useMemo(() => materia?.asignaturas ?? [], [materia?.asignaturas]);
 
   const cargaHorariaResumen = useMemo(() => {
     const horas = asignaturas

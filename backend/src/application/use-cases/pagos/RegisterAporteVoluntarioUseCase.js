@@ -146,7 +146,12 @@ export class RegisterAporteVoluntarioUseCase {
             if (esPagoGratuito && esMetodoEfectivo) {
                 paymentMethod = await this.paymentMethodRepository.findById(1).catch(() => null);
             } else {
-                paymentMethod = await this._validatePaymentMethod(paymentMethodId, paymentAccountId, transactionNumber, codigoComprobante);
+                paymentMethod = await this._validatePaymentMethod(
+                  paymentMethodId,
+                  paymentAccountId,
+                  transactionNumber,
+                  codigoComprobante,
+                );
             }
 
             const finalPaymentMethodId = (esPagoGratuito && esMetodoEfectivo) ? 1 : paymentMethodId;
@@ -242,7 +247,12 @@ export class RegisterAporteVoluntarioUseCase {
             if (data.documentFile) {
                 savedDocument = await this._savePaymentDocument(studentId, cuota.id, data.documentFile);
                 if (savedDocument) {
-                    savedDocumentDelivery = await this._savePaymentDocumentDelivery(studentId, savedDocument.id, paymentDate, descripcion);
+                    savedDocumentDelivery = await this._savePaymentDocumentDelivery(
+                      studentId,
+                      savedDocument.id,
+                      paymentDate,
+                      descripcion,
+                    );
                 }
             }
 
@@ -250,9 +260,21 @@ export class RegisterAporteVoluntarioUseCase {
             paymentPlain.receiptNumber = numeroRecibo; // Número definitivo (ID a 6 dígitos)
             const result = { payment: paymentPlain };
             if (reciboPDF) result.reciboPDF = reciboPDF;
-            if (savedReciboDocument) result.reciboDocument = savedReciboDocument.toPlainObject ? savedReciboDocument.toPlainObject() : savedReciboDocument;
-            if (savedDocument) result.document = savedDocument.toPlainObject ? savedDocument.toPlainObject() : savedDocument;
-            if (savedDocumentDelivery) result.documentDelivery = savedDocumentDelivery.toPlainObject ? savedDocumentDelivery.toPlainObject() : savedDocumentDelivery;
+            if (savedReciboDocument) {
+                result.reciboDocument = savedReciboDocument.toPlainObject
+                    ? savedReciboDocument.toPlainObject()
+                    : savedReciboDocument;
+            }
+            if (savedDocument) {
+                result.document = savedDocument.toPlainObject
+                    ? savedDocument.toPlainObject()
+                    : savedDocument;
+            }
+            if (savedDocumentDelivery) {
+                result.documentDelivery = savedDocumentDelivery.toPlainObject
+                    ? savedDocumentDelivery.toPlainObject()
+                    : savedDocumentDelivery;
+            }
 
             return result;
         } catch (error) {
@@ -274,7 +296,14 @@ export class RegisterAporteVoluntarioUseCase {
      * @param {number} [params.diasCompromiso] - Plazo elegido (días) para el compromiso
      * @param {number|null} params.userId - Usuario que registra (auditoría)
      */
-    async _gestionarCompromiso({ cabeceraId, esPrimeraCuota, quedaCancelado, paymentDate, diasCompromiso = DIAS_COMPROMISO, userId }) {
+    async _gestionarCompromiso({
+      cabeceraId,
+      esPrimeraCuota,
+      quedaCancelado,
+      paymentDate,
+      diasCompromiso = DIAS_COMPROMISO,
+      userId,
+    }) {
         try {
             // 1) Primera cuota que NO salda el aporte → auto-crear compromiso a
             //    `diasCompromiso` días de la fecha de pago. Si la primera cuota ya
@@ -391,7 +420,11 @@ export class RegisterAporteVoluntarioUseCase {
         }
         const config = await this._getActiveContributionConfiguration(managementId);
         const totalAmount = config?.montoBase ?? config?.baseAmount ?? 400;
-        const { scholarshipDiscount, studentScholarshipId } = await this._calculateScholarshipDiscount(studentId, managementId, totalAmount);
+        const { scholarshipDiscount, studentScholarshipId } = await this._calculateScholarshipDiscount(
+            studentId,
+            managementId,
+            totalAmount,
+        );
         const montoObligatorio = Math.max(0, totalAmount - scholarshipDiscount);
 
         const cabeceraData = {
@@ -535,8 +568,10 @@ export class RegisterAporteVoluntarioUseCase {
                 existingReceiptNumber: existingPayment.numeroRecibo,
             });
 
-            const existingPaymentPlain = existingPayment.toPlainObject ? existingPayment.toPlainObject() : existingPayment;
-            const existingReceiptNumber = existingPaymentPlain.receiptNumber || existingPaymentPlain.numeroRecibo || existingPaymentPlain.numero_recibo || existingPayment.id;
+            const existingPaymentPlain = existingPayment.toPlainObject ? existingPayment.toPlainObject()
+              : existingPayment;
+            const existingReceiptNumber = existingPaymentPlain.receiptNumber || existingPaymentPlain.numeroRecibo
+              || existingPaymentPlain.numero_recibo || existingPayment.id;
 
             throw new ValidationError(
                 'El estudiante ya realizó el pago del aporte académico para la gestión actual. ' +
@@ -634,7 +669,8 @@ export class RegisterAporteVoluntarioUseCase {
             this.logger.warn('[Pagos] Beca activa sin ID de tipo de beca', {
                 studentId,
                 activeScholarshipId: activeScholarship.id,
-                activeScholarship: activeScholarship.toPlainObject ? activeScholarship.toPlainObject() : activeScholarship,
+                activeScholarship: activeScholarship.toPlainObject ? activeScholarship.toPlainObject()
+                  : activeScholarship,
             });
             return {
                 scholarshipDiscount: 0.00,
@@ -775,7 +811,19 @@ export class RegisterAporteVoluntarioUseCase {
      * @param {number} montoObligatorio - Total a pagar (base - descuento)
      * @returns {Promise<Object>} Información del PDF generado {filePath, fileName, absolutePath}
      */
-    async _generateReciboPDF(payment, student, management, paymentMethod, scholarshipInfo, totalAmount, scholarshipDiscount, montoEstaCuota, totalPagadoAntes = 0, saldoPendiente = 0, montoObligatorio = 0) {
+    async _generateReciboPDF(
+      payment,
+      student,
+      management,
+      paymentMethod,
+      scholarshipInfo,
+      totalAmount,
+      scholarshipDiscount,
+      montoEstaCuota,
+      totalPagadoAntes = 0,
+      saldoPendiente = 0,
+      montoObligatorio = 0,
+    ) {
         try {
             const studentPlain = student.toPlainObject ? student.toPlainObject() : student;
             const paymentPlain = payment.toPlainObject ? payment.toPlainObject() : payment;
@@ -788,7 +836,8 @@ export class RegisterAporteVoluntarioUseCase {
 
             const reciboData = {
                 numeroRecibo: numeroReciboParaPdf,
-                fechaPago: paymentPlain.fechaPago || paymentPlain.fecha_pago || paymentPlain.paymentDate || paymentPlain.payment_date,
+                fechaPago: paymentPlain.fechaPago || paymentPlain.fecha_pago || paymentPlain.paymentDate
+                  || paymentPlain.payment_date,
 
                 nombreCompleto: `${studentPlain.lastName || studentPlain.apellido_paterno || ''} ${studentPlain.motherLastName || studentPlain.apellido_materno || ''} ${studentPlain.firstName || studentPlain.nombres || ''}`.trim().toUpperCase(),
                 ci: studentPlain.ci || 'N/A',
@@ -807,7 +856,8 @@ export class RegisterAporteVoluntarioUseCase {
                 concepto: 'Aporte académico',
                 observacion: (paymentPlain.description ?? paymentPlain.descripcion ?? '').toString().trim() || '',
                 metodoPago: paymentMethod?.nombre || paymentMethod?.name || 'N/A',
-                numeroTransaccion: paymentPlain.numeroTransaccion || paymentPlain.numero_transaccion || paymentPlain.transactionNumber || paymentPlain.transaction_number || null,
+                numeroTransaccion: paymentPlain.numeroTransaccion || paymentPlain.numero_transaccion
+                  || paymentPlain.transactionNumber || paymentPlain.transaction_number || null,
 
                 becaInfo: scholarshipInfo ? {
                     nombre: scholarshipInfo.nombre || scholarshipInfo.name,

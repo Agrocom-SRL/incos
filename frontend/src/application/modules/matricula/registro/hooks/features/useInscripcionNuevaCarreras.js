@@ -20,7 +20,7 @@
  * - Separa la lógica del Provider (Provider solo orquesta)
  */
 
-import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useCarrerasApi } from '@application-configuracion/academico/hooks';
 
 /**
@@ -69,6 +69,7 @@ export const useInscripcionNuevaCarreras = (options = {}) => {
     if (initialCarreraId && carreras && carreras.length > 0 && !selectedCarrera) {
       const carrera = carreras.find(c => c.id === Number(initialCarreraId));
       if (carrera) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- preselección de carrera inicial al cargar el catálogo
         onSelectCarrera(carrera);
       }
     }
@@ -77,34 +78,13 @@ export const useInscripcionNuevaCarreras = (options = {}) => {
   // TODO: Aquí se puede agregar lógica específica de inscripciones si es necesario
   // Por ejemplo: filtrar carreras según el estudiante seleccionado, validaciones específicas, etc.
 
-  // MANTENER REFERENCIA ESTABLE
-  // Comparar valores, no solo referencias, para evitar recálculos innecesarios
-  const prevResultRef = useRef(null);
-  
-  return useMemo(() => {
-    const current = {
+  // Referencia estable: useMemo solo recrea el objeto si cambia alguna dependencia
+  return useMemo(() => ({
       carreras,
       loading,
       error,
       refetch,
       selectedCarrera,
       onSelectCarrera,
-    };
-
-    const prev = prevResultRef.current;
-    
-    // Comparar valores, no referencias
-    if (prev &&
-        prev.loading === current.loading &&
-        prev.error === current.error &&
-        prev.refetch === current.refetch &&
-        prev.carreras === current.carreras &&
-        prev.selectedCarrera?.id === current.selectedCarrera?.id &&
-        prev.onSelectCarrera === current.onSelectCarrera) {
-      return prev;
-    }
-
-    prevResultRef.current = current;
-    return current;
-  }, [carreras, loading, error, refetch, selectedCarrera, onSelectCarrera]);
+    }), [carreras, loading, error, refetch, selectedCarrera, onSelectCarrera]);
 };

@@ -63,7 +63,7 @@ export function useDocenteAsignacionesState() {
   );
   const turnoEfectivo = grilla?.turnoEfectivo ?? null;
 
-  const profile = docente?.profile ?? {};
+  const profile = useMemo(() => docente?.profile ?? {}, [docente?.profile]);
   const docenteNombre =
     grilla?.docenteNombre ||
     profile.nombreCompleto ||

@@ -673,8 +673,10 @@ export class CreateEnrollmentUseCase {
       const needsCareerUpdate = existingAcademicData.careerId !== careerId;
 
       // Obtener estado_registro actual (puede venir como registrationState desde entidad o estadoRegistro desde modelo)
-      const existingPlain = existingAcademicData.toPlainObject ? existingAcademicData.toPlainObject() : existingAcademicData;
-      const currentRegistrationStatus = existingPlain.registrationState || existingPlain.estadoRegistro || ESTADOS_REGISTRO_ESTUDIANTE.BORRADOR;
+      const existingPlain = existingAcademicData.toPlainObject ? existingAcademicData.toPlainObject()
+        : existingAcademicData;
+      const currentRegistrationStatus = existingPlain.registrationState || existingPlain.estadoRegistro
+        || ESTADOS_REGISTRO_ESTUDIANTE.BORRADOR;
       const needsStatusUpdate = currentRegistrationStatus !== ESTADOS_REGISTRO_ESTUDIANTE.ADMITIDO;
 
       if (needsCareerUpdate || needsStatusUpdate) {
