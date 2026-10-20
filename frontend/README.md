@@ -2,7 +2,7 @@
 
 Interfaz web del sistema de gestión académica y administrativa del **Instituto Comercial Superior de la Nación INCOS Santa Cruz** (Santa Cruz de la Sierra, Bolivia). Consume la API del `backend/` de este monorepo.
 
-> Las reglas de arquitectura, diseño y RBAC viven en `CLAUDE.md` (raíz) y en `.claude/skills/` (no se versiona; ver `incos-ui-system`, `incos-frontend-module`, `incos-rbac`, `incos-testing`). Las guías paso a paso están en `docs/guias/` y los datos vivos en `docs/referencia/`. Este README no las duplica.
+> Las reglas de arquitectura, diseño y RBAC viven en `CLAUDE.md` (raíz) y en `.claude/skills/` (ver `incos-ui-system`, `incos-frontend-module`, `incos-rbac`, `incos-testing`). Las guías paso a paso están en `docs/guias/` y los datos vivos en `docs/referencia/`. Este README no las duplica.
 
 ## Contexto del negocio
 
