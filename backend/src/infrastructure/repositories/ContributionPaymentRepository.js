@@ -1,4 +1,3 @@
-import { IPagoAporteRepository } from '../../domain/interfaces/repositories/IPagoAporteRepository.js';
 import { PagoAporte as PagoAporteModel } from '../database/models/pago_aporte.js';
 import { BaseRepository } from './BaseRepository.js';
 import { ContributionPaymentMapper } from '../mappers/ContributionPaymentMapper.js';
@@ -109,7 +108,7 @@ export class ContributionPaymentRepository extends BaseRepository {
      * @param {number} userId - ID del usuario que crea
      * @returns {Object} Objeto con formato del modelo Sequelize
      */
-    mapDataToModel(data, userId = null) {
+    mapDataToModel(data, _userId = null) {
         return ContributionPaymentMapper.toModel(data);
     }
 
@@ -120,7 +119,7 @@ export class ContributionPaymentRepository extends BaseRepository {
      * @param {number} userId - ID del usuario que actualiza
      * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
      */
-    mapDataToUpdate(data, userId = null) {
+    mapDataToUpdate(data, _userId = null) {
         return ContributionPaymentMapper.toModelForUpdate(data);
     }
 

@@ -47,14 +47,14 @@ export function normalizeOriginType(value) {
     const cleaned = value.trim();
     numericValue = parseInt(cleaned, 10);
     // Si parseInt falla (devuelve NaN), intentar comparar directamente
-    if (isNaN(numericValue)) {
+    if (Number.isNaN(Number(numericValue))) {
       // Si no es un número válido, retornar por defecto
       return TIPOS_ORIGEN.BOLIVIANA;
     }
   } else {
     numericValue = Number(value);
     // Si no es un número válido, retornar por defecto
-    if (isNaN(numericValue)) {
+    if (Number.isNaN(Number(numericValue))) {
       return TIPOS_ORIGEN.BOLIVIANA;
     }
   }

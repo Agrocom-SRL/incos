@@ -8,25 +8,25 @@ import { BaseEntity } from './BaseEntity.js';
 export class ContributionPayment extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    if (data.hasOwnProperty('studentId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'studentId')) {
       this.studentId = data.studentId;
     }
-    if (data.hasOwnProperty('managementId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'managementId')) {
       this.managementId = data.managementId;
     }
-    if (data.hasOwnProperty('studentScholarshipId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'studentScholarshipId')) {
       this.studentScholarshipId = data.studentScholarshipId;
     }
-    if (data.hasOwnProperty('baseAmount')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'baseAmount')) {
       this.baseAmount = parseFloat(data.baseAmount) ?? 0;
     }
-    if (data.hasOwnProperty('scholarshipDiscount')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'scholarshipDiscount')) {
       this.scholarshipDiscount = parseFloat(data.scholarshipDiscount) ?? 0;
     }
-    if (data.hasOwnProperty('mandatoryAmount')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'mandatoryAmount')) {
       this.mandatoryAmount = parseFloat(data.mandatoryAmount) ?? 0;
     }
-    if (data.hasOwnProperty('state')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'state')) {
       this.state = data.state;
     }
   }
@@ -67,25 +67,25 @@ export class ContributionPayment extends BaseEntity {
   toPlainObject() {
     const plainObject = super.toPlainObject();
 
-    if (this.hasOwnProperty('studentId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'studentId')) {
       plainObject.studentId = this.studentId;
     }
-    if (this.hasOwnProperty('managementId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'managementId')) {
       plainObject.managementId = this.managementId;
     }
-    if (this.hasOwnProperty('studentScholarshipId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'studentScholarshipId')) {
       plainObject.studentScholarshipId = this.studentScholarshipId;
     }
-    if (this.hasOwnProperty('baseAmount')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'baseAmount')) {
       plainObject.baseAmount = this.baseAmount;
     }
-    if (this.hasOwnProperty('scholarshipDiscount')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'scholarshipDiscount')) {
       plainObject.scholarshipDiscount = this.scholarshipDiscount;
     }
-    if (this.hasOwnProperty('mandatoryAmount')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'mandatoryAmount')) {
       plainObject.mandatoryAmount = this.mandatoryAmount;
     }
-    if (this.hasOwnProperty('state')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'state')) {
       plainObject.state = this.state;
     }
 

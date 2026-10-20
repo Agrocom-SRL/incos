@@ -1,4 +1,3 @@
-import { IMunicipioRepository } from '../../domain/interfaces/repositories/IMunicipioRepository.js';
 import { Municipio as MunicipioModel } from '../database/models/municipio.js';
 import { BaseRepository } from './BaseRepository.js';
 import { MunicipalityMapper } from '../mappers/MunicipalityMapper.js';
@@ -108,7 +107,7 @@ export class MunicipalityRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return MunicipalityMapper.toModel(data);
   }
 
@@ -120,7 +119,7 @@ export class MunicipalityRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return MunicipalityMapper.toModelForUpdate(data);
   }
 

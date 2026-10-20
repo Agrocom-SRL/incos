@@ -7,22 +7,22 @@ import { BaseEntity } from './BaseEntity.js';
 export class PaymentAccount extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    if (data.hasOwnProperty('paymentMethodId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'paymentMethodId')) {
       this.paymentMethodId = data.paymentMethodId;
     }
-    if (data.hasOwnProperty('bankId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'bankId')) {
       this.bankId = data.bankId;
     }
-    if (data.hasOwnProperty('accountHolderName')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'accountHolderName')) {
       this.accountHolderName = data.accountHolderName;
     }
-    if (data.hasOwnProperty('accountNumber')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'accountNumber')) {
       this.accountNumber = data.accountNumber;
     }
-    if (data.hasOwnProperty('phoneNumber')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'phoneNumber')) {
       this.phoneNumber = data.phoneNumber;
     }
-    if (data.hasOwnProperty('qrImageUrl')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'qrImageUrl')) {
       this.qrImageUrl = data.qrImageUrl;
     }
   }
@@ -30,22 +30,22 @@ export class PaymentAccount extends BaseEntity {
   toPlainObject() {
     const plainObject = super.toPlainObject();
 
-    if (this.hasOwnProperty('paymentMethodId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'paymentMethodId')) {
       plainObject.paymentMethodId = this.paymentMethodId;
     }
-    if (this.hasOwnProperty('bankId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'bankId')) {
       plainObject.bankId = this.bankId;
     }
-    if (this.hasOwnProperty('accountHolderName')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'accountHolderName')) {
       plainObject.accountHolderName = this.accountHolderName;
     }
-    if (this.hasOwnProperty('accountNumber')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'accountNumber')) {
       plainObject.accountNumber = this.accountNumber;
     }
-    if (this.hasOwnProperty('phoneNumber')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'phoneNumber')) {
       plainObject.phoneNumber = this.phoneNumber;
     }
-    if (this.hasOwnProperty('qrImageUrl')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'qrImageUrl')) {
       plainObject.qrImageUrl = this.qrImageUrl;
     }
 

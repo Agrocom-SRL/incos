@@ -79,7 +79,7 @@ export class CreateStudentScholarshipUseCase {
 
     if (existingAssignment) {
       throw new ValidationError(
-        `Ya existe una asignación de esta beca para el estudiante en la gestión actual`
+        'Ya existe una asignación de esta beca para el estudiante en la gestión actual'
       );
     }
   }
@@ -106,7 +106,7 @@ export class CreateStudentScholarshipUseCase {
 
     // 3. Convertir el año académico a número
     const gestionAnio = parseInt(gestionActualConfig.value, 10);
-    if (isNaN(gestionAnio)) {
+    if (Number.isNaN(Number(gestionAnio))) {
       throw new ValidationError('La gestión actual configurada no es un año válido');
     }
 
@@ -294,7 +294,7 @@ export class CreateStudentScholarshipUseCase {
         state: ESTADOS_PAGO_APORTE.CANCELADO,
       });
       this.logger.info('[Estudiantes] Beca 100%: cuota 0 registrada y pago_aporte CANCELADO', {
-        cabeceraId: cabeceraId,
+        cabeceraId,
         cuotaId: cuota.id,
         numeroRecibo,
       });

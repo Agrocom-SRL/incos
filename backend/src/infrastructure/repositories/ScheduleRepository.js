@@ -1,4 +1,3 @@
-import { IHorarioRepository } from '../../domain/interfaces/repositories/IHorarioRepository.js';
 import { Horario as HorarioModel } from '../database/models/horario.js';
 import { BaseRepository } from './BaseRepository.js';
 import { ScheduleMapper } from '../mappers/ScheduleMapper.js';
@@ -106,11 +105,11 @@ export class ScheduleRepository extends BaseRepository {
     return []; // Usa el orden por defecto de BaseRepository: [['id', 'ASC']]
   }
 
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return ScheduleMapper.toModel(data);
   }
 
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return ScheduleMapper.toModelForUpdate(data);
   }
 

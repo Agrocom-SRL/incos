@@ -1,5 +1,4 @@
 import path from 'path';
-import fs from 'fs';
 import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
 import { UploadsStorageHelper } from '../../../infrastructure/external/storage/UploadsStorageHelper.js';
 import { ESTADOS_PAGO_APORTE } from '../../../domain/constants/pagos.constants.js';

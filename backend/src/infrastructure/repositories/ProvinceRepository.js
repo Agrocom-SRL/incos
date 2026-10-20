@@ -1,4 +1,3 @@
-import { IProvinciaRepository } from '../../domain/interfaces/repositories/IProvinciaRepository.js';
 import { Provincia as ProvinciaModel } from '../database/models/provincia.js';
 import { BaseRepository } from './BaseRepository.js';
 import { ProvinceMapper } from '../mappers/ProvinceMapper.js';
@@ -108,7 +107,7 @@ export class ProvinceRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return ProvinceMapper.toModel(data);
   }
 
@@ -120,7 +119,7 @@ export class ProvinceRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return ProvinceMapper.toModelForUpdate(data);
   }
 

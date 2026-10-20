@@ -1,5 +1,4 @@
 import { QueryTypes } from 'sequelize';
-import { IAsignacionHorarioRepository } from '../../domain/interfaces/repositories/IAsignacionHorarioRepository.js';
 import { AsignacionHorario as AsignacionHorarioModel } from '../database/models/asignacion_horario.js';
 import { sequelize } from '../database/sequelize.js';
 import { BaseRepository } from './BaseRepository.js';
@@ -43,11 +42,11 @@ export class AsignacionHorarioRepository extends BaseRepository {
     return [];
   }
 
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return AsignacionHorarioMapper.toModel(data);
   }
 
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return AsignacionHorarioMapper.toModelForUpdate(data);
   }
 

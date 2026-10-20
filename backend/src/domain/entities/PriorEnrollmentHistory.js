@@ -9,16 +9,16 @@ export class PriorEnrollmentHistory extends BaseEntity {
     constructor(data = {}) {
         super(data);
 
-        if (data.hasOwnProperty('enrollmentId')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'enrollmentId')) {
             this.enrollmentId = data.enrollmentId;
         }
-        if (data.hasOwnProperty('curriculumSubjectId')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'curriculumSubjectId')) {
             this.curriculumSubjectId = data.curriculumSubjectId;
         }
-        if (data.hasOwnProperty('finalGrade')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'finalGrade')) {
             this.finalGrade = data.finalGrade;
         }
-        if (data.hasOwnProperty('status')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'status')) {
             this.status = data.status;
         }
     }
@@ -37,16 +37,16 @@ export class PriorEnrollmentHistory extends BaseEntity {
     toPlainObject() {
         const plainObject = super.toPlainObject();
 
-        if (this.hasOwnProperty('enrollmentId')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'enrollmentId')) {
             plainObject.enrollmentId = this.enrollmentId;
         }
-        if (this.hasOwnProperty('curriculumSubjectId')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'curriculumSubjectId')) {
             plainObject.curriculumSubjectId = this.curriculumSubjectId;
         }
-        if (this.hasOwnProperty('finalGrade')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'finalGrade')) {
             plainObject.finalGrade = this.finalGrade;
         }
-        if (this.hasOwnProperty('status')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'status')) {
             plainObject.status = this.status;
         }
 

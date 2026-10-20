@@ -11,22 +11,22 @@ export class ManagementPlan extends BaseEntity {
     super(data);
     // Solo inicializar campos si fueron proporcionados explícitamente
     // Esto permite usar attributes limitados sin inicializar campos no solicitados
-    if (data.hasOwnProperty('managementId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'managementId')) {
       this.managementId = data.managementId;
     }
-    if (data.hasOwnProperty('studyPlanId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'studyPlanId')) {
       this.studyPlanId = data.studyPlanId;
     }
-    if (data.hasOwnProperty('name')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'name')) {
       this.name = data.name;
     }
-    if (data.hasOwnProperty('state')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'state')) {
       this.state = data.state;
-    } else if (!data.hasOwnProperty('managementId')) {
+    } else if (!Object.prototype.hasOwnProperty.call(data, 'managementId')) {
       // Solo usar valor por defecto si no se está usando attributes limitados
       this.state = ESTADOS_GESTION_PLAN.PROPUESTO;
     }
-    if (data.hasOwnProperty('cancellationReason')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'cancellationReason')) {
       this.cancellationReason = data.cancellationReason;
     }
   }

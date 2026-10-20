@@ -7,13 +7,13 @@ import { BaseEntity } from './BaseEntity.js';
 export class AuthorizedBank extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    if (data.hasOwnProperty('paymentMethodId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'paymentMethodId')) {
       this.paymentMethodId = data.paymentMethodId;
     }
-    if (data.hasOwnProperty('code')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'code')) {
       this.code = data.code;
     }
-    if (data.hasOwnProperty('name')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'name')) {
       this.name = data.name;
     }
   }
@@ -21,13 +21,13 @@ export class AuthorizedBank extends BaseEntity {
   toPlainObject() {
     const plainObject = super.toPlainObject();
 
-    if (this.hasOwnProperty('paymentMethodId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'paymentMethodId')) {
       plainObject.paymentMethodId = this.paymentMethodId;
     }
-    if (this.hasOwnProperty('code')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'code')) {
       plainObject.code = this.code;
     }
-    if (this.hasOwnProperty('name')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'name')) {
       plainObject.name = this.name;
     }
 

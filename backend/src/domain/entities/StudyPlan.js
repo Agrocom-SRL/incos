@@ -9,37 +9,37 @@ export class StudyPlan extends BaseEntity {
     super(data);
     // Solo inicializar campos si fueron proporcionados explícitamente
     // Esto permite usar attributes limitados sin inicializar campos no solicitados
-    if (data.hasOwnProperty('careerId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'careerId')) {
       this.careerId = data.careerId;
     }
-    if (data.hasOwnProperty('planName')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'planName')) {
       this.planName = data.planName;
     }
-    if (data.hasOwnProperty('ministerialResolution')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'ministerialResolution')) {
       this.ministerialResolution = data.ministerialResolution;
     }
-    if (data.hasOwnProperty('documentPath')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'documentPath')) {
       this.documentPath = data.documentPath;
     }
-    if (data.hasOwnProperty('durationYears')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'durationYears')) {
       this.durationYears = data.durationYears;
     }
-    if (data.hasOwnProperty('totalHours')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'totalHours')) {
       this.totalHours = data.totalHours;
     }
-    if (data.hasOwnProperty('hoursPerWeek')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'hoursPerWeek')) {
       this.hoursPerWeek = data.hoursPerWeek;
     }
-    if (data.hasOwnProperty('hoursPerMonth')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'hoursPerMonth')) {
       this.hoursPerMonth = data.hoursPerMonth;
     }
-    if (data.hasOwnProperty('hoursPerYear')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'hoursPerYear')) {
       this.hoursPerYear = data.hoursPerYear;
     }
-    if (data.hasOwnProperty('observations')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'observations')) {
       this.observations = data.observations;
     }
-    if (data.hasOwnProperty('isActive')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'isActive')) {
       this.isActive = data.isActive;
     }
   }
@@ -74,37 +74,37 @@ export class StudyPlan extends BaseEntity {
     const plainObject = super.toPlainObject();
 
     // Solo incluir campos que fueron inicializados (existen en this)
-    if (this.hasOwnProperty('careerId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'careerId')) {
       plainObject.careerId = this.careerId;
     }
-    if (this.hasOwnProperty('planName')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'planName')) {
       plainObject.planName = this.planName;
     }
-    if (this.hasOwnProperty('ministerialResolution')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'ministerialResolution')) {
       plainObject.ministerialResolution = this.ministerialResolution;
     }
-    if (this.hasOwnProperty('documentPath')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'documentPath')) {
       plainObject.documentPath = this.documentPath;
     }
-    if (this.hasOwnProperty('durationYears')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'durationYears')) {
       plainObject.durationYears = this.durationYears;
     }
-    if (this.hasOwnProperty('totalHours')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'totalHours')) {
       plainObject.totalHours = this.totalHours;
     }
-    if (this.hasOwnProperty('hoursPerWeek')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'hoursPerWeek')) {
       plainObject.hoursPerWeek = this.hoursPerWeek;
     }
-    if (this.hasOwnProperty('hoursPerMonth')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'hoursPerMonth')) {
       plainObject.hoursPerMonth = this.hoursPerMonth;
     }
-    if (this.hasOwnProperty('hoursPerYear')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'hoursPerYear')) {
       plainObject.hoursPerYear = this.hoursPerYear;
     }
-    if (this.hasOwnProperty('observations')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'observations')) {
       plainObject.observations = this.observations;
     }
-    if (this.hasOwnProperty('isActive')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'isActive')) {
       plainObject.isActive = this.isActive;
     }
 

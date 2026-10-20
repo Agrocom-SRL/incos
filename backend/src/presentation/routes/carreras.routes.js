@@ -1,12 +1,11 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
-import { verificarPermiso } from '../middleware/permisos.middleware.js';
+import { verificarPermiso, verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
 import { idValidator, listValidator } from '../validators/common/index.js';
 import {
     createCarreraValidator,
     updateCarreraValidator,
 } from '../validators/configuracion/carreras.validator.js';
-import { verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
 import { uploadCarreraImagen } from '../middleware/upload.middleware.js';
 
 /**

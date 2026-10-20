@@ -229,10 +229,10 @@ export class ActaCompromisoPdfGenerator extends IncosPDFLibBase {
                 if (observaciones) {
                     // Limpiar saltos de línea y caracteres problemáticos para pdf-lib
                     const observacionesLimpias = observaciones
-                        .replace(/\n/g, ' ')  // Reemplazar saltos de línea con espacios
-                        .replace(/\r/g, '')   // Eliminar retornos de carro
-                        .replace(/\t/g, ' ')   // Reemplazar tabs con espacios
-                        .trim();               // Eliminar espacios al inicio y final
+                        .replace(/\n/g, ' ') // Reemplazar saltos de línea con espacios
+                        .replace(/\r/g, '') // Eliminar retornos de carro
+                        .replace(/\t/g, ' ') // Reemplazar tabs con espacios
+                        .trim(); // Eliminar espacios al inicio y final
 
                     if (observacionesLimpias) {
                         // Agregar nombre del documento entre paréntesis
@@ -323,7 +323,6 @@ export class ActaCompromisoPdfGenerator extends IncosPDFLibBase {
         const lines = Array.isArray(opts.lines) ? opts.lines : [];
         const { width: pageWidth } = this._currentPage.getSize();
         const cfg = IncosPDFBase.LAYOUT;
-        const margins = cfg.margins;
         const lineWidth = cfg.signatureLineWidth ?? 150;
         const lineThickness = cfg.signatureLineThickness ?? 1;
         const headerHeight = cfg.headerHeight ?? 90;
@@ -337,10 +336,6 @@ export class ActaCompromisoPdfGenerator extends IncosPDFLibBase {
 
         const centerX = pageWidth / 2;
         const halfLine = lineWidth / 2;
-
-        // Calcular altura del bloque de firma
-        const blockHeight = lineThickness + spaceLineToFirst +
-            lines.length * fontSize + Math.max(0, lines.length - 1) * spaceBetweenLines;
 
         // Posicionar la firma continuando desde _currentY con un espaciado basado en headerHeight
         // El espaciado es igual al headerHeight (90 puntos) para dar suficiente espacio

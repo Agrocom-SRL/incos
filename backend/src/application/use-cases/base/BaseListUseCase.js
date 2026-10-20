@@ -106,7 +106,7 @@ export class BaseListUseCase {
      * @param {Object} baseFilters - Filtros base ya extraídos por ListRequestDTO (search, sort)
      * @returns {Object} Filtros combinados con filtros específicos normalizados
      */
-    buildSpecificFilters(queryParams = {}, baseFilters = {}) {
+    buildSpecificFilters(_queryParams = {}, baseFilters = {}) {
         // Implementación por defecto: retorna solo los filtros base
         // Las subclases pueden sobrescribir para agregar filtros específicos
         return baseFilters;
@@ -138,7 +138,7 @@ export class BaseListUseCase {
      *   return filters;
      * }
      */
-    async prepareFilters(filters = {}, queryParams = {}) {
+    async prepareFilters(filters = {}, _queryParams = {}) {
         // Implementación por defecto: retorna los filtros sin modificar
         // Las subclases pueden sobrescribir para hacer consultas y modificar filtros
         return filters;
@@ -154,7 +154,7 @@ export class BaseListUseCase {
      * @param {Object} repositoryResult - Resultado completo del repository (incluye total, etc.)
      * @returns {Promise<Array>|Array} Array de datos enriquecidos
      */
-    async enrichData(data, repositoryResult) {
+    async enrichData(data, _repositoryResult) {
         // Implementación por defecto: retorna los datos sin modificar
         return data;
     }
@@ -191,8 +191,8 @@ export class BaseListUseCase {
         const filters = await this.prepareFilters(initialFilters, queryParams);
 
         // Parsear y validar parámetros
-        const pageNum = parseInt(page) || 1;
-        const limitNum = parseInt(limit) || 50;
+        const pageNum = parseInt(page, 10) || 1;
+        const limitNum = parseInt(limit, 10) || 50;
 
         // Logging inicial
         this.logger.info(`[${this.moduleName}] Iniciando listado de ${this.resourceName}`, {

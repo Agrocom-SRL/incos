@@ -12,34 +12,34 @@ export class Transfer extends BaseEntity {
   constructor(data = {}) {
     super(data);
 
-    if (data.hasOwnProperty('estudianteId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'estudianteId')) {
       this.estudianteId = data.estudianteId;
     }
-    if (data.hasOwnProperty('codigoRude')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'codigoRude')) {
       this.codigoRude = data.codigoRude;
     }
-    if (data.hasOwnProperty('institucionOrigenId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'institucionOrigenId')) {
       this.institucionOrigenId = data.institucionOrigenId;
     }
-    if (data.hasOwnProperty('carreraOrigen')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'carreraOrigen')) {
       this.carreraOrigen = data.carreraOrigen;
     }
-    if (data.hasOwnProperty('anioCursado')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'anioCursado')) {
       this.anioCursado = data.anioCursado;
     }
-    if (data.hasOwnProperty('regimenOrigen')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'regimenOrigen')) {
       this.regimenOrigen = data.regimenOrigen;
     }
-    if (data.hasOwnProperty('estado')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'estado')) {
       this.estado = data.estado;
     }
-    if (data.hasOwnProperty('fechaSolicitud')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'fechaSolicitud')) {
       this.fechaSolicitud = data.fechaSolicitud;
     }
-    if (data.hasOwnProperty('motivoNoProcedente')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'motivoNoProcedente')) {
       this.motivoNoProcedente = data.motivoNoProcedente;
     }
-    if (data.hasOwnProperty('observaciones')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'observaciones')) {
       this.observaciones = data.observaciones;
     }
   }
@@ -51,34 +51,34 @@ export class Transfer extends BaseEntity {
   toPlainObject() {
     const plainObject = super.toPlainObject();
 
-    if (this.hasOwnProperty('estudianteId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'estudianteId')) {
       plainObject.estudianteId = this.estudianteId;
     }
-    if (this.hasOwnProperty('codigoRude')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'codigoRude')) {
       plainObject.codigoRude = this.codigoRude;
     }
-    if (this.hasOwnProperty('institucionOrigenId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'institucionOrigenId')) {
       plainObject.institucionOrigenId = this.institucionOrigenId;
     }
-    if (this.hasOwnProperty('carreraOrigen')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'carreraOrigen')) {
       plainObject.carreraOrigen = this.carreraOrigen;
     }
-    if (this.hasOwnProperty('anioCursado')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'anioCursado')) {
       plainObject.anioCursado = this.anioCursado;
     }
-    if (this.hasOwnProperty('regimenOrigen')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'regimenOrigen')) {
       plainObject.regimenOrigen = this.regimenOrigen;
     }
-    if (this.hasOwnProperty('estado')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'estado')) {
       plainObject.estado = this.estado;
     }
-    if (this.hasOwnProperty('fechaSolicitud')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'fechaSolicitud')) {
       plainObject.fechaSolicitud = this.fechaSolicitud;
     }
-    if (this.hasOwnProperty('motivoNoProcedente')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'motivoNoProcedente')) {
       plainObject.motivoNoProcedente = this.motivoNoProcedente;
     }
-    if (this.hasOwnProperty('observaciones')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'observaciones')) {
       plainObject.observaciones = this.observaciones;
     }
 

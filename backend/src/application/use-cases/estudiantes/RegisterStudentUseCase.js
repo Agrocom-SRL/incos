@@ -551,9 +551,7 @@ export class RegisterStudentUseCase {
         });
 
         if (existingStudent) {
-          const expedicionLabel = expedicionToCheck
-            ? expedicionToCheck
-            : 'sin expedición';
+          const expedicionLabel = expedicionToCheck || 'sin expedición';
           throw new Error(
             `Ya existe un estudiante con CI ${data.student.ci} ${expedicionLabel}`
           );
@@ -682,7 +680,7 @@ export class RegisterStudentUseCase {
         this.logger.info('[Estudiantes] Orígenes creados', {
           studentId: student.id,
           count: origins.length,
-          tipos: origins.map(o => {
+          tipos: origins.map((o) => {
             const plain = o.toPlainObject ? o.toPlainObject() : o;
             return { tipo: plain.originType, principal: plain.isPrincipal };
           }),
@@ -698,7 +696,7 @@ export class RegisterStudentUseCase {
         for (const [docKey, docData] of Object.entries(data.documentation)) {
           const documentacionId = parseInt(docKey.replace('doc_', ''), 10);
 
-          if (!isNaN(documentacionId) && docData) {
+          if (!Number.isNaN(Number(documentacionId)) && docData) {
             if (tipoAdmision !== 'TRASPASO' && traspasoDocumentacionIds.includes(documentacionId)) {
               continue;
             }

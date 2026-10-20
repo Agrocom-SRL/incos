@@ -7,15 +7,15 @@ import {
 export class CourseOffer extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    if (data.hasOwnProperty('parallelManagementId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'parallelManagementId')) {
       this.parallelManagementId = data.parallelManagementId;
     }
-    if (data.hasOwnProperty('planSubjectId')) this.planSubjectId = data.planSubjectId;
-    if (data.hasOwnProperty('state')) this.state = data.state;
-    else if (!data.hasOwnProperty('parallelManagementId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'planSubjectId')) this.planSubjectId = data.planSubjectId;
+    if (Object.prototype.hasOwnProperty.call(data, 'state')) this.state = data.state;
+    else if (!Object.prototype.hasOwnProperty.call(data, 'parallelManagementId')) {
       this.state = ESTADOS_OFERTA_CURSO.PROGRAMADA;
     }
-    if (data.hasOwnProperty('observations')) this.observations = data.observations;
+    if (Object.prototype.hasOwnProperty.call(data, 'observations')) this.observations = data.observations;
   }
 
   isValidState() {

@@ -14,19 +14,19 @@ export class SystemConfiguration extends BaseEntity {
     super(data);
     // Solo inicializar campos si fueron proporcionados explícitamente
     // Esto permite usar attributes limitados sin inicializar campos no solicitados
-    if (data.hasOwnProperty('key')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'key')) {
       this.key = data.key;
     }
-    if (data.hasOwnProperty('value')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'value')) {
       this.value = data.value;
     }
-    if (data.hasOwnProperty('type')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'type')) {
       this.type = data.type;
-    } else if (!data.hasOwnProperty('key')) {
+    } else if (!Object.prototype.hasOwnProperty.call(data, 'key')) {
       // Solo usar valor por defecto si no se está usando attributes limitados
       this.type = TIPOS_CONFIGURACION.STRING;
     }
-    if (data.hasOwnProperty('description')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'description')) {
       this.description = data.description;
     }
   }
@@ -49,16 +49,16 @@ export class SystemConfiguration extends BaseEntity {
     const plainObject = super.toPlainObject();
 
     // Solo incluir campos que fueron inicializados (existen en this)
-    if (this.hasOwnProperty('key')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'key')) {
       plainObject.key = this.key;
     }
-    if (this.hasOwnProperty('value')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'value')) {
       plainObject.value = this.value;
     }
-    if (this.hasOwnProperty('type')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'type')) {
       plainObject.type = this.type;
     }
-    if (this.hasOwnProperty('description')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'description')) {
       plainObject.description = this.description;
     }
 

@@ -88,7 +88,7 @@ export class GenerateActaCompromisoUseCase extends BaseDocumentGenerationUseCase
      * @returns {Promise<{filePath: string, fileName: string, absolutePath: string}>} Rutas del PDF generado
      * @throws {Error} Si falla la generación del PDF
      */
-    async execute(studentId, options = {}) {
+    async execute(studentId, _options = {}) {
         this.logger.info('[Estudiantes] Iniciando generación de ACTA DE COMPROMISO', {
             studentId,
         });
@@ -251,9 +251,9 @@ export class GenerateActaCompromisoUseCase extends BaseDocumentGenerationUseCase
                 apellidoPaterno: student.lastName,
                 apellidoMaterno: student.motherLastName,
             },
-            fechaActual: fechaActual,
+            fechaActual,
             entregas: entregasConDetalle || [],
-            diasPlazo: diasPlazo,
+            diasPlazo,
         });
     }
 

@@ -1,4 +1,3 @@
-import { IEstadoCivilRepository } from '../../domain/interfaces/repositories/IEstadoCivilRepository.js';
 import { EstadoCivil as EstadoCivilModel } from '../database/models/estado_civil.js';
 import { BaseRepository } from './BaseRepository.js';
 import { CivilStatusMapper } from '../mappers/CivilStatusMapper.js';
@@ -104,7 +103,7 @@ export class CivilStatusRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return CivilStatusMapper.toModel(data);
   }
 
@@ -116,7 +115,7 @@ export class CivilStatusRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return CivilStatusMapper.toModelForUpdate(data);
   }
 

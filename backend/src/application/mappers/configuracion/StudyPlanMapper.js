@@ -27,6 +27,7 @@ export class StudyPlanMapper {
   static entityToPresentation(plan) {
     return entityToPresentation(plan);
   }
+
   static entitiesToPresentation(plans) {
     return entitiesToPresentation(plans);
   }

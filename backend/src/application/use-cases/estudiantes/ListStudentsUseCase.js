@@ -44,8 +44,8 @@ export class ListStudentsUseCase extends BaseListUseCase {
       ? this.buildSpecificFilters(queryParams, baseFilters)
       : baseFilters;
     const filters = await this.prepareFilters(initialFilters, queryParams);
-    const pageNum = parseInt(page) || 1;
-    const limitNum = parseInt(limit) || 50;
+    const pageNum = parseInt(page, 10) || 1;
+    const limitNum = parseInt(limit, 10) || 50;
 
     this.logger.info(`[${this.moduleName}] Iniciando listado de ${this.resourceName}`, {
       filters,
@@ -60,7 +60,7 @@ export class ListStudentsUseCase extends BaseListUseCase {
       // Enriquecer con datos académicos (carrera, gestión ingreso, tipo admisión) desde vista_estudiante_datos_academicos
       // + resumen académico (periodo/paralelo actual, promedio historial) desde vista_estudiante_resumen_academico
       const studentIds = data.map((s) => s.id).filter((id) => id != null);
-      let academicByStudentId = {};
+      const academicByStudentId = {};
       let resumenByStudentId = {};
       if (studentIds.length > 0 && this.studentAcademicDataRepository) {
         const [academicRows, resumenMap] = await Promise.all([

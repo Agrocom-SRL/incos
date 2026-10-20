@@ -1,4 +1,3 @@
-import { IRolPermisoRepository } from '../../domain/interfaces/repositories/IRolPermisoRepository.js';
 import { RolPermiso as RolPermisoModel } from '../database/models/rol_permiso.js';
 import { sequelize } from '../database/sequelize.js';
 import { BaseRepository } from './BaseRepository.js';
@@ -109,7 +108,7 @@ export class RolePermissionRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return RolePermissionMapper.toModel(data);
   }
 
@@ -121,7 +120,7 @@ export class RolePermissionRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return RolePermissionMapper.toModelForUpdate(data);
   }
 

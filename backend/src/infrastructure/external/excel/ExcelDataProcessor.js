@@ -57,7 +57,7 @@ class ExcelDataProcessor {
   static agruparDatos(datos) {
     const grupos = {};
 
-    datos.forEach(reg => {
+    datos.forEach((reg) => {
       const carrera = reg.carrera_nombre || reg.carreraNombre;
       const regimen = this.formatearRegimen(reg.periodo_numero || reg.periodoNumero);
 
@@ -187,14 +187,14 @@ class ExcelDataProcessor {
 
     // 2. Buscar patrones específicos
     const patrones = {
-      'A': ['PRIMERO A', 'SEGUNDO A', 'TERCERO A', 'CUARTO A', 'QUINTO A', 'SEXTO A'],
-      'B': ['PRIMERO B', 'SEGUNDO B', 'TERCERO B', 'CUARTO B', 'QUINTO B', 'SEXTO B'],
-      'C': ['PRIMERO C', 'SEGUNDO C', 'TERCERO C', 'CUARTO C', 'QUINTO C', 'SEXTO C'],
-      'D': ['PRIMERO D', 'SEGUNDO D', 'TERCERO D', 'CUARTO D', 'QUINTO D', 'SEXTO D']
+      A: ['PRIMERO A', 'SEGUNDO A', 'TERCERO A', 'CUARTO A', 'QUINTO A', 'SEXTO A'],
+      B: ['PRIMERO B', 'SEGUNDO B', 'TERCERO B', 'CUARTO B', 'QUINTO B', 'SEXTO B'],
+      C: ['PRIMERO C', 'SEGUNDO C', 'TERCERO C', 'CUARTO C', 'QUINTO C', 'SEXTO C'],
+      D: ['PRIMERO D', 'SEGUNDO D', 'TERCERO D', 'CUARTO D', 'QUINTO D', 'SEXTO D']
     };
 
     for (const [letra, listaPatrones] of Object.entries(patrones)) {
-      if (listaPatrones.some(patron => n.includes(patron))) {
+      if (listaPatrones.some((patron) => n.includes(patron))) {
         return letra;
       }
     }
@@ -202,12 +202,12 @@ class ExcelDataProcessor {
     // 3. Usar turno como fallback
     const t = (turno || '').toUpperCase().trim();
     const mapeoTurno = {
-      'MAÑANA': 'A',
-      'MANANA': 'A',
-      'TARDE': 'B',
-      'NOCHE': 'C',
-      'SÁBADO': 'D',
-      'SABADO': 'D'
+      MAÑANA: 'A',
+      MANANA: 'A',
+      TARDE: 'B',
+      NOCHE: 'C',
+      SÁBADO: 'D',
+      SABADO: 'D'
     };
 
     for (const [turnoKey, letra] of Object.entries(mapeoTurno)) {
@@ -224,7 +224,7 @@ class ExcelDataProcessor {
    * Formatea el número de periodo a formato de régimen
    */
   static formatearRegimen(numero) {
-    const num = parseInt(numero) || 1;
+    const num = parseInt(numero, 10) || 1;
     const nombres = ['1ER AÑO', '2DO AÑO', '3ER AÑO', '4TO AÑO'];
     return nombres[num - 1] || `${num}º AÑO`;
   }

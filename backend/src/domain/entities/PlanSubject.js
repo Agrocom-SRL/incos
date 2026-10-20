@@ -10,30 +10,30 @@ export class PlanSubject extends BaseEntity {
     super(data);
     // Solo inicializar campos si fueron proporcionados explícitamente
     // Esto permite usar attributes limitados sin inicializar campos no solicitados
-    if (data.hasOwnProperty('studyPlanId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'studyPlanId')) {
       this.studyPlanId = data.studyPlanId;
     }
-    if (data.hasOwnProperty('periodId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'periodId')) {
       this.periodId = data.periodId;
     }
-    if (data.hasOwnProperty('subjectId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'subjectId')) {
       this.subjectId = data.subjectId;
     }
-    if (data.hasOwnProperty('weeklyHours')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'weeklyHours')) {
       this.weeklyHours = data.weeklyHours;
     }
-    if (data.hasOwnProperty('credits')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'credits')) {
       this.credits = data.credits;
     }
-    if (data.hasOwnProperty('modality')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'modality')) {
       this.modality = data.modality;
-    } else if (!data.hasOwnProperty('studyPlanId')) {
+    } else if (!Object.prototype.hasOwnProperty.call(data, 'studyPlanId')) {
       // Solo usar valor por defecto si no se está usando attributes limitados
       this.modality = MODALIDADES_ASIGNATURA.REGULAR;
     }
-    if (data.hasOwnProperty('displayOrder')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'displayOrder')) {
       this.displayOrder = data.displayOrder;
-    } else if (!data.hasOwnProperty('studyPlanId')) {
+    } else if (!Object.prototype.hasOwnProperty.call(data, 'studyPlanId')) {
       // Solo usar valor por defecto si no se está usando attributes limitados
       this.displayOrder = 1;
     }
@@ -73,25 +73,25 @@ export class PlanSubject extends BaseEntity {
     const plainObject = super.toPlainObject();
 
     // Solo incluir campos que fueron inicializados (existen en this)
-    if (this.hasOwnProperty('studyPlanId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'studyPlanId')) {
       plainObject.studyPlanId = this.studyPlanId;
     }
-    if (this.hasOwnProperty('periodId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'periodId')) {
       plainObject.periodId = this.periodId;
     }
-    if (this.hasOwnProperty('subjectId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'subjectId')) {
       plainObject.subjectId = this.subjectId;
     }
-    if (this.hasOwnProperty('weeklyHours')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'weeklyHours')) {
       plainObject.weeklyHours = this.weeklyHours;
     }
-    if (this.hasOwnProperty('credits')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'credits')) {
       plainObject.credits = this.credits;
     }
-    if (this.hasOwnProperty('modality')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'modality')) {
       plainObject.modality = this.modality;
     }
-    if (this.hasOwnProperty('displayOrder')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'displayOrder')) {
       plainObject.displayOrder = this.displayOrder;
     }
 

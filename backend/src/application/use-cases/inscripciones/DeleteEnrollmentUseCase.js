@@ -138,7 +138,7 @@ export class DeleteEnrollmentUseCase {
       // Buscar todas las materias inscritas de esta inscripción
       const subjectEnrollmentsResult = await this.subjectEnrollmentRepository.findAll(
         {
-          enrollmentId: enrollmentId,
+          enrollmentId,
           active: true,
         },
         null,
@@ -193,7 +193,7 @@ export class DeleteEnrollmentUseCase {
       // Buscar documentos de tipo INSCRIPCION del estudiante
       const documentosResult = await this.studentDocumentRepository.findAll(
         {
-          studentId: studentId,
+          studentId,
           tipoDocumento: 'INSCRIPCION',
         },
         null,
@@ -261,8 +261,8 @@ export class DeleteEnrollmentUseCase {
       // Verificar si hay otras inscripciones activas para estos datos académicos en la misma gestión
       const otherEnrollmentsResult = await this.enrollmentRepository.findAll(
         {
-          academicDataId: academicDataId,
-          managementId: managementId,
+          academicDataId,
+          managementId,
           active: true,
         },
         null,

@@ -8,16 +8,16 @@ export class EvaluationType extends BaseEntity {
     constructor(data = {}) {
         super(data);
 
-        if (data.hasOwnProperty('code')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'code')) {
             this.code = data.code;
         }
-        if (data.hasOwnProperty('name')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'name')) {
             this.name = data.name;
         }
-        if (data.hasOwnProperty('description')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'description')) {
             this.description = data.description;
         }
-        if (data.hasOwnProperty('isRecovery')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'isRecovery')) {
             this.isRecovery = data.isRecovery;
         }
     }
@@ -30,10 +30,10 @@ export class EvaluationType extends BaseEntity {
     toPlainObject() {
         const plainObject = super.toPlainObject();
 
-        if (this.hasOwnProperty('code')) plainObject.code = this.code;
-        if (this.hasOwnProperty('name')) plainObject.name = this.name;
-        if (this.hasOwnProperty('description')) plainObject.description = this.description;
-        if (this.hasOwnProperty('isRecovery')) plainObject.isRecovery = this.isRecovery;
+        if (Object.prototype.hasOwnProperty.call(this, 'code')) plainObject.code = this.code;
+        if (Object.prototype.hasOwnProperty.call(this, 'name')) plainObject.name = this.name;
+        if (Object.prototype.hasOwnProperty.call(this, 'description')) plainObject.description = this.description;
+        if (Object.prototype.hasOwnProperty.call(this, 'isRecovery')) plainObject.isRecovery = this.isRecovery;
 
         return plainObject;
     }

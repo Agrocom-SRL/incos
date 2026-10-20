@@ -32,7 +32,7 @@ export class BaseRepository extends IRepository {
    * @param {Object} model - Modelo Sequelize
    * @returns {Object|null} Entidad de dominio
    */
-  toEntity(model) {
+  toEntity(_model) {
     throw new Error('Method toEntity must be implemented by subclass');
   }
 
@@ -42,7 +42,7 @@ export class BaseRepository extends IRepository {
    * @param {Object} filters - Filtros de búsqueda
    * @returns {Object} Objeto WHERE para Sequelize
    */
-  buildWhereClause(filters) {
+  buildWhereClause(_filters) {
     // Implementación por defecto: retorna objeto vacío
     // Las subclases pueden sobrescribir para agregar filtros específicos
     return {};
@@ -77,7 +77,7 @@ export class BaseRepository extends IRepository {
    * @param {number} userId - ID del usuario (opcional)
    * @returns {Object} Datos mapeados para el modelo
    */
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     throw new Error('Method mapDataToModel must be implemented by subclass');
   }
 
@@ -88,7 +88,7 @@ export class BaseRepository extends IRepository {
    * @param {number} userId - ID del usuario (opcional)
    * @returns {Object} Datos mapeados para actualización
    */
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     throw new Error('Method mapDataToUpdate must be implemented by subclass');
   }
 
@@ -469,5 +469,4 @@ export class BaseRepository extends IRepository {
 
     return { rows, total };
   }
-
 }

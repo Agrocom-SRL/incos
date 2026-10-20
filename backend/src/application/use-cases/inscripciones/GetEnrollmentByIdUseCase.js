@@ -317,7 +317,7 @@ export class GetEnrollmentByIdUseCase {
 
             let teacherAssignment = null;
             let teacher = null;
-            let course = null;
+            const course = null;
             let planSubject = null;
             let subject = null;
             let horarios = [];
@@ -566,7 +566,7 @@ export class GetEnrollmentByIdUseCase {
           this.logger.info('[Inscripciones] Documentos encontrados para estudiante', {
             studentId: student.id,
             totalDocumentos: documentos.length,
-            documentosConTipoInscripcion: documentos.filter(d => {
+            documentosConTipoInscripcion: documentos.filter((d) => {
               const docPlain = d.toPlainObject ? d.toPlainObject() : d;
               return docPlain.tipoDocumento === 'INSCRIPCION';
             }).length,
@@ -576,11 +576,11 @@ export class GetEnrollmentByIdUseCase {
           // Nombres aceptados: BOLETA_INSCRIPCION, FORMULARIO_INSCRIPCION, o formulario_inscripcion_* (GenerateFormularioInscripcionUseCase)
           // Ordenar por fecha de creación descendente para obtener el más reciente
           const formulariosDocs = documentos
-            .map(doc => {
+            .map((doc) => {
               const docPlain = doc.toPlainObject ? doc.toPlainObject() : doc;
               return docPlain;
             })
-            .filter(doc => {
+            .filter((doc) => {
               // El documento puede tener fileName (desde entidad) o nombreArchivo (desde modelo Sequelize directo)
               const fileName = doc.fileName || doc.nombreArchivo || '';
               const extension = doc.extension || '';
@@ -596,10 +596,10 @@ export class GetEnrollmentByIdUseCase {
 
               if (doc.tipoDocumento === 'INSCRIPCION') {
                 this.logger.debug('[Inscripciones] Documento INSCRIPCION encontrado', {
-                  fileName: fileName,
-                  extension: extension,
+                  fileName,
+                  extension,
                   docKeys: Object.keys(doc),
-                  matches: matches,
+                  matches,
                 });
               }
 
@@ -627,13 +627,13 @@ export class GetEnrollmentByIdUseCase {
               : `/${uploadDir}/${filePathRaw}`.replace(/\\/g, '/');
 
             formularioInscripcion = {
-              filePath: filePath,
+              filePath,
               fileName: fileNameRaw,
             };
 
             this.logger.info('[Inscripciones] Formulario de inscripción encontrado', {
               fileName: formularioDoc.fileName,
-              filePath: filePath,
+              filePath,
             });
           } else {
             this.logger.warn('[Inscripciones] No se encontró boleta de inscripción', {

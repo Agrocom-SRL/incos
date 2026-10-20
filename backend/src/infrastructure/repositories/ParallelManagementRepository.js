@@ -1,5 +1,4 @@
 import { QueryTypes } from 'sequelize';
-import { IParaleloGestionRepository } from '../../domain/interfaces/repositories/IParaleloGestionRepository.js';
 import { ParaleloGestion as ParaleloGestionModel } from '../database/models/paralelo_gestion.js';
 import { BaseRepository } from './BaseRepository.js';
 import { ParallelManagementMapper } from '../mappers/ParallelManagementMapper.js';
@@ -41,11 +40,11 @@ export class ParallelManagementRepository extends BaseRepository {
     return ['observaciones'];
   }
 
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return ParallelManagementMapper.toModel(data);
   }
 
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return ParallelManagementMapper.toModelForUpdate(data);
   }
 

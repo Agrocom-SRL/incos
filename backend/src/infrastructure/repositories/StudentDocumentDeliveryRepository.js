@@ -1,4 +1,3 @@
-import { IEstudianteDocumentoEntregaRepository } from '../../domain/interfaces/repositories/IEstudianteDocumentoEntregaRepository.js';
 import { BaseRepository } from './BaseRepository.js';
 import { EstudianteDocumentoEntrega } from '../database/models/estudiante_documento_entrega.js';
 import { StudentDocumentDeliveryMapper } from '../mappers/StudentDocumentDeliveryMapper.js';
@@ -116,7 +115,7 @@ export class StudentDocumentDeliveryRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return StudentDocumentDeliveryMapper.toModel(data);
   }
 
@@ -128,7 +127,7 @@ export class StudentDocumentDeliveryRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return StudentDocumentDeliveryMapper.toModelForUpdate(data);
   }
 

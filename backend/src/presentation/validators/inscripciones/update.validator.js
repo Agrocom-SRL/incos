@@ -16,6 +16,7 @@
  * - enrollment_date: opcional, formato YYYY-MM-DD
  */
 import expressValidator from 'express-validator';
+
 const { body } = expressValidator;
 
 export const updateEnrollmentValidator = [

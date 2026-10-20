@@ -10,39 +10,39 @@ export class Documentation extends BaseEntity {
     super(data);
     // Solo inicializar campos si fueron proporcionados explícitamente
     // Esto permite usar attributes limitados sin inicializar campos no solicitados
-    if (data.hasOwnProperty('name')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'name')) {
       this.name = data.name;
     }
-    if (data.hasOwnProperty('documentType')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'documentType')) {
       this.documentType = data.documentType;
     }
-    if (data.hasOwnProperty('acceptsPhotocopy')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'acceptsPhotocopy')) {
       this.acceptsPhotocopy = data.acceptsPhotocopy;
-    } else if (!data.hasOwnProperty('name')) {
+    } else if (!Object.prototype.hasOwnProperty.call(data, 'name')) {
       // Solo usar valor por defecto si no se está usando attributes limitados
       this.acceptsPhotocopy = false;
     }
-    if (data.hasOwnProperty('required')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'required')) {
       this.required = data.required;
-    } else if (!data.hasOwnProperty('name')) {
+    } else if (!Object.prototype.hasOwnProperty.call(data, 'name')) {
       // Solo usar valor por defecto si no se está usando attributes limitados
       this.required = true;
     }
-    if (data.hasOwnProperty('order')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'order')) {
       this.order = data.order;
-    } else if (!data.hasOwnProperty('name')) {
+    } else if (!Object.prototype.hasOwnProperty.call(data, 'name')) {
       // Solo usar valor por defecto si no se está usando attributes limitados
       this.order = 0;
     }
-    if (data.hasOwnProperty('description')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'description')) {
       this.description = data.description;
     }
-    if (data.hasOwnProperty('parentDocumentId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'parentDocumentId')) {
       this.parentDocumentId = data.parentDocumentId;
     }
-    if (data.hasOwnProperty('isSystemDocument')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'isSystemDocument')) {
       this.isSystemDocument = data.isSystemDocument;
-    } else if (!data.hasOwnProperty('name')) {
+    } else if (!Object.prototype.hasOwnProperty.call(data, 'name')) {
       // Solo usar valor por defecto si no se está usando attributes limitados
       this.isSystemDocument = false;
     }
@@ -66,28 +66,28 @@ export class Documentation extends BaseEntity {
     const plainObject = super.toPlainObject();
 
     // Solo incluir campos que fueron inicializados (existen en this)
-    if (this.hasOwnProperty('name')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'name')) {
       plainObject.name = this.name;
     }
-    if (this.hasOwnProperty('documentType')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'documentType')) {
       plainObject.documentType = this.documentType;
     }
-    if (this.hasOwnProperty('acceptsPhotocopy')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'acceptsPhotocopy')) {
       plainObject.acceptsPhotocopy = this.acceptsPhotocopy;
     }
-    if (this.hasOwnProperty('required')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'required')) {
       plainObject.required = this.required;
     }
-    if (this.hasOwnProperty('order')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'order')) {
       plainObject.order = this.order;
     }
-    if (this.hasOwnProperty('description')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'description')) {
       plainObject.description = this.description;
     }
-    if (this.hasOwnProperty('parentDocumentId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'parentDocumentId')) {
       plainObject.parentDocumentId = this.parentDocumentId;
     }
-    if (this.hasOwnProperty('isSystemDocument')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'isSystemDocument')) {
       plainObject.isSystemDocument = this.isSystemDocument;
     }
 

@@ -1,8 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
-import { TIPOS_DIRECTOR_VALUES } from '../../../domain/constants/docentes.constants.js';
-import { NIVELES_ACADEMICOS_PERSONAL_VALUES } from '../../../domain/constants/docentes.constants.js';
+import { TIPOS_DIRECTOR_VALUES, NIVELES_ACADEMICOS_PERSONAL_VALUES } from '../../../domain/constants/docentes.constants.js';
 
 /**
  * Modelo ORM: Director — tabla `directores`

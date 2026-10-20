@@ -65,8 +65,8 @@ export function buildInscripcionesRouter({ controllers, middlewares }) {
         '/',
         ...crearInscripcion,
         createEnrollmentValidator, // 1. Validator primero
-        validateRequest,            // 2. Middleware que procesa errores
-        (req, res, next) => controllers.createEnrollmentController.handle(req, res, next)  // 3. Controller al final
+        validateRequest, // 2. Middleware que procesa errores
+        (req, res, next) => controllers.createEnrollmentController.handle(req, res, next) // 3. Controller al final
     );
 
     /**

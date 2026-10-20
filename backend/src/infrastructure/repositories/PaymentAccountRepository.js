@@ -1,4 +1,3 @@
-import { ICuentaPagoRepository } from '../../domain/interfaces/repositories/ICuentaPagoRepository.js';
 import { CuentaPago as CuentaPagoModel } from '../database/models/cuenta_pago.js';
 import { BaseRepository } from './BaseRepository.js';
 import { PaymentAccountMapper } from '../mappers/PaymentAccountMapper.js';
@@ -52,11 +51,11 @@ export class PaymentAccountRepository extends BaseRepository {
     return [['nombreTitular', 'ASC']];
   }
 
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return PaymentAccountMapper.toModel(data);
   }
 
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return PaymentAccountMapper.toModelForUpdate(data);
   }
 

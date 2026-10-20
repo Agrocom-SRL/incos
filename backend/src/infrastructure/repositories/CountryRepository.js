@@ -1,4 +1,3 @@
-import { IPaisRepository } from '../../domain/interfaces/repositories/IPaisRepository.js';
 import { Pais as PaisModel } from '../database/models/pais.js';
 import { BaseRepository } from './BaseRepository.js';
 import { CountryMapper } from '../mappers/CountryMapper.js';
@@ -108,7 +107,7 @@ export class CountryRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return CountryMapper.toModel(data);
   }
 
@@ -120,7 +119,7 @@ export class CountryRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return CountryMapper.toModelForUpdate(data);
   }
 

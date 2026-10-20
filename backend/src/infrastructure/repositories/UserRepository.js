@@ -1,4 +1,3 @@
-import { IUsuarioRepository } from '../../domain/interfaces/repositories/IUsuarioRepository.js';
 import { Usuario as UsuarioModel } from '../database/models/usuario.js';
 import { sequelize } from '../database/sequelize.js';
 import { BaseRepository } from './BaseRepository.js';
@@ -140,7 +139,7 @@ export class UserRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return UserMapper.toModel(data);
   }
 
@@ -152,7 +151,7 @@ export class UserRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return UserMapper.toModelForUpdate(data);
   }
 

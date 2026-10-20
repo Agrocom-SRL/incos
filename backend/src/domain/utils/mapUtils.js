@@ -132,7 +132,7 @@ export function normalizeId(id) {
   if (typeof id === 'number') return id;
   if (typeof id === 'string') {
     const parsed = parseInt(id, 10);
-    return isNaN(parsed) ? null : parsed;
+    return Number.isNaN(Number(parsed)) ? null : parsed;
   }
   return null;
 }

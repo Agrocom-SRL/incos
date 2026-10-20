@@ -1,4 +1,3 @@
-import { IConfiguracionSistemaRepository } from '../../domain/interfaces/repositories/IConfiguracionSistemaRepository.js';
 import { ConfiguracionSistema as ConfiguracionSistemaModel } from '../database/models/configuracion_sistema.js';
 import { BaseRepository } from './BaseRepository.js';
 import { SystemConfigurationMapper } from '../mappers/SystemConfigurationMapper.js';
@@ -118,7 +117,7 @@ export class ConfiguracionSistemaRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return SystemConfigurationMapper.toModel(data);
   }
 
@@ -130,7 +129,7 @@ export class ConfiguracionSistemaRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return SystemConfigurationMapper.toModelForUpdate(data);
   }
 

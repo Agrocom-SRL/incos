@@ -6,7 +6,7 @@ import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { verificarPermiso } from '../middleware/permisos.middleware.js';
 
-export function buildAulasHorariosRouter({ controllers, middlewares }) {
+export function buildAulasHorariosRouter({ controllers }) {
   const router = express.Router();
 
   const verCatalogoAulas = [

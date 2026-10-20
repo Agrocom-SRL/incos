@@ -13,82 +13,82 @@ export class Student extends BaseEntity {
     // Esto permite usar attributes limitados sin inicializar campos no solicitados
 
     // Relaciones
-    if (data.hasOwnProperty('userId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'userId')) {
       this.userId = data.userId;
     }
 
     // Datos de identificación
-    if (data.hasOwnProperty('studentCode')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'studentCode')) {
       this.studentCode = data.studentCode;
     }
-    if (data.hasOwnProperty('ci')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'ci')) {
       this.ci = data.ci;
     }
-    if (data.hasOwnProperty('expedition')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'expedition')) {
       this.expedition = data.expedition;
     }
 
     // Datos personales
-    if (data.hasOwnProperty('firstName')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'firstName')) {
       this.firstName = data.firstName;
     }
-    if (data.hasOwnProperty('lastName')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'lastName')) {
       this.lastName = data.lastName;
     }
-    if (data.hasOwnProperty('motherLastName')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'motherLastName')) {
       this.motherLastName = data.motherLastName;
     }
-    if (data.hasOwnProperty('birthDate')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'birthDate')) {
       this.birthDate = data.birthDate;
     }
-    if (data.hasOwnProperty('gender')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'gender')) {
       this.gender = data.gender;
     }
-    if (data.hasOwnProperty('civilStatusId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'civilStatusId')) {
       this.civilStatusId = data.civilStatusId;
     }
-    if (data.hasOwnProperty('bloodType')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'bloodType')) {
       this.bloodType = data.bloodType;
     }
-    if (data.hasOwnProperty('hasDisability')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'hasDisability')) {
       this.hasDisability = data.hasDisability;
-    } else if (!data.hasOwnProperty('userId')) {
+    } else if (!Object.prototype.hasOwnProperty.call(data, 'userId')) {
       // Solo usar valor por defecto si no se está usando attributes limitados
       this.hasDisability = false;
     }
 
     // Contacto
-    if (data.hasOwnProperty('personalEmail')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'personalEmail')) {
       this.personalEmail = data.personalEmail;
     }
-    if (data.hasOwnProperty('mobilePhone')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'mobilePhone')) {
       this.mobilePhone = data.mobilePhone;
     }
-    if (data.hasOwnProperty('landlinePhone')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'landlinePhone')) {
       this.landlinePhone = data.landlinePhone;
     }
-    if (data.hasOwnProperty('address')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'address')) {
       this.address = data.address;
     }
-    if (data.hasOwnProperty('residenceMunicipalityId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'residenceMunicipalityId')) {
       this.residenceMunicipalityId = data.residenceMunicipalityId;
     }
-    if (data.hasOwnProperty('zone')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'zone')) {
       this.zone = data.zone;
     }
-    if (data.hasOwnProperty('observations')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'observations')) {
       this.observations = data.observations;
     }
     // Datos laborales
-    if (data.hasOwnProperty('works')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'works')) {
       this.works = data.works;
-    } else if (!data.hasOwnProperty('userId')) {
+    } else if (!Object.prototype.hasOwnProperty.call(data, 'userId')) {
       this.works = false;
     }
-    if (data.hasOwnProperty('employerInstitution')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'employerInstitution')) {
       this.employerInstitution = data.employerInstitution;
     }
-    if (data.hasOwnProperty('position')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'position')) {
       this.position = data.position;
     }
   }
@@ -201,70 +201,70 @@ export class Student extends BaseEntity {
     const plainObject = super.toPlainObject();
 
     // Solo incluir campos que fueron inicializados (existen en this)
-    if (this.hasOwnProperty('userId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'userId')) {
       plainObject.userId = this.userId;
     }
-    if (this.hasOwnProperty('studentCode')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'studentCode')) {
       plainObject.studentCode = this.studentCode;
     }
-    if (this.hasOwnProperty('ci')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'ci')) {
       plainObject.ci = this.ci;
     }
-    if (this.hasOwnProperty('expedition')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'expedition')) {
       plainObject.expedition = this.expedition;
     }
-    if (this.hasOwnProperty('firstName')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'firstName')) {
       plainObject.firstName = this.firstName;
     }
-    if (this.hasOwnProperty('lastName')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'lastName')) {
       plainObject.lastName = this.lastName;
     }
-    if (this.hasOwnProperty('motherLastName')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'motherLastName')) {
       plainObject.motherLastName = this.motherLastName;
     }
-    if (this.hasOwnProperty('birthDate')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'birthDate')) {
       plainObject.birthDate = this.birthDate;
     }
-    if (this.hasOwnProperty('gender')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'gender')) {
       plainObject.gender = this.gender;
     }
-    if (this.hasOwnProperty('civilStatusId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'civilStatusId')) {
       plainObject.civilStatusId = this.civilStatusId;
     }
-    if (this.hasOwnProperty('bloodType')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'bloodType')) {
       plainObject.bloodType = this.bloodType;
     }
-    if (this.hasOwnProperty('hasDisability')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'hasDisability')) {
       plainObject.hasDisability = this.hasDisability;
     }
-    if (this.hasOwnProperty('personalEmail')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'personalEmail')) {
       plainObject.personalEmail = this.personalEmail;
     }
-    if (this.hasOwnProperty('mobilePhone')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'mobilePhone')) {
       plainObject.mobilePhone = this.mobilePhone;
     }
-    if (this.hasOwnProperty('landlinePhone')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'landlinePhone')) {
       plainObject.landlinePhone = this.landlinePhone;
     }
-    if (this.hasOwnProperty('address')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'address')) {
       plainObject.address = this.address;
     }
-    if (this.hasOwnProperty('residenceMunicipalityId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'residenceMunicipalityId')) {
       plainObject.residenceMunicipalityId = this.residenceMunicipalityId;
     }
-    if (this.hasOwnProperty('zone')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'zone')) {
       plainObject.zone = this.zone;
     }
-    if (this.hasOwnProperty('observations')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'observations')) {
       plainObject.observations = this.observations;
     }
-    if (this.hasOwnProperty('works')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'works')) {
       plainObject.works = this.works;
     }
-    if (this.hasOwnProperty('employerInstitution')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'employerInstitution')) {
       plainObject.employerInstitution = this.employerInstitution;
     }
-    if (this.hasOwnProperty('position')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'position')) {
       plainObject.position = this.position;
     }
 

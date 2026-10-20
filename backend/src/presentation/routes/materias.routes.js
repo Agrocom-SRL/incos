@@ -1,7 +1,7 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { verificarPermiso } from '../middleware/permisos.middleware.js';
-import { idValidator, listValidator } from '../validators/common/index.js';
+import { idValidator } from '../validators/common/index.js';
 import { listMateriasValidator } from '../validators/academico/index.js';
 import {
     createMateriaValidator,

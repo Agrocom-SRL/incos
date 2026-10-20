@@ -69,6 +69,7 @@ export class UnauthorizedError extends AppError {
  * Error de acceso denegado (403)
  */
 export class ForbiddenError extends AppError {
+  // eslint-disable-next-line default-param-last -- firma publica estable (details opcional)
   constructor(message = 'Acceso denegado', details) {
     super(message, 403, 'FORBIDDEN');
     if (details !== undefined) {

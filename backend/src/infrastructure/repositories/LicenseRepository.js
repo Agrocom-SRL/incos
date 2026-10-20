@@ -1,5 +1,4 @@
 import { Op } from 'sequelize';
-import { ILicenciaRepository } from '../../domain/interfaces/repositories/ILicenciaRepository.js';
 import { Licencia as LicenciaModel } from '../database/models/licencia.js';
 import { BaseRepository } from './BaseRepository.js';
 import { LicenseMapper } from '../mappers/LicenseMapper.js';
@@ -112,11 +111,11 @@ export class LicenseRepository extends BaseRepository {
         return [['fechaSolicitud', 'DESC'], ['id', 'DESC']];
     }
 
-    mapDataToModel(data, userId = null) {
+    mapDataToModel(data, _userId = null) {
         return LicenseMapper.toModel(data);
     }
 
-    mapDataToUpdate(data, userId = null) {
+    mapDataToUpdate(data, _userId = null) {
         return LicenseMapper.toModelForUpdate(data);
     }
 

@@ -7,10 +7,10 @@ import { BaseEntity } from './BaseEntity.js';
 export class PaymentMethod extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    if (data.hasOwnProperty('code')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'code')) {
       this.code = data.code;
     }
-    if (data.hasOwnProperty('name')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'name')) {
       this.name = data.name;
     }
   }
@@ -18,10 +18,10 @@ export class PaymentMethod extends BaseEntity {
   toPlainObject() {
     const plainObject = super.toPlainObject();
 
-    if (this.hasOwnProperty('code')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'code')) {
       plainObject.code = this.code;
     }
-    if (this.hasOwnProperty('name')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'name')) {
       plainObject.name = this.name;
     }
 

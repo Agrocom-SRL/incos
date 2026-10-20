@@ -43,7 +43,7 @@ export class AgregarOverridePermisoUseCase {
       throw new UnprocessableEntityError('Los datos proporcionados son inválidos', [
         {
           field: 'tipo',
-          message: `tipo debe ser GRANT o REVOKE`,
+          message: 'tipo debe ser GRANT o REVOKE',
         },
       ]);
     }

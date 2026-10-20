@@ -1,4 +1,3 @@
-import { IPeriodoAcademicoRepository } from '../../domain/interfaces/repositories/IPeriodoAcademicoRepository.js';
 import { PeriodoAcademico as PeriodoAcademicoModel } from '../database/models/periodo_academico.js';
 import { BaseRepository } from './BaseRepository.js';
 import { AcademicPeriodMapper } from '../mappers/AcademicPeriodMapper.js';
@@ -129,7 +128,7 @@ export class AcademicPeriodRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return AcademicPeriodMapper.toModel(data);
   }
 
@@ -141,7 +140,7 @@ export class AcademicPeriodRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return AcademicPeriodMapper.toModelForUpdate(data);
   }
 

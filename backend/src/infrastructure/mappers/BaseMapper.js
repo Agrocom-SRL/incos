@@ -77,7 +77,7 @@ export class BaseMapper {
    * @param {BaseEntity|Object} entity - Entidad o objeto con datos
    * @returns {Object} Objeto con campos base para el modelo ORM (actualmente vacío)
    */
-  static baseFieldsToModel(entity) {
+  static baseFieldsToModel(_entity) {
     // activo NO se incluye aquí porque BaseRepository.create() lo maneja
     // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
     // Los campos de auditoría (createdBy, updatedBy, deletedBy) los maneja BaseRepository

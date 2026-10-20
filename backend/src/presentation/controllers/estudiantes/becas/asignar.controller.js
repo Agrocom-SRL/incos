@@ -136,7 +136,7 @@ export class AsignarBecaController extends BaseCreateController {
     // No hay datos particularmente sensibles en asignaciones de becas
     // pero podemos sanitizar observaciones si son muy largas
     if (sanitized.observations && sanitized.observations.length > 100) {
-      sanitized.observations = sanitized.observations.substring(0, 100) + '...';
+      sanitized.observations = `${sanitized.observations.substring(0, 100)}...`;
     }
 
     return sanitized;

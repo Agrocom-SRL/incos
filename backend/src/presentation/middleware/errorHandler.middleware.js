@@ -20,7 +20,7 @@
 import { ValidationError, UnprocessableEntityError } from '../../domain/errors/AppError.js';
 
 export function createErrorHandler(logger, errorFormatter) {
-  return function errorHandler(err, req, res, next) {
+  return function errorHandler(err, req, res, _next) {
     // Extraer información del error para logging
     const errorInfo = errorFormatter.extractErrorInfo(err, req);
     logger.error('Error en errorHandler:', errorInfo);

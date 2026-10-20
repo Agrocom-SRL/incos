@@ -55,7 +55,7 @@ class ExcelContentBuilder {
     let currentRow = 10;
     const filasTotalesPorCarrera = [];
 
-    Object.keys(datosAgrupados).forEach(carrera => {
+    Object.keys(datosAgrupados).forEach((carrera) => {
       const regimenes = datosAgrupados[carrera];
       const firstRow = currentRow;
 
@@ -99,7 +99,7 @@ class ExcelContentBuilder {
       `TOTAL EN ${carreraNombre.toUpperCase()}`
     );
     [...ExcelFormulaBuilder.COLUMNAS_SUMA_VERTICAL_TOTAL_CARRERA, 'AN', 'AO', 'AP', 'AQ', 'AR', 'AS'].forEach(
-      col => {
+      (col) => {
         ExcelStyleManager.aplicarNegrita(worksheet.getCell(`${col}${row}`));
       }
     );
@@ -120,7 +120,7 @@ class ExcelContentBuilder {
     );
 
     [...ExcelFormulaBuilder.COLUMNAS_SUMA_VERTICAL_TOTAL_CARRERA, 'AN', 'AO', 'AP', 'AQ', 'AR', 'AS'].forEach(
-      col => {
+      (col) => {
         ExcelStyleManager.aplicarNegrita(worksheet.getCell(`${col}${row}`));
       }
     );
@@ -154,7 +154,7 @@ class ExcelContentBuilder {
       'AE', 'AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AL', 'AM',
       'AN', 'AO', 'AP', 'AQ', 'AR', 'AS'];
 
-    columnas.forEach(col => {
+    columnas.forEach((col) => {
       ExcelStyleManager.aplicarNegrita(worksheet.getCell(`${col}${row}`));
     });
 

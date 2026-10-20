@@ -7,17 +7,17 @@ import {
 export class ParallelManagement extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    if (data.hasOwnProperty('managementPlanId')) this.managementPlanId = data.managementPlanId;
-    if (data.hasOwnProperty('parallelId')) this.parallelId = data.parallelId;
-    if (data.hasOwnProperty('classroomId')) this.classroomId = data.classroomId;
-    if (data.hasOwnProperty('shift')) this.shift = data.shift;
-    if (data.hasOwnProperty('state')) this.state = data.state;
-    else if (!data.hasOwnProperty('managementPlanId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'managementPlanId')) this.managementPlanId = data.managementPlanId;
+    if (Object.prototype.hasOwnProperty.call(data, 'parallelId')) this.parallelId = data.parallelId;
+    if (Object.prototype.hasOwnProperty.call(data, 'classroomId')) this.classroomId = data.classroomId;
+    if (Object.prototype.hasOwnProperty.call(data, 'shift')) this.shift = data.shift;
+    if (Object.prototype.hasOwnProperty.call(data, 'state')) this.state = data.state;
+    else if (!Object.prototype.hasOwnProperty.call(data, 'managementPlanId')) {
       this.state = ESTADOS_PARALELO_GESTION.BORRADOR;
     }
-    if (data.hasOwnProperty('maxCapacity')) this.maxCapacity = data.maxCapacity;
-    if (data.hasOwnProperty('minCapacity')) this.minCapacity = data.minCapacity;
-    if (data.hasOwnProperty('observations')) this.observations = data.observations;
+    if (Object.prototype.hasOwnProperty.call(data, 'maxCapacity')) this.maxCapacity = data.maxCapacity;
+    if (Object.prototype.hasOwnProperty.call(data, 'minCapacity')) this.minCapacity = data.minCapacity;
+    if (Object.prototype.hasOwnProperty.call(data, 'observations')) this.observations = data.observations;
   }
 
   isValidState() {
