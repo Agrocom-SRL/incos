@@ -518,7 +518,8 @@ export class RegisterAporteVoluntarioUseCase {
                 { limit: 1 }
             );
 
-            const configuracionAporte = result?.configuracionesAportes?.[0] || null;
+            const configuracionAporte =
+                (result?.contributionConfigurations ?? result?.configuracionesAportes)?.[0] || null;
 
             if (!configuracionAporte) {
                 this.logger.warn('[Pagos] No se encontró configuración de aporte activa', {

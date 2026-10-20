@@ -211,6 +211,17 @@ state: 'PENDIENTE',
       });
     });
 
+    it('usa el monto de la configuración de aportes activa (clave contributionConfigurations)', async () => {
+      const { useCase, deps } = crear({ cabecera: null });
+      deps.contributionConfigurationRepository.findAll.mockResolvedValue({
+        contributionConfigurations: [{ id: 5, baseAmount: 650 }],
+      });
+      await useCase.execute(pago({ amount: 100 }));
+      expect(deps.contributionPaymentRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({ baseAmount: 650, mandatoryAmount: 650 })
+      );
+    });
+
     it('sin beca la obligación es el monto base completo', async () => {
       const { useCase, deps } = crear({ cabecera: null });
       await useCase.execute(pago({ amount: 100 }));

@@ -1,4 +1,5 @@
 import { jest } from '@jest/globals';
+import { ConflictError, NotFoundError } from '../../../src/domain/errors/AppError.js';
 import { RegisterStudentUseCase } from '../../../src/application/use-cases/estudiantes/RegisterStudentUseCase.js';
 
 describe('RegisterStudentUseCase', () => {
@@ -94,6 +95,18 @@ describe('RegisterStudentUseCase', () => {
     expect(deps.studentRepository.create).not.toHaveBeenCalled();
   });
 
+  it('el CI duplicado es un ConflictError (409), no un Error genérico (500)', async () => {
+    const { useCase, deps } = crear();
+    deps.studentRepository.findBy.mockResolvedValue({ id: 1 });
+    await expect(useCase.execute({ student: { ci: '123' } })).rejects.toBeInstanceOf(ConflictError);
+  });
+
+  it('valida el CI duplicado con la expedición que entrega el DTO (expedition)', async () => {
+    const { useCase, deps } = crear();
+    await useCase.execute({ student: { ci: '123', expedition: 'LP' } });
+    expect(deps.studentRepository.findBy).toHaveBeenCalledWith({ ci: '123', expedicion: 'LP' });
+  });
+
   it('falla si no existe la configuración gestion_actual', async () => {
     const { useCase, deps } = crear({ config: { gestion_actual: null } });
     await expect(useCase.execute({ student: { ci: '1' } }))
@@ -140,7 +153,7 @@ describe('RegisterStudentUseCase', () => {
     const { useCase } = crear();
     useCase.managementRepository.findById.mockResolvedValue(null);
     await expect(useCase.execute({ student: { ci: '1' }, gestionIngresoId: 77 }))
-      .rejects.toThrow('No se encontró la gestión con ID 77');
+      .rejects.toThrow(new NotFoundError('Gestión con ID 77'));
   });
 
   it('crea apoderados, discapacidades, orígenes y documentos vinculados al estudiante', async () => {

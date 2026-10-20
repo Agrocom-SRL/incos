@@ -1,3 +1,4 @@
+import { ConflictError, NotFoundError } from '../../../domain/errors/AppError.js';
 /**
  * Use Case: RegisterStudentUseCase
  * Módulo: Estudiantes
@@ -156,7 +157,7 @@ export class RegisterStudentUseCase {
       // Estudiante antiguo: usar la gestión de ingreso proporcionada
       gestionInfo = await this.managementRepository.findById(gestionIngresoId);
       if (!gestionInfo) {
-        throw new Error(`No se encontró la gestión con ID ${gestionIngresoId}`);
+        throw new NotFoundError(`Gestión con ID ${gestionIngresoId}`);
       }
 
       const gestionPlain = gestionInfo.toPlainObject ? gestionInfo.toPlainObject() : gestionInfo;
@@ -531,14 +532,15 @@ export class RegisterStudentUseCase {
   async execute(data) {
     this.logger.info('[Estudiantes] Iniciando registro de estudiante', {
       ci: data.student?.ci,
-      expedicion: data.student?.expedicion,
+      expedicion: data.student?.expedition ?? data.student?.expedicion,
     });
 
     try {
       // 1. Validar que no exista un estudiante con el mismo CI + expedición (par único)
       // Importante: validar siempre que haya CI; si expedición viene vacía o null, se trata como "sin expedición" (un solo permitido por CI)
       if (data.student?.ci) {
-        const rawExpedicion = data.student.expedicion ?? null;
+        // El DTO entrega `expedition` (entidad Student); `expedicion` se acepta por compatibilidad
+        const rawExpedicion = data.student.expedition ?? data.student.expedicion ?? null;
         const expedicionToCheck =
           rawExpedicion !== undefined &&
           rawExpedicion !== null &&
@@ -553,7 +555,7 @@ export class RegisterStudentUseCase {
 
         if (existingStudent) {
           const expedicionLabel = expedicionToCheck || 'sin expedición';
-          throw new Error(
+          throw new ConflictError(
             `Ya existe un estudiante con CI ${data.student.ci} ${expedicionLabel}`
           );
         }
@@ -796,7 +798,7 @@ export class RegisterStudentUseCase {
         error: error.message,
         stack: error.stack,
         ci: data.student?.ci,
-        expedicion: data.student?.expedicion,
+        expedicion: data.student?.expedition ?? data.student?.expedicion,
       });
       throw error;
     }

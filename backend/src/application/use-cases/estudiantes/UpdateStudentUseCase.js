@@ -1,4 +1,4 @@
-import { NotFoundError } from '../../../domain/errors/AppError.js';
+import { ConflictError, NotFoundError } from '../../../domain/errors/AppError.js';
 
 /**
  * Use Case: UpdateStudentUseCase
@@ -632,7 +632,7 @@ export class UpdateStudentUseCase {
       }
       gestionInfo = await this.managementRepository.findById(gestionIngresoId);
       if (!gestionInfo) {
-        throw new Error(`No se encontró la gestión con ID ${gestionIngresoId}`);
+        throw new NotFoundError(`Gestión con ID ${gestionIngresoId}`);
       }
 
       const gestionPlain = gestionInfo.toPlainObject ? gestionInfo.toPlainObject() : gestionInfo;
@@ -772,7 +772,7 @@ export class UpdateStudentUseCase {
           const anotherWithSameCI = list.length > 0 ? list[0] : null;
           if (anotherWithSameCI) {
             const expedicionLabel = expedicionToCheck ?? 'sin expedición';
-            throw new Error(
+            throw new ConflictError(
               `Ya existe otro estudiante con CI ${ciToCheck} ${expedicionLabel}`
             );
           }

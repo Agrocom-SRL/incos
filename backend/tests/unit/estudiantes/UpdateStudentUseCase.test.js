@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 import { UpdateStudentUseCase } from '../../../src/application/use-cases/estudiantes/UpdateStudentUseCase.js';
-import { NotFoundError } from '../../../src/domain/errors/AppError.js';
+import { ConflictError, NotFoundError } from '../../../src/domain/errors/AppError.js';
 
 describe('UpdateStudentUseCase', () => {
   const repoVacio = () => ({
@@ -57,6 +57,8 @@ describe('UpdateStudentUseCase', () => {
     deps.studentRepository.findAll.mockResolvedValue({ students: [{ id: 8 }] });
     await expect(useCase.execute(5, { student: { ci: '999' } }))
       .rejects.toThrow('Ya existe otro estudiante con CI 999 LP');
+    await expect(useCase.execute(1, { student: { ci: '999', expedition: 'LP' } }))
+      .rejects.toBeInstanceOf(ConflictError);
     expect(deps.studentRepository.findAll).toHaveBeenCalledWith(
       { ci: '999', expedicion: 'LP', excludeId: 5 }, 1, 10
     );
