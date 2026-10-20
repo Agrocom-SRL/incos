@@ -176,7 +176,7 @@ class ExcelStructureBuilder {
       ['AE', 'AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AL'] // APROBADOS
     ];
 
-    secciones.forEach(cols => {
+    secciones.forEach((cols) => {
       cols.forEach((col, idx) => {
         worksheet.getCell(`${col}9`).value = idx % 2 === 0 ? 'M' : 'F';
       });

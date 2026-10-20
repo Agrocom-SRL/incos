@@ -8,16 +8,16 @@ export class MissedClass extends BaseEntity {
     constructor(data = {}) {
         super(data);
 
-        if (data.hasOwnProperty('teacherAssignmentId')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'teacherAssignmentId')) {
             this.teacherAssignmentId = data.teacherAssignmentId;
         }
-        if (data.hasOwnProperty('classDate')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'classDate')) {
             this.classDate = data.classDate;
         }
-        if (data.hasOwnProperty('reason')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'reason')) {
             this.reason = data.reason;
         }
-        if (data.hasOwnProperty('reasonDescription')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'reasonDescription')) {
             this.reasonDescription = data.reasonDescription;
         }
     }
@@ -25,12 +25,12 @@ export class MissedClass extends BaseEntity {
     toPlainObject() {
         const plainObject = super.toPlainObject();
 
-        if (this.hasOwnProperty('teacherAssignmentId')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'teacherAssignmentId')) {
             plainObject.teacherAssignmentId = this.teacherAssignmentId;
         }
-        if (this.hasOwnProperty('classDate')) plainObject.classDate = this.classDate;
-        if (this.hasOwnProperty('reason')) plainObject.reason = this.reason;
-        if (this.hasOwnProperty('reasonDescription')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'classDate')) plainObject.classDate = this.classDate;
+        if (Object.prototype.hasOwnProperty.call(this, 'reason')) plainObject.reason = this.reason;
+        if (Object.prototype.hasOwnProperty.call(this, 'reasonDescription')) {
             plainObject.reasonDescription = this.reasonDescription;
         }
 

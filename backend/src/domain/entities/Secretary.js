@@ -1,5 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
-import { NIVELES_ACADEMICOS_VALUES, NIVELES_ACADEMICOS, TIPOS_SECRETARIA_VALUES, TIPOS_SECRETARIA, TIPOS_CONTRATO_SECRETARIA_VALUES, TIPOS_CONTRATO_SECRETARIA } from '../constants/index.js';
+import { NIVELES_ACADEMICOS_VALUES, TIPOS_SECRETARIA_VALUES, TIPOS_SECRETARIA, TIPOS_CONTRATO_SECRETARIA_VALUES } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: Secretary
@@ -15,22 +15,22 @@ export class Secretary extends BaseEntity {
     super(data);
     // Solo inicializar campos si fueron proporcionados explícitamente
     // Esto permite usar attributes limitados sin inicializar campos no solicitados
-    if (data.hasOwnProperty('staffId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'staffId')) {
       this.staffId = data.staffId;
     }
-    if (data.hasOwnProperty('type')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'type')) {
       this.type = data.type; // ACADEMICA, ADMINISTRATIVA
     }
-    if (data.hasOwnProperty('academicLevel')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'academicLevel')) {
       this.academicLevel = data.academicLevel;
     }
-    if (data.hasOwnProperty('hireDate')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'hireDate')) {
       this.hireDate = data.hireDate;
     }
-    if (data.hasOwnProperty('contractEndDate')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'contractEndDate')) {
       this.contractEndDate = data.contractEndDate;
     }
-    if (data.hasOwnProperty('contractType')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'contractType')) {
       this.contractType = data.contractType; // EVENTUAL, TEMPORAL, INDEFINIDO
     }
   }

@@ -1,5 +1,4 @@
 import { Op } from 'sequelize';
-import { INivelacionRepository } from '../../domain/interfaces/repositories/INivelacionRepository.js';
 import { Nivelacion as NivelacionModel } from '../database/models/nivelacion.js';
 import { BaseRepository } from './BaseRepository.js';
 import { LevelingMapper } from '../mappers/LevelingMapper.js';
@@ -68,11 +67,11 @@ export class LevelingRepository extends BaseRepository {
         return [['fechaExamen', 'DESC'], ['id', 'DESC']];
     }
 
-    mapDataToModel(data, userId = null) {
+    mapDataToModel(data, _userId = null) {
         return LevelingMapper.toModel(data);
     }
 
-    mapDataToUpdate(data, userId = null) {
+    mapDataToUpdate(data, _userId = null) {
         return LevelingMapper.toModelForUpdate(data);
     }
 

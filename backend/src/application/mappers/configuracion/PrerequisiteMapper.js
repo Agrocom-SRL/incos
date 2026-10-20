@@ -19,6 +19,7 @@ export class PrerequisiteMapper {
   static entityToPresentation(pre) {
     return entityToPresentation(pre);
   }
+
   static entitiesToPresentation(items) {
     return entitiesToPresentation(items);
   }

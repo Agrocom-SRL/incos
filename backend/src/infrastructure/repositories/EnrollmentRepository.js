@@ -1,4 +1,3 @@
-import { IInscripcionRepository } from '../../domain/interfaces/repositories/IInscripcionRepository.js';
 import { Inscripcion as InscripcionModel } from '../database/models/inscripcion.js';
 import { BaseRepository } from './BaseRepository.js';
 import { EnrollmentMapper } from '../mappers/EnrollmentMapper.js';
@@ -106,7 +105,7 @@ export class EnrollmentRepository extends BaseRepository {
      * @param {number|null} userId
      * @returns {Object}
      */
-    mapDataToModel(data, userId = null) {
+    mapDataToModel(data, _userId = null) {
         return EnrollmentMapper.toModel(data);
     }
 
@@ -117,7 +116,7 @@ export class EnrollmentRepository extends BaseRepository {
      * @param {number|null} userId
      * @returns {Object}
      */
-    mapDataToUpdate(data, userId = null) {
+    mapDataToUpdate(data, _userId = null) {
         return EnrollmentMapper.toModelForUpdate(data);
     }
 

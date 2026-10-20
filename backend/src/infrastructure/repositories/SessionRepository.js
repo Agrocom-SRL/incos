@@ -1,4 +1,3 @@
-import { ISesionRepository } from '../../domain/interfaces/repositories/ISesionRepository.js';
 import { Sesion as SesionModel } from '../database/models/sesion.js';
 import { BaseRepository } from './BaseRepository.js';
 import { SessionMapper } from '../mappers/SessionMapper.js';
@@ -124,7 +123,7 @@ export class SessionRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return SessionMapper.toModel(data);
   }
 
@@ -136,7 +135,7 @@ export class SessionRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return SessionMapper.toModelForUpdate(data);
   }
 

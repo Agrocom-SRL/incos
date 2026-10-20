@@ -23,16 +23,16 @@ export function mapBaseFields(entity, presentation = {}) {
   if (!entity) return presentation;
 
   // Solo incluir campos que existen en la entidad
-  if (entity.hasOwnProperty('id') && entity.id !== undefined) {
+  if (Object.prototype.hasOwnProperty.call(entity, 'id') && entity.id !== undefined) {
     presentation.id = entity.id;
   }
-  if (entity.hasOwnProperty('active') && entity.active !== undefined) {
+  if (Object.prototype.hasOwnProperty.call(entity, 'active') && entity.active !== undefined) {
     presentation.activo = entity.active;
   }
-  if (entity.hasOwnProperty('createdAt') && entity.createdAt !== undefined) {
+  if (Object.prototype.hasOwnProperty.call(entity, 'createdAt') && entity.createdAt !== undefined) {
     presentation.createdAt = entity.createdAt;
   }
-  if (entity.hasOwnProperty('updatedAt') && entity.updatedAt !== undefined) {
+  if (Object.prototype.hasOwnProperty.call(entity, 'updatedAt') && entity.updatedAt !== undefined) {
     presentation.updatedAt = entity.updatedAt;
   }
 
@@ -52,7 +52,7 @@ export function mapBaseFields(entity, presentation = {}) {
 export function mapFieldIfExists(entity, sourceField, targetField, presentation = {}) {
   if (!entity) return presentation;
 
-  if (entity.hasOwnProperty(sourceField) && entity[sourceField] !== undefined) {
+  if (Object.prototype.hasOwnProperty.call(entity, sourceField) && entity[sourceField] !== undefined) {
     presentation[targetField] = entity[sourceField];
   }
 

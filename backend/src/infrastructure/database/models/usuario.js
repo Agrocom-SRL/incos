@@ -1,8 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
-import { TIPOS_REFERENCIA_VALUES } from '../../../domain/constants/usuarios.constants.js';
-import { ESTADOS_USUARIOS_VALUES } from '../../../domain/constants/usuarios.constants.js';
+import { TIPOS_REFERENCIA_VALUES, ESTADOS_USUARIOS_VALUES } from '../../../domain/constants/usuarios.constants.js';
 
 /**
  * Modelo ORM: Usuario — tabla `usuarios`

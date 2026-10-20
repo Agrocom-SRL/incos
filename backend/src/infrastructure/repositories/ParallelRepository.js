@@ -1,5 +1,4 @@
 import { QueryTypes } from 'sequelize';
-import { IParaleloRepository } from '../../domain/interfaces/repositories/IParaleloRepository.js';
 import { Paralelo as ParaleloModel } from '../database/models/paralelo.js';
 import { BaseRepository } from './BaseRepository.js';
 import { ParallelMapper } from '../mappers/ParallelMapper.js';
@@ -100,11 +99,11 @@ export class ParallelRepository extends BaseRepository {
     return []; // Usa el orden por defecto de BaseRepository: [['id', 'ASC']]
   }
 
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return ParallelMapper.toModel(data);
   }
 
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return ParallelMapper.toModelForUpdate(data);
   }
 

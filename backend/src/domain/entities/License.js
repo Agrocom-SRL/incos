@@ -13,33 +13,33 @@ export class License extends BaseEntity {
     constructor(data = {}) {
         super(data);
 
-        if (data.hasOwnProperty('enrollmentId')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'enrollmentId')) {
             this.enrollmentId = data.enrollmentId;
         }
-        if (data.hasOwnProperty('requestDate')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'requestDate')) {
             this.requestDate = data.requestDate;
         }
-        if (data.hasOwnProperty('startDate')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'startDate')) {
             this.startDate = data.startDate;
         }
-        if (data.hasOwnProperty('endDate')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'endDate')) {
             this.endDate = data.endDate;
         }
-        if (data.hasOwnProperty('totalDays')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'totalDays')) {
             this.totalDays = data.totalDays;
         }
-        if (data.hasOwnProperty('reason')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'reason')) {
             this.reason = data.reason;
         }
-        if (data.hasOwnProperty('reasonDetail')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'reasonDetail')) {
             this.reasonDetail = data.reasonDetail;
         }
-        if (data.hasOwnProperty('state')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'state')) {
             this.state = data.state;
-        } else if (!data.hasOwnProperty('enrollmentId')) {
+        } else if (!Object.prototype.hasOwnProperty.call(data, 'enrollmentId')) {
             this.state = ESTADOS_LICENCIAS.PENDIENTE;
         }
-        if (data.hasOwnProperty('decisionObservations')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'decisionObservations')) {
             this.decisionObservations = data.decisionObservations;
         }
     }
@@ -74,31 +74,31 @@ export class License extends BaseEntity {
     toPlainObject() {
         const plainObject = super.toPlainObject();
 
-        if (this.hasOwnProperty('enrollmentId')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'enrollmentId')) {
             plainObject.enrollmentId = this.enrollmentId;
         }
-        if (this.hasOwnProperty('requestDate')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'requestDate')) {
             plainObject.requestDate = this.requestDate;
         }
-        if (this.hasOwnProperty('startDate')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'startDate')) {
             plainObject.startDate = this.startDate;
         }
-        if (this.hasOwnProperty('endDate')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'endDate')) {
             plainObject.endDate = this.endDate;
         }
-        if (this.hasOwnProperty('totalDays')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'totalDays')) {
             plainObject.totalDays = this.totalDays;
         }
-        if (this.hasOwnProperty('reason')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'reason')) {
             plainObject.reason = this.reason;
         }
-        if (this.hasOwnProperty('reasonDetail')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'reasonDetail')) {
             plainObject.reasonDetail = this.reasonDetail;
         }
-        if (this.hasOwnProperty('state')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'state')) {
             plainObject.state = this.state;
         }
-        if (this.hasOwnProperty('decisionObservations')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'decisionObservations')) {
             plainObject.decisionObservations = this.decisionObservations;
         }
 

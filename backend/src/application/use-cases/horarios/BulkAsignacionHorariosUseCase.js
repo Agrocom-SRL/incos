@@ -1,7 +1,4 @@
 import { ValidationError } from '../../../domain/errors/index.js';
-import { CreateAsignacionHorarioUseCase } from './CreateAsignacionHorarioUseCase.js';
-import { UpdateAsignacionHorarioUseCase } from './UpdateAsignacionHorarioUseCase.js';
-import { DeleteAsignacionHorarioUseCase } from './DeleteAsignacionHorarioUseCase.js';
 
 function normalizeOp(item) {
   return String(item?.op || item?.operacion || 'create').toLowerCase();

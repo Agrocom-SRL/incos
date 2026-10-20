@@ -12,16 +12,27 @@
     "ecmaVersion": 2022,
     "sourceType": "module"
   },
+  "overrides": [
+    {
+      // Interfaces/clases abstractas: los parametros documentan la firma del contrato, no se usan.
+      "files": ["src/domain/interfaces/**/*.js"],
+      "rules": {
+        "no-unused-vars": ["error", { "args": "none" }]
+      }
+    }
+  ],
   "rules": {
     "no-console": "warn",
     "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    // warn: composicion DI y consultas largas; no bloquea el CI.
     "max-len": [
-      "error",
+      "warn",
       {
-        "code": 100,
+        "code": 120,
         "ignoreComments": true,
         "ignoreStrings": true,
         "ignoreTemplateLiterals": true,
+        "ignoreRegExpLiterals": true,
         "ignoreUrls": true,
         "ignorePattern": "^\\s*import\\s"
       }
@@ -33,6 +44,27 @@
     "consistent-return": "off",
     "no-underscore-dangle": "off",
     "class-methods-use-this": "off",
+
+    // Estilo/arquitectura sin aporte en este repo (no se reescribe logica):
+    // camelcase: DTOs y columnas reflejan la BD y el contrato del frontend (solo se valida en variables).
+    // (payloads/columnas snake_case del contrato con BD y frontend; renombrar romperia la API).
+    "camelcase": "off",
+    // Sombreado de variables locales en closures: no es bug en este codigo.
+    "no-shadow": "off",
+    "prefer-const": ["error", { "destructuring": "all" }],
+    // Procesos secuenciales intencionales (transacciones, seeders, validaciones en orden).
+    "no-await-in-loop": "off",
+    "no-continue": "off",
+    "no-nested-ternary": "off",
+    "no-plusplus": "off",
+    "prefer-destructuring": "off",
+    "newline-per-chained-call": "off",
+    "max-classes-per-file": "off",
+    "no-return-await": "off",
+    "import/order": "off",
+    "import/no-named-as-default": "off",
+    // Funciones/clases hoisted y orden de declaracion en modulos de composicion (DI).
+    "no-use-before-define": ["error", { "functions": false, "classes": false, "variables": false }],
 
     "indent": "off",
     "comma-dangle": "off",

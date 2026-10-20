@@ -8,16 +8,16 @@ export class BimesterEvaluationGrade extends BaseEntity {
     constructor(data = {}) {
         super(data);
 
-        if (data.hasOwnProperty('bimesterEvaluationId')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'bimesterEvaluationId')) {
             this.bimesterEvaluationId = data.bimesterEvaluationId;
         }
-        if (data.hasOwnProperty('subjectEnrollmentBimesterId')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'subjectEnrollmentBimesterId')) {
             this.subjectEnrollmentBimesterId = data.subjectEnrollmentBimesterId;
         }
-        if (data.hasOwnProperty('grade')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'grade')) {
             this.grade = data.grade;
         }
-        if (data.hasOwnProperty('attempt')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'attempt')) {
             this.attempt = data.attempt;
         }
     }
@@ -25,14 +25,14 @@ export class BimesterEvaluationGrade extends BaseEntity {
     toPlainObject() {
         const plainObject = super.toPlainObject();
 
-        if (this.hasOwnProperty('bimesterEvaluationId')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'bimesterEvaluationId')) {
             plainObject.bimesterEvaluationId = this.bimesterEvaluationId;
         }
-        if (this.hasOwnProperty('subjectEnrollmentBimesterId')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'subjectEnrollmentBimesterId')) {
             plainObject.subjectEnrollmentBimesterId = this.subjectEnrollmentBimesterId;
         }
-        if (this.hasOwnProperty('grade')) plainObject.grade = this.grade;
-        if (this.hasOwnProperty('attempt')) plainObject.attempt = this.attempt;
+        if (Object.prototype.hasOwnProperty.call(this, 'grade')) plainObject.grade = this.grade;
+        if (Object.prototype.hasOwnProperty.call(this, 'attempt')) plainObject.attempt = this.attempt;
 
         return plainObject;
     }

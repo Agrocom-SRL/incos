@@ -1,4 +1,3 @@
-import { IMateriaRepository } from '../../domain/interfaces/repositories/IMateriaRepository.js';
 import { Materia as MateriaModel } from '../database/models/materia.js';
 import { BaseRepository } from './BaseRepository.js';
 import { SubjectMapper } from '../mappers/SubjectMapper.js';
@@ -130,7 +129,7 @@ export class SubjectRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return SubjectMapper.toModel(data);
   }
 
@@ -142,7 +141,7 @@ export class SubjectRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return SubjectMapper.toModelForUpdate(data);
   }
 

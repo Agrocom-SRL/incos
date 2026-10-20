@@ -338,7 +338,7 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
         const periodo = (materia.periodoNombre ?? materia.periodo_nombre ?? '').toString().trim();
         if (pNombre) {
             const palabras = pNombre.toLowerCase().split(' ');
-            pNombre = palabras.map(p => (p ? p.charAt(0).toUpperCase() + p.slice(1) : '')).join(' ');
+            pNombre = palabras.map((p) => (p ? p.charAt(0).toUpperCase() + p.slice(1) : '')).join(' ');
         }
         const part = [pNombre, pTurno].filter(Boolean).join(' - ');
         if (part) {
@@ -518,7 +518,7 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
             color: sectionRgb,
         });
 
-        this._currentY = this._currentY - IncosPDFBase.LAYOUT.spacing.bullet;
+        this._currentY -= IncosPDFBase.LAYOUT.spacing.bullet;
     }
 
     /**

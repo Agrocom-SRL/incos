@@ -10,33 +10,33 @@ export class StudentOrigin extends BaseEntity {
     super(data);
     // Solo inicializar campos si fueron proporcionados explícitamente
     // Esto permite usar attributes limitados sin inicializar campos no solicitados
-    if (data.hasOwnProperty('studentId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'studentId')) {
       this.studentId = data.studentId;
     }
-    if (data.hasOwnProperty('countryId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'countryId')) {
       this.countryId = data.countryId;
     }
-    if (data.hasOwnProperty('birthMunicipalityId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'birthMunicipalityId')) {
       this.birthMunicipalityId = data.birthMunicipalityId;
     }
-    if (data.hasOwnProperty('birthCity')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'birthCity')) {
       this.birthCity = data.birthCity;
     }
-    if (data.hasOwnProperty('motherTongueId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'motherTongueId')) {
       this.motherTongueId = data.motherTongueId;
     }
-    if (data.hasOwnProperty('secondaryLanguageId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'secondaryLanguageId')) {
       this.secondaryLanguageId = data.secondaryLanguageId;
     }
-    if (data.hasOwnProperty('originType')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'originType')) {
       this.originType = data.originType;
-    } else if (!data.hasOwnProperty('studentId')) {
+    } else if (!Object.prototype.hasOwnProperty.call(data, 'studentId')) {
       // Solo usar valor por defecto si no se está usando attributes limitados
       this.originType = TIPOS_ORIGEN.BOLIVIANA;
     }
-    if (data.hasOwnProperty('isPrincipal')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'isPrincipal')) {
       this.isPrincipal = data.isPrincipal;
-    } else if (!data.hasOwnProperty('studentId')) {
+    } else if (!Object.prototype.hasOwnProperty.call(data, 'studentId')) {
       // Solo usar valor por defecto si no se está usando attributes limitados
       this.isPrincipal = true;
     }

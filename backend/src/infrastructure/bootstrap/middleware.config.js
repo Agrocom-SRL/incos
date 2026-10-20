@@ -27,7 +27,6 @@ import { createNotFoundHandler } from '../../presentation/middleware/notFound.mi
  * 6. Debugging (solo desarrollo)
  */
 export function setupMiddleware(app, logger) {
-
     // ============================================
     // 1. SEGURIDAD
     // ============================================

@@ -8,8 +8,6 @@ export async function recalcularNotasBimestreCurso({
   subjectEnrollmentBimesterRepository,
   asignacionId,
   bimestreNumero,
-  cuotaTeorico,
-  cuotaPractico,
   usuarioId,
 }) {
   const filas = await cuadernoRepository.listarFilasCalculoBimestre(

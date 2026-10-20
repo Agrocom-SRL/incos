@@ -1,4 +1,4 @@
-import { getEnv, getEnvAsNumber, getEnvAsBoolean } from './env.validator.js';
+import { getEnv, getEnvAsNumber } from './env.validator.js';
 
 const nodeEnv = getEnv('NODE_ENV', 'development');
 

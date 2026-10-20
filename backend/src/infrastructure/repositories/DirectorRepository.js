@@ -1,4 +1,3 @@
-import { IDirectorRepository } from '../../domain/interfaces/repositories/IDirectorRepository.js';
 import { Director as DirectorModel } from '../database/models/director.js';
 import { BaseRepository } from './BaseRepository.js';
 import { DirectorMapper } from '../mappers/DirectorMapper.js';
@@ -34,11 +33,11 @@ export class DirectorRepository extends BaseRepository {
     return [];
   }
 
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return DirectorMapper.toModel(data);
   }
 
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return DirectorMapper.toModelForUpdate(data);
   }
 

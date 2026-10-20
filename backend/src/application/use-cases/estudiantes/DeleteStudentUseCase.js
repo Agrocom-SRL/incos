@@ -221,7 +221,7 @@ export class DeleteStudentUseCase {
         if (!academicDataId) continue;
 
         const enrollmentsResult = await this.enrollmentRepository.findAll(
-          { academicDataId: academicDataId, active: true },
+          { academicDataId, active: true },
           null,
           null
         );
@@ -598,7 +598,7 @@ export class DeleteStudentUseCase {
     try {
       // Buscar todos los documentos del estudiante
       const documentsResult = await this.studentDocumentRepository.findAll(
-        { studentId: studentId, active: true },
+        { studentId, active: true },
         null,
         null
       );
@@ -687,7 +687,7 @@ export class DeleteStudentUseCase {
     try {
       const deliveriesResult =
         await this.studentDocumentDeliveryRepository.findAll(
-          { studentId: studentId, active: true },
+          { studentId, active: true },
           null,
           null
         );
@@ -741,7 +741,7 @@ export class DeleteStudentUseCase {
   async _deleteOrigins(studentId) {
     try {
       const originsResult = await this.studentOriginRepository.findAll(
-        { studentId: studentId, active: true },
+        { studentId, active: true },
         null,
         null
       );
@@ -790,7 +790,7 @@ export class DeleteStudentUseCase {
     try {
       const disabilitiesResult =
         await this.studentDisabilityRepository.findAll(
-          { studentId: studentId, active: true },
+          { studentId, active: true },
           null,
           null
         );
@@ -844,7 +844,7 @@ export class DeleteStudentUseCase {
   async _deleteGuardians(studentId) {
     try {
       const guardiansResult = await this.studentGuardianRepository.findAll(
-        { studentId: studentId, active: true },
+        { studentId, active: true },
         null,
         null
       );
@@ -895,7 +895,7 @@ export class DeleteStudentUseCase {
   async _deleteAcademicData(studentId) {
     try {
       const academicDataResult = await this.studentAcademicDataRepository.findAll(
-        { studentId: studentId, active: true },
+        { studentId, active: true },
         null,
         null
       );

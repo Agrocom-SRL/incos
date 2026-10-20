@@ -4,8 +4,7 @@
  * y, si existe, la cabecera de pago de aporte (pago_aporte) vinculada por estudiante_beca_id.
  */
 
-import { StudentMapper } from '../../../mappers/estudiantes/index.js';
-import { BecaDescuentoMapper } from '../../../mappers/estudiantes/index.js';
+import { StudentMapper, BecaDescuentoMapper } from '../../../mappers/estudiantes/index.js';
 import { ManagementMapper } from '../../../mappers/academico/index.js';
 
 export class GetStudentScholarshipByIdUseCase {

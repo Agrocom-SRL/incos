@@ -12,25 +12,25 @@ export class Enrollment extends BaseEntity {
     constructor(data = {}) {
         super(data);
 
-        if (data.hasOwnProperty('academicDataId')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'academicDataId')) {
             this.academicDataId = data.academicDataId;
         }
 
-        if (data.hasOwnProperty('managementId')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'managementId')) {
             this.managementId = data.managementId;
         }
 
-        if (data.hasOwnProperty('enrollmentType')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'enrollmentType')) {
             this.enrollmentType = data.enrollmentType;
-        } else if (!data.hasOwnProperty('academicDataId')) {
+        } else if (!Object.prototype.hasOwnProperty.call(data, 'academicDataId')) {
             this.enrollmentType = TIPOS_INSCRIPCION.ANTIGUO;
         }
 
-        if (data.hasOwnProperty('enrollmentDate')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'enrollmentDate')) {
             this.enrollmentDate = data.enrollmentDate;
         }
 
-        if (data.hasOwnProperty('observations')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'observations')) {
             this.observations = data.observations;
         }
     }
@@ -71,23 +71,23 @@ export class Enrollment extends BaseEntity {
     toPlainObject() {
         const plainObject = super.toPlainObject();
 
-        if (this.hasOwnProperty('academicDataId')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'academicDataId')) {
             plainObject.academicDataId = this.academicDataId;
         }
 
-        if (this.hasOwnProperty('managementId')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'managementId')) {
             plainObject.managementId = this.managementId;
         }
 
-        if (this.hasOwnProperty('enrollmentType')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'enrollmentType')) {
             plainObject.enrollmentType = this.enrollmentType;
         }
 
-        if (this.hasOwnProperty('enrollmentDate')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'enrollmentDate')) {
             plainObject.enrollmentDate = this.enrollmentDate;
         }
 
-        if (this.hasOwnProperty('observations')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'observations')) {
             plainObject.observations = this.observations;
         }
 

@@ -18,34 +18,34 @@ export class Rector extends BaseEntity {
     super(data);
     // Solo inicializar campos si fueron proporcionados explícitamente
     // Esto permite usar attributes limitados sin inicializar campos no solicitados
-    if (data.hasOwnProperty('staffId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'staffId')) {
       this.staffId = data.staffId;
     }
-    if (data.hasOwnProperty('professionalTitle')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'professionalTitle')) {
       this.professionalTitle = data.professionalTitle;
     }
-    if (data.hasOwnProperty('specialty')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'specialty')) {
       this.specialty = data.specialty;
     }
-    if (data.hasOwnProperty('academicLevel')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'academicLevel')) {
       this.academicLevel = data.academicLevel;
     }
-    if (data.hasOwnProperty('graduationInstitution')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'graduationInstitution')) {
       this.graduationInstitution = data.graduationInstitution;
     }
-    if (data.hasOwnProperty('graduationYear')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'graduationYear')) {
       this.graduationYear = data.graduationYear;
     }
-    if (data.hasOwnProperty('appointmentDate')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'appointmentDate')) {
       this.appointmentDate = data.appointmentDate;
     }
-    if (data.hasOwnProperty('appointmentResolution')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'appointmentResolution')) {
       this.appointmentResolution = data.appointmentResolution;
     }
-    if (data.hasOwnProperty('mandateStartDate')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'mandateStartDate')) {
       this.mandateStartDate = data.mandateStartDate;
     }
-    if (data.hasOwnProperty('mandateEndDate')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'mandateEndDate')) {
       this.mandateEndDate = data.mandateEndDate;
     }
   }
@@ -84,34 +84,34 @@ export class Rector extends BaseEntity {
     const plainObject = super.toPlainObject();
 
     // Solo incluir campos que fueron inicializados (existen en this)
-    if (this.hasOwnProperty('staffId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'staffId')) {
       plainObject.staffId = this.staffId;
     }
-    if (this.hasOwnProperty('professionalTitle')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'professionalTitle')) {
       plainObject.professionalTitle = this.professionalTitle;
     }
-    if (this.hasOwnProperty('specialty')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'specialty')) {
       plainObject.specialty = this.specialty;
     }
-    if (this.hasOwnProperty('academicLevel')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'academicLevel')) {
       plainObject.academicLevel = this.academicLevel;
     }
-    if (this.hasOwnProperty('graduationInstitution')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'graduationInstitution')) {
       plainObject.graduationInstitution = this.graduationInstitution;
     }
-    if (this.hasOwnProperty('graduationYear')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'graduationYear')) {
       plainObject.graduationYear = this.graduationYear;
     }
-    if (this.hasOwnProperty('appointmentDate')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'appointmentDate')) {
       plainObject.appointmentDate = this.appointmentDate;
     }
-    if (this.hasOwnProperty('appointmentResolution')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'appointmentResolution')) {
       plainObject.appointmentResolution = this.appointmentResolution;
     }
-    if (this.hasOwnProperty('mandateStartDate')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'mandateStartDate')) {
       plainObject.mandateStartDate = this.mandateStartDate;
     }
-    if (this.hasOwnProperty('mandateEndDate')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'mandateEndDate')) {
       plainObject.mandateEndDate = this.mandateEndDate;
     }
 

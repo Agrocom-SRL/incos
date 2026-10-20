@@ -190,7 +190,7 @@ export class DeletePaymentAporteUseCase {
       // Buscar documentos de tipo 'PAGO' del estudiante
       const documentosResult = await this.studentDocumentRepository.findAll(
         {
-          studentId: studentId,
+          studentId,
           tipoDocumento: 'PAGO',
         },
         null,
@@ -300,7 +300,7 @@ export class DeletePaymentAporteUseCase {
       // Buscar entregas con documentacionId: null (característico de pagos)
       const deliveriesResult = await this.studentDocumentDeliveryRepository.findAll(
         {
-          studentId: studentId,
+          studentId,
           documentacionId: null,
         },
         null,

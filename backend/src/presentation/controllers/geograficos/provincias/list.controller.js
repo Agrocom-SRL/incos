@@ -41,5 +41,4 @@ export class ListProvinciasController extends BaseListController {
       dataFieldName: 'provincias',
     });
   }
-
 }

@@ -67,14 +67,14 @@ export class ListParalelosUseCase extends BaseListUseCase {
 
     // periodo_id: filtro directo por ID único
     if (queryParams.periodo_id) {
-      filters.periodId = parseInt(queryParams.periodo_id);
+      filters.periodId = parseInt(queryParams.periodo_id, 10);
     }
 
     // periodo: se maneja en execute() para obtener IDs de todas las carreras
     // No se agrega aquí, se procesa antes de llamar al método base
 
     if (queryParams.carrera_id) {
-      filters.careerId = parseInt(queryParams.carrera_id);
+      filters.careerId = parseInt(queryParams.carrera_id, 10);
     }
 
     // incluirInactivos → includeInactive (mismo patrón que ListAulasUseCase /
@@ -100,7 +100,7 @@ export class ListParalelosUseCase extends BaseListUseCase {
   async prepareFilters(filters = {}, queryParams = {}) {
     // Si hay filtro por periodo (número), obtener IDs de periodos primero
     if (queryParams.periodo) {
-      const periodoNumero = parseInt(queryParams.periodo);
+      const periodoNumero = parseInt(queryParams.periodo, 10);
 
       // Obtener solo los IDs de periodos con ese número (de todas las carreras)
       const periodosResult = await this.periodRepository.findAll(
@@ -135,7 +135,7 @@ export class ListParalelosUseCase extends BaseListUseCase {
    * @param {Object} repositoryResult - Resultado completo del repository
    * @returns {Promise<Array>} Array de paralelos enriquecidos con estadísticas
    */
-  async enrichData(data, repositoryResult) {
+  async enrichData(data, _repositoryResult) {
     if (!data || data.length === 0) {
       return data;
     }
@@ -148,7 +148,7 @@ export class ListParalelosUseCase extends BaseListUseCase {
 
       if (!gestionConfig || !gestionConfig.value) {
         this.logger.warn('[Académico] No se encontró gestión actual, no se pueden calcular estadísticas');
-        return data.map(paralelo => ({
+        return data.map((paralelo) => ({
           ...paralelo,
           estadisticas: {
             totalInscritos: 0,
@@ -166,7 +166,7 @@ export class ListParalelosUseCase extends BaseListUseCase {
 
       if (!management) {
         this.logger.warn('[Académico] No se encontró gestión vigente, no se pueden calcular estadísticas');
-        return data.map(paralelo => ({
+        return data.map((paralelo) => ({
           ...paralelo,
           estadisticas: {
             totalInscritos: 0,
@@ -177,7 +177,7 @@ export class ListParalelosUseCase extends BaseListUseCase {
       }
 
       // Obtener IDs de paralelos
-      const parallelIds = data.map(p => p.id).filter(id => id != null);
+      const parallelIds = data.map((p) => p.id).filter((id) => id != null);
 
       if (parallelIds.length === 0) {
         return data;
@@ -190,7 +190,7 @@ export class ListParalelosUseCase extends BaseListUseCase {
       // Convertimos a número entero de forma segura
       const statsMap = {};
       if (Array.isArray(results) && results.length > 0) {
-        results.forEach(row => {
+        results.forEach((row) => {
           if (row.paralelo_id) {
             // Función helper para convertir a número entero de forma segura
             const toInt = (value) => {
@@ -200,7 +200,7 @@ export class ListParalelosUseCase extends BaseListUseCase {
               // Si es string, parsear
               if (typeof value === 'string') {
                 const parsed = parseInt(value, 10);
-                return isNaN(parsed) ? 0 : parsed;
+                return Number.isNaN(Number(parsed)) ? 0 : parsed;
               }
               // Si ya es número, redondear a entero
               return Math.floor(Number(value)) || 0;
@@ -227,7 +227,7 @@ export class ListParalelosUseCase extends BaseListUseCase {
       const periodoNumeroMap = {};
       const periodoNombreMap = {};
       if (Array.isArray(results) && results.length > 0) {
-        results.forEach(row => {
+        results.forEach((row) => {
           if (row.paralelo_id) {
             if (row.periodo_numero !== null && row.periodo_numero !== undefined) {
               periodoNumeroMap[row.paralelo_id] = parseInt(row.periodo_numero || 0, 10);
@@ -240,7 +240,7 @@ export class ListParalelosUseCase extends BaseListUseCase {
       }
 
       // Enriquecer cada paralelo con estadísticas, número y nombre de periodo
-      const enrichedData = data.map(paralelo => {
+      const enrichedData = data.map((paralelo) => {
         const estadisticas = statsMap[paralelo.id] || {
           totalInscritos: 0,
           totalHombres: 0,
@@ -259,7 +259,7 @@ export class ListParalelosUseCase extends BaseListUseCase {
       // Log final de datos enriquecidos (solo primeros 2 para no saturar)
       if (process.env.NODE_ENV !== 'production') {
         this.logger.debug('[Académico] Datos enriquecidos con estadísticas', {
-          sample: enrichedData.slice(0, 2).map(p => ({
+          sample: enrichedData.slice(0, 2).map((p) => ({
             id: p.id,
             nombre: p.nombre,
             estadisticas: p.estadisticas,
@@ -275,7 +275,7 @@ export class ListParalelosUseCase extends BaseListUseCase {
         stack: error.stack,
       });
       // Si falla, retornar datos sin estadísticas (con valores por defecto)
-      return data.map(paralelo => ({
+      return data.map((paralelo) => ({
         ...paralelo,
         estadisticas: {
           totalInscritos: 0,

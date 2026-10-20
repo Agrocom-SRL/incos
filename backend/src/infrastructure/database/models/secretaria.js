@@ -1,9 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
-import { TIPOS_SECRETARIA_VALUES } from '../../../domain/constants/docentes.constants.js';
-import { NIVELES_ACADEMICOS_VALUES } from '../../../domain/constants/docentes.constants.js';
-import { TIPOS_CONTRATO_SECRETARIA_VALUES } from '../../../domain/constants/docentes.constants.js';
+import { TIPOS_SECRETARIA_VALUES, NIVELES_ACADEMICOS_VALUES, TIPOS_CONTRATO_SECRETARIA_VALUES } from '../../../domain/constants/docentes.constants.js';
 
 /**
  * Modelo ORM: Secretaria — tabla `secretarias`

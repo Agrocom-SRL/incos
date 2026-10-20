@@ -57,7 +57,7 @@ export class GetStudentScholarshipsController extends BaseGetController {
       const studentId = parseInt(req.params.id, 10);
 
       // 2. Validar que el ID sea válido
-      if (!studentId || isNaN(studentId)) {
+      if (!studentId || Number.isNaN(Number(studentId))) {
         return res.status(400).json({
           success: false,
           error: {

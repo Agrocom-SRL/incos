@@ -1,5 +1,4 @@
 import { Op } from 'sequelize';
-import { IConfiguracionEvaluacionRepository } from '../../domain/interfaces/repositories/IConfiguracionEvaluacionRepository.js';
 import { ConfiguracionEvaluacion as ConfiguracionEvaluacionModel } from '../database/models/configuracion_evaluacion.js';
 import { sequelize } from '../database/sequelize.js';
 import { BaseRepository } from './BaseRepository.js';
@@ -50,11 +49,11 @@ export class EvaluationConfigurationRepository extends BaseRepository {
         return [['gestionId', 'DESC'], ['id', 'DESC']];
     }
 
-    mapDataToModel(data, userId = null) {
+    mapDataToModel(data, _userId = null) {
         return EvaluationConfigurationMapper.toModel(data);
     }
 
-    mapDataToUpdate(data, userId = null) {
+    mapDataToUpdate(data, _userId = null) {
         return EvaluationConfigurationMapper.toModelForUpdate(data);
     }
 

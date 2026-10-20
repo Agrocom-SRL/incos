@@ -9,22 +9,22 @@ export class Institution extends BaseEntity {
   constructor(data = {}) {
     super(data);
 
-    if (data.hasOwnProperty('nombre')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'nombre')) {
       this.nombre = data.nombre;
     }
-    if (data.hasOwnProperty('tipo')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'tipo')) {
       this.tipo = data.tipo;
     }
-    if (data.hasOwnProperty('dependencia')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'dependencia')) {
       this.dependencia = data.dependencia;
     }
-    if (data.hasOwnProperty('codigoSie')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'codigoSie')) {
       this.codigoSie = data.codigoSie;
     }
-    if (data.hasOwnProperty('departamentoId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'departamentoId')) {
       this.departamentoId = data.departamentoId;
     }
-    if (data.hasOwnProperty('distritoEducativo')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'distritoEducativo')) {
       this.distritoEducativo = data.distritoEducativo;
     }
   }
@@ -32,22 +32,22 @@ export class Institution extends BaseEntity {
   toPlainObject() {
     const plainObject = super.toPlainObject();
 
-    if (this.hasOwnProperty('nombre')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'nombre')) {
       plainObject.nombre = this.nombre;
     }
-    if (this.hasOwnProperty('tipo')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'tipo')) {
       plainObject.tipo = this.tipo;
     }
-    if (this.hasOwnProperty('dependencia')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'dependencia')) {
       plainObject.dependencia = this.dependencia;
     }
-    if (this.hasOwnProperty('codigoSie')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'codigoSie')) {
       plainObject.codigoSie = this.codigoSie;
     }
-    if (this.hasOwnProperty('departamentoId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'departamentoId')) {
       plainObject.departamentoId = this.departamentoId;
     }
-    if (this.hasOwnProperty('distritoEducativo')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'distritoEducativo')) {
       plainObject.distritoEducativo = this.distritoEducativo;
     }
 

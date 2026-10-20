@@ -608,7 +608,7 @@ export class CreateEnrollmentUseCase {
     }
 
     const gestionYear = parseInt(config.value, 10);
-    if (isNaN(gestionYear)) {
+    if (Number.isNaN(Number(gestionYear))) {
       throw new ValidationError(
         `El valor de gestión actual (${config.value}) no es un año válido`
       );
@@ -975,7 +975,7 @@ export class CreateEnrollmentUseCase {
     if (!result.contributionPayments || result.contributionPayments.length === 0) {
       throw new ValidationError(
         `El estudiante no ha realizado el pago del aporte académico para la gestión ${management.year}. ` +
-        `Debe realizar el pago antes de inscribirse.`
+        'Debe realizar el pago antes de inscribirse.'
       );
     }
 
@@ -986,7 +986,7 @@ export class CreateEnrollmentUseCase {
     if (!estadosPermitidos.includes(estado)) {
       throw new ValidationError(
         `El aporte para la gestión ${management.year} está pendiente de pago. ` +
-        `Solo puede inscribirse cuando el aporte tenga al menos un pago registrado.`
+        'Solo puede inscribirse cuando el aporte tenga al menos un pago registrado.'
       );
     }
 

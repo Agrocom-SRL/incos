@@ -1,5 +1,4 @@
 import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
-import { UPLOAD } from '../../../infrastructure/config/uploads.config.js';
 
 /**
  * Use Case Base para generación de documentos PDF
@@ -182,7 +181,7 @@ export class BaseDocumentGenerationUseCase {
                 const updated = await this.studentDocumentRepository.update(existingDocument.id, {
                     fileName: uploadResult.fileName,
                     filePath: uploadResult.filePath,
-                    extension: extension,
+                    extension,
                     tipoMime: extension === 'pdf' ? 'application/pdf' : null,
                 });
 
@@ -196,7 +195,7 @@ export class BaseDocumentGenerationUseCase {
                 documentacionId: metadata.documentacionId || null,
                 fileName: uploadResult.fileName,
                 filePath: uploadResult.filePath,
-                extension: extension,
+                extension,
                 tipoMime: extension === 'pdf' ? 'application/pdf' : null,
                 contieneMultipleDocumentos: false,
                 verified: true, // Documentos generados por el sistema se consideran verificados
@@ -257,7 +256,7 @@ export class BaseDocumentGenerationUseCase {
 
         // 3. Convertir el año académico a número
         const gestionAnio = parseInt(gestionActualConfig.value, 10);
-        if (isNaN(gestionAnio)) {
+        if (Number.isNaN(Number(gestionAnio))) {
             throw new ValidationError('La gestión actual configurada no es un año válido');
         }
 
@@ -347,7 +346,7 @@ export class BaseDocumentGenerationUseCase {
      * @returns {Promise<{filePath: string, fileName: string, absolutePath: string}>} Rutas del documento generado
      * @throws {Error} Si falla la generación del documento
      */
-    async execute(studentId, options = {}) {
+    async execute(studentId, _options = {}) {
         throw new Error('Method execute must be implemented by subclass');
     }
 }

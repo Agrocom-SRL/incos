@@ -722,9 +722,9 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
      *
      * @override
      */
-    async _buildFirma(options) {
+    async _buildFirma(_options) {
         // No-op: la firma del postulante y las firmas de dirección/rector
         // ya están incluidas en los bloques de las secciones IV y V.
-        return;
+
     }
 }

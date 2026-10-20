@@ -1,5 +1,4 @@
 import { QueryTypes } from 'sequelize';
-import { IGestionPlanRepository } from '../../domain/interfaces/repositories/IGestionPlanRepository.js';
 import { GestionPlan as GestionPlanModel } from '../database/models/gestion_plan.js';
 import { sequelize } from '../database/sequelize.js';
 import { BaseRepository } from './BaseRepository.js';
@@ -100,11 +99,11 @@ export class ManagementPlanRepository extends BaseRepository {
     return []; // Usa el orden por defecto de BaseRepository: [['id', 'ASC']]
   }
 
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return ManagementPlanMapper.toModel(data);
   }
 
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return ManagementPlanMapper.toModelForUpdate(data);
   }
 

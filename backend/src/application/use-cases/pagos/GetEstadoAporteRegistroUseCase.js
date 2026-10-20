@@ -69,7 +69,7 @@ export class GetEstadoAporteRegistroUseCase {
 
         const mgmtId = management?.id ?? management?.toPlainObject?.()?.id ?? managementId;
 
-        let cabecera = await this.contributionPaymentRepository.findBy({
+        const cabecera = await this.contributionPaymentRepository.findBy({
             studentId: Number(studentId),
             managementId: mgmtId,
         });

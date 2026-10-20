@@ -1,4 +1,3 @@
-import { IConfiguracionAporteRepository } from '../../domain/interfaces/repositories/IConfiguracionAporteRepository.js';
 import { ConfiguracionAporte as ConfiguracionAporteModel } from '../database/models/configuracion_aporte.js';
 import { BaseRepository } from './BaseRepository.js';
 import { ContributionConfigurationMapper } from '../mappers/ContributionConfigurationMapper.js';
@@ -49,11 +48,11 @@ export class ContributionConfigurationRepository extends BaseRepository {
     return [['fechaInicio', 'DESC'], ['id', 'ASC']];
   }
 
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return ContributionConfigurationMapper.toModel(data);
   }
 
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return ContributionConfigurationMapper.toModelForUpdate(data);
   }
 

@@ -1,5 +1,4 @@
 import { Op } from 'sequelize';
-import { IHistorialMatriculaRepository } from '../../domain/interfaces/repositories/IHistorialMatriculaRepository.js';
 import { HistorialMatricula as HistorialMatriculaModel } from '../database/models/historial_matricula.js';
 import { Nivelacion as NivelacionModel } from '../database/models/nivelacion.js';
 import { BaseRepository } from './BaseRepository.js';

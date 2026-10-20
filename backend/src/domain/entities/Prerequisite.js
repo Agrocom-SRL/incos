@@ -9,13 +9,13 @@ export class Prerequisite extends BaseEntity {
     super(data);
     // Solo inicializar campos si fueron proporcionados explícitamente
     // Esto permite usar attributes limitados sin inicializar campos no solicitados
-    if (data.hasOwnProperty('studyPlanId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'studyPlanId')) {
       this.studyPlanId = data.studyPlanId;
     }
-    if (data.hasOwnProperty('subjectId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'subjectId')) {
       this.subjectId = data.subjectId; // Asignatura que requiere el prerrequisito
     }
-    if (data.hasOwnProperty('prerequisiteId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'prerequisiteId')) {
       this.prerequisiteId = data.prerequisiteId; // Asignatura que debe aprobarse antes
     }
   }
@@ -38,13 +38,13 @@ export class Prerequisite extends BaseEntity {
     const plainObject = super.toPlainObject();
 
     // Solo incluir campos que fueron inicializados (existen en this)
-    if (this.hasOwnProperty('studyPlanId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'studyPlanId')) {
       plainObject.studyPlanId = this.studyPlanId;
     }
-    if (this.hasOwnProperty('subjectId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'subjectId')) {
       plainObject.subjectId = this.subjectId;
     }
-    if (this.hasOwnProperty('prerequisiteId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'prerequisiteId')) {
       plainObject.prerequisiteId = this.prerequisiteId;
     }
 

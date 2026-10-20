@@ -1,5 +1,3 @@
-import { Op } from 'sequelize';
-import { ITipoEvaluacionRepository } from '../../domain/interfaces/repositories/ITipoEvaluacionRepository.js';
 import { TipoEvaluacion as TipoEvaluacionModel } from '../database/models/tipo_evaluacion.js';
 import { Evaluacion as EvaluacionModel } from '../database/models/evaluacion.js';
 import { BaseRepository } from './BaseRepository.js';
@@ -41,11 +39,11 @@ export class EvaluationTypeRepository extends BaseRepository {
         return [['codigo', 'ASC']];
     }
 
-    mapDataToModel(data, userId = null) {
+    mapDataToModel(data, _userId = null) {
         return EvaluationTypeMapper.toModel(data);
     }
 
-    mapDataToUpdate(data, userId = null) {
+    mapDataToUpdate(data, _userId = null) {
         return EvaluationTypeMapper.toModelForUpdate(data);
     }
 

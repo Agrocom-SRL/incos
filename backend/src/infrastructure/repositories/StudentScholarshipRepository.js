@@ -1,4 +1,3 @@
-import { IEstudianteBecaRepository } from '../../domain/interfaces/repositories/IEstudianteBecaRepository.js';
 import { EstudianteBeca as EstudianteBecaModel } from '../database/models/estudiante_beca.js';
 import { BaseRepository } from './BaseRepository.js';
 import { StudentScholarshipMapper } from '../mappers/StudentScholarshipMapper.js';
@@ -104,7 +103,7 @@ export class StudentScholarshipRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return StudentScholarshipMapper.toModel(data);
   }
 
@@ -116,7 +115,7 @@ export class StudentScholarshipRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return StudentScholarshipMapper.toModelForUpdate(data);
   }
 

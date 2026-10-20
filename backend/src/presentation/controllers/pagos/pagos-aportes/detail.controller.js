@@ -49,7 +49,7 @@ export class GetPaymentAporteByIdController {
       const { id } = req.params;
       const paymentId = parseInt(id, 10);
 
-      if (isNaN(paymentId)) {
+      if (Number.isNaN(Number(paymentId))) {
         return res.status(400).json({
           success: false,
           error: {

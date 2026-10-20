@@ -1,4 +1,3 @@
-import { IIdiomaRepository } from '../../domain/interfaces/repositories/IIdiomaRepository.js';
 import { Idioma as IdiomaModel } from '../database/models/idioma.js';
 import { BaseRepository } from './BaseRepository.js';
 import { LanguageMapper } from '../mappers/LanguageMapper.js';
@@ -108,7 +107,7 @@ export class LanguageRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return LanguageMapper.toModel(data);
   }
 
@@ -120,7 +119,7 @@ export class LanguageRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return LanguageMapper.toModelForUpdate(data);
   }
 

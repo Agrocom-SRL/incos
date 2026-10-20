@@ -43,7 +43,6 @@ export class Application {
         try {
             await sequelize.authenticate();
             this.logger.info('Base de datos conectada');
-
         } catch (error) {
             this.logger.error('Error de conexión a la base de datos:', {
                 message: error.message,

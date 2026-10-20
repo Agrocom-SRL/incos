@@ -1,5 +1,4 @@
 import { QueryTypes } from 'sequelize';
-import { IOfertaCursoRepository } from '../../domain/interfaces/repositories/IOfertaCursoRepository.js';
 import { OfertaCurso as OfertaCursoModel } from '../database/models/oferta_curso.js';
 import { BaseRepository } from './BaseRepository.js';
 import { CourseOfferMapper } from '../mappers/CourseOfferMapper.js';
@@ -32,11 +31,11 @@ export class CourseOfferRepository extends BaseRepository {
     return ['observaciones'];
   }
 
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return CourseOfferMapper.toModel(data);
   }
 
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return CourseOfferMapper.toModelForUpdate(data);
   }
 

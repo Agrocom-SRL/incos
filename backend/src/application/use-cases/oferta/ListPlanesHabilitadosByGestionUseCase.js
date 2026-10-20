@@ -1,4 +1,5 @@
 import { NotFoundError } from '../../../domain/errors/AppError.js';
+
 export class ListPlanesHabilitadosByGestionUseCase {
   constructor({ managementRepository, managementPlanRepository, logger }) {
     this.managementRepository = managementRepository;

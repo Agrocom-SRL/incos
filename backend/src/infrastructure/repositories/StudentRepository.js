@@ -1,5 +1,4 @@
 import { Op } from 'sequelize';
-import { IEstudianteRepository } from '../../domain/interfaces/repositories/IEstudianteRepository.js';
 import { Estudiante as EstudianteModel } from '../database/models/estudiante.js';
 import { BaseRepository } from './BaseRepository.js';
 import { StudentMapper } from '../mappers/StudentMapper.js';
@@ -142,7 +141,7 @@ export class StudentRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return StudentMapper.toModel(data);
   }
 
@@ -154,7 +153,7 @@ export class StudentRepository extends BaseRepository {
    * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return StudentMapper.toModelForUpdate(data);
   }
 
@@ -324,7 +323,7 @@ export class StudentRepository extends BaseRepository {
       .filter((t) => t.length >= 2)
       .slice(0, 6);
     const tokenClauses = tokens.map(
-      () => `(COALESCE(b.nombres, '') LIKE ? OR COALESCE(b.apellido_paterno, '') LIKE ? OR COALESCE(b.apellido_materno, '') LIKE ? OR CONCAT_WS(' ', b.nombres, b.apellido_paterno, b.apellido_materno) LIKE ? OR CONCAT_WS(' ', b.apellido_paterno, b.apellido_materno, b.nombres) LIKE ? OR COALESCE(b.carrera_nombre, '') LIKE ? OR COALESCE(b.carrera_codigo, '') LIKE ? OR COALESCE(b.codigo_estudiante, '') LIKE ? OR COALESCE(b.ci, '') LIKE ?)`
+      () => '(COALESCE(b.nombres, \'\') LIKE ? OR COALESCE(b.apellido_paterno, \'\') LIKE ? OR COALESCE(b.apellido_materno, \'\') LIKE ? OR CONCAT_WS(\' \', b.nombres, b.apellido_paterno, b.apellido_materno) LIKE ? OR CONCAT_WS(\' \', b.apellido_paterno, b.apellido_materno, b.nombres) LIKE ? OR COALESCE(b.carrera_nombre, \'\') LIKE ? OR COALESCE(b.carrera_codigo, \'\') LIKE ? OR COALESCE(b.codigo_estudiante, \'\') LIKE ? OR COALESCE(b.ci, \'\') LIKE ?)'
     );
     const tokenSql = tokenClauses.length > 0 ? ` AND ${tokenClauses.join(' AND ')}` : '';
 
@@ -413,7 +412,7 @@ export class StudentRepository extends BaseRepository {
       .slice(0, 6);
     const tokenClauses = tokens.map(
       () =>
-        `(COALESCE(b.nombres, '') LIKE ? OR COALESCE(b.apellido_paterno, '') LIKE ? OR COALESCE(b.apellido_materno, '') LIKE ? OR CONCAT_WS(' ', b.nombres, b.apellido_paterno, b.apellido_materno) LIKE ? OR CONCAT_WS(' ', b.apellido_paterno, b.apellido_materno, b.nombres) LIKE ? OR COALESCE(b.carrera_nombre, '') LIKE ? OR COALESCE(b.carrera_codigo, '') LIKE ? OR COALESCE(b.codigo_estudiante, '') LIKE ? OR COALESCE(b.ci, '') LIKE ?)`
+        '(COALESCE(b.nombres, \'\') LIKE ? OR COALESCE(b.apellido_paterno, \'\') LIKE ? OR COALESCE(b.apellido_materno, \'\') LIKE ? OR CONCAT_WS(\' \', b.nombres, b.apellido_paterno, b.apellido_materno) LIKE ? OR CONCAT_WS(\' \', b.apellido_paterno, b.apellido_materno, b.nombres) LIKE ? OR COALESCE(b.carrera_nombre, \'\') LIKE ? OR COALESCE(b.carrera_codigo, \'\') LIKE ? OR COALESCE(b.codigo_estudiante, \'\') LIKE ? OR COALESCE(b.ci, \'\') LIKE ?)'
     );
     const tokenSql = tokenClauses.length > 0 ? ` AND ${tokenClauses.join(' AND ')}` : '';
 
@@ -518,7 +517,7 @@ export class StudentRepository extends BaseRepository {
       .slice(0, 6);
     const tokenClauses = tokens.map(
       () =>
-        `(COALESCE(b.nombres, '') LIKE ? OR COALESCE(b.apellido_paterno, '') LIKE ? OR COALESCE(b.apellido_materno, '') LIKE ? OR CONCAT_WS(' ', b.nombres, b.apellido_paterno, b.apellido_materno) LIKE ? OR CONCAT_WS(' ', b.apellido_paterno, b.apellido_materno, b.nombres) LIKE ? OR COALESCE(b.carrera_nombre, '') LIKE ? OR COALESCE(b.carrera_codigo, '') LIKE ? OR COALESCE(b.codigo_estudiante, '') LIKE ? OR COALESCE(b.ci, '') LIKE ?)`
+        '(COALESCE(b.nombres, \'\') LIKE ? OR COALESCE(b.apellido_paterno, \'\') LIKE ? OR COALESCE(b.apellido_materno, \'\') LIKE ? OR CONCAT_WS(\' \', b.nombres, b.apellido_paterno, b.apellido_materno) LIKE ? OR CONCAT_WS(\' \', b.apellido_paterno, b.apellido_materno, b.nombres) LIKE ? OR COALESCE(b.carrera_nombre, \'\') LIKE ? OR COALESCE(b.carrera_codigo, \'\') LIKE ? OR COALESCE(b.codigo_estudiante, \'\') LIKE ? OR COALESCE(b.ci, \'\') LIKE ?)'
     );
     const tokenSql = tokenClauses.length > 0 ? ` AND ${tokenClauses.join(' AND ')}` : '';
 
