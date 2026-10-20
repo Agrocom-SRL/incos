@@ -52,7 +52,6 @@ jobs:
       - run: npm ci
       - name: Lint
         run: npm run lint
-        continue-on-error: true
       - name: Sintaxis de src
         run: find src -name '*.js' -print0 | xargs -0 -n1 node --check
       # Sin BD: los repositorios van simulados (tests/unit).
