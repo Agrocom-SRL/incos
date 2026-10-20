@@ -12,7 +12,8 @@ describe('DeleteEvaluacionCuadernoUseCase', () => {
         obtenerContextoVigente: jest.fn().mockResolvedValue({ gestion_id: 3, bimestre_vigente: 2 }),
       },
       cuadernoRepository: {
-        obtenerEvaluacionDeAsignacion: jest.fn().mockResolvedValue({ id: 40, notas_cerradas: 0 }),
+        obtenerPeriodoAcademicoId: jest.fn().mockResolvedValue(11),
+        obtenerEvaluacionDeAsignacion: jest.fn().mockResolvedValue({ id: 40, notas_cerradas: 0, periodo_academico_id: 11 }),
         listarFilasCalculoBimestre: jest.fn().mockResolvedValue([
           { bimestreMatriculaId: 50, componente: 'TEORICO', nota: 8 },
           { bimestreMatriculaId: 50, componente: 'PRACTICO', nota: 20 },
@@ -116,11 +117,17 @@ describe('DeleteEvaluacionCuadernoUseCase', () => {
 
   it('bloquea evaluaciones cerradas salvo reapertura', async () => {
     const { useCase, deps } = crear();
-    deps.cuadernoRepository.obtenerEvaluacionDeAsignacion.mockResolvedValue({ id: 40, notas_cerradas: 1 });
+    deps.cuadernoRepository.obtenerEvaluacionDeAsignacion.mockResolvedValue({ id: 40, notas_cerradas: 1, periodo_academico_id: 11 });
     await expect(useCase.execute(entrada())).rejects.toThrow(/cerrada/);
     expect(deps.bimesterEvaluationRepository.delete).not.toHaveBeenCalled();
 
     deps.subjectEnrollmentBimesterRepository.contarBimestreReabiertoCurso.mockResolvedValue(1);
     await expect(useCase.execute(entrada())).resolves.toEqual({ id: 40 });
+  });
+
+  it('no opera sobre una evaluación de otro bimestre', async () => {
+    const { useCase, deps } = crear();
+    deps.cuadernoRepository.obtenerPeriodoAcademicoId.mockResolvedValue(12);
+    await expect(useCase.execute(entrada())).rejects.toThrow(/Evaluación/);
   });
 });

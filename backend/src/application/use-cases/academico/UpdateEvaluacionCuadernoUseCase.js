@@ -3,6 +3,7 @@ import {
   NotFoundError,
   ValidationError,
 } from '../../../domain/errors/AppError.js';
+import { TIPO_EVALUACION_ASISTENCIA } from '../../../domain/constants/evaluaciones.constants.js';
 import { mapEvaluacionEntityToDto } from '../../mappers/cuadernoEvaluacionMapper.js';
 import { assertCuadernoCursoAccess } from '../../utils/cuadernoCursoAccess.js';
 import { cargarCuotasPoliticaGestion } from '../../utils/obtenerCuotasDesdePolitica.js';
@@ -66,6 +67,10 @@ export class UpdateEvaluacionCuadernoUseCase {
     if (!existente) {
       throw new NotFoundError('Evaluación');
     }
+    const periodoId = await this.cuadernoRepository.obtenerPeriodoAcademicoId(gestionId, bimestreNum);
+    if (!periodoId || Number(existente.periodo_academico_id) !== Number(periodoId)) {
+      throw new NotFoundError('Evaluación');
+    }
     if (existente.notas_cerradas && !reabierto) {
       throw new ForbiddenError('Esta evaluación está cerrada y no se puede modificar.');
     }
@@ -76,6 +81,31 @@ export class UpdateEvaluacionCuadernoUseCase {
       const tipo = await this.evaluationTypeRepository.findById(tipoId);
       if (!tipo) throw new ValidationError('Tipo de evaluación no encontrado');
       patch.evaluationTypeId = tipoId;
+    }
+
+    // Asistencia: una sola columna por bimestre, siempre PRACTICO (la nota la calcula el sistema).
+    // Su peso en el promedio lo define cada docente con los puntos de la actividad.
+    const tipoFinal = patch.evaluationTypeId
+      ? await this.evaluationTypeRepository.findById(patch.evaluationTypeId)
+      : await this.evaluationTypeRepository.findById(existente.tipo_evaluacion_id);
+    const esAsistencia = tipoFinal?.code === TIPO_EVALUACION_ASISTENCIA;
+    if (esAsistencia) {
+      if (body?.componente != null && body.componente !== 'PRACTICO') {
+        throw new ValidationError('La asistencia siempre es del componente práctico.');
+      }
+      if (patch.evaluationTypeId) {
+        const columnas = await this.cuadernoRepository.listarColumnasAsistenciaBimestre(
+          Number(asignacionId),
+          gestionId,
+          bimestreNum
+        );
+        if ((columnas ?? []).some((c) => Number(c.evaluacionId) !== evalId)) {
+          throw new ValidationError(
+            'Ya existe una actividad de asistencia en este bimestre. Solo se permite una.'
+          );
+        }
+      }
+      patch.component = 'PRACTICO';
     }
     if (body?.nombre != null) {
       const nombre = String(body.nombre).trim();
