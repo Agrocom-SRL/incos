@@ -138,10 +138,10 @@ export class GetStudentScholarshipsByStudentIdUseCase {
           ...scholarshipPlain,
           scholarshipName: scholarshipType?.name || null,
           scholarshipCode: scholarshipType?.code || null,
-          scholarshipPercentage: scholarshipType?.percentage || null,
+          scholarshipPercentage: scholarshipType?.percentage ?? null,
           managementCode: management?.code || null,
           managementName: management?.name || null,
-          managementYear: management?.year || null,
+          managementYear: management?.year ?? null,
         };
       });
 

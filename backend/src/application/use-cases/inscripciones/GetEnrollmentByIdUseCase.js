@@ -20,7 +20,7 @@
  * - Usa Mapper (Application) para conversión Domain → Presentation
  */
 
-import { ValidationError } from '../../../domain/errors/AppError.js';
+import { NotFoundError } from '../../../domain/errors/AppError.js';
 import { derivarCarreraPlanDesdeMatriculas } from './enrollmentBusinessRules.js';
 import { EnrollmentMapper, PriorEnrollmentHistoryMapper } from '../../mappers/inscripciones/index.js';
 import { TIPOS_INSCRIPCION } from '../../../domain/constants/inscripciones.constants.js';
@@ -97,13 +97,13 @@ export class GetEnrollmentByIdUseCase {
 
   /**
    * Método interno para obtener una inscripción por ID
-   * Valida que la inscripción exista y lanza ValidationError si no se encuentra
+   * Valida que la inscripción exista y lanza NotFoundError si no se encuentra
    * Solo recupera los campos necesarios: id, academicDataId, managementId, enrollmentType
    *
    * @private
    * @param {number} enrollmentId - ID de la inscripción a obtener
    * @returns {Promise<Object>} Inscripción encontrada con solo los campos especificados
-   * @throws {ValidationError} Si la inscripción no existe
+   * @throws {NotFoundError} Si la inscripción no existe
    */
   async _getEnrollmentById(enrollmentId) {
     // Obtener solo los campos necesarios usando los nombres del modelo Sequelize
@@ -111,10 +111,10 @@ export class GetEnrollmentByIdUseCase {
       attributes: ['id', 'datosAcademicosId', 'gestionId', 'tipoInscripcion'],
     });
 
-    // Si se proporciona ID pero no se encuentra, lanzar ValidationError (inconsistencia de datos)
+    // Si se proporciona ID pero no se encuentra, lanzar NotFoundError (inconsistencia de datos)
     if (!enrollment) {
-      throw new ValidationError(
-        `No se encontró una inscripción con ID ${enrollmentId}`,
+      throw new NotFoundError(
+        `Inscripción con ID ${enrollmentId}`,
       );
     }
 
@@ -129,7 +129,7 @@ export class GetEnrollmentByIdUseCase {
    * @private
    * @param {number|null|undefined} academicDataId - ID de los datos académicos del estudiante
    * @returns {Promise<Object|null>} Datos académicos encontrados o null si no se proporciona ID
-   * @throws {ValidationError} Si se proporciona ID pero no se encuentra el registro
+   * @throws {NotFoundError} Si se proporciona ID pero no se encuentra el registro
    */
   async _getStudentAcademicDataById(academicDataId) {
     // Si no se proporciona ID, retornar null (es opcional)
@@ -145,10 +145,10 @@ export class GetEnrollmentByIdUseCase {
       }
     );
 
-    // Si se proporciona ID pero no se encuentra, lanzar ValidationError (inconsistencia de datos)
+    // Si se proporciona ID pero no se encuentra, lanzar NotFoundError (inconsistencia de datos)
     if (!studentAcademicData) {
-      throw new ValidationError(
-        `No se encontraron datos académicos del estudiante con ID ${academicDataId}`,
+      throw new NotFoundError(
+        `Datos académicos con ID ${academicDataId}`,
       );
     }
 
@@ -163,7 +163,7 @@ export class GetEnrollmentByIdUseCase {
    * @private
    * @param {number|null|undefined} managementId - ID de la gestión académica
    * @returns {Promise<Object|null>} Gestión encontrada o null si no se proporciona ID
-   * @throws {ValidationError} Si se proporciona ID pero no se encuentra el registro
+   * @throws {NotFoundError} Si se proporciona ID pero no se encuentra el registro
    */
   async _getManagementById(managementId) {
     // Si no se proporciona ID, retornar null (es opcional)
@@ -176,10 +176,10 @@ export class GetEnrollmentByIdUseCase {
       attributes: ['id', 'nombre', 'anio'],
     });
 
-    // Si se proporciona ID pero no se encuentra, lanzar ValidationError (inconsistencia de datos)
+    // Si se proporciona ID pero no se encuentra, lanzar NotFoundError (inconsistencia de datos)
     if (!management) {
-      throw new ValidationError(
-        `No se encontró una gestión académica con ID ${managementId}`,
+      throw new NotFoundError(
+        `Gestión con ID ${managementId}`,
       );
     }
 
@@ -194,7 +194,7 @@ export class GetEnrollmentByIdUseCase {
    * @private
    * @param {number|null|undefined} studentId - ID del estudiante
    * @returns {Promise<Object|null>} Estudiante encontrado o null si no se proporciona ID
-   * @throws {ValidationError} Si se proporciona ID pero no se encuentra el registro
+   * @throws {NotFoundError} Si se proporciona ID pero no se encuentra el registro
    */
   async _getStudentById(studentId) {
     // Si no se proporciona ID, retornar null (es opcional)
@@ -207,10 +207,10 @@ export class GetEnrollmentByIdUseCase {
       attributes: ['id', 'codigoEstudiante', 'nombres', 'apellidoPaterno', 'apellidoMaterno', 'ci', 'expedicion', 'genero', 'celular'],
     });
 
-    // Si se proporciona ID pero no se encuentra, lanzar ValidationError (inconsistencia de datos)
+    // Si se proporciona ID pero no se encuentra, lanzar NotFoundError (inconsistencia de datos)
     if (!student) {
-      throw new ValidationError(
-        `No se encontró un estudiante con ID ${studentId}`,
+      throw new NotFoundError(
+        `Estudiante con ID ${studentId}`,
       );
     }
 
@@ -225,7 +225,7 @@ export class GetEnrollmentByIdUseCase {
    * @private
    * @param {number|null|undefined} careerId - ID de la carrera
    * @returns {Promise<Object|null>} Carrera encontrada o null si no se proporciona ID
-   * @throws {ValidationError} Si se proporciona ID pero no se encuentra el registro
+   * @throws {NotFoundError} Si se proporciona ID pero no se encuentra el registro
    */
   async _getCareerById(careerId) {
     // Si no se proporciona ID, retornar null (es opcional)
@@ -238,10 +238,10 @@ export class GetEnrollmentByIdUseCase {
       attributes: ['id', 'codigo', 'nombre', 'tituloOtorgado'],
     });
 
-    // Si se proporciona ID pero no se encuentra, lanzar ValidationError (inconsistencia de datos)
+    // Si se proporciona ID pero no se encuentra, lanzar NotFoundError (inconsistencia de datos)
     if (!career) {
-      throw new ValidationError(
-        `No se encontró una carrera con ID ${careerId}`,
+      throw new NotFoundError(
+        `Carrera con ID ${careerId}`,
       );
     }
 
@@ -262,7 +262,7 @@ export class GetEnrollmentByIdUseCase {
    *
    * @param {number} enrollmentId - ID de la inscripción a obtener
    * @returns {Promise<Object>} Inscripción encontrada en formato de presentación
-   * @throws {ValidationError} Si la inscripción no existe
+   * @throws {NotFoundError} Si la inscripción no existe
    */
   async execute(enrollmentId) {
     // Logging inicial

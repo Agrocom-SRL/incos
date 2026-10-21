@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 import { UpdateBecaDescuentoUseCase } from '../../../src/application/use-cases/estudiantes/UpdateBecaDescuentoUseCase.js';
-import { NotFoundError } from '../../../src/domain/errors/AppError.js';
+import { NotFoundError, ValidationError } from '../../../src/domain/errors/AppError.js';
 
 describe('UpdateBecaDescuentoUseCase', () => {
   const crear = (existing = { id: 1 }) => {
@@ -23,6 +23,12 @@ describe('UpdateBecaDescuentoUseCase', () => {
       6
     );
     expect(res.becaDescuento).toEqual(expect.objectContaining({ id: 1, nombre: 'Nueva', porcentaje: 25 }));
+  });
+
+  it.each([['abc'], [-1], [101], [Infinity], ['']])('porcentaje %p inválido: ValidationError sin actualizar', async (porcentaje) => {
+    const { useCase, deps } = crear();
+    await expect(useCase.execute(1, { porcentaje })).rejects.toThrow(ValidationError);
+    expect(deps.scholarshipRepository.update).not.toHaveBeenCalled();
   });
 
   it('conserva porcentaje 0 y activo false (no los trata como vacíos)', async () => {

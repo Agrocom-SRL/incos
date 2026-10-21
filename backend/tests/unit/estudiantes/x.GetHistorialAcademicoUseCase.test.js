@@ -53,7 +53,7 @@ describe('GetHistorialAcademicoUseCase', () => {
     expect(res.filas).toEqual([]);
   });
 
-  it.each([[NaN], ['abc'], [0], [-3], [undefined], [null]])(
+  it.each([[NaN], ['abc'], ['5abc'], [1.5], [0], [-3], [undefined], [null]])(
     'estudianteId inválido (%p) lanza ValidationError sin consultar',
     async (valor) => {
       const { useCase, deps } = crear();

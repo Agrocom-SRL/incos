@@ -33,6 +33,15 @@ describe('GetStudentScholarshipByIdUseCase', () => {
     expect(res.payment).toEqual({ id: 90, state: 'PENDIENTE', studentId: 5, managementId: 3 });
   });
 
+  it('conserva documentsComplete false (no lo convierte en undefined)', async () => {
+    const { useCase, deps } = crear();
+    deps.studentScholarshipRepository.findById.mockResolvedValue({
+      id: 4, studentId: 5, scholarshipId: 2, managementId: 3, state: 'ACTIVA', documentsComplete: false,
+    });
+    const res = await useCase.execute(4);
+    expect(res.documentsComplete).toBe(false);
+  });
+
   it('devuelve null si la asignación no existe', async () => {
     const { useCase, deps } = crear();
     deps.studentScholarshipRepository.findById.mockResolvedValue(null);

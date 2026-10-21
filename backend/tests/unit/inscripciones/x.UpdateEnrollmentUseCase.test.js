@@ -256,11 +256,37 @@ describe('UpdateEnrollmentUseCase', () => {
       expect(deps.priorEnrollmentHistoryRepository.create).not.toHaveBeenCalled();
     });
 
-    it('nota NaN en una fila aprobada lanza ValidationError', async () => {
-      const { useCase } = crear();
+    it('nota NaN en una fila aprobada lanza ValidationError sin borrar el historial', async () => {
+      const { useCase, deps } = crear();
       await expect(
         useCase.execute(4, { priorHistory: [{ materiaId: 2, periodId: 1, status: 'APROBADO', finalGrade: 'abc' }] })
       ).rejects.toThrow(ValidationError);
+      expect(deps.priorEnrollmentHistoryRepository.delete).not.toHaveBeenCalled();
+      expect(deps.priorEnrollmentHistoryRepository.create).not.toHaveBeenCalled();
+    });
+
+    it('una fila inválida entre varias válidas no borra el historial existente', async () => {
+      const { useCase, deps } = crear();
+      deps.planSubjectRepository.findAll
+        .mockResolvedValueOnce({ planSubjects: [{ id: 33 }] })
+        .mockResolvedValueOnce({ planSubjects: [] });
+      await expect(
+        useCase.execute(4, {
+          priorHistory: [
+            { materiaId: 2, periodId: 1, status: 'APROBADO', finalGrade: 70 },
+            { materiaId: 3, periodId: 1, status: 'APROBADO', finalGrade: 80 },
+          ],
+        })
+      ).rejects.toThrow(ValidationError);
+      expect(deps.priorEnrollmentHistoryRepository.delete).not.toHaveBeenCalled();
+      expect(deps.priorEnrollmentHistoryRepository.create).not.toHaveBeenCalled();
+    });
+
+    it('datos académicos huérfanos: NotFoundError (no TypeError)', async () => {
+      const { useCase, deps } = crear();
+      deps.studentAcademicDataRepository.findById.mockResolvedValue(null);
+      await expect(useCase.execute(4, { priorHistory: [] })).rejects.toThrow(NotFoundError);
+      expect(deps.priorEnrollmentHistoryRepository.delete).not.toHaveBeenCalled();
     });
 
     it('materia sin asignatura de plan en el periodo: ValidationError', async () => {
@@ -283,6 +309,13 @@ describe('UpdateEnrollmentUseCase', () => {
       const { useCase, deps } = crear();
       deps.enrollmentRepository.findById.mockResolvedValue(null);
       await expect(useCase.executePriorHistoryOnly(99, [])).rejects.toThrow(NotFoundError);
+    });
+
+    it('datos académicos huérfanos: NotFoundError sin tocar el historial', async () => {
+      const { useCase, deps } = crear();
+      deps.studentAcademicDataRepository.findById.mockResolvedValue(null);
+      await expect(useCase.executePriorHistoryOnly(4, [])).rejects.toThrow(NotFoundError);
+      expect(deps.priorEnrollmentHistoryRepository.delete).not.toHaveBeenCalled();
     });
 
     it('vacía el historial y devuelve la inscripción mapeada', async () => {

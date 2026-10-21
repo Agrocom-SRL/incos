@@ -244,7 +244,7 @@ export class GenerateActaCompromisoUseCase extends BaseDocumentGenerationUseCase
             gestion: gestionYear,
             student: {
                 id: student.id,
-                codigoEstudiante: student.codigoEstudiante,
+                codigoEstudiante: student.studentCode ?? student.codigoEstudiante,
                 ci: student.ci,
                 expedicion: student.expedition,
                 nombres: student.firstName,

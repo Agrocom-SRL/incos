@@ -157,14 +157,10 @@ export class UpdateEnrollmentUseCase {
     if (payload.priorHistory !== undefined && Array.isArray(payload.priorHistory)) {
       const academicDataId = enrollmentPlain.academicDataId ?? enrollmentPlain.studentAcademicData_id;
       const managementId = enrollmentPlain.managementId ?? enrollmentPlain.management_id;
-      const studentAcademicData = await this.studentAcademicDataRepository.findById(academicDataId);
-      const management = await this.managementRepository.findById(managementId);
-      const historialFilas = await this._getHistorialFilas(studentAcademicData?.studentId);
-      const { managementPlan } = await this._getStudyPlanAndManagementPlan(
-        studentAcademicData,
-        management,
-        payload.requestedPlanId ?? null,
-        historialFilas
+      const managementPlan = await this._resolverPlanGestionHistorial(
+        academicDataId,
+        managementId,
+        payload.requestedPlanId ?? null
       );
       await this._replacePriorEnrollmentHistory(enrollmentId, payload.priorHistory, managementPlan);
     }
@@ -675,6 +671,12 @@ export class UpdateEnrollmentUseCase {
   async _replacePriorEnrollmentHistory(enrollmentId, priorHistory, managementPlan) {
     if (!this.priorEnrollmentHistoryRepository) return;
 
+    // Validar y resolver TODAS las filas antes de borrar: con una fila inválida
+    // el historial existente no se toca.
+    const filasNuevas = priorHistory.length
+      ? await this._resolverFilasHistorialPrevio(priorHistory, managementPlan)
+      : [];
+
     const existing = await this.priorEnrollmentHistoryRepository.findAll(
       { enrollmentId },
       null,
@@ -688,11 +690,54 @@ export class UpdateEnrollmentUseCase {
       }
     }
 
-    if (!priorHistory.length) {
+    if (!filasNuevas.length) {
       this.logger.info('[Inscripciones] Historial previo vaciado', { enrollmentId });
       return;
     }
 
+    for (const fila of filasNuevas) {
+      await this.priorEnrollmentHistoryRepository.create({ enrollmentId, ...fila });
+    }
+
+    this.logger.info('[Inscripciones] Historial previo actualizado', {
+      enrollmentId,
+      count: filasNuevas.length,
+    });
+  }
+
+  /**
+   * Plan de la gestión sobre el que se resuelve el historial previo.
+   * Datos académicos o gestión huérfanos: NotFoundError (404), no TypeError (500).
+   * @private
+   */
+  async _resolverPlanGestionHistorial(academicDataId, managementId, requestedPlanId) {
+    const studentAcademicData = academicDataId
+      ? await this.studentAcademicDataRepository.findById(academicDataId)
+      : null;
+    if (!studentAcademicData) {
+      throw new NotFoundError(`Datos académicos con ID ${academicDataId}`);
+    }
+    const management = managementId ? await this.managementRepository.findById(managementId) : null;
+    if (!management) {
+      throw new NotFoundError(`Gestión con ID ${managementId}`);
+    }
+    const historialFilas = await this._getHistorialFilas(studentAcademicData.studentId);
+    const { managementPlan } = await this._getStudyPlanAndManagementPlan(
+      studentAcademicData,
+      management,
+      requestedPlanId,
+      historialFilas
+    );
+    return managementPlan;
+  }
+
+  /**
+   * Valida cada fila del historial previo y la resuelve a su asignatura de plan.
+   * No escribe nada.
+   * @private
+   * @returns {Promise<Array<{curriculumSubjectId: number, finalGrade: *, status: string}>>}
+   */
+  async _resolverFilasHistorialPrevio(priorHistory, managementPlan) {
     const planPlain = managementPlan?.toPlainObject ? managementPlan.toPlainObject() : managementPlan;
     const studyPlanId = planPlain?.studyPlanId ?? planPlain?.planEstudioId;
     if (!studyPlanId) {
@@ -701,6 +746,7 @@ export class UpdateEnrollmentUseCase {
       );
     }
 
+    const filas = [];
     for (const item of priorHistory) {
       const { materiaId, periodId, finalGrade, status } = parsePriorHistoryItem(item);
 
@@ -717,19 +763,9 @@ export class UpdateEnrollmentUseCase {
       }
       const ps = planSubjects[0];
       const psPlain = ps.toPlainObject ? ps.toPlainObject() : ps;
-
-      await this.priorEnrollmentHistoryRepository.create({
-        enrollmentId,
-        curriculumSubjectId: psPlain.id,
-        finalGrade,
-        status,
-      });
+      filas.push({ curriculumSubjectId: psPlain.id, finalGrade, status });
     }
-
-    this.logger.info('[Inscripciones] Historial previo actualizado', {
-      enrollmentId,
-      count: priorHistory.length,
-    });
+    return filas;
   }
 
   /**
@@ -752,15 +788,7 @@ export class UpdateEnrollmentUseCase {
     const enrollmentPlain = enrollment.toPlainObject ? enrollment.toPlainObject() : enrollment;
     const academicDataId = enrollmentPlain.academicDataId ?? enrollmentPlain.studentAcademicData_id;
     const managementId = enrollmentPlain.managementId ?? enrollmentPlain.management_id;
-    const studentAcademicData = await this.studentAcademicDataRepository.findById(academicDataId);
-    const management = await this.managementRepository.findById(managementId);
-    const historialFilas = await this._getHistorialFilas(studentAcademicData?.studentId);
-    const { managementPlan } = await this._getStudyPlanAndManagementPlan(
-      studentAcademicData,
-      management,
-      null,
-      historialFilas
-    );
+    const managementPlan = await this._resolverPlanGestionHistorial(academicDataId, managementId, null);
 
     await this._replacePriorEnrollmentHistory(enrollmentId, priorHistory, managementPlan);
 
