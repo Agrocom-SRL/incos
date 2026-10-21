@@ -238,7 +238,7 @@ describe('RegistrarActaDefensaUseCase', () => {
       }))).rejects.toThrow(ValidationError);
     });
 
-    it.each([-1, 101, 'abc', NaN, undefined, Infinity])(
+    it.each([-1, 101, 'abc', NaN, undefined, Infinity, null, '', '  '])(
       'calificacionFinal %p fuera de rango o no numérica -> ValidationError',
       async (nota) => {
         const { useCase } = crear();
@@ -250,6 +250,28 @@ describe('RegistrarActaDefensaUseCase', () => {
         }))).rejects.toThrow(ValidationError);
       }
     );
+
+    it('una nota ausente (null o vacía) no se emite como 0 que REPRUEBA: no crea actas', async () => {
+      const { useCase, deps } = crear();
+      await expect(useCase.execute(7, bodyOk({
+        calificaciones: [
+          { estudianteId: 10, calificacionFinal: null },
+          { estudianteId: 20, calificacionFinal: 80 },
+        ],
+      }))).rejects.toThrow(ValidationError);
+      expect(deps.actaDefensaRepository.createConTribunal).not.toHaveBeenCalled();
+    });
+
+    it('estudiante repetido en calificaciones -> ValidationError', async () => {
+      const { useCase } = crear();
+      await expect(useCase.execute(7, bodyOk({
+        calificaciones: [
+          { estudianteId: 10, calificacionFinal: 70 },
+          { estudianteId: 10, calificacionFinal: 90 },
+          { estudianteId: 20, calificacionFinal: 80 },
+        ],
+      }))).rejects.toThrow(ValidationError);
+    });
 
     it('calificaciones sin un integrante activo (faltante) -> ValidationError', async () => {
       const { useCase } = crear();
@@ -288,6 +310,14 @@ describe('RegistrarActaDefensaUseCase', () => {
   });
 
   describe('tribunal', () => {
+    it('docente repetido en el tribunal -> ValidationError sin crear actas', async () => {
+      const { useCase, deps } = crear();
+      await expect(useCase.execute(7, bodyOk({
+        tribunal: [{ docenteId: 1 }, { docenteId: 2 }, { docenteId: '2' }],
+      }))).rejects.toThrow(/distintos/);
+      expect(deps.actaDefensaRepository.createConTribunal).not.toHaveBeenCalled();
+    });
+
     it.each([undefined, null, 'x', [], [{ docenteId: 1 }, { docenteId: 2 }]])(
       'tribunal %p que no tiene exactamente 3 miembros -> ValidationError',
       async (tribunal) => {

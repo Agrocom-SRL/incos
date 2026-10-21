@@ -166,6 +166,25 @@ describe('CreateBitacoraEntradaUseCase', () => {
     expect(deps.bitacoraProyectoRepository.create).not.toHaveBeenCalled();
   });
 
+  it.each([['abc'], [-5], [101], [''], [NaN], [Infinity]])(
+    'porcentajeAvance %p inválido: ValidationError sin consultar ni crear',
+    async (valor) => {
+      const { deps, useCase } = crear({ maxPorcentaje: 0 });
+      await expect(useCase.execute(5, { porcentajeAvance: valor })).rejects.toBeInstanceOf(ValidationError);
+      expect(deps.bitacoraProyectoRepository.create).not.toHaveBeenCalled();
+    }
+  );
+
+  it('porcentaje numérico en texto se guarda como número', async () => {
+    const { deps, useCase } = crear({ maxPorcentaje: 0 });
+    await useCase.execute(5, { porcentajeAvance: '40' });
+    expect(deps.bitacoraProyectoRepository.create).toHaveBeenCalledWith(
+      expect.objectContaining({ porcentajeAvance: 40 }),
+      null,
+      { transaction: 'TX' }
+    );
+  });
+
   it('lanza NotFoundError si el proyecto no existe', async () => {
     const { deps, useCase } = crear({ proyecto: null });
     await expect(useCase.execute(5, {})).rejects.toBeInstanceOf(NotFoundError);

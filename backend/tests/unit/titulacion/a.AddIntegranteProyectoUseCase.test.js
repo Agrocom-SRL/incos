@@ -128,16 +128,44 @@ describe('AddIntegranteProyectoUseCase', () => {
   it('rechaza un estudiante con otro proyecto vigente', async () => {
     const { deps, useCase } = crear({ membresias: [{ proyectoGradoId: 44 }] });
     deps.proyectoGradoRepository.findById
-      .mockResolvedValueOnce({ id: 5, modalidadId: 2 })
+      .mockResolvedValueOnce({ id: 5, modalidadId: 2, estado: 'PERFIL' })
       .mockResolvedValueOnce({ id: 44, estado: 'DESARROLLO' });
     await expect(useCase.execute(5, { estudianteId: 9 })).rejects.toBeInstanceOf(ConflictError);
+    expect(deps.integranteProyectoRepository.create).not.toHaveBeenCalled();
+  });
+
+  it.each([['APROBADO'], ['REPROBADO'], ['CANCELADO']])(
+    'proyecto en estado final %s: ConflictError sin crear integrante',
+    async (estado) => {
+      const { deps, useCase } = crear({ proyecto: { id: 5, modalidadId: 2, estado } });
+      await expect(useCase.execute(5, { estudianteId: 9 })).rejects.toBeInstanceOf(ConflictError);
+      expect(deps.studentRepository.findById).not.toHaveBeenCalled();
+      expect(deps.integranteProyectoRepository.create).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each([['PERFIL'], ['DESARROLLO'], ['DEFENSA']])('proyecto vigente %s admite integrantes', async (estado) => {
+    const { deps, useCase } = crear({ proyecto: { id: 5, modalidadId: 2, estado } });
+    await useCase.execute(5, { estudianteId: 9 });
+    expect(deps.integranteProyectoRepository.create).toHaveBeenCalledTimes(1);
+  });
+
+  it('rol fuera del catálogo: ValidationError', async () => {
+    const { deps, useCase } = crear();
+    await expect(useCase.execute(5, { estudianteId: 9, rol: 'JEFE' })).rejects.toBeInstanceOf(ValidationError);
+    expect(deps.integranteProyectoRepository.create).not.toHaveBeenCalled();
+  });
+
+  it.each([['2026-02-31'], ['abc']])('fechaIncorporacion %p inválida: ValidationError', async (fecha) => {
+    const { deps, useCase } = crear();
+    await expect(useCase.execute(5, { estudianteId: 9, fechaIncorporacion: fecha })).rejects.toBeInstanceOf(ValidationError);
     expect(deps.integranteProyectoRepository.create).not.toHaveBeenCalled();
   });
 
   it('permite al estudiante con proyectos previos ya cerrados', async () => {
     const { deps, useCase } = crear({ membresias: [{ proyectoGradoId: 44 }] });
     deps.proyectoGradoRepository.findById
-      .mockResolvedValueOnce({ id: 5, modalidadId: 2 })
+      .mockResolvedValueOnce({ id: 5, modalidadId: 2, estado: 'PERFIL' })
       .mockResolvedValueOnce({ id: 44, estado: 'APROBADO' });
     await expect(useCase.execute(5, { estudianteId: 9 })).resolves.toHaveProperty('integrante');
   });

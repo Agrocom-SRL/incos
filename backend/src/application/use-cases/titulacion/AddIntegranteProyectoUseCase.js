@@ -2,12 +2,15 @@ import { NotFoundError, ValidationError, ConflictError } from '../../../domain/e
 import {
   MODALIDAD_GRUPAL_CODIGO,
   ROLES_INTEGRANTE_TUTORIA,
+  ROLES_INTEGRANTE_TUTORIA_VALUES,
   ESTADOS_INTEGRANTE_TUTORIA,
+  ESTADOS_PROYECTO_GRADO_VIGENTES,
 } from '../../../domain/constants/titulacion.constants.js';
 import {
   getProyectoOrFail,
   assertEstudianteSinProyectoVigente,
 } from './helpers/proyectoTutoriaGuards.js';
+import { parseFechaISO } from '../../utils/validacionEntrada.js';
 
 /**
  * Use Case: AddIntegranteProyectoUseCase (T12)
@@ -55,6 +58,22 @@ export class AddIntegranteProyectoUseCase {
 
     const proyecto = await getProyectoOrFail(this.proyectoGradoRepository, proyectoGradoId);
 
+    // Un proyecto en estado final (APROBADO, REPROBADO, CANCELADO) ya no admite integrantes.
+    if (!ESTADOS_PROYECTO_GRADO_VIGENTES.includes(proyecto.estado)) {
+      throw new ConflictError(
+        `No se pueden agregar integrantes a un proyecto en estado ${proyecto.estado}.`
+      );
+    }
+
+    const rol = body.rol ?? ROLES_INTEGRANTE_TUTORIA.INTEGRANTE;
+    if (!ROLES_INTEGRANTE_TUTORIA_VALUES.includes(rol)) {
+      throw new ValidationError(`rol debe ser uno de: ${ROLES_INTEGRANTE_TUTORIA_VALUES.join(', ')}`);
+    }
+    const fechaIncorporacion =
+      body.fechaIncorporacion != null
+        ? parseFechaISO(body.fechaIncorporacion, 'fechaIncorporacion')
+        : new Date().toISOString().slice(0, 10);
+
     const estudiante = await this.studentRepository.findById(estudianteId);
     if (!estudiante) {
       throw new NotFoundError(`estudiante con ID ${estudianteId}`);
@@ -96,9 +115,9 @@ export class AddIntegranteProyectoUseCase {
       {
         proyectoGradoId,
         estudianteId,
-        rol: body.rol ?? ROLES_INTEGRANTE_TUTORIA.INTEGRANTE,
+        rol,
         estado: ESTADOS_INTEGRANTE_TUTORIA.ACTIVO,
-        fechaIncorporacion: body.fechaIncorporacion ?? new Date().toISOString().slice(0, 10),
+        fechaIncorporacion,
         observaciones: body.observaciones ?? null,
       },
       userId
