@@ -21,6 +21,7 @@ import {
   CalendarOutlined,
   DollarOutlined,
   NumberOutlined,
+  TeamOutlined,
   UserOutlined,
 } from '@ant-design/icons';
 import { StatusPill, IdentidadCelda, InfoLinesCell } from '@atoms';
