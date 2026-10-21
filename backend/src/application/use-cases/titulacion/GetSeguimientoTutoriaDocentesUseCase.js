@@ -1,3 +1,4 @@
+import { parseAnioMes, parseFiltroId } from '../../utils/validacionEntrada.js';
 import { TutoriaAvanceMapper } from '../../mappers/titulacion/index.js';
 
 /**
@@ -36,10 +37,12 @@ export class GetSeguimientoTutoriaDocentesUseCase {
    */
   async execute(queryParams = {}) {
     const ahora = new Date();
-    const anio = queryParams.anio ? Number(queryParams.anio) : ahora.getFullYear();
-    const mes = queryParams.mes ? Number(queryParams.mes) : ahora.getMonth() + 1;
-    const docenteId = queryParams.docenteId ? Number(queryParams.docenteId) : undefined;
-    const carreraId = queryParams.carreraId ? Number(queryParams.carreraId) : undefined;
+    const { anio, mes } = parseAnioMes(queryParams, {
+      anioDefecto: ahora.getFullYear(),
+      mesDefecto: ahora.getMonth() + 1,
+    });
+    const docenteId = parseFiltroId(queryParams.docenteId, 'docenteId');
+    const carreraId = parseFiltroId(queryParams.carreraId, 'carreraId');
 
     const rows = await this.tutoriaAvanceViewRepository.findSeguimientoTutoriaDocentes({
       docenteId,

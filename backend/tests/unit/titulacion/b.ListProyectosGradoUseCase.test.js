@@ -1,4 +1,5 @@
 import { describe, it, expect, jest } from '@jest/globals';
+import { ValidationError } from '../../../src/domain/errors/AppError.js';
 import { ListProyectosGradoUseCase } from '../../../src/application/use-cases/titulacion/ListProyectosGradoUseCase.js';
 
 describe('ListProyectosGradoUseCase', () => {
@@ -63,5 +64,19 @@ describe('ListProyectosGradoUseCase', () => {
     expect(deps.proyectoGradoListadoViewRepository.findListado)
       .toHaveBeenCalledWith(expect.any(Object), 1, 50);
     expect(r).toEqual(expect.objectContaining({ page: 1, limit: 50, totalPages: 3 }));
+  });
+
+  it.each([['abc'], ['5x'], [0], [-3]])('filtro gestionId %p inválido: ValidationError sin consultar', async (valor) => {
+    const { deps, useCase } = crear();
+    await expect(useCase.execute({}, 1, 50, { gestionId: valor })).rejects.toThrow(ValidationError);
+    expect(deps.proyectoGradoListadoViewRepository.findListado).not.toHaveBeenCalled();
+  });
+
+  it('page/limit negativos caen al valor por defecto: totalPages nunca es negativo', async () => {
+    const { useCase } = crear();
+    const r = await useCase.execute({}, -2, -10);
+    expect(r.page).toBe(1);
+    expect(r.limit).toBe(50);
+    expect(r.totalPages).toBeGreaterThanOrEqual(0);
   });
 });

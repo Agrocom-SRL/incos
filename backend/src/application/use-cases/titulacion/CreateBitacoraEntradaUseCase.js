@@ -8,6 +8,7 @@ import {
 import { sequelize } from '../../../infrastructure/database/sequelize.js';
 import { getProyectoOrFail } from './helpers/proyectoTutoriaGuards.js';
 import { hoyISO } from './helpers/dictamenPdfHelpers.js';
+import { parseNumero } from '../../utils/validacionEntrada.js';
 
 /**
  * Use Case: CreateBitacoraEntradaUseCase (T15)
@@ -76,10 +77,15 @@ export class CreateBitacoraEntradaUseCase {
     // % menor al máximo ya alcanzado, sin importar qué avance se esté
     // revisando — evita que una revisión fuera de orden retroceda el % del
     // proyecto (mismo criterio que el MAX(...) de la vista 160).
-    if (body.porcentajeAvance !== undefined && body.porcentajeAvance !== null) {
+    // 'abc' pasaba la regla monotónica (NaN < n es false) y se guardaba: se valida 0-100 antes.
+    const porcentajeAvance =
+      body.porcentajeAvance !== undefined && body.porcentajeAvance !== null
+        ? parseNumero(body.porcentajeAvance, 'porcentajeAvance', { min: 0, max: 100 })
+        : null;
+    if (porcentajeAvance !== null) {
       const maxActual =
         await this.bitacoraProyectoRepository.findMaxPorcentajeAvance(proyectoGradoId);
-      if (Number(body.porcentajeAvance) < maxActual) {
+      if (porcentajeAvance < maxActual) {
         throw new ValidationError(
           `El avance no puede ser menor al ${maxActual}% ya registrado para este proyecto.`
         );
@@ -98,7 +104,7 @@ export class CreateBitacoraEntradaUseCase {
           fecha,
           actividad: body.actividad ?? null,
           observaciones: body.observaciones ?? null,
-          porcentajeAvance: body.porcentajeAvance ?? null,
+          porcentajeAvance,
           estado: body.estado ?? ESTADOS_BITACORA_TUTORIA.PENDIENTE,
         },
         userId,

@@ -1,3 +1,4 @@
+import { normalizarPaginacionLista, parseFiltroId } from '../../utils/validacionEntrada.js';
 import { ProyectoGradoMapper } from '../../mappers/titulacion/index.js';
 
 /**
@@ -30,16 +31,15 @@ export class ListProyectosGradoUseCase {
    * @returns {Promise<{proyectosGrado: Array, total: number, page: number, limit: number, totalPages: number}>}
    */
   async execute(baseFilters = {}, page = 1, limit = 50, queryParams = {}) {
-    const pageNum = parseInt(page, 10) || 1;
-    const limitNum = parseInt(limit, 10) || 50;
+    const { page: pageNum, limit: limitNum } = normalizarPaginacionLista(page, limit);
 
     const filters = {
       search: baseFilters.search,
-      gestionId: queryParams.gestionId ? Number(queryParams.gestionId) : undefined,
-      carreraId: queryParams.carreraId ? Number(queryParams.carreraId) : undefined,
-      modalidadId: queryParams.modalidadId ? Number(queryParams.modalidadId) : undefined,
+      gestionId: parseFiltroId(queryParams.gestionId, 'gestionId'),
+      carreraId: parseFiltroId(queryParams.carreraId, 'carreraId'),
+      modalidadId: parseFiltroId(queryParams.modalidadId, 'modalidadId'),
       estado: queryParams.estado || undefined,
-      tutorId: queryParams.tutorId ? Number(queryParams.tutorId) : undefined,
+      tutorId: parseFiltroId(queryParams.tutorId, 'tutorId'),
     };
 
     const { rows, total } = await this.proyectoGradoListadoViewRepository.findListado(

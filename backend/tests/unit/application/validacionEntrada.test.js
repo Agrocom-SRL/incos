@@ -6,6 +6,9 @@ import {
   parseFechaISO,
   parseBooleano,
   parsePaginacion,
+  parseFiltroId,
+  normalizarPaginacionLista,
+  parseAnioMes,
 } from '../../../src/application/utils/validacionEntrada.js';
 
 describe('validacionEntrada', () => {
@@ -88,4 +91,44 @@ describe('validacionEntrada', () => {
       expect(() => parsePaginacion({ limit: 501 }, { maxLimit: 500 })).toThrow(ValidationError);
     });
   });
+
+describe('parseFiltroId', () => {
+  it.each([[undefined], [null], ['']])('vacío %p ⇒ undefined (sin filtro)', (v) => {
+    expect(parseFiltroId(v)).toBeUndefined();
+  });
+  it.each([[5, 5], ['7', 7]])('%p ⇒ %p', (v, esperado) => {
+    expect(parseFiltroId(v)).toBe(esperado);
+  });
+  it.each([['abc'], ['5x'], [0], [-1], [1.5]])('%p ⇒ ValidationError', (v) => {
+    expect(() => parseFiltroId(v, 'gestionId')).toThrow(ValidationError);
+  });
+});
+
+describe('normalizarPaginacionLista', () => {
+  it('valores válidos se respetan', () => {
+    expect(normalizarPaginacionLista('3', '25')).toEqual({ page: 3, limit: 25 });
+  });
+  it.each([[-1, -1], ['abc', 'x'], [0, 0], [1.5, 2.5], [null, undefined], ['5abc', '5abc']])(
+    'inválidos (%p, %p) caen a 1 y 50',
+    (page, limit) => {
+      expect(normalizarPaginacionLista(page, limit)).toEqual({ page: 1, limit: 50 });
+    }
+  );
+  it('acota el límite al máximo', () => {
+    expect(normalizarPaginacionLista(1, 999999).limit).toBe(10000);
+    expect(normalizarPaginacionLista(1, 500, { maxLimit: 100 }).limit).toBe(100);
+  });
+});
+
+describe('parseAnioMes', () => {
+  it('vacíos toman los valores por defecto', () => {
+    expect(parseAnioMes({}, { anioDefecto: 2026, mesDefecto: 10 })).toEqual({ anio: 2026, mes: 10 });
+  });
+  it('valores válidos en texto', () => {
+    expect(parseAnioMes({ anio: '2025', mes: '2' })).toEqual({ anio: 2025, mes: 2 });
+  });
+  it.each([[{ mes: 13 }], [{ mes: 0 }], [{ mes: 1.5 }], [{ mes: 'x' }], [{ anio: 1999 }], [{ anio: 'x' }]])('%j ⇒ ValidationError', (q) => {
+    expect(() => parseAnioMes(q, { anioDefecto: 2026, mesDefecto: 1 })).toThrow(ValidationError);
+  });
+});
 });

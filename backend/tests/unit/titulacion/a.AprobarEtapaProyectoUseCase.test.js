@@ -35,6 +35,19 @@ describe('AprobarEtapaProyectoUseCase', () => {
     return { deps, useCase: new AprobarEtapaProyectoUseCase(deps) };
   };
 
+  it.each([['abc'], [-1], [101], [NaN], ['']])('nota %p inválida: ValidationError sin escribir', async (nota) => {
+    const { deps, useCase } = crear();
+    await expect(useCase.execute(5, { estado: 'APROBADO_PERFIL', nota })).rejects.toBeInstanceOf(ValidationError);
+    expect(deps.proyectoGradoRepository.update).not.toHaveBeenCalled();
+    expect(deps.bitacoraProyectoRepository.create).not.toHaveBeenCalled();
+  });
+
+  it.each([['2026-02-31'], ['abc']])('fecha %p inválida: ValidationError sin escribir', async (fecha) => {
+    const { deps, useCase } = crear();
+    await expect(useCase.execute(5, { estado: 'APROBADO_PERFIL', fecha })).rejects.toBeInstanceOf(ValidationError);
+    expect(deps.proyectoGradoRepository.update).not.toHaveBeenCalled();
+  });
+
   const informe = {
     aspectosFormato: 'a',
     contenidoProyecto: 'b',

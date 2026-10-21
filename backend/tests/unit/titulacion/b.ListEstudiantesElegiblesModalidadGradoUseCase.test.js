@@ -1,4 +1,5 @@
 import { describe, it, expect, jest } from '@jest/globals';
+import { ValidationError } from '../../../src/domain/errors/AppError.js';
 import { ListEstudiantesElegiblesModalidadGradoUseCase } from '../../../src/application/use-cases/titulacion/ListEstudiantesElegiblesModalidadGradoUseCase.js';
 
 describe('ListEstudiantesElegiblesModalidadGradoUseCase', () => {
@@ -80,5 +81,18 @@ describe('ListEstudiantesElegiblesModalidadGradoUseCase', () => {
     const { useCase } = crear({ total: 25 });
     const r = await useCase.execute({}, '2', '10', { gestionId: 1 });
     expect(r).toEqual(expect.objectContaining({ page: 2, limit: 10, totalPages: 3 }));
+  });
+
+  it.each([['gestionId', 'abc'], ['carreraId', '5x'], ['carreraId', -2]])('filtro %s=%p inválido: ValidationError sin consultar', async (campo, valor) => {
+    const { deps, useCase } = crear();
+    await expect(useCase.execute({}, 1, 50, { [campo]: valor })).rejects.toThrow(ValidationError);
+    expect(deps.tutoriaAvanceViewRepository.findEstudiantesElegibles).not.toHaveBeenCalled();
+  });
+
+  it('page/limit negativos caen al valor por defecto', async () => {
+    const { deps, useCase } = crear();
+    const r = await useCase.execute({}, -4, -9);
+    expect(deps.tutoriaAvanceViewRepository.findEstudiantesElegibles).toHaveBeenCalledWith(expect.any(Object), 1, 50);
+    expect(r.totalPages).toBeGreaterThanOrEqual(0);
   });
 });

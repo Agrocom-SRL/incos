@@ -163,6 +163,12 @@ describe('CreateProyectoGradoUseCase', () => {
       .toBeInstanceOf(ValidationError);
   });
 
+  it.each([[undefined], [null], [''], ['   '], [123]])('título %p inválido: ValidationError, no guarda "undefined"', async (titulo) => {
+    const { deps, useCase } = crear();
+    await expect(useCase.execute(body({ titulo }))).rejects.toBeInstanceOf(ValidationError);
+    expect(deps.proyectoGradoRepository.create).not.toHaveBeenCalled();
+  });
+
   it('exige modalidadId', async () => {
     const { deps, useCase } = crear();
     await expect(useCase.execute(body({ modalidadId: undefined }))).rejects

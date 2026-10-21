@@ -9,6 +9,7 @@ import {
 } from '../../../domain/constants/titulacion.constants.js';
 import { getProyectoOrFail } from './helpers/proyectoTutoriaGuards.js';
 import { cargarCuotasPoliticaGestion } from '../../utils/obtenerCuotasDesdePolitica.js';
+import { parseNumero } from '../../utils/validacionEntrada.js';
 import { sequelize } from '../../../infrastructure/database/sequelize.js';
 import { ActaDefensaMapper } from '../../mappers/titulacion/index.js';
 
@@ -219,12 +220,18 @@ export class RegistrarActaDefensaUseCase {
     const mapa = new Map();
     for (const item of calificaciones) {
       const estudianteId = Number(item?.estudianteId);
-      const nota = Number(item?.calificacionFinal);
       if (!Number.isInteger(estudianteId) || estudianteId <= 0) {
         throw new ValidationError('calificaciones[].estudianteId debe ser un entero positivo');
       }
-      if (!Number.isFinite(nota) || nota < 0 || nota > 100) {
-        throw new ValidationError('calificaciones[].calificacionFinal debe estar entre 0 y 100');
+      // `Number(null)` y `Number('')` dan 0: una nota ausente no puede emitirse como 0 que REPRUEBA.
+      const nota = parseNumero(item?.calificacionFinal, 'calificaciones[].calificacionFinal', {
+        min: 0,
+        max: 100,
+      });
+      if (mapa.has(estudianteId)) {
+        throw new ValidationError(
+          `calificaciones tiene al estudiante ${estudianteId} repetido: una calificación por integrante`
+        );
       }
       mapa.set(estudianteId, nota);
     }
@@ -267,6 +274,7 @@ export class RegistrarActaDefensaUseCase {
     }
 
     const filas = [];
+    const docentesVistos = new Set();
     for (let i = 0; i < tribunal.length; i += 1) {
       const item = tribunal[i];
       const docenteId = Number(item?.docenteId);
@@ -275,6 +283,12 @@ export class RegistrarActaDefensaUseCase {
           'tribunal[].docenteId es requerido: el tribunal siempre está compuesto por docentes del instituto (P5), sin profesionales externos.'
         );
       }
+      if (docentesVistos.has(docenteId)) {
+        throw new ValidationError(
+          'El tribunal debe estar formado por docentes distintos: hay un docente repetido.'
+        );
+      }
+      docentesVistos.add(docenteId);
       // eslint-disable-next-line no-await-in-loop
       const docente = await this.teacherRepository.findById(docenteId);
       if (!docente) {

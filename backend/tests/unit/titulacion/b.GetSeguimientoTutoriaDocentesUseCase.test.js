@@ -1,4 +1,5 @@
 import { describe, it, expect, jest, beforeAll, afterAll } from '@jest/globals';
+import { ValidationError } from '../../../src/domain/errors/AppError.js';
 import { GetSeguimientoTutoriaDocentesUseCase } from '../../../src/application/use-cases/titulacion/GetSeguimientoTutoriaDocentesUseCase.js';
 
 describe('GetSeguimientoTutoriaDocentesUseCase', () => {
@@ -84,4 +85,13 @@ describe('GetSeguimientoTutoriaDocentesUseCase', () => {
     const { seguimientoTutoriaDocentes: s } = await useCase.execute();
     expect(s.docentes[0].carreras).toEqual([]);
   });
+
+  it.each([[{ mes: 13 }], [{ mes: 0 }], [{ mes: 'abc' }], [{ anio: 'x' }], [{ anio: 1800 }], [{ docenteId: 'abc' }], [{ carreraId: -1 }]])(
+    'filtro inválido %j: ValidationError sin consultar',
+    async (query) => {
+      const { deps, useCase } = crear();
+      await expect(useCase.execute(query)).rejects.toThrow(ValidationError);
+      expect(deps.tutoriaAvanceViewRepository.findSeguimientoTutoriaDocentes).not.toHaveBeenCalled();
+    }
+  );
 });

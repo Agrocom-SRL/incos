@@ -108,3 +108,41 @@ export function parsePaginacion({ page, limit } = {}, { defaultLimit = 20, maxLi
   const l = esVacio(limit) ? defaultLimit : parseNumero(limit, 'limit', { min: 1, max: maxLimit, entero: true });
   return { page: p, limit: l, offset: (p - 1) * l };
 }
+
+/**
+ * Filtro por id de un query string: vacío ⇒ `undefined` (sin filtro); cualquier otro valor debe ser
+ * un entero positivo (`'abc'`, `'5x'`, `0`, `-1` ⇒ ValidationError en lugar de `NaN` al repositorio).
+ * @returns {number|undefined}
+ */
+export function parseFiltroId(value, nombre = 'id') {
+  return esVacio(value) ? undefined : parseIdPositivo(value, nombre);
+}
+
+/**
+ * Página y límite para listados tolerantes (contrato de `BaseListUseCase`): lo inválido, decimal o
+ * menor que 1 cae al valor por defecto y el límite se acota a `maxLimit`; nunca produce
+ * `totalPages` negativo ni `NaN`.
+ * @returns {{page: number, limit: number}}
+ */
+export function normalizarPaginacionLista(page, limit, { defaultLimit = 50, maxLimit = 10000 } = {}) {
+  const entero = (valor, defecto, max) => {
+    const n = typeof valor === 'number' ? valor : /^\d+$/.test(String(valor).trim()) ? Number(valor) : NaN;
+    if (!Number.isInteger(n) || n < 1) return defecto;
+    return Math.min(n, max);
+  };
+  return {
+    page: entero(page, 1, Number.MAX_SAFE_INTEGER),
+    limit: entero(limit, defaultLimit, maxLimit),
+  };
+}
+
+/**
+ * Año y mes calendario de un filtro; vacíos toman el valor por defecto. Año 2000-2100, mes 1-12.
+ * @returns {{anio: number, mes: number}}
+ */
+export function parseAnioMes({ anio, mes } = {}, { anioDefecto, mesDefecto } = {}) {
+  return {
+    anio: esVacio(anio) ? anioDefecto : parseNumero(anio, 'anio', { min: 2000, max: 2100, entero: true }),
+    mes: esVacio(mes) ? mesDefecto : parseNumero(mes, 'mes', { min: 1, max: 12, entero: true }),
+  };
+}

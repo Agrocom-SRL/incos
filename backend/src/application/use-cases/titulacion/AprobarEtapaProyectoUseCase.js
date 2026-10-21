@@ -8,6 +8,7 @@ import {
   ESTADOS_BITACORA_TUTORIA,
 } from '../../../domain/constants/titulacion.constants.js';
 import { getProyectoOrFail } from './helpers/proyectoTutoriaGuards.js';
+import { parseFechaISO, parseNumero } from '../../utils/validacionEntrada.js';
 import {
   buildContextoDictamenPdf,
   guardarDictamenConPdf,
@@ -158,7 +159,13 @@ export class AprobarEtapaProyectoUseCase {
       this._validarExencionDefensa(proyecto);
     }
 
-    const fecha = body.fecha ?? hoyISO();
+    // Nota y fecha se validan ANTES de escribir: 'abc' llegaba como NaN a las columnas de nota.
+    const nota =
+      body.nota !== undefined && body.nota !== null
+        ? parseNumero(body.nota, 'nota', { min: 0, max: 100 })
+        : undefined;
+    const fecha =
+      body.fecha !== undefined && body.fecha !== null ? parseFechaISO(body.fecha, 'fecha') : hoyISO();
     const data = { estado: destino };
 
     const campoFecha = FECHA_POR_ESTADO[destino];
@@ -166,15 +173,11 @@ export class AprobarEtapaProyectoUseCase {
       data[campoFecha] = fecha;
     }
     const campoNota = NOTA_POR_ESTADO[destino];
-    if (campoNota && body.nota !== undefined && body.nota !== null) {
-      data[campoNota] = Number(body.nota);
+    if (campoNota && nota !== undefined) {
+      data[campoNota] = nota;
     }
-    if (
-      destino === ESTADOS_PROYECTO_GRADO.APROBADO &&
-      body.nota !== undefined &&
-      body.nota !== null
-    ) {
-      data.notaFinal = Number(body.nota);
+    if (destino === ESTADOS_PROYECTO_GRADO.APROBADO && nota !== undefined) {
+      data.notaFinal = nota;
     }
     if (esExencionDefensa) {
       // Exención de defensa: la nota final ES la de predefensa (no hay acta
