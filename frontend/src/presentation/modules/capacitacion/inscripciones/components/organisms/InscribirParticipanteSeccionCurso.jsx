@@ -20,6 +20,7 @@ import { InfoLinesCell, StatusPill } from '@atoms';
 import { formatEstadoCurso, getEstadoCursoPillClass } from '@application-capacitacion/utils/capacitacionPills';
 import { allSpacing } from '@theme/tokens';
 import CostoCursoLabel from '@capacitacion/components/atoms/CostoCursoLabel';
+import CursoGratuitoPill from '@capacitacion/components/atoms/CursoGratuitoPill';
 import '@presentation/styles/components/molecules/wizard-selection-cards.css';
 
 const InscribirParticipanteSeccionCurso = ({
@@ -67,7 +68,15 @@ const InscribirParticipanteSeccionCurso = ({
                     <div className="wizard-selection-cards__metrics">
                       <InfoLinesCell
                         lines={[
-                          { icon: <DollarOutlined />, label: <CostoCursoLabel costo={curso.costo} /> },
+                          curso.esGratuito
+                            ? { icon: <DollarOutlined />, label: <CursoGratuitoPill /> }
+                            : null,
+                          curso.tieneCosto
+                            ? { icon: <DollarOutlined />, label: <>Curso: <CostoCursoLabel costo={curso.costo} /></> }
+                            : null,
+                          curso.cobraMatricula
+                            ? { icon: <DollarOutlined />, label: <>Matrícula: <CostoCursoLabel costo={curso.costoMatricula} /></> }
+                            : null,
                           {
                             icon: <TeamOutlined />,
                             label:

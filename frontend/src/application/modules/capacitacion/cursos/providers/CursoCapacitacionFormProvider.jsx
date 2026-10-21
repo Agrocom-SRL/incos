@@ -2,10 +2,10 @@
  * Provider: alta/edición de un curso de capacitación (CAP).
  *
  * Provider DELGADO: ensambla la ficha (solo en modo edición, para precargar
- * horarioIds), las mutaciones, el catálogo de aulas (picker opcional, con
- * degradación si el rol no tiene el permiso institucional del catálogo) y la
- * disponibilidad de bloques de horario por aula. La orquestación del
- * formulario (cuándo disparar la consulta de disponibilidad) vive en
+ * grupos y requisitos), las mutaciones, el catálogo de aulas (picker
+ * opcional, con degradación si el rol no tiene el permiso institucional del
+ * catálogo) y el catálogo de horarios de capacitación (con alta inline). El
+ * aula NO condiciona los horarios. La orquestación del formulario vive en
  * `useCursoCapacitacionFormPage`.
  */
 
@@ -13,7 +13,7 @@ import { useEffect, useMemo } from 'react';
 import { useGetCursoCapacitacion } from '@application-capacitacion/cursos/hooks/api/useGetCursoCapacitacion';
 import { useCursoCapacitacionMutations } from '@application-capacitacion/cursos/hooks/api/useCursoCapacitacionMutations';
 import { useAulasCatalogoCapApi } from '@application-capacitacion/cursos/hooks/api/useAulasCatalogoCapApi';
-import { useHorariosDisponiblesCapApi } from '@application-capacitacion/cursos/hooks/api/useHorariosDisponiblesCapApi';
+import { useHorariosCapacitacionApi } from '@application-capacitacion/cursos/hooks/api/useHorariosCapacitacionApi';
 import { CursoCapacitacionFormContext } from '@application-capacitacion/cursos/context/CursoCapacitacionFormContext';
 
 export const CursoCapacitacionFormProvider = ({ children, cursoId = null }) => {
@@ -21,11 +21,12 @@ export const CursoCapacitacionFormProvider = ({ children, cursoId = null }) => {
   const { saving, guardarCurso } = useCursoCapacitacionMutations();
   const aulasCatalogo = useAulasCatalogoCapApi();
   const {
-    horarios: horariosDisponibles,
+    horarios: horariosCatalogo,
     loading: loadingHorarios,
     error: errorHorarios,
-    cargarHorariosDisponibles,
-  } = useHorariosDisponiblesCapApi();
+    creando: creandoHorario,
+    crearHorario,
+  } = useHorariosCapacitacionApi();
 
   const id = cursoId != null ? Number(cursoId) : null;
   const idValido = id != null && Number.isFinite(id) && id > 0;
@@ -49,11 +50,12 @@ export const CursoCapacitacionFormProvider = ({ children, cursoId = null }) => {
       aulas: aulasCatalogo.aulas,
       loadingAulas: aulasCatalogo.loading,
       aulasDisponible: aulasCatalogo.disponible,
-      // Disponibilidad de bloques de horario por aula (Bloques de horario)
-      horariosDisponibles,
+      // Catálogo de horarios de capacitación (+ alta inline)
+      horariosCatalogo,
       loadingHorarios,
       errorHorarios,
-      cargarHorariosDisponibles,
+      creandoHorario,
+      crearHorario,
     }),
     [
       idValido,
@@ -64,10 +66,11 @@ export const CursoCapacitacionFormProvider = ({ children, cursoId = null }) => {
       saving,
       guardarCurso,
       aulasCatalogo,
-      horariosDisponibles,
+      horariosCatalogo,
       loadingHorarios,
       errorHorarios,
-      cargarHorariosDisponibles,
+      creandoHorario,
+      crearHorario,
     ],
   );
 

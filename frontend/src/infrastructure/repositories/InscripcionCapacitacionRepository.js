@@ -77,7 +77,9 @@ export class InscripcionCapacitacionRepository extends IInscripcionCapacitacionR
    * POST /v1/inscripciones-capacitacion/:id/pagos
    *
    * @param {string|number} inscripcionId
-   * @param {Object} payload - { monto, metodoPagoId, cuentaPagoId?, fechaPago?, observaciones? }
+   * @param {Object|FormData} payload - JSON `{ concepto, monto, metodoPagoId, cuentaPagoId?,
+   *   fechaPago?, observaciones? }`, o `FormData` (con campo `comprobante`) si hay archivo;
+   *   en ese caso no se fija Content-Type para que axios arme el boundary multipart.
    */
   async registrarPago(inscripcionId, payload) {
     try {
@@ -88,6 +90,87 @@ export class InscripcionCapacitacionRepository extends IInscripcionCapacitacionR
       return handleSuccessResponse(response);
     } catch (error) {
       return handleErrorResponse(error, 'Error al registrar el pago de capacitación');
+    }
+  }
+
+  /**
+   * Reemplaza el checklist de requisitos entregados (recalcula el estado).
+   * PUT /v1/inscripciones-capacitacion/:id/requisitos
+   *
+   * @param {string|number} id
+   * @param {Array} requisitos - [{ requisitoId, entregado, fechaEntrega?, observacion? }]
+   */
+  async actualizarRequisitos(id, requisitos) {
+    try {
+      const response = await apiClient.put(INSCRIPCIONES_CAPACITACION_ENDPOINTS.REQUISITOS(id), {
+        requisitos,
+      });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al actualizar los requisitos de la inscripción');
+    }
+  }
+
+  /**
+   * Adjunta o reemplaza el comprobante de un pago ya registrado (multipart).
+   * POST /v1/inscripciones-capacitacion/:id/pagos/:pagoId/comprobante
+   *
+   * @param {string|number} id
+   * @param {string|number} pagoId
+   * @param {File} archivo - imagen o PDF
+   */
+  async adjuntarComprobante(id, pagoId, archivo) {
+    try {
+      const formData = new FormData();
+      formData.append('comprobante', archivo);
+      const response = await apiClient.post(
+        INSCRIPCIONES_CAPACITACION_ENDPOINTS.PAGO_COMPROBANTE(id, pagoId),
+        formData,
+      );
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al adjuntar el comprobante del pago');
+    }
+  }
+
+  /**
+   * Descarga el comprobante de un pago (permiso capacitacion.inscripcion DETALLE).
+   * GET /v1/inscripciones-capacitacion/:id/pagos/:pagoId/comprobante
+   *
+   * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
+   */
+  async descargarComprobante(id, pagoId) {
+    try {
+      const response = await apiClient.get(
+        INSCRIPCIONES_CAPACITACION_ENDPOINTS.PAGO_COMPROBANTE(id, pagoId),
+        { responseType: 'blob' },
+      );
+      const disposition = response.headers?.['content-disposition'] || '';
+      const starMatch = disposition.match(/filename\*=UTF-8''([^;\s]+)/i);
+      const quotedMatch = disposition.match(/filename="([^"]+)"/i);
+      let fileName = `comprobante_pago_${pagoId}`;
+      if (starMatch) {
+        try {
+          fileName = decodeURIComponent(starMatch[1].replace(/['"]/g, ''));
+        } catch {
+          fileName = starMatch[1];
+        }
+      } else if (quotedMatch) {
+        fileName = quotedMatch[1];
+      }
+      return { success: true, blob: response.data, fileName };
+    } catch (error) {
+      if (error.response?.data instanceof Blob) {
+        try {
+          const json = JSON.parse(await error.response.data.text());
+          const errObj = json?.error;
+          const msg = typeof errObj === 'string' ? errObj : errObj?.message || json?.message;
+          return { success: false, error: msg || 'Error al descargar el comprobante' };
+        } catch {
+          return { success: false, error: 'Error al descargar el comprobante' };
+        }
+      }
+      return handleErrorResponse(error, 'Error al descargar el comprobante');
     }
   }
 

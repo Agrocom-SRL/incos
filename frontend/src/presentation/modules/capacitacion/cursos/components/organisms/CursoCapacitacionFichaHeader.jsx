@@ -16,9 +16,10 @@ import {
   getEstadoCursoPillClass,
 } from '@application-capacitacion/utils/capacitacionPills';
 import CostoCursoLabel from '@capacitacion/components/atoms/CostoCursoLabel';
+import CursoGratuitoPill from '@capacitacion/components/atoms/CursoGratuitoPill';
 
 const CursoCapacitacionFichaHeader = ({ curso, puedeEditar = false, onEditar }) => {
-  const subtitleParts = [curso.fechasLabel, curso.aulaLabel].filter(Boolean);
+  const subtitleParts = [curso.modalidadLabel, curso.fechasLabel].filter(Boolean);
 
   return (
     <div className="sd-profile">
@@ -59,12 +60,30 @@ const CursoCapacitacionFichaHeader = ({ curso, puedeEditar = false, onEditar }) 
       <div className="sd-profile__divider" />
 
       <div className="sd-profile__stats">
-        <div className="sd-stat">
-          <span className="sd-stat__label">Costo</span>
-          <span className="sd-stat__value sd-stat__value--primary">
-            <CostoCursoLabel costo={curso.costo} />
-          </span>
-        </div>
+        {curso.esGratuito ? (
+          <div className="sd-stat">
+            <span className="sd-stat__label">Costo</span>
+            <span className="sd-stat__value sd-stat__value--primary">
+              <CursoGratuitoPill />
+            </span>
+          </div>
+        ) : null}
+        {curso.tieneCosto ? (
+          <div className="sd-stat">
+            <span className="sd-stat__label">Costo del curso</span>
+            <span className="sd-stat__value sd-stat__value--primary">
+              <CostoCursoLabel costo={curso.costo} />
+            </span>
+          </div>
+        ) : null}
+        {curso.cobraMatricula ? (
+          <div className="sd-stat">
+            <span className="sd-stat__label">Matrícula</span>
+            <span className="sd-stat__value">
+              <CostoCursoLabel costo={curso.costoMatricula} />
+            </span>
+          </div>
+        ) : null}
         <div className="sd-stat">
           <span className="sd-stat__label">Inscritos</span>
           <span className="sd-stat__value">
@@ -74,8 +93,8 @@ const CursoCapacitacionFichaHeader = ({ curso, puedeEditar = false, onEditar }) 
           </span>
         </div>
         <div className="sd-stat">
-          <span className="sd-stat__label">Bloques de horario</span>
-          <span className="sd-stat__value">{curso.horariosCount}</span>
+          <span className="sd-stat__label">Grupos</span>
+          <span className="sd-stat__value">{curso.grupos.length}</span>
         </div>
       </div>
     </div>

@@ -1,39 +1,48 @@
 /**
  * Organismo: campos del pago de capacitación (CAP) — clon acotado de
  * `AbonoForm` (Finanzas), con el shape del backend CAP
- * (`registerPagoCapacitacionValidator`): monto, fechaPago, metodoPagoId,
- * cuentaPagoId (visible/requerida según método, reglas compartidas de
- * Finanzas) y observaciones. Sin comprobante/upload (no existen en CAP).
+ * (`registerPagoCapacitacionValidator`): concepto (MATRICULA | CURSO), monto,
+ * fechaPago, metodoPagoId, cuentaPagoId (visible/requerida según método,
+ * reglas compartidas de Finanzas), observaciones y comprobante OPCIONAL.
  *
  * Se monta DENTRO de un <Form layout="vertical"> del consumidor: lo usan la
- * página "Registrar pago" de la ficha (cuota adicional, `permiteCompromiso`
- * queda en `false`) y el paso "Pago inicial" del wizard de inscribir
- * (`permiteCompromiso` en `true`).
+ * página "Registrar pago" de la ficha (con comprobante) y el paso "Pago
+ * inicial" del wizard de inscribir (`permiteComprobante` en `false`: el
+ * comprobante se adjunta después desde la ficha).
  *
- * Campo "Fecha de compromiso" (solo si `permiteCompromiso`): el pago inicial
- * de un curso con costo es OBLIGATORIO y ya no admite omitirse; si el monto
- * ingresado queda por debajo de `costoCurso` (pago parcial), aparece este
- * `DatePicker` — SIN selector de días ni cálculo automático de plazo (a
- * diferencia del compromiso de Aportes/Finanzas): la fecha la elige
- * directamente el usuario. Reactivo al valor de `monto` vía `shouldUpdate`.
+ * `conceptoOptions` limita los conceptos ofrecidos a los que se cobran.
+ * El sobrepago se valida contra el saldo DEL CONCEPTO elegido
+ * (`saldosPorConcepto`); matrícula (instituto) y curso (entidad certificadora)
+ * se saldan por separado.
  */
 
-import { Col, DatePicker, Form, Input, InputNumber, Row, Select } from 'antd';
+import { Col, DatePicker, Form, Input, InputNumber, Row, Select, Upload } from 'antd';
+import { InboxOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { formatBs } from '@application/utils/formatters';
+import {
+  COMPROBANTE_ACCEPT,
+  COMPROBANTE_MAX_MB,
+  normFileFromUpload,
+} from '@finanzas/pagos/config/registrarFormConfig';
+import { CONCEPTO_PAGO_OPTIONS } from '@application-capacitacion/utils/capacitacionCatalogos';
 
 const { TextArea } = Input;
+const { Dragger } = Upload;
+
+/** El archivo no se sube hasta enviar el formulario (lo gestiona el repositorio). */
+const beforeUpload = () => false;
 
 const PagoCapacitacionFormFields = ({
   metodosPago = [],
   cuentasPago = [],
   loadingCatalogos = false,
   reglasMetodo,
-  saldo = 0,
+  saldosPorConcepto = {},
+  conceptoOptions = CONCEPTO_PAGO_OPTIONS,
   onMetodoPagoChange,
   disabled = false,
-  permiteCompromiso = false,
-  costoCurso = null,
+  permiteComprobante = false,
 }) => {
   const metodoOptions = metodosPago.map((metodo) => ({ value: metodo.id, label: metodo.nombre }));
   const cuentaOptions = cuentasPago.map((cuenta) => ({ value: cuenta.id, label: cuenta.label }));
@@ -41,38 +50,58 @@ const PagoCapacitacionFormFields = ({
   return (
     <>
       <Row gutter={[24, 0]}>
-        <Col xs={24} sm={12}>
+        <Col xs={24}>
           <Form.Item
-            name="monto"
-            label="Monto del pago"
-            extra={saldo > 0 ? `Saldo pendiente: Bs ${formatBs(saldo)}` : undefined}
-            validateTrigger={['onChange', 'onBlur']}
-            rules={[
-              { required: true, message: 'Ingrese el monto del pago' },
-              {
-                validator: (_, value) => {
-                  const monto = Number(value);
-                  if (!Number.isFinite(monto) || monto <= 0) {
-                    return Promise.reject(new Error('El monto debe ser mayor a 0'));
-                  }
-                  if (saldo > 0 && monto > Number(saldo)) {
-                    return Promise.reject(
-                      new Error(`El monto no puede superar el saldo pendiente (Bs ${formatBs(saldo)})`),
-                    );
-                  }
-                  return Promise.resolve();
-                },
-              },
-            ]}
+            name="concepto"
+            label="Concepto del pago"
+            rules={[{ required: true, message: 'Seleccione el concepto del pago' }]}
           >
-            <InputNumber
-              min={0}
-              step={1}
-              prefix="Bs"
-              style={{ width: '100%' }}
-              placeholder="0"
-              disabled={disabled}
-            />
+            <Select options={conceptoOptions} disabled={disabled} />
+          </Form.Item>
+        </Col>
+
+        <Col xs={24} sm={12}>
+          <Form.Item noStyle shouldUpdate={(prev, curr) => prev.concepto !== curr.concepto}>
+            {({ getFieldValue }) => {
+              const saldo = Number(saldosPorConcepto[getFieldValue('concepto')] ?? 0);
+              return (
+                <Form.Item
+                  name="monto"
+                  label="Monto del pago"
+                  extra={saldo > 0 ? `Saldo pendiente del concepto: Bs ${formatBs(saldo)}` : undefined}
+                  dependencies={['concepto']}
+                  validateTrigger={['onChange', 'onBlur']}
+                  rules={[
+                    { required: true, message: 'Ingrese el monto del pago' },
+                    {
+                      validator: (_, value) => {
+                        const monto = Number(value);
+                        if (!Number.isFinite(monto) || monto <= 0) {
+                          return Promise.reject(new Error('El monto debe ser mayor a 0'));
+                        }
+                        if (saldo > 0 && monto > saldo) {
+                          return Promise.reject(
+                            new Error(
+                              `El monto no puede superar el saldo pendiente (Bs ${formatBs(saldo)})`,
+                            ),
+                          );
+                        }
+                        return Promise.resolve();
+                      },
+                    },
+                  ]}
+                >
+                  <InputNumber
+                    min={0}
+                    step={1}
+                    prefix="Bs"
+                    style={{ width: '100%' }}
+                    placeholder="0"
+                    disabled={disabled}
+                  />
+                </Form.Item>
+              );
+            }}
           </Form.Item>
         </Col>
 
@@ -137,39 +166,34 @@ const PagoCapacitacionFormFields = ({
             />
           </Form.Item>
         </Col>
-      </Row>
 
-      {permiteCompromiso ? (
-        <Form.Item noStyle shouldUpdate={(prev, curr) => prev.monto !== curr.monto}>
-          {({ getFieldValue }) => {
-            const monto = Number(getFieldValue('monto'));
-            const quedaParcial =
-              Number.isFinite(monto) && monto > 0 && costoCurso != null && monto < Number(costoCurso);
-            if (!quedaParcial) return null;
-            return (
-              <Row gutter={[24, 0]}>
-                <Col xs={24} sm={12}>
-                  <Form.Item
-                    name="fechaCompromiso"
-                    label="Fecha de compromiso de pago"
-                    extra="El pago inicial no cubre el costo total del curso: elija hasta cuándo se compromete el participante a cancelar el saldo."
-                    rules={[
-                      { required: true, message: 'Seleccione la fecha de compromiso de pago' },
-                    ]}
-                  >
-                    <DatePicker
-                      format="DD/MM/YYYY"
-                      style={{ width: '100%' }}
-                      disabled={disabled}
-                      disabledDate={(date) => !!date && date.isBefore(dayjs().startOf('day'))}
-                    />
-                  </Form.Item>
-                </Col>
-              </Row>
-            );
-          }}
-        </Form.Item>
-      ) : null}
+        {permiteComprobante ? (
+          <Col xs={24}>
+            <Form.Item
+              name="comprobante"
+              label="Comprobante de depósito (opcional)"
+              valuePropName="fileList"
+              getValueFromEvent={normFileFromUpload}
+            >
+              <Dragger
+                accept={COMPROBANTE_ACCEPT}
+                multiple={false}
+                maxCount={1}
+                beforeUpload={beforeUpload}
+                disabled={disabled}
+              >
+                <p className="ant-upload-drag-icon">
+                  <InboxOutlined />
+                </p>
+                <p className="ant-upload-text">Haga clic o arrastre el comprobante aquí</p>
+                <p className="ant-upload-hint">
+                  PDF o imagen (JPG/PNG), hasta {COMPROBANTE_MAX_MB} MB. También puede adjuntarlo después.
+                </p>
+              </Dragger>
+            </Form.Item>
+          </Col>
+        ) : null}
+      </Row>
     </>
   );
 };

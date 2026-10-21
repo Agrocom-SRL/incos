@@ -99,3 +99,33 @@ export const ESTADOS_COMPROMISO_CAPACITACION = {
 export const ESTADOS_COMPROMISO_CAPACITACION_VALUES = Object.values(
   ESTADOS_COMPROMISO_CAPACITACION
 );
+
+// ============================================
+// EXTENSIÓN 2026-10-21 (folleto «Curso de Guaraní»)
+// ============================================
+
+/** Modalidad del curso (`capacitaciones.modalidad`). */
+export const MODALIDADES_CAPACITACION = {
+  VIRTUAL: 'VIRTUAL',
+  PRESENCIAL: 'PRESENCIAL',
+  SEMIPRESENCIAL: 'SEMIPRESENCIAL',
+};
+
+export const MODALIDADES_CAPACITACION_VALUES = Object.values(MODALIDADES_CAPACITACION);
+
+/**
+ * Concepto de un pago (`capacitacion_pagos.concepto`). Son instituciones distintas:
+ * MATRICULA se paga al instituto (secretaría); CURSO se deposita a la entidad certificadora.
+ */
+export const CONCEPTOS_PAGO_CAPACITACION = {
+  MATRICULA: 'MATRICULA',
+  CURSO: 'CURSO',
+};
+
+export const CONCEPTOS_PAGO_CAPACITACION_VALUES = Object.values(CONCEPTOS_PAGO_CAPACITACION);
+
+/** Estado de pago por concepto (`estado_pago_matricula`, `estado_pago_curso`) y global (`estado_pago`). */
+export const ESTADOS_PAGO_CONCEPTO_CAPACITACION = {
+  PARCIAL: 'PARCIAL',
+  CANCELADO: 'CANCELADO',
+};

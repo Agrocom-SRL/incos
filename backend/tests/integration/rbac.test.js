@@ -73,6 +73,11 @@ const ENDPOINTS = [
     permitidos: [ADMIN, 'RECTOR', 'DIR_ADMIN', 'SEC_ADMIN'],
   },
   {
+    ruta: '/cursos-capacitacion/grupos',
+    permiso: ['capacitacion.grupo', 'LISTAR'],
+    permitidos: [ADMIN, 'RECTOR', 'DIR_ADMIN', 'SEC_ADMIN'],
+  },
+  {
     ruta: '/ingresos',
     permiso: ['finanzas.pago.ver', 'LISTAR'],
     permitidos: [ADMIN, 'RECTOR', 'DIR_ADMIN', 'SEC_ADMIN'],

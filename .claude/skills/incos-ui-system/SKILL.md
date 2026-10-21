@@ -20,6 +20,46 @@ colores/tamaños con valores literales.
 Antes de escribir un `style={{ color: '#...' }}`, un `fontSize: 14` o una clase
 con `color:` literal: **detente**. Eso es lo que rompe la homogeneidad.
 
+## 0.1 Regla previa: reutilizar y espejar (antes de crear nada)
+
+Una pantalla nueva **no se diseña: se copia de su hermana** y se adapta. Antes de
+escribir un archivo:
+
+1. **Busca lo que ya existe** (`grep`/`Glob`) en `presentation/components/{atoms,
+   molecules,organisms}/`, en los módulos hermanos y en el módulo de referencia
+   (Docentes ABM para formularios y fichas; CFG Académico para tabs/listados).
+   **Reutiliza tal cual o extiende por props.** Solo se crea un componente, hook o
+   util si no existe nada equivalente; y si lo van a usar 2+ módulos, nace en el
+   nivel atómico compartido, no dentro del módulo.
+2. **Espeja la composición de la pantalla hermana del mismo tipo.** Formulario →
+   mismas secciones, mismo orden, mismos componentes de campo, mismas
+   validaciones y textos de ayuda; ficha/detalle → mismo header, tarjetas y
+   acciones; listado → misma tabla, filtros, `TableActions` y estados
+   vacío/carga/error. **Las acciones** (guardar, cancelar, eliminar, exportar)
+   usan los mismos botones (`ActionButton`/`TableActions`), en la misma posición,
+   con las mismas etiquetas y confirmaciones. No inventes layouts ni controles
+   nuevos para algo que otra página ya resuelve.
+3. **Mismo estilo de código que el vecino:** nombres, idioma (español en UI),
+   densidad de comentarios, estructura de carpetas por ítem de menú, ubicación de
+   archivos según `incos-frontend-module`.
+4. **Código limpio y SOLID, siempre** (no es opcional):
+   - **S** — un componente = una responsabilidad visual; la lógica de estado vive
+     en `hooks/state/`, el acceso HTTP en `hooks/api/`, el mapeo en `mappers/`,
+     nunca mezclados en `pages/` ni en el JSX.
+   - **O** — extiende componentes por props/composición (`children`, render props,
+     configuración en `config/`) en vez de copiar y editar o añadir `if` por caso.
+   - **L** — un componente que sustituye a otro respeta su contrato de props.
+   - **I** — props mínimas y específicas; no pases objetos enormes para usar un campo.
+   - **D** — los hooks `state` dependen de contratos (`domain/repositories`), no del
+     cliente HTTP concreto.
+   - **Limpio:** nombres que revelan intención; funciones y componentes cortos
+     (si pasa de ~150 líneas, divídelo); sin duplicación (DRY); sin hex/px/fontSize
+     sueltos (tokens); sin magic strings (constantes/enums del módulo); sin código
+     muerto; comentarios solo para el *por qué*.
+5. **Al terminar, informa:** qué componentes reutilizaste, cuáles creaste y por
+   qué no servía ninguno existente. Un componente nuevo sin esa justificación se
+   considera un defecto.
+
 ## 1. Jerarquía de estilo (en este orden, sin saltarse pasos)
 
 1. **Props del componente AntD** (`type="primary"`, `size`, `variant`). Primera

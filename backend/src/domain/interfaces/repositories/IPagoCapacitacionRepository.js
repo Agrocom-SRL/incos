@@ -33,4 +33,15 @@ export class IPagoCapacitacionRepository extends IRepository {
   async findDetalleByInscripcionId(_capacitacionInscritoId) {
     throw new Error('Method findDetalleByInscripcionId() must be implemented');
   }
+
+  /**
+   * Suma de pagos vigentes de una inscripción por concepto (`MATRICULA`/`CURSO`).
+   *
+   * @param {number} capacitacionInscritoId
+   * @param {Object} options - Opciones opcionales (ej: `{ transaction }`)
+   * @returns {Promise<{MATRICULA: number, CURSO: number}>}
+   */
+  async sumMontosPorConcepto(_capacitacionInscritoId, _options = {}) {
+    throw new Error('Method sumMontosPorConcepto() must be implemented');
+  }
 }

@@ -25,6 +25,10 @@
 --   la ficha de inscripción de capacitación).
 -- - persona_codigo: codigo_estudiante (APORTE) o ci (CAPACITACION).
 -- - concepto: carrera_nombre (APORTE) o curso_titulo (CAPACITACION).
+-- - concepto_pago: MATRICULA | CURSO (solo CAPACITACION; NULL en APORTE).
+-- - cobra_instituto: 1 si el ingreso es del instituto (aportes, matrículas y
+--   cursos sin entidad certificadora); 0 si el dinero va a la entidad
+--   certificadora. Los totales de ingreso del instituto suman solo 1.
 --
 -- Dependencias (ejecutar antes):
 -- - 182-vista-base-ingreso-aporte.sql
@@ -54,6 +58,8 @@ SELECT
   a.apellido_materno AS persona_apellido_materno,
   a.nombres AS persona_nombres,
   a.carrera_nombre AS concepto,
+  NULL AS concepto_pago,
+  1 AS cobra_instituto,
   a.descripcion
 FROM vista_base_ingreso_aporte a
 LEFT JOIN metodos_pago mp ON mp.id = a.metodo_pago_id
@@ -74,6 +80,8 @@ SELECT
   c.apellido_materno AS persona_apellido_materno,
   c.nombres AS persona_nombres,
   c.curso_titulo AS concepto,
+  c.concepto AS concepto_pago,
+  c.cobra_instituto,
   c.descripcion
 FROM vista_base_ingreso_capacitacion c
 LEFT JOIN metodos_pago mp ON mp.id = c.metodo_pago_id;

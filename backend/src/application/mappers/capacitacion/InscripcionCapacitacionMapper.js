@@ -8,6 +8,8 @@
  * derivan aquí (ver reglas de negocio del módulo CAP).
  */
 
+import { aCentavos, deCentavos } from '../../use-cases/capacitacion/helpers/estadoInscripcion.js';
+
 /**
  * Nombre completo en orden APELLIDO_PATERNO APELLIDO_MATERNO NOMBRES.
  * @param {Object} row
@@ -36,7 +38,14 @@ export function rowToPresentation(row) {
     row.monto_obligatorio !== null && row.monto_obligatorio !== undefined
       ? Number(row.monto_obligatorio)
       : 0;
-  const totalPagado = Number(row.total_pagado ?? 0);
+  const montoMatricula = Number(row.monto_matricula ?? 0);
+  const pagadoCurso = Number(row.pagado_curso ?? 0);
+  const pagadoMatricula = Number(row.pagado_matricula ?? 0);
+  const totalPagado = Number(row.total_pagado ?? pagadoCurso + pagadoMatricula);
+  const saldoCurso = deCentavos(Math.max(0, aCentavos(montoObligatorio) - aCentavos(pagadoCurso)));
+  const saldoMatricula = deCentavos(
+    Math.max(0, aCentavos(montoMatricula) - aCentavos(pagadoMatricula))
+  );
 
   return {
     id: row.id,
@@ -55,13 +64,27 @@ export function rowToPresentation(row) {
     capacitacionId: row.capacitacion_id,
     capacitacionTitulo: row.capacitacion_titulo,
     capacitacionEstado: row.capacitacion_estado,
+    capacitacionModalidad: row.capacitacion_modalidad ?? null,
+    capacitacionEntidadCertificadora: row.capacitacion_entidad_certificadora ?? null,
     capacitacionFechaInicio: row.capacitacion_fecha_inicio,
-    capacitacionFechaFin: row.capacitacion_fecha_fin,
+    capacitacionFechaFin: row.capacitacion_fecha_fin ?? null,
+    capacitacionGrupoId: row.capacitacion_grupo_id ?? null,
+    grupoNombre: row.grupo_nombre ?? null,
+    grupoHorariosEtiqueta: row.grupo_horarios ?? null,
     costo,
     montoObligatorio,
+    montoMatricula,
     totalPagado,
-    saldo: Math.max(0, montoObligatorio - totalPagado),
+    totalPagadoCurso: pagadoCurso,
+    totalPagadoMatricula: pagadoMatricula,
+    saldoCurso,
+    saldoMatricula,
+    // Saldo total pendiente (curso + matrícula)
+    saldo: deCentavos(aCentavos(saldoCurso) + aCentavos(saldoMatricula)),
     estadoPago: row.estado_pago,
+    estadoPagoCurso: row.estado_pago_curso ?? null,
+    estadoPagoMatricula: row.estado_pago_matricula ?? null,
+    requisitosPendientes: Number(row.requisitos_pendientes ?? 0),
     pagosCount: Number(row.pagos_count ?? 0),
     compromisoId: row.compromiso_id ?? null,
     fechaCompromiso: row.compromiso_fecha ?? null,
@@ -69,6 +92,35 @@ export function rowToPresentation(row) {
     compromisoObservacion: row.compromiso_observacion ?? null,
     createdAt: row.created_at,
   };
+}
+
+/**
+ * Convierte una fila del checklist de requisitos de una inscripción a presentación.
+ * @param {Object|null} row
+ * @returns {Object|null}
+ */
+export function requisitoRowToPresentation(row) {
+  if (!row) return null;
+
+  return {
+    requisitoId: row.requisito_id,
+    descripcion: row.descripcion,
+    obligatorio: Boolean(Number(row.obligatorio)),
+    orden: row.orden ?? null,
+    entregado: Boolean(Number(row.entregado)),
+    fechaEntrega: row.fecha_entrega ?? null,
+    observacion: row.observacion ?? null,
+  };
+}
+
+/**
+ * Convierte el checklist de requisitos de una inscripción a presentación.
+ * @param {Array<Object>} rows
+ * @returns {Array<Object>}
+ */
+export function requisitoRowsToPresentation(rows) {
+  if (!Array.isArray(rows)) return [];
+  return rows.map(requisitoRowToPresentation);
 }
 
 /**
@@ -97,7 +149,11 @@ export function entityToPresentation(entity) {
     fechaInscripcion: entity.fechaInscripcion,
     estado: entity.estado,
     montoObligatorio: entity.montoObligatorio ?? null,
+    montoMatricula: entity.montoMatricula ?? 0,
     estadoPago: entity.estadoPago ?? null,
+    estadoPagoCurso: entity.estadoPagoCurso ?? null,
+    estadoPagoMatricula: entity.estadoPagoMatricula ?? null,
+    capacitacionGrupoId: entity.capacitacionGrupoId ?? null,
     activo: entity.activo,
     createdAt: entity.createdAt,
   };
@@ -117,5 +173,13 @@ export class InscripcionCapacitacionMapper {
 
   static entityToPresentation(entity) {
     return entityToPresentation(entity);
+  }
+
+  static requisitoRowToPresentation(row) {
+    return requisitoRowToPresentation(row);
+  }
+
+  static requisitoRowsToPresentation(rows) {
+    return requisitoRowsToPresentation(rows);
   }
 }

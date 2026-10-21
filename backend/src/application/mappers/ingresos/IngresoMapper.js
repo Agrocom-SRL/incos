@@ -43,6 +43,8 @@ export function ingresoRowToPresentation(row) {
     personaNombres: row.persona_nombres ?? null,
     personaNombreCompleto,
     concepto: row.concepto ?? null,
+    conceptoPago: row.concepto_pago ?? null,
+    cobraInstituto: Boolean(Number(row.cobra_instituto ?? 1)),
     descripcion: row.descripcion ?? null,
   };
 }

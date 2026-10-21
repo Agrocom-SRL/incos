@@ -13,6 +13,7 @@ const ALLOWED_SORT_FIELDS = [
   'persona_codigo',
   'concepto',
   'origen',
+  'cobra_instituto',
   'id_local',
 ];
 
@@ -31,16 +32,21 @@ export class IngresoRepository extends IIngresoRepository {
   /**
    * Listado paginado de ingresos (vista 184): COUNT + SELECT con mismo WHERE.
    *
-   * @param {Object} params - { page, limit, search, origen, sortField, sortOrder }
+   * @param {Object} params - { page, limit, search, origen, soloInstituto, sortField, sortOrder }
    * @returns {Promise<{rows: Array<Object>, total: number}>}
    */
-  async findAll({ page = 1, limit = 50, search, origen, sortField, sortOrder } = {}) {
+  async findAll({ page = 1, limit = 50, search, origen, soloInstituto, sortField, sortOrder } = {}) {
     const whereConditions = [];
     const replacements = [];
 
     if (origen) {
       whereConditions.push('origen = ?');
       replacements.push(origen);
+    }
+
+    // Solo ingresos del instituto (excluye lo depositado a la entidad certificadora)
+    if (soloInstituto) {
+      whereConditions.push('cobra_instituto = 1');
     }
 
     if (search && String(search).trim() !== '') {

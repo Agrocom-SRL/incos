@@ -1115,13 +1115,14 @@ Dominio `TITULACION`, módulo `TIT`. Grupos UI `tit_proyectos` y `tit_pasantias`
 Pasantías: backend en `/api/v1/pasantias` con dos caminos PASANTIA/CONVALIDACION (R.M. 487/2023, 300-360 h); las transiciones de estado usan APROBAR y la descarga de PDF de informe usa EXPORTAR. Portales anti-IDOR con identidad resuelta en servidor: `GET /pasantias/mis-pasantias` (docente, LISTAR) y `GET /pasantias/mi-pasantia` (estudiante, DETALLE). Los endpoints de proyectos de grado están en los changelogs TIT de arriba.
 
 ### CAP - Capacitación (`/capacitacion/*`) — módulo nuevo 2026-07-16
-Dominio `CAPACITACION`, módulo `CAP` (cursos cortos a público externo, sin login). Seed: `64-seed-permisos-cap.sql` (numeración vigente; en el changelog original figuraba como 65; **verificar siembra en BD**, junto al schema `25-cursos-capacitacion.sql`, el seeder de horarios de capacitación y las vistas 154/155). Grupos UI: `cap_cursos`, `cap_participantes`, `cap_inscripciones`. Roles con acceso (primer corte): RECTOR, DIR_ADMIN, SEC_ADMIN; ADMIN_SISTEMA hereda por vista.
+Dominio `CAPACITACION`, módulo `CAP` (cursos cortos a público externo, sin login). Seed: `64-seed-permisos-cap.sql` (numeración vigente; en el changelog original figuraba como 65; **verificar siembra en BD**, junto al schema `21-cursos-capacitacion.sql` y las vistas 154/155). Grupos UI: `cap_cursos`, `cap_participantes`, `cap_inscripciones`, `cap_grupos`. Roles con acceso (primer corte): RECTOR, DIR_ADMIN, SEC_ADMIN; ADMIN_SISTEMA hereda por vista.
 
 | Permiso (codigo) | Acciones | Ruta sidebar | Endpoints | Roles |
 |---|---|---|---|---|
 | `capacitacion.curso` | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR | `/capacitacion/cursos` | `GET/POST /cursos-capacitacion`, `GET/PUT/DELETE /cursos-capacitacion/:id`, `PATCH /cursos-capacitacion/:id/estado` | RECTOR, DIR_ADMIN, SEC_ADMIN (SEC_ADMIN **sin** ELIMINAR/ACTIVAR) |
 | `capacitacion.participante` | LISTAR, DETALLE, CREAR, EDITAR | `/capacitacion/participantes` | `GET/POST /participantes`, `GET/PUT /participantes/:id` | RECTOR, DIR_ADMIN, SEC_ADMIN |
 | `capacitacion.inscripcion` | LISTAR, DETALLE, CREAR, ELIMINAR | `/capacitacion/inscripciones` | `GET/POST /inscripciones-capacitacion`, `GET/DELETE /inscripciones-capacitacion/:id` | RECTOR, DIR_ADMIN, SEC_ADMIN (SEC_ADMIN **sin** ELIMINAR) |
+| `capacitacion.grupo` | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR | `/capacitacion/grupos` | `GET /cursos-capacitacion/grupos` (listado de grupos de todas las capacitaciones); CRUD de horarios: `GET/POST /cursos-capacitacion/horarios`, `GET/PUT/DELETE /cursos-capacitacion/horarios/:id` (el `GET /horarios` también acepta `capacitacion.curso` CREAR/EDITAR: lo usa el selector de horarios del formulario de curso) | RECTOR, DIR_ADMIN, SEC_ADMIN (SEC_ADMIN **sin** ELIMINAR) |
 | `capacitacion.pago` | CREAR, EXPORTAR | `/capacitacion/inscripciones` | `POST /inscripciones-capacitacion/:id/pagos` (CREAR; EXPORTAR sembrado, sin endpoint aún) | RECTOR, DIR_ADMIN, SEC_ADMIN (SEC_ADMIN **sin** EXPORTAR) |
 
 > Aislamiento: tablas propias (`participantes`, `capacitaciones`, `capacitacion_*`) sin FK hacia

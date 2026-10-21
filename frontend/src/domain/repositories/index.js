@@ -84,6 +84,8 @@ export { IPagoAporteRepository } from './IPagoAporteRepository';
 // MÓDULO: CAPACITACIÓN (CAP)
 // ============================================
 export { ICursoCapacitacionRepository } from './ICursoCapacitacionRepository';
+export { IGrupoCapacitacionRepository } from './IGrupoCapacitacionRepository';
+export { IHorarioCapacitacionRepository } from './IHorarioCapacitacionRepository';
 export { IParticipanteCapacitacionRepository } from './IParticipanteCapacitacionRepository';
 export { IInscripcionCapacitacionRepository } from './IInscripcionCapacitacionRepository';
 

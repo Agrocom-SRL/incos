@@ -311,6 +311,84 @@ export const uploadAvanceProyecto = (req, res, next) => {
   });
 };
 
+/**
+ * Upload del comprobante de depósito de un pago de capacitación (módulo CAP).
+ * Destino: uploads/documentos/capacitacion/{inscripcionId}/comprobantes/ (el id
+ * sale de req.params.id). Solo imagen o PDF, tamaño acotado. El archivo es
+ * OPCIONAL: si el request no es multipart o no trae archivo, continúa sin
+ * `req.file`. La descarga es SOLO vía endpoint autenticado con res.download.
+ */
+const COMPROBANTE_CAPACITACION_MIME_TYPES = [
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/webp',
+  'application/pdf',
+];
+const COMPROBANTE_CAPACITACION_MAX_BYTES_DEFECTO = 5 * 1024 * 1024;
+
+export function createComprobanteCapacitacionUploadMiddleware(fieldName = 'comprobante') {
+  const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      const relativePath = UPLOAD.capacitacionComprobantes(req.params?.id || 'temp');
+      const uploadPath = path.isAbsolute(multerConfig.uploadDir)
+        ? path.join(multerConfig.uploadDir, relativePath)
+        : path.resolve(serverConfig.backendRoot, multerConfig.uploadDir, relativePath);
+
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+      cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+      cb(null, UPLOAD.generateComprobanteCapacitacionFileName(file.originalname));
+    },
+  });
+
+  const fileFilter = (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (!UPLOAD.comprobanteCapacitacionExtensions.includes(ext)) {
+      return cb(
+        new Error(
+          `Tipo de archivo no permitido. Tipos permitidos: ${UPLOAD.comprobanteCapacitacionExtensions.join(', ')}`
+        ),
+        false
+      );
+    }
+    if (!COMPROBANTE_CAPACITACION_MIME_TYPES.includes(file.mimetype)) {
+      return cb(new Error('Tipo MIME no permitido (solo imagen o PDF)'), false);
+    }
+    cb(null, true);
+  };
+
+  const upload = multer({
+    storage,
+    fileFilter,
+    limits: {
+      fileSize: getEnvAsNumber(
+        'MAX_COMPROBANTE_CAPACITACION_SIZE',
+        COMPROBANTE_CAPACITACION_MAX_BYTES_DEFECTO
+      ),
+      files: 1,
+    },
+  });
+
+  return upload.single(fieldName);
+}
+
+/**
+ * Middleware de upload de comprobante de capacitación (campo multipart `comprobante`).
+ */
+export const uploadComprobanteCapacitacion = (req, res, next) => {
+  const middleware = createComprobanteCapacitacionUploadMiddleware('comprobante');
+  middleware(req, res, (err) => {
+    if (err) {
+      return next(err);
+    }
+    next();
+  });
+};
+
 export const uploadPaymentDocument = (req, res, next) => {
     // Log antes de procesar el upload
     logger.debug('[Upload] Iniciando procesamiento de archivo', {

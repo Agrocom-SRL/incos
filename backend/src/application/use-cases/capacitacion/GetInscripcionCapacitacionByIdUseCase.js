@@ -8,7 +8,8 @@ import {
  * Módulo: Capacitación (CAP)
  *
  * Ficha de una inscripción: participante + curso + estado de pago derivado +
- * historial de pagos (con método de pago y datos mínimos de la cuenta).
+ * historial de pagos (con concepto, método de pago, datos mínimos de la cuenta
+ * y si tiene comprobante) + checklist de requisitos del curso.
  */
 export class GetInscripcionCapacitacionByIdUseCase {
   /**
@@ -16,14 +17,17 @@ export class GetInscripcionCapacitacionByIdUseCase {
    * @param {Object} params.inscripcionCapacitacionRepository
    * @param {Object} params.pagoCapacitacionRepository
    * @param {Object} params.capacitacionCompromisoRepository
+   * @param {Object} params.capacitacionInscritoRequisitoRepository
    * @param {ILogger} params.logger
    */
   constructor({
     inscripcionCapacitacionRepository,
     pagoCapacitacionRepository,
     capacitacionCompromisoRepository,
+    capacitacionInscritoRequisitoRepository,
     logger,
   }) {
+    this.capacitacionInscritoRequisitoRepository = capacitacionInscritoRequisitoRepository;
     this.inscripcionCapacitacionRepository = inscripcionCapacitacionRepository;
     this.pagoCapacitacionRepository = pagoCapacitacionRepository;
     this.capacitacionCompromisoRepository = capacitacionCompromisoRepository;
@@ -46,6 +50,12 @@ export class GetInscripcionCapacitacionByIdUseCase {
 
     const pagoRows = await this.pagoCapacitacionRepository.findDetalleByInscripcionId(id);
     presentation.pagos = PagoCapacitacionMapper.rowsToPresentation(pagoRows);
+
+    const checklistRows = await this.capacitacionInscritoRequisitoRepository.findChecklistByInscripcionId(
+      id,
+      row.capacitacion_id
+    );
+    presentation.requisitos = InscripcionCapacitacionMapper.requisitoRowsToPresentation(checklistRows);
 
     this.logger.info('[Capacitación] Ficha de inscripción obtenida', {
       id,

@@ -15,6 +15,14 @@ tools: Read, Edit, Write, Grep, Glob, Bash, Skill
 
 Eres el **backend** de INCOS. Implementas endpoints por capas limpias.
 
+## Reutilizar y espejar (NO NEGOCIABLE)
+
+Antes de crear un use case, repositorio, controller, validator, helper o vista:
+busca lo existente y reutilízalo (`incos-backend-module` §0). Mismos nombres,
+ubicación por capa, registro DI y estilo que el módulo de referencia. Aplica
+código limpio y SOLID (ver el skill). Al terminar, lista qué reutilizaste y
+qué creaste.
+
 ## Arquitectura (obligatoria)
 
 - Capas: `routes/` → `controllers/` → `use-cases/` → `repositories/`, con

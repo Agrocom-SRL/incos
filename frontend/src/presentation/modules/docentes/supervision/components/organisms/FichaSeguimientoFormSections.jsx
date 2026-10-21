@@ -1,7 +1,7 @@
 /**
  * Formulario de ficha de seguimiento en clase — workspace alineado a CFG
  * Académico (prop `sections` de `CfgFormWorkspace`, mismo patrón que
- * `CursoCapacitacionFormSections` / `SesionRefuerzoFormSections`).
+ * `PlanFormSections` / `SesionRefuerzoFormSections`).
  * "Datos de la observación" da título a la tarjeta; documentación, cantidad
  * de estudiantes, estructura mínima de la clase y otras observaciones quedan
  * como secciones internas — mismo orden que el formulario físico.

@@ -19,10 +19,21 @@ describe('ListIngresosUseCase', () => {
       origen: 'APORTE', sort: 'fecha_pago:asc',
     });
     expect(deps.ingresoRepository.findAll).toHaveBeenCalledWith({
-      page: 2, limit: 10, search: 'ana', origen: 'APORTE', sortField: 'fecha_pago', sortOrder: 'ASC',
+      page: 2, limit: 10, search: 'ana', origen: 'APORTE', soloInstituto: false, sortField: 'fecha_pago', sortOrder: 'ASC',
     });
     expect(res).toMatchObject({ total: 21, page: 2, limit: 10, totalPages: 3 });
     expect(res.ingresos[0]).toMatchObject({ id: 'APORTE-4', monto: 12.5, personaNombreCompleto: 'Paz Ana' });
+  });
+
+  it('soloInstituto=true se pasa al repositorio y el mapper expone cobraInstituto/conceptoPago', async () => {
+    const { deps, useCase } = crear([
+      { origen: 'CAPACITACION', id_local: 1, monto: '440', concepto_pago: 'CURSO', cobra_instituto: 0 },
+      { origen: 'APORTE', id_local: 2, monto: '10' },
+    ]);
+    const res = await useCase.execute({}, 1, 10, { soloInstituto: 'true' });
+    expect(deps.ingresoRepository.findAll.mock.calls[0][0].soloInstituto).toBe(true);
+    expect(res.ingresos[0]).toMatchObject({ conceptoPago: 'CURSO', cobraInstituto: false });
+    expect(res.ingresos[1]).toMatchObject({ conceptoPago: null, cobraInstituto: true });
   });
 
   it('orden descendente por defecto cuando falta o es inválida la dirección', async () => {

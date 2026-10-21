@@ -4,17 +4,21 @@
  *
  * Wizard por pestañas (`WizardForm variant="tabs"`, gemelo de
  * `useSeguridadUsuarioCreatePage`): participante (existente por búsqueda O
- * nuevo con datos mínimos) → curso → pago inicial → submit en UNA transacción
- * del backend (`createInscripcionCapacitacionValidator`: participanteId XOR
- * participante, capacitacionId, pagoInicial?).
+ * nuevo con datos mínimos) → curso → horario y requisitos → pago inicial
+ * OPCIONAL → submit en UNA transacción del backend
+ * (`createInscripcionCapacitacionValidator`).
  *
- * Reglas de pago por cuotas (definitivas, ver backend
- * `CreateInscripcionCapacitacionUseCase`):
- * - Curso GRATUITO (costo ≤ 0): el paso "Pago inicial" NO EXISTE en el wizard
- *   (se omite del todo, `wizardSteps` no lo incluye) — no hay nada que cobrar.
- * - Curso CON COSTO: el pago inicial es OBLIGATORIO, ya no existe la opción
- *   de omitirlo. Si el monto ingresado no cubre el costo total, el propio
- *   formulario (`PagoCapacitacionFormFields`) exige una fecha de compromiso.
+ * Reglas (extensión matrícula/horarios):
+ * - Se puede inscribir con requisitos o pagos pendientes: la inscripción queda
+ *   PENDIENTE y pasa a INSCRITO con matrícula + curso cancelados y los
+ *   requisitos obligatorios entregados (ver `calcularPendientesInscripcion`).
+ * - El paso «Grupo y requisitos» toma `grupos[]`/`requisitos[]` de la ficha del
+ *   curso elegido; el grupo es `capacitacionGrupoId` (un solo grupo se
+ *   preselecciona; con ≥2 es obligatorio).
+ * - El pago inicial es opcional (interruptor) y lleva `concepto`
+ *   (MATRICULA | CURSO) y solo ofrece los conceptos que el curso cobra; el paso
+ *   no existe si el curso es gratuito.
+ *   El comprobante se adjunta después desde la ficha.
  *
  * Los pasos comparten un único `Form` de AntD (`WizardForm` lo crea y
  * desmonta del DOM el contenido de los pasos no activos, pero conserva sus
@@ -27,7 +31,16 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { App, Form } from 'antd';
 import { useInscribirParticipanteContext } from '@application-capacitacion/inscripciones/hooks/context/useInscribirParticipanteContext';
-import { mapFormValuesToPagoInicialPayload } from '@application-capacitacion/inscripciones/mappers/inscripcionCapacitacionMapper';
+import {
+  buildInscripcionPayload,
+  mapFormValuesToPagoInicialPayload,
+} from '@application-capacitacion/inscripciones/mappers/inscripcionCapacitacionMapper';
+import { buildConceptoOptions } from '@application-capacitacion/utils/capacitacionCatalogos';
+import {
+  montosCobradosCurso,
+  resolverGrupoInicial,
+  validarGrupoElegido,
+} from '@application-capacitacion/utils/inscripcionGrupos';
 import { mapFormValuesToParticipantePayload } from '@application-capacitacion/participantes/mappers/participanteMapper';
 import {
   buildReglasMetodo,
@@ -61,6 +74,10 @@ export const useInscribirParticipantePage = () => {
     cursos,
     loadingCursos,
     errorCursos,
+    cursoDetalle,
+    loadingCursoDetalle,
+    errorCursoDetalle,
+    cargarCursoDetalle,
     metodosPago,
     cuentasPago,
     loadingCatalogos,
@@ -75,6 +92,11 @@ export const useInscribirParticipantePage = () => {
   const [searchText, setSearchText] = useState('');
   const [cursoSeleccionadoId, setCursoSeleccionadoId] = useState(null);
   const [metodoPagoId, setMetodoPagoId] = useState(null);
+  /** Paso «Horario y requisitos»: grupo elegido y requisitos ya entregados al inscribir. */
+  const [capacitacionGrupoId, setCapacitacionGrupoId] = useState(null);
+  const [requisitosEntregados, setRequisitosEntregados] = useState([]);
+  /** Pago inicial opcional: apagado por defecto. */
+  const [registrarPagoInicial, setRegistrarPagoInicial] = useState(false);
   /** Error puntual del paso actual (validación al avanzar), mostrado por WizardForm. */
   const [stepError, setStepError] = useState('');
 
@@ -156,16 +178,51 @@ export const useInscribirParticipantePage = () => {
     [cursos, cursoSeleccionadoId],
   );
 
-  const handleCursoChange = useCallback((value) => {
-    setCursoSeleccionadoId(value ?? null);
-  }, []);
+  /** Ficha del curso elegido (solo si ya cargó la del id actual: evita mostrar la del anterior). */
+  const cursoFicha = cursoDetalle?.id === cursoSeleccionadoId ? cursoDetalle : null;
+  const gruposCurso = useMemo(() => cursoFicha?.grupos ?? [], [cursoFicha]);
+  const requisitosCurso = useMemo(() => cursoFicha?.requisitos ?? [], [cursoFicha]);
 
   /**
-   * Un curso sin costo (Bs 0) no tiene nada que cobrar: el paso "Pago
-   * inicial" del wizard directamente no se incluye (ver `wizardSteps`). Un
-   * curso con costo siempre exige el pago inicial (ya no es opcional).
+   * Cambiar de curso reinicia lo que depende de él (grupo, requisitos, pago) y
+   * carga su ficha. Con un único grupo disponible se preselecciona.
    */
-  const requierePago = Number(cursoSeleccionado?.costo ?? 0) > 0;
+  const handleCursoChange = useCallback(
+    async (value) => {
+      setCursoSeleccionadoId(value ?? null);
+      setCapacitacionGrupoId(null);
+      setRequisitosEntregados([]);
+      setRegistrarPagoInicial(false);
+      form.setFieldsValue({ concepto: undefined, monto: undefined });
+      if (!value) return;
+      const result = await cargarCursoDetalle(value);
+      if (result?.success) {
+        setCapacitacionGrupoId(resolverGrupoInicial(result.data?.grupos));
+      }
+    },
+    [form, cargarCursoDetalle],
+  );
+
+  /** Saldo máximo por concepto: solo los conceptos que el curso cobra (los demás valen 0). */
+  const saldosPorConcepto = useMemo(() => montosCobradosCurso(cursoSeleccionado), [cursoSeleccionado]);
+  const conceptoOptions = useMemo(() => buildConceptoOptions(saldosPorConcepto), [saldosPorConcepto]);
+
+  /**
+   * El paso «Pago inicial» solo existe si el curso cobra algo (no es
+   * gratuito). Es siempre opcional: no hace falta pagar para inscribir.
+   */
+  const ofrecePago = conceptoOptions.length > 0;
+
+  /** Activa/desactiva el pago inicial; al activar sugiere el primer concepto con costo. */
+  const handleTogglePagoInicial = useCallback(
+    (activo) => {
+      setRegistrarPagoInicial(activo);
+      if (activo && !form.getFieldValue('concepto')) {
+        form.setFieldsValue({ concepto: conceptoOptions[0]?.value });
+      }
+    },
+    [form, conceptoOptions],
+  );
 
   /** Al cambiar de método, limpia la cuenta (deja de aplicar). */
   const handleMetodoPagoChange = useCallback(
@@ -190,10 +247,9 @@ export const useInscribirParticipantePage = () => {
    * y lo inyecta sobre el paso 1 antes de pasarlo a `WizardForm`, para no
    * mezclar JSX en este hook de estado.
    *
-   * El paso "Pago inicial" SOLO se incluye si el curso elegido tiene costo
-   * (`requierePago`): un curso gratuito no tiene nada que cobrar, así que el
-   * wizard queda en 2 pasos y "Curso" pasa a ser el último (la página no
-   * intenta avanzar más allá de él, ver `handleCursoSeleccionarYAvanzar`).
+   * El paso "Pago inicial" SOLO se incluye si el curso elegido cobra algo
+   * (`ofrecePago`); el paso 3 «Horario y requisitos» siempre existe (muestra
+   * estados vacíos si el curso no define grupos ni requisitos).
    */
   const wizardSteps = useMemo(() => {
     const steps = [
@@ -215,25 +271,34 @@ export const useInscribirParticipantePage = () => {
         sections: ['curso'],
         config: { curso: {} },
       },
+      {
+        title: 'Grupo y requisitos',
+        formTitle: 'Inscribir participante',
+        description:
+          'Elija el grupo del participante (con sus horarios) y marque los requisitos que ya entrega. Puede inscribirlo con requisitos pendientes: quedará en estado «Pendiente».',
+        sections: ['inscripcion'],
+        config: { inscripcion: {} },
+      },
     ];
-    if (requierePago) {
+    if (ofrecePago) {
       steps.push({
         title: 'Pago inicial',
         formTitle: 'Inscribir participante',
         description:
-          'El curso tiene costo: registre el pago inicial (puede ser parcial). Si no cubre el costo total, indique la fecha de compromiso para cancelar el saldo.',
+          'Opcional. La matrícula se paga en secretaría del instituto y el costo del curso a la entidad certificadora; puede registrar un pago ahora o hacerlo después desde la ficha de la inscripción.',
         sections: ['pago'],
         config: { pago: {} },
       });
     }
     return steps;
-  }, [modoParticipante, requierePago]);
+  }, [modoParticipante, ofrecePago]);
 
   /**
    * Validación al avanzar de paso (`WizardForm` la invoca antes de "Siguiente").
    * Paso 1 (participante): campos reales del `Form` en modo NUEVO; selección en
    * memoria (no es campo de `Form`) en modo EXISTENTE. Paso 2 (curso): selección
-   * en memoria. Paso 3 (pago): sin validación aquí, se valida al finalizar.
+   * en memoria. Paso 3 (grupo/requisitos): el grupo es obligatorio con ≥2 grupos.
+   * Paso 4 (pago): se valida al finalizar.
    */
   const onValidateBeforeNext = useCallback(
     (stepNumber) => {
@@ -257,6 +322,10 @@ export const useInscribirParticipantePage = () => {
         }
         return Promise.resolve();
       }
+      if (stepNumber === 3) {
+        const mensaje = validarGrupoElegido(gruposCurso, capacitacionGrupoId);
+        return mensaje ? Promise.reject(new Error(mensaje)) : Promise.resolve();
+      }
       if (stepNumber === 2) {
         if (!cursoSeleccionadoId) {
           return Promise.reject(new Error('Seleccione el curso al que se inscribe el participante'));
@@ -265,7 +334,7 @@ export const useInscribirParticipantePage = () => {
       }
       return Promise.resolve();
     },
-    [form, modoParticipante, participanteSeleccionado, cursoSeleccionadoId],
+    [form, modoParticipante, participanteSeleccionado, cursoSeleccionadoId, gruposCurso, capacitacionGrupoId],
   );
 
   /** `WizardForm` la llama cuando `onValidateBeforeNext` rechaza; expone el mensaje en el footer del paso. */
@@ -294,11 +363,15 @@ export const useInscribirParticipantePage = () => {
       return;
     }
 
-    if (requierePago) {
+    const mensajeGrupo = validarGrupoElegido(gruposCurso, capacitacionGrupoId);
+    if (mensajeGrupo) {
+      message.error(mensajeGrupo);
+      return;
+    }
+
+    if (ofrecePago && registrarPagoInicial) {
       try {
-        // 'fechaCompromiso' solo está montado si el monto ingresado queda parcial
-        // (ver PagoCapacitacionFormFields); validarlo aquí no falla si no aplica.
-        await form.validateFields(['monto', 'fechaPago', 'metodoPagoId', 'cuentaPagoId', 'fechaCompromiso']);
+        await form.validateFields(['concepto', 'monto', 'fechaPago', 'metodoPagoId', 'cuentaPagoId']);
       } catch {
         message.error('Revise los campos obligatorios del pago inicial');
         return;
@@ -307,28 +380,27 @@ export const useInscribirParticipantePage = () => {
 
     const values = form.getFieldsValue(true);
 
-    const payload = { capacitacionId: Number(cursoSeleccionadoId) };
-    if (modoParticipante === MODO_PARTICIPANTE.EXISTENTE) {
-      payload.participanteId = Number(participanteSeleccionado.id);
-    } else {
-      payload.participante = mapFormValuesToParticipantePayload(values);
-    }
-    if (requierePago) {
-      const pagoInicial = mapFormValuesToPagoInicialPayload(values);
+    let pagoInicial = null;
+    if (ofrecePago && registrarPagoInicial) {
+      pagoInicial = mapFormValuesToPagoInicialPayload(values);
       if (!Number.isFinite(pagoInicial.monto) || pagoInicial.monto <= 0) {
         message.error('Indique un monto válido para el pago inicial');
         return;
       }
-      const costoCurso = Number(cursoSeleccionado?.costo ?? 0);
-      const quedaParcial = pagoInicial.monto < costoCurso;
-      if (quedaParcial && !pagoInicial.fechaCompromiso) {
-        message.error(
-          'Indique la fecha de compromiso: el pago inicial no cubre el costo total del curso',
-        );
-        return;
-      }
-      payload.pagoInicial = pagoInicial;
     }
+
+    const payload = buildInscripcionPayload({
+      cursoId: cursoSeleccionadoId,
+      participanteId:
+        modoParticipante === MODO_PARTICIPANTE.EXISTENTE ? participanteSeleccionado.id : null,
+      participanteNuevo:
+        modoParticipante === MODO_PARTICIPANTE.NUEVO
+          ? mapFormValuesToParticipantePayload(values)
+          : null,
+      capacitacionGrupoId,
+      requisitosEntregados,
+      pagoInicial,
+    });
 
     const result = await inscribir(payload);
     if (!result?.success) {
@@ -340,9 +412,7 @@ export const useInscribirParticipantePage = () => {
     }
 
     message.success(
-      requierePago
-        ? 'Inscripción y pago inicial registrados'
-        : 'Inscripción registrada correctamente',
+      pagoInicial ? 'Inscripción y pago inicial registrados' : 'Inscripción registrada correctamente',
     );
 
     const raw = result.data?.inscripcionCapacitacion ?? result.data;
@@ -358,8 +428,11 @@ export const useInscribirParticipantePage = () => {
     cursoSeleccionadoId,
     modoParticipante,
     participanteSeleccionado,
-    requierePago,
-    cursoSeleccionado,
+    ofrecePago,
+    registrarPagoInicial,
+    gruposCurso,
+    capacitacionGrupoId,
+    requisitosEntregados,
     form,
     inscribir,
     message,
@@ -401,8 +474,22 @@ export const useInscribirParticipantePage = () => {
     cursoSeleccionadoId,
     cursoSeleccionado,
     handleCursoChange,
-    // Paso 3: pago inicial (obligatorio si el curso tiene costo; omitido si es gratuito)
-    requierePago,
+    // Paso 3: horario (grupo) y requisitos del curso elegido
+    cursoFicha,
+    loadingCursoDetalle,
+    errorCursoDetalle,
+    gruposCurso,
+    requisitosCurso,
+    capacitacionGrupoId,
+    setCapacitacionGrupoId,
+    requisitosEntregados,
+    setRequisitosEntregados,
+    // Paso 4: pago inicial opcional (omitido si el curso no cobra nada)
+    ofrecePago,
+    registrarPagoInicial,
+    handleTogglePagoInicial,
+    saldosPorConcepto,
+    conceptoOptions,
     metodosPago,
     cuentasPago,
     loadingCatalogos,

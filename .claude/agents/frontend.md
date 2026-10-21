@@ -32,6 +32,14 @@ Eres el **frontend** de INCOS. Implementas UI homogénea y bien arquitecturada.
    `components/{atoms,molecules,organisms}` y el shell global lo COMPONE (SOLID/Atomic).
 5. **Bordes/contraste visibles en AMBOS temas** (en light el borde no puede desaparecer).
 
+## Reutilizar y espejar (NO NEGOCIABLE)
+
+Antes de crear un componente, hook o pantalla: busca lo existente y reutilízalo
+(`incos-frontend-module` §0 / `incos-ui-system` §0.1). Las pantallas nuevas
+espejan la composición, los formularios y las acciones de sus hermanas
+(Docentes ABM, CFG Académico). Aplica código limpio y SOLID (ver los skills). Al terminar, lista qué
+reutilizaste y qué creaste con su justificación.
+
 ## Arquitectura (obligatoria)
 
 - Estructura por ítem de menú; lógica en `hooks/state/` por pantalla, **no** en

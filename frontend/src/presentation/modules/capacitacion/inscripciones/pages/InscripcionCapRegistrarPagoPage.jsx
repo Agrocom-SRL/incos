@@ -34,10 +34,10 @@ const InscripcionCapRegistrarPagoPage = () => {
     handleSubmit,
     submitLoading,
     form,
-    metodoPagoId,
     reglasMetodo,
     handleMetodoPagoChange,
-    saldo,
+    saldosPorConcepto,
+    conceptoOptions,
     metodosPago,
     cuentasPago,
     loadingCatalogos,
@@ -106,7 +106,7 @@ const InscripcionCapRegistrarPagoPage = () => {
                 >
                   <CfgFormWorkspace
                     title="Datos del pago"
-                    description="Complete el monto, la fecha y el método de pago. La cuenta de pago se habilita según el método elegido."
+                    description="Elija el concepto (matrícula o costo del curso), el monto, la fecha y el método de pago. El comprobante de depósito es opcional. La cuenta de pago se habilita según el método elegido."
                     fields={[]}
                     form={form}
                     footer={saveButton}
@@ -125,9 +125,10 @@ const InscripcionCapRegistrarPagoPage = () => {
                           metodosPago={metodosPago}
                           cuentasPago={cuentasPago}
                           loadingCatalogos={loadingCatalogos}
-                          metodoPagoId={metodoPagoId}
                           reglasMetodo={reglasMetodo}
-                          saldo={saldo}
+                          saldosPorConcepto={saldosPorConcepto}
+                          conceptoOptions={conceptoOptions}
+                          permiteComprobante
                           onMetodoPagoChange={handleMetodoPagoChange}
                           disabled={loading || submitLoading}
                         />

@@ -1,0 +1,49 @@
+/* Pills de horarios elegidos (con ✕ dentro) y filas del popup de selección. */
+.horarios-grupo-picker__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.horarios-grupo-picker__quitar {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 10px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.horarios-grupo-picker__quitar:hover,
+.horarios-grupo-picker__quitar:focus-visible {
+  opacity: 1;
+}
+
+.horarios-grupo-picker__fila {
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: var(--border-radius-sm, 6px);
+}
+
+.horarios-grupo-picker__fila:hover {
+  background: var(--color-bg-container-disabled, rgba(0, 0, 0, 0.04));
+}
+
+/* Popup en 2 columnas (se adapta a una en pantallas angostas). */
+.horarios-grupo-picker__lista {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(160px, 1fr));
+  gap: 2px 8px;
+  width: min(440px, 80vw);
+}
+
+@media (max-width: 480px) {
+  .horarios-grupo-picker__lista {
+    grid-template-columns: 1fr;
+  }
+}

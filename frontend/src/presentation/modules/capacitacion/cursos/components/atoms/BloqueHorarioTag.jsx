@@ -1,10 +1,10 @@
 /**
- * Átomo: tag del multi-select "Bloques de horario" (curso de capacitación) con
+ * Átomo: tag de un horario de un grupo (curso de capacitación) con
  * estilo pill (familia `cfg-materia-pill`, mismo lenguaje que `StatusPill`) en
- * vez del tag gris por defecto de Ant Design. Color por `turno` REAL del bloque
- * (MAÑANA/TARDE/NOCHE, de `GET .../horarios-disponibles`) vía el resolver
+ * vez del tag gris por defecto de Ant Design. Color por `turno` del horario
+ * (MAÑANA/TARDE/NOCHE, derivado de la hora de inicio) vía el resolver
  * compartido `getParaleloTurnoFormPillClass` (mismo criterio que Paralelos —
- * no se inventa una clase nueva). `tagRender` de AntD Select.
+ * no se inventa una clase nueva).
  */
 import { Tag } from 'antd';
 import { getParaleloTurnoFormPillClass } from '@application-configuracion-recursos/config/paraleloTurnoOptions';
