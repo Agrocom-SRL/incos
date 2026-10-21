@@ -78,6 +78,7 @@ describe('CambiarTurnoParaleloGestionConBloquesUseCase', () => {
       .mockResolvedValueOnce({ id: 201 });
     deps.parallelManagementRepository.findById
       .mockResolvedValueOnce({ id: 11, state: 'OFERTADO', shift: 'TARDE' })
+      .mockResolvedValueOnce({ id: 11, state: 'OFERTADO', shift: 'TARDE' })
       .mockResolvedValueOnce({ id: 11, state: 'OFERTADO', shift: 'NOCHE' });
 
     const out = await useCase.execute('11', { turno: 'NOCHE' }, 7);
@@ -87,9 +88,28 @@ describe('CambiarTurnoParaleloGestionConBloquesUseCase', () => {
     });
     expect(mockUpdateModel).toHaveBeenCalledWith({ horarioId: 200 }, { where: { id: 1 }, transaction: 'TX' });
     expect(mockUpdateModel).toHaveBeenCalledWith({ horarioId: 201 }, { where: { id: 2 }, transaction: 'TX' });
-    expect(deps.parallelManagementRepository.update).toHaveBeenCalledWith(11, { shift: 'NOCHE' }, 7);
+    expect(deps.parallelManagementRepository.update).toHaveBeenCalledWith(11, { shift: 'NOCHE' }, 7, { transaction: 'TX' });
     expect(out.bloques_remapeados).toBe(2);
     expect(out.paralelo_gestion.turno).toBe('NOCHE');
+  });
+
+  it.each([
+    ['cambió de estado', { id: 11, state: 'PUBLICADO', shift: 'TARDE' }],
+    ['cambió de turno', { id: 11, state: 'OFERTADO', shift: 'NOCHE' }],
+  ])('si el paralelo %s durante el proceso aborta sin escribir', async (_n, fresco) => {
+    const { useCase, deps } = crear();
+    deps.parallelManagementRepository.findById
+      .mockResolvedValueOnce({ id: 11, state: 'OFERTADO', shift: 'TARDE' })
+      .mockResolvedValueOnce(fresco);
+    await expect(useCase.execute(11, { turno: 'NOCHE' })).rejects.toThrow(ValidationError);
+    expect(mockUpdateModel).not.toHaveBeenCalled();
+    expect(deps.parallelManagementRepository.update).not.toHaveBeenCalled();
+  });
+
+  it('la revalidación dentro de la transacción usa la transacción', async () => {
+    const { useCase, deps } = crear();
+    await useCase.execute(11, { turno: 'NOCHE' });
+    expect(deps.parallelManagementRepository.findById).toHaveBeenCalledWith(11, expect.objectContaining({ transaction: 'TX' }));
   });
 
   it('no actualiza bloques cuyo horario destino ya coincide', async () => {

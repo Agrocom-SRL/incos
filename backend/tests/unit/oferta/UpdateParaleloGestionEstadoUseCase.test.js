@@ -42,6 +42,27 @@ describe('UpdateParaleloGestionEstadoUseCase', () => {
     expect(deps.parallelManagementRepository.update).not.toHaveBeenCalled();
   });
 
+  it.each([
+    ['BORRADOR', 'PUBLICADO'], ['BORRADOR', 'CERRADO'], ['OFERTADO', 'CERRADO'],
+    ['CERRADO', 'BORRADOR'], ['CERRADO', 'OFERTADO'], ['CERRADO', 'PUBLICADO'],
+  ])('transición %s → %s no permitida', async (desde, hacia) => {
+    const { deps, useCase } = crear({ pg: { id: 3, state: desde, classroomId: 8 } });
+    await expect(useCase.execute(3, { estado: hacia })).rejects.toBeInstanceOf(ValidationError);
+    expect(deps.parallelManagementRepository.update).not.toHaveBeenCalled();
+  });
+
+  it.each([['PUBLICADO', 'OFERTADO'], ['PUBLICADO', 'BORRADOR'], ['OFERTADO', 'BORRADOR'], ['PUBLICADO', 'CERRADO']])(
+    'transición %s → %s permitida (sin revalidar la oferta al despublicar)',
+    async (desde, hacia) => {
+      const { deps, useCase } = crear({ pg: { id: 3, state: desde, classroomId: 8 } });
+      await useCase.execute(3, { estado: hacia });
+      expect(deps.parallelManagementRepository.update).toHaveBeenCalledWith(3, { state: hacia }, null);
+      if (hacia === 'OFERTADO' && desde === 'PUBLICADO') {
+        expect(deps.validarOfertaParaleloGestionUseCase.execute).not.toHaveBeenCalled();
+      }
+    }
+  );
+
   it('PUBLICADO solo desde OFERTADO', async () => {
     const { deps, useCase } = crear({ pg: { id: 3, state: 'OFERTADO', classroomId: 8 } });
     await useCase.execute(3, { estado: 'PUBLICADO' });

@@ -11,6 +11,32 @@ export const ESTADOS_PARALELO_GESTION = {
 
 export const ESTADOS_PARALELO_GESTION_VALUES = Object.values(ESTADOS_PARALELO_GESTION);
 
+/**
+ * Transiciones permitidas de `paralelos_gestion.estado` (no existe "cancelado").
+ * BORRADOR → OFERTADO (ya pueden empezar inscripciones; aún se editan datos) → PUBLICADO
+ * (todo revisado y confirmado: docente, aula, materia, periodo). Un PUBLICADO solo se
+ * despublica (→ OFERTADO) o pasa a no ofertado (→ BORRADOR). CERRADO es terminal.
+ */
+export const TRANSICIONES_PARALELO_GESTION = {
+  [ESTADOS_PARALELO_GESTION.BORRADOR]: [ESTADOS_PARALELO_GESTION.OFERTADO],
+  [ESTADOS_PARALELO_GESTION.OFERTADO]: [
+    ESTADOS_PARALELO_GESTION.BORRADOR,
+    ESTADOS_PARALELO_GESTION.PUBLICADO,
+  ],
+  [ESTADOS_PARALELO_GESTION.PUBLICADO]: [
+    ESTADOS_PARALELO_GESTION.OFERTADO,
+    ESTADOS_PARALELO_GESTION.BORRADOR,
+    ESTADOS_PARALELO_GESTION.CERRADO,
+  ],
+  [ESTADOS_PARALELO_GESTION.CERRADO]: [],
+};
+
+/** Estados en los que aula, cupos y turno ya no se cambian (PUBLICADO: despublicar antes; CERRADO: nunca). */
+export const ESTADOS_PARALELO_GESTION_DATOS_BLOQUEADOS = [
+  ESTADOS_PARALELO_GESTION.PUBLICADO,
+  ESTADOS_PARALELO_GESTION.CERRADO,
+];
+
 export const ESTADOS_OFERTA_CURSO = {
   PROGRAMADA: 'PROGRAMADA',
   ACTIVA: 'ACTIVA',

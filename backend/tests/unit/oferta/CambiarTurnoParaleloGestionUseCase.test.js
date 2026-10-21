@@ -5,12 +5,13 @@ import { CambiarTurnoParaleloGestionUseCase } from '../../../src/application/use
 
 const logger = () => ({ info: jest.fn(), warn: jest.fn(), error: jest.fn() });
 
-const crear = ({ pg = { id: 5, state: 'BORRADOR', shift: 'MAÑANA' } } = {}) => {
+const crear = ({ pg = { id: 5, state: 'BORRADOR', shift: 'MAÑANA' }, bloques = [] } = {}) => {
   const deps = {
     parallelManagementRepository: {
       findById: jest.fn().mockResolvedValue(pg),
       update: jest.fn().mockResolvedValue({ id: 5, shift: 'TARDE', state: pg?.state }),
     },
+    grillaBloqueViewRepository: { findByParaleloGestionId: jest.fn().mockResolvedValue(bloques) },
     logger: logger(),
   };
   return { deps, useCase: new CambiarTurnoParaleloGestionUseCase(deps) };
@@ -23,6 +24,18 @@ describe('CambiarTurnoParaleloGestionUseCase', () => {
     expect(deps.parallelManagementRepository.update).toHaveBeenCalledWith(5, { shift: 'TARDE' }, 9);
     expect(res.paraleloGestion).toMatchObject({ id: 5, turno: 'TARDE' });
     expect(deps.logger.info).toHaveBeenCalled();
+  });
+
+  it('con bloques armados rechaza y remite a cambiar-turno-con-bloques', async () => {
+    const { deps, useCase } = crear({ bloques: [{ asignacionHorarioId: 1 }] });
+    await expect(useCase.execute(5, { turno: 'TARDE' })).rejects.toBeInstanceOf(ValidationError);
+    expect(deps.parallelManagementRepository.update).not.toHaveBeenCalled();
+  });
+
+  it('turno igual al actual no consulta bloques', async () => {
+    const { deps, useCase } = crear({ pg: { id: 5, state: 'BORRADOR', shift: 'MAÑANA' }, bloques: [{ id: 1 }] });
+    await useCase.execute(5, { turno: 'MAÑANA' });
+    expect(deps.grillaBloqueViewRepository.findByParaleloGestionId).not.toHaveBeenCalled();
   });
 
   it.each([undefined, null, '', 'MADRUGADA', 'tarde'])('rechaza turno inválido %p', async (turno) => {

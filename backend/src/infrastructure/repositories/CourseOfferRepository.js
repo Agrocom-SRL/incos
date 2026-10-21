@@ -149,6 +149,34 @@ export class CourseOfferRepository extends BaseRepository {
   }
 
   /**
+   * Cuenta lo que cuelga de una oferta en la cadena
+   * oferta_cursos → asignaciones_docentes → asignacion_horarios (solo registros activos).
+   * @returns {Promise<{asignaciones: number, bloques: number}>}
+   */
+  async countDependenciasByOfferId(offerId) {
+    const rows = await sequelize.query(
+      `
+      SELECT
+        COUNT(DISTINCT ad.id) AS asignaciones,
+        COUNT(DISTINCT ah.id) AS bloques
+      FROM asignaciones_docentes ad
+      LEFT JOIN asignacion_horarios ah
+        ON ah.asignacion_docente_id = ad.id
+       AND ah.deleted_at IS NULL
+       AND ah.activo = TRUE
+      WHERE ad.oferta_curso_id = :offerId
+        AND ad.deleted_at IS NULL
+        AND ad.activo = TRUE
+      `,
+      { replacements: { offerId }, type: QueryTypes.SELECT }
+    );
+    return {
+      asignaciones: Number(rows[0]?.asignaciones ?? 0) || 0,
+      bloques: Number(rows[0]?.bloques ?? 0) || 0,
+    };
+  }
+
+  /**
    * Catálogo paginado de oferta_cursos de un paralelo_gestion (UI asignación docente).
    */
   async findCatalogByParallelManagementId(parallelManagementId, opts = {}) {
