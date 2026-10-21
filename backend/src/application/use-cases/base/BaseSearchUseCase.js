@@ -41,7 +41,23 @@
  *   }
  * }
  */
+import { ValidationError } from '../../../domain/errors/AppError.js';
+
 export class BaseSearchUseCase {
+    /** Tope de resultados por búsqueda (las rutas validan 1-50; se deja margen a llamadas internas). */
+    static LIMIT_MAXIMO = 100;
+
+    /**
+     * Entero entre 1 y LIMIT_MAXIMO; cualquier otro valor (NaN, '5abc', 0, negativos) cae al default 50.
+     * @param {*} limit
+     * @returns {number}
+     */
+    static normalizarLimit(limit) {
+        const n = typeof limit === 'number' ? limit : /^\d+$/.test(String(limit).trim()) ? Number(limit) : NaN;
+        if (!Number.isInteger(n) || n < 1) return 50;
+        return Math.min(n, BaseSearchUseCase.LIMIT_MAXIMO);
+    }
+
     /**
      * @param {Object} params - Parámetros de configuración
      * @param {Object} params.repository - Repositorio a usar (debe tener método search(searchTerm, options))
@@ -112,24 +128,28 @@ export class BaseSearchUseCase {
      */
     async execute(searchTerm, limit = 50) {
         // Normalizar término de búsqueda (trim)
-        const trimmedSearchTerm = searchTerm.trim();
+        if (searchTerm === null || searchTerm === undefined) {
+            throw new ValidationError('El término de búsqueda es requerido');
+        }
+        const trimmedSearchTerm = String(searchTerm).trim();
+        const limitNum = BaseSearchUseCase.normalizarLimit(limit);
 
         // Logging inicial
         this.logger.info(`[${this.moduleName}] Iniciando búsqueda de ${this.resourceName}`, {
             searchTerm: trimmedSearchTerm,
-            limit,
+            limit: limitNum,
         });
 
         try {
             // Ejecutar búsqueda en el repositorio
             // El repositorio usa getSearchFields() para definir los campos de búsqueda
-            const results = await this.repository.search(trimmedSearchTerm, { limit });
+            const results = await this.repository.search(trimmedSearchTerm, { limit: limitNum });
 
             // Procesar resultados
             if (!results || results.length === 0) {
                 this.logger.info(`[${this.moduleName}] No se encontraron ${this.resourceName}s`, {
                     searchTerm: trimmedSearchTerm,
-                    limit,
+                    limit: limitNum,
                 });
                 return [];
             }
@@ -138,7 +158,7 @@ export class BaseSearchUseCase {
             this.logger.info(`[${this.moduleName}] ${this.resourceName}s encontrados`, {
                 count: results.length,
                 searchTerm: trimmedSearchTerm,
-                limit,
+                limit: limitNum,
             });
 
             return results.map((result) => this.formatResult(result));
@@ -148,7 +168,7 @@ export class BaseSearchUseCase {
                 error: error.message,
                 stack: error.stack,
                 searchTerm: trimmedSearchTerm,
-                limit,
+                limit: limitNum,
             });
             throw error;
         }

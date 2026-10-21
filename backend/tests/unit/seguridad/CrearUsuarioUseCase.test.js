@@ -55,7 +55,7 @@ describe('CrearUsuarioUseCase', () => {
   });
 
   describe('validación común', () => {
-    it.each([[undefined], [null], [''], ['1234567']])('password %p inválida: 422 antes de tocar repos', async (password) => {
+    it.each([[undefined], [null], [''], ['1234567'], ['        '], ['x'.repeat(73)]])('password %p inválida: 422 antes de tocar repos', async (password) => {
       const { deps, useCase } = crear();
       await expect(useCase.execute(entrada({ password }))).rejects.toBeInstanceOf(UnprocessableEntityError);
       expect(deps.roleRepository.findById).not.toHaveBeenCalled();

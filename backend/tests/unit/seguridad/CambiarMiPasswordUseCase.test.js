@@ -45,6 +45,12 @@ describe('CambiarMiPasswordUseCase', () => {
     expect(deps.userRepository.update).not.toHaveBeenCalled();
   });
 
+  it('nueva de más de 72 bytes: 422 sin actualizar', async () => {
+    const { deps, useCase } = crear();
+    await expect(useCase.execute(input({ passwordNuevo: 'x'.repeat(73) }))).rejects.toBeInstanceOf(UnprocessableEntityError);
+    expect(deps.userRepository.update).not.toHaveBeenCalled();
+  });
+
   it('nueva de solo espacios: 422', async () => {
     const { deps, useCase } = crear();
     await expect(useCase.execute(input({ passwordNuevo: '        ' }))).rejects.toBeInstanceOf(UnprocessableEntityError);

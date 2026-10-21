@@ -4,6 +4,7 @@ import {
   NotFoundError,
   UnprocessableEntityError,
 } from '../../../domain/errors/AppError.js';
+import { validarPasswordNueva } from '../../utils/passwordPolicy.js';
 import { mapUsuarioAdminRow } from './usuario-admin.mapper.js';
 import { ROL_ADMIN_SISTEMA_CODIGO, exigirActorAdminSistema } from './rol-admin-sistema.guard.js';
 import {
@@ -147,11 +148,7 @@ export class CrearUsuarioUseCase {
     const password = input.password;
     const rolId = input.rol_id;
 
-    if (!password || String(password).length < 8) {
-      throw new UnprocessableEntityError('Los datos proporcionados son inválidos', [
-        { field: 'password', message: 'password debe tener al menos 8 caracteres' },
-      ]);
-    }
+    validarPasswordNueva(password, 'password');
 
     const role = await this.roleRepository.findById(rolId);
     if (!role) {

@@ -5,6 +5,7 @@ import {
   NotFoundError,
   UnprocessableEntityError,
 } from '../../../domain/errors/AppError.js';
+import { validarPasswordNueva } from '../../utils/passwordPolicy.js';
 import { mapUsuarioAdminRow } from './usuario-admin.mapper.js';
 import { ROL_ADMIN_SISTEMA_CODIGO, exigirActorAdminSistema } from './rol-admin-sistema.guard.js';
 
@@ -106,11 +107,7 @@ export class ActualizarUsuarioUseCase {
     }
     if (body.password !== undefined && body.password !== null && body.password !== '') {
       const password = String(body.password);
-      if (password.length < 8) {
-        throw new UnprocessableEntityError('Los datos proporcionados son inválidos', [
-          { field: 'password', message: 'password debe tener al menos 8 caracteres' },
-        ]);
-      }
+      validarPasswordNueva(password, 'password');
       patch.passwordHash = await bcrypt.hash(password, 12);
     }
 

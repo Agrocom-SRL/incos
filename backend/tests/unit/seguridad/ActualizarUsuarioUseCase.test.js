@@ -138,6 +138,12 @@ describe('ActualizarUsuarioUseCase', () => {
     });
   });
 
+  it('contraseña de más de 72 bytes: 422 sin actualizar', async () => {
+    const { deps, useCase } = crear();
+    await expect(useCase.execute(5, { password: 'ñ'.repeat(40) })).rejects.toBeInstanceOf(UnprocessableEntityError);
+    expect(deps.userRepository.update).not.toHaveBeenCalled();
+  });
+
   it('contraseña corta: 422 sin actualizar', async () => {
     const { deps, useCase } = crear();
     await expect(useCase.execute(5, { password: '1234567' })).rejects.toBeInstanceOf(UnprocessableEntityError);

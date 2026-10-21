@@ -50,6 +50,26 @@ describe('BaseListUseCase', () => {
     expect(cfg.repository.findAll).toHaveBeenCalledWith({}, 1, 50);
   });
 
+  it.each([[-3, 1], ['-3', 1], ['5abc', 1], [1.5, 1], [Infinity, 1], ['2', 2]])('page %p se normaliza a %p', async (page, esperado) => {
+    const cfg = config();
+    await new Lista(cfg).execute({}, page, 10);
+    expect(cfg.repository.findAll).toHaveBeenCalledWith({}, esperado, 10);
+  });
+
+  it.each([[-10, 50], ['-10', 50], ['5abc', 50], [2.5, 50], [100000, 10000], ['25', 25]])('limit %p se normaliza a %p', async (limit, esperado) => {
+    const cfg = config();
+    await new Lista(cfg).execute({}, 1, limit);
+    expect(cfg.repository.findAll).toHaveBeenCalledWith({}, 1, esperado);
+  });
+
+  it('con page/limit negativos totalPages nunca es negativo', async () => {
+    const cfg = config();
+    const res = await new Lista(cfg).execute({}, -2, -5);
+    expect(res.page).toBe(1);
+    expect(res.limit).toBe(50);
+    expect(res.totalPages).toBeGreaterThanOrEqual(0);
+  });
+
   it('colección ausente en el resultado: lista vacía', async () => {
     const cfg = config({ repository: { findAll: jest.fn().mockResolvedValue({ total: 0 }) } });
     const res = await new Lista(cfg).execute();
