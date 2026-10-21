@@ -207,6 +207,28 @@ export class AuthRepository {
   }
 
   /**
+   * Cierra todas las sesiones activas de un usuario (bloqueo, cambio de clave).
+   * `exceptoToken` conserva la sesión desde la que se hace el cambio.
+   */
+  async invalidarSesionesUsuario(usuarioId, { exceptoToken = null } = {}) {
+    await sequelize.query(
+      `
+            UPDATE sesiones
+            SET activo = FALSE,
+                deleted_at = NOW(),
+                updated_at = NOW()
+            WHERE usuario_id = :usuarioId
+                AND activo = TRUE
+                AND (:exceptoToken IS NULL OR token_sesion <> :exceptoToken)
+        `,
+      {
+        replacements: { usuarioId, exceptoToken },
+        type: sequelize.QueryTypes.UPDATE,
+      }
+    );
+  }
+
+  /**
    * Invalida una sesión por token (logout).
    */
   async invalidarSesion(token) {

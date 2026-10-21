@@ -1,4 +1,5 @@
 import { describe, it, expect, jest } from '@jest/globals';
+import { ValidationError } from '../../../src/domain/errors/AppError.js';
 import { ObtenerPermisosGrillaRolUseCase } from '../../../src/application/use-cases/seguridad/ObtenerPermisosGrillaRolUseCase.js';
 
 describe('ObtenerPermisosGrillaRolUseCase', () => {
@@ -11,9 +12,9 @@ describe('ObtenerPermisosGrillaRolUseCase', () => {
 
   it.each([[undefined], [''], [null]])('dominio %p: lanza y no consulta', async (dominio) => {
     const rolPermisoRepository = { findPermisosParaGrilla: jest.fn() };
-    await expect(new ObtenerPermisosGrillaRolUseCase({ rolPermisoRepository }).execute(2, dominio)).rejects.toThrow(
-      'dominio es obligatorio',
-    );
+    const promesa = new ObtenerPermisosGrillaRolUseCase({ rolPermisoRepository }).execute(2, dominio);
+    await expect(promesa).rejects.toBeInstanceOf(ValidationError);
+    await expect(promesa).rejects.toMatchObject({ statusCode: 400 });
     expect(rolPermisoRepository.findPermisosParaGrilla).not.toHaveBeenCalled();
   });
 });

@@ -60,7 +60,7 @@ export class SeguridadUsuariosController {
 
   create = async (req, res, next) => {
     try {
-      const data = await this.crearUsuarioUseCase.execute(req.body);
+      const data = await this.crearUsuarioUseCase.execute(req.body, req.usuario?.id);
       return this.responseFormatter.created(res, data, 'usuario', data.id, req);
     } catch (e) {
       next(e);
@@ -108,7 +108,7 @@ export class SeguridadUsuariosController {
   update = async (req, res, next) => {
     try {
       const id = parseInt(req.params.id, 10);
-      const data = await this.actualizarUsuarioUseCase.execute(id, req.body);
+      const data = await this.actualizarUsuarioUseCase.execute(id, req.body, req.usuario?.id);
       return this.responseFormatter.updated(res, data, 'usuario', id, req);
     } catch (e) {
       next(e);
@@ -118,10 +118,11 @@ export class SeguridadUsuariosController {
   patchEstado = async (req, res, next) => {
     try {
       const id = parseInt(req.params.id, 10);
-      const data = await this.cambiarEstadoUsuarioUseCase.execute(id, {
-        estado: req.body.estado,
-        motivo: req.body.motivo,
-      });
+      const data = await this.cambiarEstadoUsuarioUseCase.execute(
+        id,
+        { estado: req.body.estado, motivo: req.body.motivo },
+        req.usuario?.id
+      );
       return this.responseFormatter.updated(res, data, 'usuario', id, req);
     } catch (e) {
       next(e);

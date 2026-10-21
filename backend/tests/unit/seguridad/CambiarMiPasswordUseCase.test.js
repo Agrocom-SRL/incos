@@ -11,7 +11,10 @@ describe('CambiarMiPasswordUseCase', () => {
 
   const crear = (usuario) => {
     const deps = {
-      authRepository: { findUsuarioParaLogin: jest.fn().mockResolvedValue(usuario === undefined ? { id: 5, password_hash: hashActual } : usuario) },
+      authRepository: {
+        findUsuarioParaLogin: jest.fn().mockResolvedValue(usuario === undefined ? { id: 5, password_hash: hashActual } : usuario),
+        invalidarSesionesUsuario: jest.fn().mockResolvedValue(undefined),
+      },
       userRepository: { update: jest.fn().mockResolvedValue(undefined) },
     };
     return { deps, useCase: new CambiarMiPasswordUseCase(deps) };
@@ -28,6 +31,24 @@ describe('CambiarMiPasswordUseCase', () => {
     expect(await bcrypt.compare('clave-nueva-22', patch.passwordHash)).toBe(true);
     expect(JSON.stringify(res)).not.toMatch(/clave-|[$]2[aby][$]/);
     expect(res.ok).toBe(true);
+  });
+
+  it('cierra las demás sesiones y conserva la actual', async () => {
+    const { deps, useCase } = crear();
+    await useCase.execute(input({ tokenActual: 'tok-actual' }));
+    expect(deps.authRepository.invalidarSesionesUsuario).toHaveBeenCalledWith(5, { exceptoToken: 'tok-actual' });
+  });
+
+  it('el username del token no corresponde al usuarioId: NotFoundError sin escribir', async () => {
+    const { deps, useCase } = crear({ id: 9, password_hash: hashActual });
+    await expect(useCase.execute(input())).rejects.toBeInstanceOf(NotFoundError);
+    expect(deps.userRepository.update).not.toHaveBeenCalled();
+  });
+
+  it('nueva de solo espacios: 422', async () => {
+    const { deps, useCase } = crear();
+    await expect(useCase.execute(input({ passwordNuevo: '        ' }))).rejects.toBeInstanceOf(UnprocessableEntityError);
+    expect(deps.userRepository.update).not.toHaveBeenCalled();
   });
 
   it('usuario inexistente o inactivo (login no lo encuentra): NotFoundError', async () => {

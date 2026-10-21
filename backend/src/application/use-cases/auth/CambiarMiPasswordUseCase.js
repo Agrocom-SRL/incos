@@ -27,10 +27,11 @@ export class CambiarMiPasswordUseCase {
    * @param {string} input.username
    * @param {string} input.passwordActual
    * @param {string} input.passwordNuevo
+   * @param {string} [input.tokenActual] sesión que se conserva; las demás se cierran
    */
-  async execute({ usuarioId, username, passwordActual, passwordNuevo }) {
+  async execute({ usuarioId, username, passwordActual, passwordNuevo, tokenActual }) {
     const usuario = await this.authRepository.findUsuarioParaLogin(username);
-    if (!usuario) {
+    if (!usuario || Number(usuario.id) !== Number(usuarioId)) {
       throw new NotFoundError('Usuario');
     }
 
@@ -39,7 +40,7 @@ export class CambiarMiPasswordUseCase {
       throw new UnauthorizedError('La contraseña actual es incorrecta');
     }
 
-    if (!passwordNuevo || String(passwordNuevo).length < 8) {
+    if (!passwordNuevo || String(passwordNuevo).trim().length < 8) {
       throw new UnprocessableEntityError('Los datos proporcionados son inválidos', [
         { field: 'password_nuevo', message: 'password_nuevo debe tener al menos 8 caracteres' },
       ]);
@@ -54,6 +55,7 @@ export class CambiarMiPasswordUseCase {
 
     const passwordHash = await bcrypt.hash(String(passwordNuevo), 12);
     await this.userRepository.update(usuarioId, { passwordHash });
+    await this.authRepository.invalidarSesionesUsuario(usuarioId, { exceptoToken: tokenActual });
 
     return { ok: true, message: 'Contraseña actualizada correctamente' };
   }

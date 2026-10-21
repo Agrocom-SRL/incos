@@ -67,6 +67,7 @@ export class AuthController {
         username: req.usuario.username,
         passwordActual: req.body.password_actual,
         passwordNuevo: req.body.password_nuevo,
+        tokenActual: req.token,
       });
       return this.responseFormatter._success(
         res,

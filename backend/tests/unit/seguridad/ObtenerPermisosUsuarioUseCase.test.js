@@ -48,6 +48,21 @@ describe('ObtenerPermisosUsuarioUseCase', () => {
     expect(res.usuario.rol.is_system).toBe(true);
   });
 
+  it('no expone el permiso técnico sistema.catalogo.referencia (105)', async () => {
+    const { deps, useCase } = crear(base);
+    deps.rolePermissionRepository.findFlatByRolId.mockResolvedValue([
+      { permiso_id: 1, codigo: 'u', accion: 'LISTAR' },
+      { permiso_id: 105, codigo: 'sistema.catalogo.referencia', accion: 'LISTAR' },
+    ]);
+    deps.authRepository.findPermisosEfectivos.mockResolvedValue([
+      { permiso_codigo: 'u', accion: 'LISTAR' },
+      { permiso_codigo: 'sistema.catalogo.referencia', accion: 'LISTAR' },
+    ]);
+    const res = await useCase.execute(5);
+    expect(res.permisos_rol.map((p) => p.codigo)).toEqual(['u']);
+    expect(res.efectivos.map((e) => e.codigo)).toEqual(['u']);
+  });
+
   it('usuario sin rol: rol null y permisos_rol vacío', async () => {
     const { deps, useCase } = crear({ ...base, rol_id: null });
     const res = await useCase.execute(5);
