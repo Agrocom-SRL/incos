@@ -49,7 +49,7 @@ describe('GenerateActaCompromisoUseCase', () => {
     expect(arg.diasPlazo).toBe(30);
     expect(arg.entregas).toEqual([{ tipo: 'INSCRIPCION' }]);
     expect(arg.student).toEqual(
-      expect.objectContaining({ id: 5, ci: '123', expedicion: 'LP', nombres: 'Ana', apellidoPaterno: 'Lopez', apellidoMaterno: 'Rios' })
+      expect.objectContaining({ id: 5, codigoEstudiante: 'E1', ci: '123', expedicion: 'LP', nombres: 'Ana', apellidoPaterno: 'Lopez', apellidoMaterno: 'Rios' })
     );
     expect(deps.uploadsStorage.saveToUploads).toHaveBeenCalledWith(expect.any(String), 'acta_compromiso_E1.pdf', expect.any(Buffer));
     expect(deps.studentDocumentRepository.create).toHaveBeenCalledWith(

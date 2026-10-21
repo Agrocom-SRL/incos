@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals';
 import fs from 'fs';
 import { DeleteStudentUseCase } from '../../../src/application/use-cases/estudiantes/DeleteStudentUseCase.js';
-import { NotFoundError } from '../../../src/domain/errors/AppError.js';
+import { ConflictError, NotFoundError } from '../../../src/domain/errors/AppError.js';
 
 describe('DeleteStudentUseCase', () => {
   const repo = (extra = {}) => ({
@@ -105,6 +105,31 @@ describe('DeleteStudentUseCase', () => {
     expect(deps.enrollmentRepository.delete.mock.invocationCallOrder[0]).toBeGreaterThan(
       deps.subjectEnrollmentRepository.delete.mock.invocationCallOrder[1]
     );
+  });
+
+  it('con pagos ya cobrados (cuota con monto > 0): ConflictError sin eliminar nada', async () => {
+    const { useCase, deps } = crear();
+    deps.contributionPaymentInstallmentRepository.findAll.mockResolvedValue({
+      contributionPaymentInstallments: [{ id: 101, amount: 0 }, { id: 102, amount: 150 }],
+    });
+    await expect(useCase.execute(5)).rejects.toBeInstanceOf(ConflictError);
+    for (const repoName of [
+      'licenseRepository', 'subjectEnrollmentRepository', 'enrollmentRepository',
+      'contributionPaymentInstallmentRepository', 'contributionPaymentRepository',
+      'studentScholarshipRepository', 'studentGuardianRepository', 'studentAcademicDataRepository',
+      'studentRepository',
+    ]) {
+      expect(deps[repoName].delete).not.toHaveBeenCalled();
+    }
+  });
+
+  it('cuotas de monto 0 (compromiso de pago) no bloquean el borrado', async () => {
+    const { useCase, deps } = crear();
+    deps.contributionPaymentInstallmentRepository.findAll.mockResolvedValue({
+      contributionPaymentInstallments: [{ id: 101, amount: 0 }],
+    });
+    await useCase.execute(5);
+    expect(deps.studentRepository.delete).toHaveBeenCalledWith(5);
   });
 
   it('estudiante inexistente: NotFoundError sin eliminar nada', async () => {

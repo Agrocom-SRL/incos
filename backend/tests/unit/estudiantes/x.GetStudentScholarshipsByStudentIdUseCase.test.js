@@ -56,6 +56,14 @@ describe('GetStudentScholarshipsByStudentIdUseCase', () => {
     expect(res).toEqual({ scholarships: [], catalogs: { scholarships: {}, managements: {} } });
   });
 
+  it('conserva el 0% y el año de gestión 0 (no los convierte en null)', async () => {
+    const { useCase, deps } = crear();
+    deps.scholarshipRepository.findById.mockResolvedValue({ id: 2, name: 'Sin descuento', code: 'SD', percentage: 0 });
+    deps.managementRepository.findById.mockResolvedValue({ id: 3, code: 'G0', name: 'Gestión 0', year: 0 });
+    const res = await useCase.execute(5);
+    expect(res.scholarships[0]).toEqual(expect.objectContaining({ scholarshipPercentage: 0, managementYear: 0 }));
+  });
+
   it('si falla un catálogo avisa y deja campos en null', async () => {
     const { useCase, deps } = crear();
     deps.scholarshipRepository.findById.mockRejectedValue(new Error('x'));

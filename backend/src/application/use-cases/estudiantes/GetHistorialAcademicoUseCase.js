@@ -14,7 +14,8 @@
  * (nota_forzada → nivelación aprobada → nota_final).
  */
 
-import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
+import { NotFoundError } from '../../../domain/errors/AppError.js';
+import { parseIdPositivo } from '../../utils/validacionEntrada.js';
 import {
   mapCabeceraEstudiante,
   mapFilaHistorial,
@@ -44,10 +45,7 @@ export class GetHistorialAcademicoUseCase {
    * @returns {Promise<{ estudiante: Object, filas: Array<Object>, resumen: Object }>}
    */
   async execute({ estudianteId }) {
-    const id = Number.parseInt(String(estudianteId), 10);
-    if (!Number.isFinite(id) || id < 1) {
-      throw new ValidationError('estudianteId inválido');
-    }
+    const id = parseIdPositivo(estudianteId, 'estudianteId');
 
     const [cabeceraRow, filasRow] = await Promise.all([
       this.historialAcademicoRepository.obtenerCabeceraEstudiante(id),

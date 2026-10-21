@@ -104,7 +104,7 @@ describe('GetEnrollmentByIdUseCase', () => {
   it('inscripción inexistente rechaza y no consulta el resto', async () => {
     const { useCase, deps } = crear();
     deps.enrollmentRepository.findById.mockResolvedValue(null);
-    await expect(useCase.execute(99)).rejects.toThrow(/inscripción con ID 99/);
+    await expect(useCase.execute(99)).rejects.toMatchObject({ statusCode: 404, message: /Inscripción con ID 99/ });
     expect(deps.studentAcademicDataRepository.findById).not.toHaveBeenCalled();
     expect(deps.logger.error).toHaveBeenCalled();
   });
@@ -112,19 +112,19 @@ describe('GetEnrollmentByIdUseCase', () => {
   it('datos académicos, gestión, estudiante o carrera inexistentes rechazan', async () => {
     let c = crear();
     c.deps.studentAcademicDataRepository.findById.mockResolvedValue(null);
-    await expect(c.useCase.execute(4)).rejects.toThrow(/datos académicos/);
+    await expect(c.useCase.execute(4)).rejects.toMatchObject({ statusCode: 404, message: /Datos académicos/ });
 
     c = crear();
     c.deps.managementRepository.findById.mockResolvedValue(null);
-    await expect(c.useCase.execute(4)).rejects.toThrow(/gestión/);
+    await expect(c.useCase.execute(4)).rejects.toMatchObject({ statusCode: 404, message: /Gestión/ });
 
     c = crear();
     c.deps.studentRepository.findById.mockResolvedValue(null);
-    await expect(c.useCase.execute(4)).rejects.toThrow(/estudiante/);
+    await expect(c.useCase.execute(4)).rejects.toMatchObject({ statusCode: 404, message: /Estudiante/ });
 
     c = crear();
     c.deps.careerRepository.findById.mockResolvedValue(null);
-    await expect(c.useCase.execute(4)).rejects.toThrow(/carrera/);
+    await expect(c.useCase.execute(4)).rejects.toMatchObject({ statusCode: 404, message: /Carrera/ });
   });
 
   it('historial previo: NO_APLICA para NUEVO y PENDIENTE para ANTIGUO sin filas', async () => {

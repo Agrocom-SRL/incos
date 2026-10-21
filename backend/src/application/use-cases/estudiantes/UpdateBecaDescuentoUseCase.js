@@ -1,4 +1,5 @@
 import { NotFoundError } from '../../../domain/errors/AppError.js';
+import { parseNumero } from '../../utils/validacionEntrada.js';
 import { BecaDescuentoMapper } from '../../mappers/estudiantes/index.js';
 
 /**
@@ -16,12 +17,18 @@ export class UpdateBecaDescuentoUseCase {
     const existing = await this.scholarshipRepository.findById(id);
     if (!existing) throw new NotFoundError('beca o descuento');
 
+    const porcentajeRaw = body.porcentaje ?? body.percentage;
+    const porcentaje =
+      porcentajeRaw === undefined
+        ? undefined
+        : parseNumero(porcentajeRaw, 'porcentaje', { min: 0, max: 100 });
+
     const updated = await this.scholarshipRepository.update(
       id,
       {
         name: body.nombre ?? body.name ?? undefined,
         code: body.codigo ?? body.code ?? undefined,
-        percentage: body.porcentaje ?? body.percentage ?? undefined,
+        percentage: porcentaje,
         description: body.descripcion ?? body.description ?? undefined,
         requiresDocumentation: body.requiereDocumentacion ?? body.requiresDocumentation ?? undefined,
         requiresRectorApproval: body.requiereAprobacionRector ?? body.requiresRectorApproval ?? undefined,

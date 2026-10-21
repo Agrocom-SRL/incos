@@ -55,6 +55,19 @@ describe('CreateBecaDescuentoUseCase', () => {
     expect(deps.scholarshipRepository.create).not.toHaveBeenCalled();
   });
 
+  it.each([['abc'], [''], [-5], [150], [Infinity], [NaN]])('porcentaje %p inválido: ValidationError sin crear', async (porcentaje) => {
+    const { useCase, deps } = crear();
+    await expect(useCase.execute({ nombre: 'X', porcentaje })).rejects.toThrow(ValidationError);
+    expect(deps.scholarshipRepository.create).not.toHaveBeenCalled();
+  });
+
+  it('acepta los extremos 0 y 100', async () => {
+    const { useCase, deps } = crear();
+    await useCase.execute({ nombre: 'X', porcentaje: 100 });
+    await useCase.execute({ nombre: 'X', porcentaje: '0' });
+    expect(deps.scholarshipRepository.create).toHaveBeenCalledTimes(2);
+  });
+
   it('rechaza un body vacío', async () => {
     const { useCase } = crear();
     await expect(useCase.execute()).rejects.toThrow(ValidationError);

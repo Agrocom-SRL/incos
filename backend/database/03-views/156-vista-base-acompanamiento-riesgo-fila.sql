@@ -14,6 +14,12 @@
 --   - configuracion_evaluacion (clave ACOMPANAMIENTO_PEDAGOGICO, vigente):
 --     umbral de riesgo parametrizable; fallback 61 (nota mínima de aprobación).
 --
+-- ORDEN DE CREACIÓN (carga manual): esta vista lee `vista_asistencia_consolidado_bimestre_fila`
+-- (archivo 169, numeración posterior). En una BD nueva o donde 169 aún no existe, ejecutar
+-- ANTES `169-vista-asistencia-consolidado-bimestre-fila.sql` (solo depende de 129, 130, 133 y 134)
+-- y luego este archivo; si no, MySQL responde #1146 («la tabla ... no existe»).
+-- El script de CI (`scripts/ci-cargar-bd.sh`) reintenta por dependencias y no requiere orden.
+--
 -- Reglas de negocio:
 --   - nota_ultimo_bimestre = COALESCE(bim4, bim3, bim2, bim1) (último con nota).
 --   - en_riesgo = 1 si nota_ultimo_bimestre < umbral O promedio_anual < umbral;
