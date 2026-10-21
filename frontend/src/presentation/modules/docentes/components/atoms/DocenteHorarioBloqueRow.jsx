@@ -3,7 +3,7 @@
  */
 
 import { Tag } from 'antd';
-import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
+import { sanitizeDocenteColorHex } from '@docentes/utils/docenteColor';
 
 const fmtHora = (t) => {
   if (t == null || t === '') return '—';

@@ -1,4 +1,4 @@
-import { getEnv, getEnvAsNumber, getEnvAsBoolean } from './env.validator.js';
+import { getEnv, getEnvAsNumber } from './env.validator.js';
 
 const nodeEnv = getEnv('NODE_ENV', 'development');
 
@@ -23,6 +23,14 @@ export const databaseConfig = {
     host: getEnv('DB_HOST', 'localhost'),
     port: getEnvAsNumber('DB_PORT', 8889),
     dialect: 'mysql',
+
+    // Collation de la conexión: debe coincidir con el esquema (utf8mb4_unicode_ci) y con
+    // `SET collation_connection` de database-config.sql. Sin esto mysql2 abre la sesión con
+    // utf8mb4_general_ci y los parámetros no se pueden comparar con columnas/literales de las
+    // vistas (ER_CANT_AGGREGATE_2COLLATIONS: "Illegal mix of collations").
+    dialectOptions: {
+        charset: 'UTF8MB4_UNICODE_CI',
+    },
 
     // Timezone: Bolivia (UTC-4) - debe coincidir con database-config.sql
     timezone: '-04:00',

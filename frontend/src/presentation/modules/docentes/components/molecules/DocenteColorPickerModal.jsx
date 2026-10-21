@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Button, Flex, Input, Modal, Space, Tooltip, Typography, message } from 'antd';
 import { BgColorsOutlined } from '@ant-design/icons';
-import DocenteColorBar, { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
+import DocenteColorBar from '@docentes/components/atoms/DocenteColorBar';
+import { sanitizeDocenteColorHex } from '@docentes/utils/docenteColor';
 import { allSpacing } from '@theme/tokens';
 import '@docentes/styles/docente-color-picker.css';
 

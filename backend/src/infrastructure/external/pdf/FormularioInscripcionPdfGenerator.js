@@ -89,7 +89,7 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
         const T = IncosPDFBase.FORMULARIO_TEXTS;
         const codigo = (options.student?.codigoEstudiante ?? options.student?.codigo_estudiante ?? '').toString().trim();
         await this._drawRegistrationBox(T.REGISTRO_HEADER_LABEL, codigo || '—');
-        
+
         // Dibujar cuadro de foto 3x3 debajo del código de registro
         await this._drawPhotoBox(options.photoPath || null);
 
@@ -338,7 +338,7 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
         const periodo = (materia.periodoNombre ?? materia.periodo_nombre ?? '').toString().trim();
         if (pNombre) {
             const palabras = pNombre.toLowerCase().split(' ');
-            pNombre = palabras.map(p => (p ? p.charAt(0).toUpperCase() + p.slice(1) : '')).join(' ');
+            pNombre = palabras.map((p) => (p ? p.charAt(0).toUpperCase() + p.slice(1) : '')).join(' ');
         }
         const part = [pNombre, pTurno].filter(Boolean).join(' - ');
         if (part) {
@@ -518,7 +518,7 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
             color: sectionRgb,
         });
 
-        this._currentY = this._currentY - IncosPDFBase.LAYOUT.spacing.bullet;
+        this._currentY -= IncosPDFBase.LAYOUT.spacing.bullet;
     }
 
     /**
@@ -653,7 +653,7 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
     /**
      * Construye el bloque de firma (footer) al final del documento.
      * Usa IncosPDFBase.SIGNATURE para los textos y options.student (ci, expedicion).
-     * 
+     *
      * Opcionalmente puede usar firma en 2 columnas si se pasa options.signatureTwoColumns = true.
      *
      * @private
@@ -677,7 +677,7 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
 
     /**
      * Construye bloque de firma en 2 columnas (estudiante y responsable).
-     * 
+     *
      * @private
      * @param {Object} options - Opciones de generación
      * @returns {Promise<void>}

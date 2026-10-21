@@ -1,19 +1,19 @@
 /**
  * DELETE /api/v1/pagos-aportes/:id
  * Controller para eliminar un pago de aporte
- * 
+ *
  * Responsabilidades:
  * - Recibir peticiones HTTP DELETE para eliminar un pago
  * - Delegar lógica de negocio a DeletePaymentAporteUseCase
  * - Formatear respuesta JSON estandarizada
- * 
+ *
  * Endpoint:
  * DELETE /api/v1/pagos-aportes/:id
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja la comunicación HTTP para eliminar pagos
  * - Dependency Inversion: Depende de DeletePaymentAporteUseCase (abstracción)
- * 
+ *
  * Clean Architecture:
  * - Presentation Layer: Maneja HTTP request/response
  * - Depende de Application Layer (Use Cases inyectados)

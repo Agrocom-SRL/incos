@@ -4,10 +4,13 @@ import {
   NotFoundError,
   UnprocessableEntityError,
 } from '../../../domain/errors/AppError.js';
+import { validarPasswordNueva } from '../../utils/passwordPolicy.js';
 import { mapUsuarioAdminRow } from './usuario-admin.mapper.js';
+import { ROL_ADMIN_SISTEMA_CODIGO, exigirActorAdminSistema } from './rol-admin-sistema.guard.js';
 import {
   CATEGORIAS_CREACION_USUARIO,
   TIPOS_REFERENCIA,
+  TIPOS_REFERENCIA_VALUES,
 } from '../../../domain/constants/usuarios.constants.js';
 import {
   TIPOS_DIRECTOR,
@@ -135,20 +138,38 @@ export class CrearUsuarioUseCase {
    *
    * @param {Object} input
    */
-  async execute(input) {
+  async execute(input, actorId = null) {
     const username = String(input.username || '').trim();
+    if (username === '') {
+      throw new UnprocessableEntityError('Los datos proporcionados son inválidos', [
+        { field: 'username', message: 'username es requerido' },
+      ]);
+    }
     const password = input.password;
     const rolId = input.rol_id;
 
-    if (!password || String(password).length < 8) {
-      throw new UnprocessableEntityError('Los datos proporcionados son inválidos', [
-        { field: 'password', message: 'password debe tener al menos 8 caracteres' },
-      ]);
-    }
+    validarPasswordNueva(password, 'password');
 
     const role = await this.roleRepository.findById(rolId);
     if (!role) {
       throw new NotFoundError('Rol');
+    }
+
+    if (
+      input.tipo_referencia != null &&
+      input.tipo_referencia !== '' &&
+      !TIPOS_REFERENCIA_VALUES.includes(input.tipo_referencia)
+    ) {
+      throw new UnprocessableEntityError('Los datos proporcionados son inválidos', [
+        {
+          field: 'tipo_referencia',
+          message: `tipo_referencia debe ser uno de: ${TIPOS_REFERENCIA_VALUES.join(', ')}`,
+        },
+      ]);
+    }
+
+    if (role.code === ROL_ADMIN_SISTEMA_CODIGO) {
+      await exigirActorAdminSistema(this.userRepository, actorId);
     }
 
     if (await this.userRepository.existsUsername(username)) {

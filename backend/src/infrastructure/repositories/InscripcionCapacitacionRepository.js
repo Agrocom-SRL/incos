@@ -1,4 +1,4 @@
-import { Op } from 'sequelize';
+import { Op, fn, col } from 'sequelize';
 import { BaseRepository } from './BaseRepository.js';
 import { sequelize } from '../database/sequelize.js';
 import { InscripcionCapacitacion as InscripcionCapacitacionModel } from '../database/models/inscripcion_capacitacion.js';
@@ -38,7 +38,12 @@ export class InscripcionCapacitacionRepository extends BaseRepository {
         v.montoObligatorio !== undefined && v.montoObligatorio !== null
           ? Number(v.montoObligatorio)
           : null,
+      montoMatricula:
+        v.montoMatricula !== undefined && v.montoMatricula !== null ? Number(v.montoMatricula) : 0,
       estadoPago: v.estadoPago ?? null,
+      estadoPagoCurso: v.estadoPagoCurso ?? null,
+      estadoPagoMatricula: v.estadoPagoMatricula ?? null,
+      capacitacionGrupoId: v.capacitacionGrupoId ?? null,
       activo: v.activo ?? null,
       createdAt: v.createdAt ?? null,
       updatedAt: v.updatedAt ?? null,
@@ -52,6 +57,9 @@ export class InscripcionCapacitacionRepository extends BaseRepository {
     }
     if (filters.capacitacionId !== undefined) {
       where.capacitacionId = filters.capacitacionId;
+    }
+    if (filters.capacitacionGrupoId !== undefined) {
+      where.capacitacionGrupoId = filters.capacitacionGrupoId;
     }
     if (filters.estado !== undefined) {
       where.estado = filters.estado;
@@ -76,7 +84,13 @@ export class InscripcionCapacitacionRepository extends BaseRepository {
     // Snapshot inmutable (no se toca en mapDataToUpdate): protege de cambios
     // de precio posteriores al momento de la inscripción.
     if ('montoObligatorio' in data) model.montoObligatorio = data.montoObligatorio;
+    if ('montoMatricula' in data) model.montoMatricula = data.montoMatricula;
     if ('estadoPago' in data) model.estadoPago = data.estadoPago;
+    if ('estadoPagoCurso' in data) model.estadoPagoCurso = data.estadoPagoCurso;
+    if ('estadoPagoMatricula' in data) model.estadoPagoMatricula = data.estadoPagoMatricula;
+    if ('capacitacionGrupoId' in data) {
+      model.capacitacionGrupoId = data.capacitacionGrupoId ?? null;
+    }
     return model;
   }
 
@@ -85,6 +99,8 @@ export class InscripcionCapacitacionRepository extends BaseRepository {
     if ('fechaInscripcion' in data) model.fechaInscripcion = data.fechaInscripcion;
     if ('estado' in data) model.estado = data.estado;
     if ('estadoPago' in data) model.estadoPago = data.estadoPago;
+    if ('estadoPagoCurso' in data) model.estadoPagoCurso = data.estadoPagoCurso;
+    if ('estadoPagoMatricula' in data) model.estadoPagoMatricula = data.estadoPagoMatricula;
     return model;
   }
 
@@ -121,13 +137,48 @@ export class InscripcionCapacitacionRepository extends BaseRepository {
   }
 
   /**
+   * Cantidad de inscripciones vigentes (PENDIENTE o INSCRITO) por grupo.
+   * Los grupos sin inscritos aparecen con 0.
+   *
+   * @param {number[]} grupoIds
+   * @param {Object} options - Opciones opcionales (ej: `{ transaction }`)
+   * @returns {Promise<Object<number, number>>} Mapa grupoId → cantidad
+   */
+  async countVigentesByGrupoIds(grupoIds, options = {}) {
+    const conteos = Object.fromEntries((grupoIds ?? []).map((id) => [id, 0]));
+    if (!grupoIds || grupoIds.length === 0) return conteos;
+
+    const filas = await InscripcionCapacitacionModel.findAll({
+      attributes: ['capacitacionGrupoId', [fn('COUNT', col('id')), 'total']],
+      where: {
+        capacitacionGrupoId: grupoIds,
+        estado: {
+          [Op.in]: [
+            ESTADOS_INSCRIPCION_CAPACITACION.PENDIENTE,
+            ESTADOS_INSCRIPCION_CAPACITACION.INSCRITO,
+          ],
+        },
+        activo: true,
+      },
+      group: ['capacitacionGrupoId'],
+      raw: true,
+      transaction: options.transaction,
+    });
+    filas.forEach((fila) => {
+      conteos[fila.capacitacionGrupoId] = Number(fila.total);
+    });
+    return conteos;
+  }
+
+  /**
    * SELECT base del listado/ficha: inscripción + participante + curso +
    * agregado de pagos vigentes + compromiso "abierto" (VIGENTE/INCUMPLIDO) más
    * reciente. Filas crudas snake_case.
    *
-   * El saldo se calcula contra `ci.monto_obligatorio` (snapshot al
-   * inscribirse), NO contra `c.costo` (que puede cambiar después y no debe
-   * afectar inscripciones ya creadas).
+   * Los saldos se calculan por concepto contra los snapshots
+   * `ci.monto_obligatorio` (curso) y `ci.monto_matricula`, NO contra los costos
+   * actuales del curso (pueden cambiar después y no deben afectar inscripciones
+   * ya creadas).
    * @private
    */
   _buildListadoSelect() {
@@ -137,7 +188,17 @@ export class InscripcionCapacitacionRepository extends BaseRepository {
         ci.fecha_inscripcion,
         ci.estado,
         ci.monto_obligatorio,
+        ci.monto_matricula,
         ci.estado_pago,
+        ci.estado_pago_curso,
+        ci.estado_pago_matricula,
+        ci.capacitacion_grupo_id,
+        g.nombre AS grupo_nombre,
+        (SELECT GROUP_CONCAT(
+            bh.bloque_etiqueta
+            ORDER BY bh.dia_orden, bh.hora_inicio SEPARATOR ' · ')
+           FROM vista_base_cursos_capacitacion_horarios bh
+          WHERE bh.grupo_id = ci.capacitacion_grupo_id) AS grupo_horarios,
         ci.activo,
         ci.created_at,
         p.id AS participante_id,
@@ -151,12 +212,31 @@ export class InscripcionCapacitacionRepository extends BaseRepository {
         c.id AS capacitacion_id,
         c.titulo AS capacitacion_titulo,
         c.estado AS capacitacion_estado,
+        c.modalidad AS capacitacion_modalidad,
+        c.entidad_certificadora AS capacitacion_entidad_certificadora,
         c.fecha_inicio AS capacitacion_fecha_inicio,
         c.fecha_fin AS capacitacion_fecha_fin,
         c.costo,
         COALESCE(pg.total_pagado, 0) AS total_pagado,
-        ci.monto_obligatorio - COALESCE(pg.total_pagado, 0) AS saldo,
+        COALESCE(pg.pagado_curso, 0) AS pagado_curso,
+        COALESCE(pg.pagado_matricula, 0) AS pagado_matricula,
+        GREATEST(0, ci.monto_obligatorio - COALESCE(pg.pagado_curso, 0)) AS saldo_curso,
+        GREATEST(0, ci.monto_matricula - COALESCE(pg.pagado_matricula, 0)) AS saldo_matricula,
         COALESCE(pg.pagos_count, 0) AS pagos_count,
+        (
+          SELECT COUNT(*)
+          FROM capacitacion_requisitos r
+          LEFT JOIN capacitacion_inscrito_requisitos ir
+            ON ir.capacitacion_requisito_id = r.id
+            AND ir.capacitacion_inscrito_id = ci.id
+            AND ir.activo = TRUE
+            AND ir.deleted_at IS NULL
+          WHERE r.capacitacion_id = ci.capacitacion_id
+            AND r.obligatorio = TRUE
+            AND r.activo = TRUE
+            AND r.deleted_at IS NULL
+            AND COALESCE(ir.entregado, FALSE) = FALSE
+        ) AS requisitos_pendientes,
         cc.id AS compromiso_id,
         cc.fecha_compromiso AS compromiso_fecha,
         cc.estado AS compromiso_estado,
@@ -168,10 +248,14 @@ export class InscripcionCapacitacionRepository extends BaseRepository {
       INNER JOIN capacitaciones c
         ON c.id = ci.capacitacion_id
         AND c.deleted_at IS NULL
+      LEFT JOIN capacitacion_grupos g
+        ON g.id = ci.capacitacion_grupo_id
       LEFT JOIN (
         SELECT
           cp.capacitacion_inscrito_id,
           SUM(cp.monto) AS total_pagado,
+          SUM(CASE WHEN cp.concepto = 'CURSO' THEN cp.monto ELSE 0 END) AS pagado_curso,
+          SUM(CASE WHEN cp.concepto = 'MATRICULA' THEN cp.monto ELSE 0 END) AS pagado_matricula,
           COUNT(*) AS pagos_count
         FROM capacitacion_pagos cp
         WHERE cp.activo = TRUE

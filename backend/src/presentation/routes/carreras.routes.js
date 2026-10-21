@@ -1,27 +1,26 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
-import { verificarPermiso } from '../middleware/permisos.middleware.js';
+import { verificarPermiso, verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
 import { idValidator, listValidator } from '../validators/common/index.js';
 import {
     createCarreraValidator,
     updateCarreraValidator,
 } from '../validators/configuracion/carreras.validator.js';
-import { verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
 import { uploadCarreraImagen } from '../middleware/upload.middleware.js';
 
 /**
  * Construye el router del módulo Carreras
- * 
+ *
  * Responsabilidades:
  * - Definir rutas y métodos HTTP
  * - Vincular validators y middlewares
  * - Delegar lógica a controllers inyectados
- * 
+ *
  * @param {Object} params - Dependencias inyectadas
  * @param {Object} params.controllers - Controllers del módulo
  * @param {Object} params.middlewares - Middlewares (validateRequest, upload, auth, etc.)
  * @returns {Router} Router configurado de Express
- * 
+ *
  * @example
  * const router = buildCarrerasRouter({ controllers, middlewares });
  * app.use('/api/v1/carreras', router);
@@ -42,7 +41,7 @@ export function buildCarrerasRouter({ controllers, middlewares }) {
     /**
      * GET /api/v1/carreras
      * Listar todas las carreras con filtros y paginación
-     * 
+     *
      * Query params según IBaseRepository.obtenerTodos:
      * - pagina: número de página (paginación)
      * - limite: cantidad por página (paginación)
@@ -118,4 +117,3 @@ export function buildCarrerasRouter({ controllers, middlewares }) {
 
     return router;
 }
-

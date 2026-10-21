@@ -15,17 +15,17 @@ import {
 
 /**
  * Construye el router del módulo Estudiantes
- * 
+ *
  * Responsabilidades:
  * - Definir rutas y métodos HTTP
  * - Vincular validators y middlewares
  * - Delegar lógica a controllers inyectados
- * 
+ *
  * @param {Object} params - Dependencias inyectadas
  * @param {Object} params.controllers - Controllers del módulo
  * @param {Object} params.middlewares - Middlewares (validateRequest, upload, auth, etc.)
  * @returns {Router} Router configurado de Express
- * 
+ *
  * @example
  * const router = buildEstudiantesRouter({ controllers, middlewares });
  * app.use('/api/v1/estudiantes', router);
@@ -91,9 +91,9 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
     router.post(
         '/',
         ...admisionCrear,
-        registerStudentValidator,  // 1. Validator primero
-        validateRequest,            // 2. Middleware que procesa errores
-        (req, res, next) => controllers.registerStudentController.handle(req, res, next)  // 3. Controller al final
+        registerStudentValidator, // 1. Validator primero
+        validateRequest, // 2. Middleware que procesa errores
+        (req, res, next) => controllers.registerStudentController.handle(req, res, next) // 3. Controller al final
     );
 
     /**
@@ -103,7 +103,7 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      * Body: student (opcional - actualización parcial), guardians (opcional - reemplazo completo),
      *       disabilities (opcional - reemplazo completo), origins (opcional - reemplazo completo),
      *       documentation (opcional - reemplazo completo)
-     * 
+     *
      * NOTA: Similar a RegisterStudentUseCase, actualiza estudiante y todas sus relaciones.
      * - Datos básicos: actualización parcial (solo campos proporcionados)
      * - Relaciones: reemplazo completo (si se proporcionan, elimina todas las existentes y crea las nuevas)
@@ -111,10 +111,10 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
     router.put(
         '/:id',
         ...admisionEditar,
-        idValidator,  // 1. Validator primero
-        updateStudentValidator,  // 2. Validator de datos del body
-        validateRequest,  // 3. Middleware que procesa errores
-        (req, res, next) => controllers.updateStudentController.handle(req, res, next)  // 4. Controller al final
+        idValidator, // 1. Validator primero
+        updateStudentValidator, // 2. Validator de datos del body
+        validateRequest, // 3. Middleware que procesa errores
+        (req, res, next) => controllers.updateStudentController.handle(req, res, next) // 4. Controller al final
     );
 
     // ============================================
@@ -129,9 +129,9 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
     router.post(
         '/:id/documentos/acta-compromiso',
         ...documentoPdf,
-        idValidator,  // 1. Validator primero
-        validateRequest,  // 2. Middleware que procesa errores
-        (req, res, next) => controllers.actaCompromisoController.handle(req, res, next)  // 3. Controller al final
+        idValidator, // 1. Validator primero
+        validateRequest, // 2. Middleware que procesa errores
+        (req, res, next) => controllers.actaCompromisoController.handle(req, res, next) // 3. Controller al final
     );
 
   /**
@@ -142,9 +142,9 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
   router.post(
     '/:id/documentos/declaracion-jurada',
     ...documentoPdf,
-    idValidator,  // 1. Validator primero
-    validateRequest,  // 2. Middleware que procesa errores
-    (req, res, next) => controllers.declaracionJuradaController.handle(req, res, next)  // 3. Controller al final
+    idValidator, // 1. Validator primero
+    validateRequest, // 2. Middleware que procesa errores
+    (req, res, next) => controllers.declaracionJuradaController.handle(req, res, next) // 3. Controller al final
   );
 
     // ============================================
@@ -186,15 +186,15 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      * GET /api/v1/estudiantes/search
      * Buscar estudiante por texto libre
      * Query: query (busca en codigo, ci, nombres, apellidos), limit (opcional)
-     * 
+     *
      * IMPORTANTE: Esta ruta debe estar ANTES de /:id para evitar conflictos
      */
     router.get(
         '/search',
         ...admisionListar,
-        searchValidator,  // 1. Validator común de búsqueda
-        validateRequest,  // 2. Middleware que procesa errores
-        (req, res, next) => controllers.searchStudentController.handle(req, res, next)  // 3. Controller al final
+        searchValidator, // 1. Validator común de búsqueda
+        validateRequest, // 2. Middleware que procesa errores
+        (req, res, next) => controllers.searchStudentController.handle(req, res, next) // 3. Controller al final
     );
 
     /**
@@ -259,18 +259,18 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      * GET /api/v1/estudiantes/becas
      * Listar todas las becas asignadas a estudiantes con datos enriquecidos
      * Query: page, limit, search, studentId, managementId, state, scholarshipId
-     * 
+     *
      * Retorna todas las becas asignadas con información del estudiante, tipo de beca y gestión.
      * Útil para el listado general de becas asignadas.
-     * 
+     *
      * IMPORTANTE: Esta ruta debe estar ANTES de /:id/scholarships para evitar conflictos
      */
     router.get(
         '/becas',
         ...becaListar,
-        listValidator,  // 1. Validator primero
-        validateRequest,  // 2. Middleware que procesa errores
-        (req, res, next) => controllers.listStudentScholarshipsController.handle(req, res, next)  // 3. Controller al final
+        listValidator, // 1. Validator primero
+        validateRequest, // 2. Middleware que procesa errores
+        (req, res, next) => controllers.listStudentScholarshipsController.handle(req, res, next) // 3. Controller al final
     );
 
     /**
@@ -305,10 +305,10 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
     router.get(
         '/:id/scholarships',
         ...becaDetalle,
-        idValidator,  // 1. Validator primero
-        validateRequest,  // 2. Middleware que procesa errores
+        idValidator, // 1. Validator primero
+        validateRequest, // 2. Middleware que procesa errores
         estudianteSelfOnlyGuard, // 3. Anti-IDOR: un estudiante solo ve SUS propias becas
-        (req, res, next) => controllers.getStudentScholarshipsController.handle(req, res, next)  // 4. Controller al final
+        (req, res, next) => controllers.getStudentScholarshipsController.handle(req, res, next) // 4. Controller al final
     );
 
     /**
@@ -316,7 +316,7 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      * Asignar una beca/descuento a un estudiante
      * Path: id (ID del estudiante)
      * Body: student_id, scholarship_id, observations? (opcional)
-     * 
+     *
      * NOTA: La gestión se obtiene automáticamente de la configuración del sistema.
      * La fecha de solicitud se establece automáticamente como la fecha actual.
      * El estado se establece automáticamente como PENDIENTE.
@@ -324,27 +324,27 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
     router.post(
         '/:id/scholarships',
         ...becaAsignarCrear,
-        assignBecaValidator,  // 1. Validator primero
-        validateRequest,  // 2. Middleware que procesa errores
-        (req, res, next) => controllers.asignarBecaController.handle(req, res, next)  // 3. Controller al final
+        assignBecaValidator, // 1. Validator primero
+        validateRequest, // 2. Middleware que procesa errores
+        (req, res, next) => controllers.asignarBecaController.handle(req, res, next) // 3. Controller al final
     );
 
     /**
      * DELETE /api/v1/estudiantes/becas/:id
      * Eliminar una beca asignada a un estudiante (soft delete)
      * Path: id (ID de la beca asignada - estudiantes_becas.id)
-     * 
+     *
      * Regla de negocio: Solo se pueden eliminar becas que NO tengan pagos vigentes asociados.
      * Las becas vinculadas a pagos no se eliminan (RegisterAporteVoluntarioUseCase las usa).
-     * 
+     *
      * IMPORTANTE: Esta ruta debe estar ANTES de /:id para evitar conflictos
      */
     router.delete(
         '/becas/:id',
         ...becaAsignarEliminar,
-        idValidator,  // 1. Validator primero
-        validateRequest,  // 2. Middleware que procesa errores
-        (req, res, next) => controllers.deleteStudentScholarshipController.handle(req, res, next)  // 3. Controller al final
+        idValidator, // 1. Validator primero
+        validateRequest, // 2. Middleware que procesa errores
+        (req, res, next) => controllers.deleteStudentScholarshipController.handle(req, res, next) // 3. Controller al final
     );
 
     // ============================================
@@ -397,7 +397,7 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
         ...historialDetalle,
         idValidator,
         validateRequest,
-        estudianteSelfOnlyGuard,  // anti-IDOR: un estudiante solo ve SU historial
+        estudianteSelfOnlyGuard, // anti-IDOR: un estudiante solo ve SU historial
         (req, res, next) => controllers.getHistorialAcademicoController.handle(req, res, next)
     );
 
@@ -409,12 +409,12 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      * DELETE /api/v1/estudiantes/:id
      * Eliminar un estudiante y todas sus relaciones (soft delete)
      * Path: id (ID del estudiante)
-     * 
+     *
      * Regla de negocio: Solo se pueden eliminar estudiantes que NO tengan:
      * - Inscripciones activas
      * - Pagos activos vinculados
      * - Becas activas asignadas
-     * 
+     *
      * Elimina (soft delete):
      * - Apoderados (estudiantes_apoderados)
      * - Discapacidades (estudiantes_discapacidades)
@@ -422,15 +422,15 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      * - Entregas de documentos (estudiantes_documentos_entrega)
      * - Documentos del estudiante (documentos_estudiante) - incluyendo actas de compromiso
      * - Estudiante principal (estudiantes)
-     * 
+     *
      * IMPORTANTE: Esta ruta debe estar ANTES de GET /:id para evitar conflictos
      */
     router.delete(
         '/:id',
         ...admisionEliminar,
-        idValidator,  // 1. Validator primero
-        validateRequest,  // 2. Middleware que procesa errores
-        (req, res, next) => controllers.deleteStudentController.handle(req, res, next)  // 3. Controller al final
+        idValidator, // 1. Validator primero
+        validateRequest, // 2. Middleware que procesa errores
+        (req, res, next) => controllers.deleteStudentController.handle(req, res, next) // 3. Controller al final
     );
 
     // ============================================
@@ -441,20 +441,19 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      * GET /api/v1/estudiantes/:id
      * Obtener estudiante por ID con datos relacionados
      * Path: id
-     * 
+     *
      * IMPORTANTE: Esta ruta genérica debe estar AL FINAL para evitar conflictos
      * con rutas más específicas como /search o /:id/scholarships
      */
     router.get(
         '/:id',
         ...admisionDetalle,
-        idValidator,  // 1. Validator primero
-        validateRequest,  // 2. Middleware que procesa errores
-        estudianteSelfOnlyGuard,  // 3. Anti-IDOR: un estudiante solo ve SU propia ficha
+        idValidator, // 1. Validator primero
+        validateRequest, // 2. Middleware que procesa errores
+        estudianteSelfOnlyGuard, // 3. Anti-IDOR: un estudiante solo ve SU propia ficha
         estudianteAlcanceDocenteGuard, // 4. Anti-IDOR: docente solo ve estudiantes de SUS cursos
-        (req, res, next) => controllers.getStudentByIdController.handle(req, res, next)  // 5. Controller al final
+        (req, res, next) => controllers.getStudentByIdController.handle(req, res, next) // 5. Controller al final
     );
 
     return router;
 }
-

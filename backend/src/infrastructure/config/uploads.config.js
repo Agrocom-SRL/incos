@@ -2,10 +2,10 @@ import path from 'path';
 
 /**
  * Configuración de rutas relativas para uploads
- * 
+ *
  * Define la estructura de directorios dentro de uploads/ para diferentes tipos de documentos.
  * Estas rutas son relativas a uploads/ y se usan en use cases para organizar archivos.
- * 
+ *
  * Ejemplo:
  *   uploads/documentos/estudiantes/{studentId}/acta_compromiso.pdf
  *   uploads/documentos/estudiantes/{studentId}/pagos/comprobante.pdf
@@ -114,6 +114,30 @@ export const UPLOAD = {
    * @returns {string} Ruta relativa (ej: 'documentos/pasantias/1')
    */
   pasantias: (pasantiaId) => `documentos/pasantias/${pasantiaId}`,
+
+  /**
+   * Ruta base para comprobantes de pago de una inscripción de capacitación (módulo CAP)
+   * @param {number|string} inscripcionId - ID de la inscripción
+   * @returns {string} Ruta relativa (ej: 'documentos/capacitacion/1/comprobantes')
+   */
+  capacitacionComprobantes: (inscripcionId) =>
+    `documentos/capacitacion/${inscripcionId}/comprobantes`,
+
+  /** Extensiones permitidas para comprobantes de capacitación (imagen o PDF) */
+  comprobanteCapacitacionExtensions: ['.jpg', '.jpeg', '.png', '.webp', '.pdf'],
+
+  /**
+   * Genera un nombre de archivo único para comprobantes de capacitación
+   * @param {string} originalName - Nombre original del archivo
+   * @returns {string} Nombre generado (ej: 'comprobante_1234567890_deposito.pdf')
+   */
+  generateComprobanteCapacitacionFileName: (originalName) => {
+    const ts = Date.now();
+    const sanitizedName = String(originalName || 'archivo').replace(/[^a-zA-Z0-9.-]/g, '_');
+    const ext = path.extname(sanitizedName).toLowerCase();
+    const nameWithoutExt = path.basename(sanitizedName, ext);
+    return `comprobante_${ts}_${nameWithoutExt}${ext}`;
+  },
 
   /** Ruta relativa para imágenes QR de cuentas de pago (backend/uploads/cuentas-pago/qr/) */
   cuentasPagoQr: () => 'cuentas-pago/qr',

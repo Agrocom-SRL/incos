@@ -4,7 +4,6 @@ import { AsignacionHorario as AsignacionHorarioModel } from '../../../infrastruc
 import { NotFoundError, ValidationError } from '../../../domain/errors/index.js';
 import { TURNOS_VALUES } from '../../../domain/constants/cursos.constants.js';
 import { TURNOS_EDITABLES_PARALELO_GESTION } from '../../../domain/constants/oferta.constants.js';
-import { assertParaleloGestionHorarioEditable } from '../../utils/horarios/assertParaleloGestionHorarioEditable.js';
 import { entityToPresentation } from '../../mappers/oferta/ParallelManagementPresentationMapper.js';
 
 /**
@@ -38,8 +37,6 @@ export class CambiarTurnoParaleloGestionConBloquesUseCase {
         'No se puede cambiar el turno cuando el paralelo está PUBLICADO o CERRADO'
       );
     }
-
-    assertParaleloGestionHorarioEditable(pg.state);
 
     const turnoActual = pg.shift;
     if (turnoActual === turno) {
@@ -117,13 +114,25 @@ export class CambiarTurnoParaleloGestionConBloquesUseCase {
     }
 
     await sequelize.transaction(async (t) => {
+      // Las lecturas de arriba se hicieron fuera de la transacción: se revalida el paralelo
+      // con bloqueo de fila para no remapear sobre un estado o turno que cambió entretanto.
+      const fresco = await this.parallelManagementRepository.findById(pgId, {
+        transaction: t,
+        lock: t.LOCK?.UPDATE,
+      });
+      if (!fresco) throw new NotFoundError('Paralelo en gestión');
+      if (!TURNOS_EDITABLES_PARALELO_GESTION.includes(fresco.state) || fresco.shift !== turnoActual) {
+        throw new ValidationError(
+          'El paralelo cambió de estado o de turno mientras se procesaba la solicitud; reintente'
+        );
+      }
       for (const u of updates) {
         await AsignacionHorarioModel.update(
           { horarioId: u.horarioId },
           { where: { id: u.id }, transaction: t }
         );
       }
-      await this.parallelManagementRepository.update(pgId, { shift: turno }, userId);
+      await this.parallelManagementRepository.update(pgId, { shift: turno }, userId, { transaction: t });
     });
 
     const updated = await this.parallelManagementRepository.findById(pgId);

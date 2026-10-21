@@ -95,9 +95,15 @@ export class PutParaleloScheduleUseCase {
         invalidOfertas.push(c?.cursoId);
         continue;
       }
+      if (desiredByOferta.has(ofertaCursoId)) {
+        // Un cursoId repetido sobrescribiría en silencio los bloques del anterior.
+        invalidOfertas.push({ cursoId: c.cursoId, reason: 'CURSO_DUPLICADO' });
+        continue;
+      }
 
       const bloques = Array.isArray(c?.bloques) ? c.bloques : [];
       const normalized = [];
+      const horariosVistos = new Set();
 
       for (const b of bloques) {
         const dia = normalizeDia(b?.dia);
@@ -124,6 +130,12 @@ export class PutParaleloScheduleUseCase {
           invalidBloques.push({ cursoId: ofertaCursoId, dia, horaInicio, horaFin, reason: 'HORARIO_NO_EXISTE' });
           continue;
         }
+
+        if (horariosVistos.has(Number(horario.id))) {
+          invalidBloques.push({ cursoId: ofertaCursoId, dia, horaInicio, horaFin, reason: 'BLOQUE_DUPLICADO' });
+          continue;
+        }
+        horariosVistos.add(Number(horario.id));
 
         normalized.push({
           horarioId: Number(horario.id),

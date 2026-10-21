@@ -1,4 +1,3 @@
-import { ISecretariaRepository } from '../../domain/interfaces/repositories/ISecretariaRepository.js';
 import { Secretaria as SecretariaModel } from '../database/models/secretaria.js';
 import { BaseRepository } from './BaseRepository.js';
 import { SecretaryMapper } from '../mappers/SecretaryMapper.js';
@@ -34,11 +33,11 @@ export class SecretaryRepository extends BaseRepository {
     return [];
   }
 
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return SecretaryMapper.toModel(data);
   }
 
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return SecretaryMapper.toModelForUpdate(data);
   }
 

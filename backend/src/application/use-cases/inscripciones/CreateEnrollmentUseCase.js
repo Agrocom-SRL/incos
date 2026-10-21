@@ -146,7 +146,7 @@ export class CreateEnrollmentUseCase {
 
   /**
    * Ejecuta el caso de uso de creación de inscripción.
-   * 
+   *
    * Dos modos de operación:
    * 1. Modo paralelo completo: con parallelId inscribe al estudiante en todas las materias del paralelo
    *    (usado típicamente para estudiantes nuevos que cursan todas las materias del periodo).
@@ -161,7 +161,7 @@ export class CreateEnrollmentUseCase {
    * @param {string} [data.enrollmentType] - Tipo de inscripción (NUEVO, ANTIGUO, TRASPASO, TRANSITABILIDAD, etc.)
    * @param {string} [data.observations] - Observaciones (opcional)
    * @returns {Promise<Object>} Inscripción creada con materias asociadas
-   * 
+   *
    * NOTA: enrollmentDate NO se recibe del frontend; se genera automáticamente en _createEnrollment()
    * usando la fecha actual del sistema.
    */
@@ -553,12 +553,12 @@ export class CreateEnrollmentUseCase {
 
   /**
    * Valida y resuelve las asignaciones docentes por ID; todas deben pertenecer al mismo plan habilitado.
-   * 
+   *
    * IMPORTANTE: Este método permite inscribir materias de diferentes paralelos y periodos en una sola
    * inscripción. Cada asignación docente está vinculada a un curso específico (paralelo + materia),
    * por lo que se pueden seleccionar materias de múltiples paralelos/periodos siempre que todas
    * pertenezcan al mismo plan habilitado (misma carrera y gestión).
-   * 
+   *
    * @private
    * @param {number[]} teacherAssignmentIds - IDs de asignaciones docentes (pueden ser de diferentes paralelos/periodos)
    * @param {number} managementPlanId - ID del plan habilitado (todas las asignaciones deben pertenecer a este plan)
@@ -608,7 +608,7 @@ export class CreateEnrollmentUseCase {
     }
 
     const gestionYear = parseInt(config.value, 10);
-    if (isNaN(gestionYear)) {
+    if (Number.isNaN(Number(gestionYear))) {
       throw new ValidationError(
         `El valor de gestión actual (${config.value}) no es un año válido`
       );
@@ -636,19 +636,19 @@ export class CreateEnrollmentUseCase {
 
   /**
    * Obtiene o crea los datos académicos del estudiante.
-   * 
+   *
    * Este método es crucial para estudiantes nuevos que aún no tienen datos académicos registrados.
    * Si el estudiante no tiene datos académicos activos, se crean automáticamente con:
    * - La carrera del paralelo seleccionado
    * - La gestión de ingreso actual
    * - Estado académico: ESTADOS_ACADEMICOS.REGULAR (valor por defecto según esquema de BD)
    * - Estado de registro: ESTADOS_REGISTRO_ESTUDIANTE.ADMITIDO (al crear inscripción, el estudiante queda admitido)
-   * 
+   *
    * Si el estudiante ya tiene datos académicos:
    * - Se actualiza la carrera si cambia
    * - Se actualiza el estado_registro a ESTADOS_REGISTRO_ESTUDIANTE.ADMITIDO si aún no lo está
    *   (BORRADOR o PENDIENTE) porque al crear una inscripción, el estudiante queda formalmente admitido
-   * 
+   *
    * @private
    * @param {Object} student - Entidad Student
    * @param {Object} parallel - Entidad Parallel (se usa para determinar la carrera)
@@ -668,18 +668,20 @@ export class CreateEnrollmentUseCase {
       // Si existe, actualizar la carrera y el estado de registro si es necesario
       const parallelPlain = parallel.toPlainObject ? parallel.toPlainObject() : parallel;
       const careerId = parallelPlain.careerId || parallel.careerId;
-      
+
       // Verificar si necesita actualización (carrera o estado_registro)
       const needsCareerUpdate = existingAcademicData.careerId !== careerId;
-      
+
       // Obtener estado_registro actual (puede venir como registrationState desde entidad o estadoRegistro desde modelo)
-      const existingPlain = existingAcademicData.toPlainObject ? existingAcademicData.toPlainObject() : existingAcademicData;
-      const currentRegistrationStatus = existingPlain.registrationState || existingPlain.estadoRegistro || ESTADOS_REGISTRO_ESTUDIANTE.BORRADOR;
+      const existingPlain = existingAcademicData.toPlainObject ? existingAcademicData.toPlainObject()
+        : existingAcademicData;
+      const currentRegistrationStatus = existingPlain.registrationState || existingPlain.estadoRegistro
+        || ESTADOS_REGISTRO_ESTUDIANTE.BORRADOR;
       const needsStatusUpdate = currentRegistrationStatus !== ESTADOS_REGISTRO_ESTUDIANTE.ADMITIDO;
 
       if (needsCareerUpdate || needsStatusUpdate) {
         const updateData = {};
-        
+
         if (needsCareerUpdate) {
           updateData.careerId = careerId;
           updateData.managementIngressId = management.id;
@@ -689,7 +691,7 @@ export class CreateEnrollmentUseCase {
             newCareerId: careerId,
           });
         }
-        
+
         if (needsStatusUpdate) {
           // Actualizar estado_registro a ADMITIDO cuando se crea una inscripción
           // El mapper espera registrationState (dominio) y lo mapea a estadoRegistro (BD)
@@ -975,7 +977,7 @@ export class CreateEnrollmentUseCase {
     if (!result.contributionPayments || result.contributionPayments.length === 0) {
       throw new ValidationError(
         `El estudiante no ha realizado el pago del aporte académico para la gestión ${management.year}. ` +
-        `Debe realizar el pago antes de inscribirse.`
+        'Debe realizar el pago antes de inscribirse.'
       );
     }
 
@@ -986,7 +988,7 @@ export class CreateEnrollmentUseCase {
     if (!estadosPermitidos.includes(estado)) {
       throw new ValidationError(
         `El aporte para la gestión ${management.year} está pendiente de pago. ` +
-        `Solo puede inscribirse cuando el aporte tenga al menos un pago registrado.`
+        'Solo puede inscribirse cuando el aporte tenga al menos un pago registrado.'
       );
     }
 

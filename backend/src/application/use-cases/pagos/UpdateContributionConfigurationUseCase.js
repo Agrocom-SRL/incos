@@ -1,4 +1,5 @@
 import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
+import { parseBooleano, parseFechaISO, parseNumero } from '../../utils/validacionEntrada.js';
 
 /**
  * Use Case: UpdateContributionConfigurationUseCase
@@ -37,16 +38,12 @@ export class UpdateContributionConfigurationUseCase {
 
     const montoBase = body.monto_base ?? body.montoBase ?? body.baseAmount;
     if (montoBase !== undefined) {
-      const baseAmount = Number(montoBase);
-      if (Number.isNaN(baseAmount) || baseAmount < 0) {
-        throw new ValidationError('monto_base debe ser un número mayor o igual a 0');
-      }
-      payload.baseAmount = baseAmount;
+      payload.baseAmount = parseNumero(montoBase, 'monto_base', { min: 0 });
     }
 
     const contributionActive = body.aporte_activo ?? body.aporteActivo ?? body.contributionActive;
     if (contributionActive !== undefined) {
-      payload.contributionActive = Boolean(contributionActive);
+      payload.contributionActive = parseBooleano(contributionActive, 'aporte_activo');
     }
 
     const fechaInicio = body.fecha_inicio ?? body.fechaInicio ?? body.startDate;
@@ -54,17 +51,17 @@ export class UpdateContributionConfigurationUseCase {
       if (!fechaInicio) {
         throw new ValidationError('fecha_inicio no puede ser vacía');
       }
-      payload.startDate = fechaInicio;
+      payload.startDate = parseFechaISO(fechaInicio, 'fecha_inicio');
     }
 
     const fechaFin = body.fecha_fin ?? body.fechaFin ?? body.endDate;
     if (fechaFin !== undefined) {
-      payload.endDate = fechaFin || null;
+      payload.endDate = fechaFin ? parseFechaISO(fechaFin, 'fecha_fin') : null;
     }
 
     const activo = body.activo ?? body.active;
     if (activo !== undefined) {
-      payload.active = Boolean(activo);
+      payload.active = parseBooleano(activo, 'activo');
     }
 
     if (Object.keys(payload).length === 0) {

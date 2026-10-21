@@ -21,11 +21,6 @@ const isImageFile = (file) => {
 
 const DEFAULT_ACCEPT = 'image/*,.jpg,.jpeg,.png,.webp,.gif,.bmp,.tiff,.tif,.svg,.avif,.heic,.heif';
 
-const fileListFromUploadEvent = (e) => {
-  if (Array.isArray(e)) return e;
-  return e?.fileList;
-};
-
 const enrichFileListWithPreview = (nextList) => {
   if (!Array.isArray(nextList) || nextList.length === 0) {
     return [];
@@ -63,7 +58,8 @@ const FormImageUploadDragger = ({
   const d = disabled || readOnly;
   const fileList = resolveControlledFileList(fileListProp, value);
   const previewField = field.previewField || 'imagenRuta';
-  const storedPath = form ? Form.useWatch(previewField, form) : null;
+  const watchedPath = Form.useWatch(form ? previewField : [], form);
+  const storedPath = form ? watchedPath : null;
   const hasLocalFile = Boolean(fileList[0]);
   // Por defecto resuelve rutas de Carrera (`uploads/carreras/...`); otros
   // consumidores (p. ej. QR de cuenta, que ya guarda una URL completa) pasan
@@ -145,5 +141,4 @@ const FormImageUploadDragger = ({
   );
 };
 
-export { fileListFromUploadEvent };
 export default FormImageUploadDragger;

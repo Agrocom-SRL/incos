@@ -4,7 +4,7 @@ import { baseModelFields, baseModelOptions } from './base_model.js';
 
 /**
  * Bloque horario de una capacitación (módulo CAP) — junction
- * `capacitacion_horarios`: capacitaciones ↔ horarios (catálogo reutilizado,
+ * `capacitacion_horarios`: grupo de capacitación ↔ horarios (catálogo reutilizado,
  * tipo_horario='CAPACITACION'). El aula NO vive aquí sino en
  * `capacitaciones.aula_id`.
  */
@@ -17,6 +17,12 @@ export const BloqueCapacitacion = sequelize.define(
       field: 'capacitacion_id',
       allowNull: true,
       comment: 'Curso de capacitación',
+    },
+    grupoId: {
+      type: DataTypes.INTEGER,
+      field: 'grupo_id',
+      allowNull: true,
+      comment: 'Grupo del bloque (capacitacion_grupos.id); NULL = común a todos los grupos',
     },
     horarioId: {
       type: DataTypes.INTEGER,

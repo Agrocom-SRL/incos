@@ -7,7 +7,7 @@
  * en presentación, antes de pintarse (única excepción a inline permitida).
  */
 
-import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
+import { sanitizeDocenteColorHex } from '@docentes/utils/docenteColor';
 
 /**
  * @param {Array} cursos - cursos ya mapeados por `useDocenteHome` (mapCursoDocente).

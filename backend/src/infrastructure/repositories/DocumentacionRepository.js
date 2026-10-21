@@ -5,21 +5,21 @@ import { DocumentacionMapper } from '../mappers/DocumentacionMapper.js';
 /**
  * Implementación del repositorio de documentación usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
- * 
+ *
  * Responsabilidades:
  * - Acceso a datos (consultas, persistencia)
  * - Delegar conversión ORM ↔ Entidad a DocumentacionMapper
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja acceso a datos
  * - Dependency Inversion: Usa DocumentacionMapper para conversiones (depende de abstracción)
- * 
+ *
  * Clean Architecture:
  * - Infrastructure Layer: Implementación concreta del repositorio
  * - Usa DocumentacionMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
- * 
+ *
  * @implements {IDocumentacionRepository}
- * 
+ *
  * Esta clase cumple con el contrato IDocumentacionRepository:
  * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
  * - La especialización está en buildWhereClause(), no en métodos adicionales
@@ -36,7 +36,7 @@ export class DocumentacionRepository extends BaseRepository {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Delega la responsabilidad de mapeo a DocumentacionMapper
-   * 
+   *
    * @param {Object} model - Modelo Sequelize
    * @returns {Documentation|null} Entidad de dominio
    */
@@ -61,39 +61,39 @@ export class DocumentacionRepository extends BaseRepository {
   /**
    * Mapea datos de dominio a formato del modelo Sequelize (para creación)
    * Delega la responsabilidad de mapeo a DocumentacionMapper
-   * 
+   *
    * @param {Documentation|Object} data - Entidad Documentation o objeto con datos de dominio
    * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return DocumentacionMapper.toModel(data);
   }
 
   /**
    * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
    * Delega la responsabilidad de mapeo a DocumentacionMapper
-   * 
+   *
    * @param {Documentation|Object} data - Entidad Documentation o objeto con datos de dominio
    * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return DocumentacionMapper.toModelForUpdate(data);
   }
 
   /**
    * Construye la cláusula WHERE para filtros específicos
    * Maneja todos los criterios de búsqueda de la entidad Documentation
-   * 
+   *
    * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
    * sin necesidad de crear métodos adicionales en el repositorio.
-   * 
+   *
    * Ejemplos de uso:
    * - findAll({ documentType: 'INSCRIPCION' }) → Busca documentos de inscripción
    * - findAll({ required: true, parentDocumentId: null }) → Busca documentos principales requeridos
    * - findBy({ documentType: 'LICENCIA', name: 'Certificado médico' }) → Busca documento específico
-   * 
+   *
    * @param {Object} filters - Filtros de búsqueda
    *   - name: Nombre del documento (búsqueda exacta, para búsqueda de texto usar search())
    *   - documentType: Tipo de documento (INSCRIPCION, LICENCIA, PASANTIA, etc.)
@@ -139,7 +139,7 @@ export class DocumentacionRepository extends BaseRepository {
 
   /**
    * Retorna el nombre de la colección en la respuesta JSON
-   * 
+   *
    * @returns {string} Nombre de la colección para la respuesta JSON (estándar en inglés)
    */
   getCollectionName() {

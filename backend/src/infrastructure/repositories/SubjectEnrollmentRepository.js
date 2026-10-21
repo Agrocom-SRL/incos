@@ -1,5 +1,4 @@
 import { Op } from 'sequelize';
-import { IMatriculaMateriaRepository } from '../../domain/interfaces/repositories/IMatriculaMateriaRepository.js';
 import { MatriculaMateria as MatriculaMateriaModel } from '../database/models/matricula_materia.js';
 import { BaseRepository } from './BaseRepository.js';
 import { SubjectEnrollmentMapper } from '../mappers/SubjectEnrollmentMapper.js';
@@ -125,7 +124,7 @@ export class SubjectEnrollmentRepository extends BaseRepository {
      * @param {number|null} userId
      * @returns {Object}
      */
-    mapDataToModel(data, userId = null) {
+    mapDataToModel(data, _userId = null) {
         return SubjectEnrollmentMapper.toModel(data);
     }
 
@@ -136,7 +135,7 @@ export class SubjectEnrollmentRepository extends BaseRepository {
      * @param {number|null} userId
      * @returns {Object}
      */
-    mapDataToUpdate(data, userId = null) {
+    mapDataToUpdate(data, _userId = null) {
         return SubjectEnrollmentMapper.toModelForUpdate(data);
     }
 
@@ -270,7 +269,11 @@ export class SubjectEnrollmentRepository extends BaseRepository {
             SET nota_final = ?, updated_by = ?, updated_at = NOW()
             WHERE id = ? AND deleted_at IS NULL
             `,
-            { replacements: [notaFinal, usuarioId, matriculaMateriaId], type: sequelize.QueryTypes.UPDATE, transaction },
+            {
+                replacements: [notaFinal, usuarioId, matriculaMateriaId],
+                type: sequelize.QueryTypes.UPDATE,
+                transaction,
+            },
         );
     }
 }

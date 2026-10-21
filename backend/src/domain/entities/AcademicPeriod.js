@@ -11,28 +11,28 @@ export class AcademicPeriod extends BaseEntity {
     super(data);
     // Solo inicializar campos si fueron proporcionados explícitamente
     // Esto permite usar attributes limitados sin inicializar campos no solicitados
-    if (data.hasOwnProperty('managementId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'managementId')) {
       this.managementId = data.managementId;
     }
-    if (data.hasOwnProperty('code')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'code')) {
       this.code = data.code; // Ej: "2025-PLAN", "2025-BIM1", "2025-CLAU"
     }
-    if (data.hasOwnProperty('name')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'name')) {
       this.name = data.name;
     }
-    if (data.hasOwnProperty('division')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'division')) {
       this.division = data.division; // PLANIFICACION, MENSUAL, BIMESTRE, TRIMESTRE, CUATRIMESTRE, SEMESTRE, CLAUSURA, OTRO
     }
-    if (data.hasOwnProperty('orderNumber')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'orderNumber')) {
       this.orderNumber = data.orderNumber;
     }
-    if (data.hasOwnProperty('startDate')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'startDate')) {
       this.startDate = data.startDate;
     }
-    if (data.hasOwnProperty('endDate')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'endDate')) {
       this.endDate = data.endDate;
     }
-    if (data.hasOwnProperty('colorHex')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'colorHex')) {
       this.colorHex = data.colorHex;
     }
   }
@@ -74,30 +74,30 @@ export class AcademicPeriod extends BaseEntity {
    */
   toPlainObject() {
     const plainObject = super.toPlainObject();
-    
+
     // Solo incluir campos que fueron inicializados (existen en this)
-    if (this.hasOwnProperty('managementId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'managementId')) {
       plainObject.managementId = this.managementId;
     }
-    if (this.hasOwnProperty('code')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'code')) {
       plainObject.code = this.code;
     }
-    if (this.hasOwnProperty('name')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'name')) {
       plainObject.name = this.name;
     }
-    if (this.hasOwnProperty('division')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'division')) {
       plainObject.division = this.division;
     }
-    if (this.hasOwnProperty('orderNumber')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'orderNumber')) {
       plainObject.orderNumber = this.orderNumber;
     }
-    if (this.hasOwnProperty('startDate')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'startDate')) {
       plainObject.startDate = this.startDate;
     }
-    if (this.hasOwnProperty('endDate')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'endDate')) {
       plainObject.endDate = this.endDate;
     }
-    if (this.hasOwnProperty('colorHex')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'colorHex')) {
       plainObject.colorHex = this.colorHex;
     }
 

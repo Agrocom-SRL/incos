@@ -20,6 +20,12 @@ import { CAPACITACION_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../.
 import { registerComponent } from '../../utils/container.helpers.js';
 import { ListCursosCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/ListCursosCapacitacionUseCase.js';
 import { ListHorariosDisponiblesCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/ListHorariosDisponiblesCapacitacionUseCase.js';
+import { ListGruposCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/ListGruposCapacitacionUseCase.js';
+import { ListHorariosCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/ListHorariosCapacitacionUseCase.js';
+import { CreateHorarioCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/CreateHorarioCapacitacionUseCase.js';
+import { GetHorarioCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/GetHorarioCapacitacionUseCase.js';
+import { UpdateHorarioCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/UpdateHorarioCapacitacionUseCase.js';
+import { DeleteHorarioCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/DeleteHorarioCapacitacionUseCase.js';
 import { GetCursoCapacitacionByIdUseCase } from '../../../../application/use-cases/capacitacion/GetCursoCapacitacionByIdUseCase.js';
 import { CreateCursoCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/CreateCursoCapacitacionUseCase.js';
 import { UpdateCursoCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/UpdateCursoCapacitacionUseCase.js';
@@ -31,6 +37,12 @@ import { ExportListadoInscritosCapacitacionExcelUseCase } from '../../../../appl
 import {
     ListCursosCapacitacionController,
     ListHorariosDisponiblesCapacitacionController,
+    ListGruposCapacitacionController,
+    ListHorariosCapacitacionController,
+    CreateHorarioCapacitacionController,
+    GetHorarioCapacitacionController,
+    UpdateHorarioCapacitacionController,
+    DeleteHorarioCapacitacionController,
     GetCursoCapacitacionByIdController,
     CreateCursoCapacitacionController,
     UpdateCursoCapacitacionController,
@@ -72,11 +84,87 @@ export function registerCursosCapacitacionResource(container) {
 
     registerComponent(
         container,
+        CAPACITACION_TOKENS.listGruposCapacitacionUseCase,
+        (c) =>
+            new ListGruposCapacitacionUseCase({
+                grupoCapacitacionListadoViewRepository: c.resolve(
+                    CAPACITACION_TOKENS.grupoCapacitacionListadoViewRepository
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        CAPACITACION_TOKENS.listHorariosCapacitacionUseCase,
+        (c) =>
+            new ListHorariosCapacitacionUseCase({
+                cursoCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.cursoCapacitacionRepository
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        CAPACITACION_TOKENS.createHorarioCapacitacionUseCase,
+        (c) =>
+            new CreateHorarioCapacitacionUseCase({
+                scheduleRepository: c.resolve(REPOSITORIOS_TOKENS.scheduleRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        CAPACITACION_TOKENS.getHorarioCapacitacionUseCase,
+        (c) =>
+            new GetHorarioCapacitacionUseCase({
+                scheduleRepository: c.resolve(REPOSITORIOS_TOKENS.scheduleRepository),
+                bloqueCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.bloqueCapacitacionRepository
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        CAPACITACION_TOKENS.updateHorarioCapacitacionUseCase,
+        (c) =>
+            new UpdateHorarioCapacitacionUseCase({
+                scheduleRepository: c.resolve(REPOSITORIOS_TOKENS.scheduleRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        CAPACITACION_TOKENS.deleteHorarioCapacitacionUseCase,
+        (c) =>
+            new DeleteHorarioCapacitacionUseCase({
+                scheduleRepository: c.resolve(REPOSITORIOS_TOKENS.scheduleRepository),
+                bloqueCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.bloqueCapacitacionRepository
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
         CAPACITACION_TOKENS.getCursoCapacitacionByIdUseCase,
         (c) =>
             new GetCursoCapacitacionByIdUseCase({
+                grupoCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.grupoCapacitacionRepository
+                ),
                 cursoCapacitacionFichaViewRepository: c.resolve(
                     CAPACITACION_TOKENS.cursoCapacitacionFichaViewRepository
+                ),
+                capacitacionRequisitoRepository: c.resolve(
+                    CAPACITACION_TOKENS.capacitacionRequisitoRepository
                 ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
@@ -89,6 +177,18 @@ export function registerCursosCapacitacionResource(container) {
             new CreateCursoCapacitacionUseCase({
                 cursoCapacitacionRepository: c.resolve(
                     CAPACITACION_TOKENS.cursoCapacitacionRepository
+                ),
+                capacitacionRequisitoRepository: c.resolve(
+                    CAPACITACION_TOKENS.capacitacionRequisitoRepository
+                ),
+                grupoCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.grupoCapacitacionRepository
+                ),
+                bloqueCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.bloqueCapacitacionRepository
+                ),
+                inscripcionCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.inscripcionCapacitacionRepository
                 ),
                 scheduleRepository: c.resolve(REPOSITORIOS_TOKENS.scheduleRepository),
                 classroomRepository: c.resolve(REPOSITORIOS_TOKENS.classroomRepository),
@@ -103,6 +203,18 @@ export function registerCursosCapacitacionResource(container) {
             new UpdateCursoCapacitacionUseCase({
                 cursoCapacitacionRepository: c.resolve(
                     CAPACITACION_TOKENS.cursoCapacitacionRepository
+                ),
+                capacitacionRequisitoRepository: c.resolve(
+                    CAPACITACION_TOKENS.capacitacionRequisitoRepository
+                ),
+                grupoCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.grupoCapacitacionRepository
+                ),
+                bloqueCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.bloqueCapacitacionRepository
+                ),
+                inscripcionCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.inscripcionCapacitacionRepository
                 ),
                 scheduleRepository: c.resolve(REPOSITORIOS_TOKENS.scheduleRepository),
                 classroomRepository: c.resolve(REPOSITORIOS_TOKENS.classroomRepository),
@@ -142,6 +254,12 @@ export function registerCursosCapacitacionResource(container) {
         CAPACITACION_TOKENS.abrirCursoCapacitacionUseCase,
         (c) =>
             new AbrirCursoCapacitacionUseCase({
+                grupoCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.grupoCapacitacionRepository
+                ),
+                bloqueCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.bloqueCapacitacionRepository
+                ),
                 cursoCapacitacionRepository: c.resolve(
                     CAPACITACION_TOKENS.cursoCapacitacionRepository
                 ),
@@ -202,6 +320,84 @@ export function registerCursosCapacitacionResource(container) {
             new ListHorariosDisponiblesCapacitacionController({
                 listHorariosDisponiblesCapacitacionUseCase: c.resolve(
                     CAPACITACION_TOKENS.listHorariosDisponiblesCapacitacionUseCase
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    registerComponent(
+        container,
+        CAPACITACION_TOKENS.listGruposCapacitacionController,
+        (c) =>
+            new ListGruposCapacitacionController({
+                listGruposCapacitacionUseCase: c.resolve(
+                    CAPACITACION_TOKENS.listGruposCapacitacionUseCase
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    registerComponent(
+        container,
+        CAPACITACION_TOKENS.listHorariosCapacitacionController,
+        (c) =>
+            new ListHorariosCapacitacionController({
+                listHorariosCapacitacionUseCase: c.resolve(
+                    CAPACITACION_TOKENS.listHorariosCapacitacionUseCase
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    registerComponent(
+        container,
+        CAPACITACION_TOKENS.createHorarioCapacitacionController,
+        (c) =>
+            new CreateHorarioCapacitacionController({
+                createHorarioCapacitacionUseCase: c.resolve(
+                    CAPACITACION_TOKENS.createHorarioCapacitacionUseCase
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    registerComponent(
+        container,
+        CAPACITACION_TOKENS.getHorarioCapacitacionController,
+        (c) =>
+            new GetHorarioCapacitacionController({
+                getHorarioCapacitacionUseCase: c.resolve(
+                    CAPACITACION_TOKENS.getHorarioCapacitacionUseCase
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    registerComponent(
+        container,
+        CAPACITACION_TOKENS.updateHorarioCapacitacionController,
+        (c) =>
+            new UpdateHorarioCapacitacionController({
+                updateHorarioCapacitacionUseCase: c.resolve(
+                    CAPACITACION_TOKENS.updateHorarioCapacitacionUseCase
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    registerComponent(
+        container,
+        CAPACITACION_TOKENS.deleteHorarioCapacitacionController,
+        (c) =>
+            new DeleteHorarioCapacitacionController({
+                deleteHorarioCapacitacionUseCase: c.resolve(
+                    CAPACITACION_TOKENS.deleteHorarioCapacitacionUseCase
                 ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
                 responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
@@ -324,6 +520,24 @@ export function registerCursosCapacitacionResource(container) {
                 ),
                 listHorariosDisponiblesCapacitacionController: c.resolve(
                     CAPACITACION_TOKENS.listHorariosDisponiblesCapacitacionController
+                ),
+                listGruposCapacitacionController: c.resolve(
+                    CAPACITACION_TOKENS.listGruposCapacitacionController
+                ),
+                listHorariosCapacitacionController: c.resolve(
+                    CAPACITACION_TOKENS.listHorariosCapacitacionController
+                ),
+                createHorarioCapacitacionController: c.resolve(
+                    CAPACITACION_TOKENS.createHorarioCapacitacionController
+                ),
+                getHorarioCapacitacionController: c.resolve(
+                    CAPACITACION_TOKENS.getHorarioCapacitacionController
+                ),
+                updateHorarioCapacitacionController: c.resolve(
+                    CAPACITACION_TOKENS.updateHorarioCapacitacionController
+                ),
+                deleteHorarioCapacitacionController: c.resolve(
+                    CAPACITACION_TOKENS.deleteHorarioCapacitacionController
                 ),
                 getCursoCapacitacionByIdController: c.resolve(
                     CAPACITACION_TOKENS.getCursoCapacitacionByIdController

@@ -3,18 +3,18 @@ import { BaseMapper } from './BaseMapper.js';
 
 /**
  * Mapper: PlanSubjectMapper
- * 
+ *
  * Responsabilidad única: Conversión entre Modelo ORM (Sequelize) ↔ Entidad de Dominio (PlanSubject)
- * 
+ *
  * Patrón: Usa BaseMapper para campos comunes, solo maneja campos específicos de PlanSubject
- * 
+ *
  * Ubicación: Infrastructure Layer (es un detalle de implementación específico de Sequelize)
- * 
+ *
  * Principios SOLID aplicados:
  * - Single Responsibility: Solo se encarga de mapear campos específicos de PlanSubject
  * - Open/Closed: Extiende funcionalidad de BaseMapper sin modificarlo
  * - Dependency Inversion: Depende de la entidad de dominio, no de implementaciones concretas
- * 
+ *
  * Clean Architecture:
  * - Domain Layer: PlanSubject (entidad pura)
  * - Infrastructure Layer: BaseMapper (campos comunes) + PlanSubjectMapper (campos específicos)
@@ -25,9 +25,9 @@ export class PlanSubjectMapper {
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de PlanSubject
    * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
-   * 
+   *
    * Flujo: Base de Datos → ORM Model → Domain Entity
-   * 
+   *
    * @param {Object|null} model - Modelo Sequelize de AsignaturaPlan
    * @returns {PlanSubject|null} Entidad de dominio PlanSubject
    */
@@ -39,7 +39,7 @@ export class PlanSubjectMapper {
     // Cuando se usan attributes limitados, Sequelize almacena los campos en dataValues
     const dataValues = model.dataValues || model;
     const specificFields = {};
-    
+
     // Mapeo: BD (snake_case español) → Dominio (camelCase inglés)
     if ('planEstudioId' in dataValues && dataValues.planEstudioId !== undefined) {
       specificFields.studyPlanId = dataValues.planEstudioId ?? null;
@@ -65,18 +65,18 @@ export class PlanSubjectMapper {
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
-    
+
     return new PlanSubject(entityData);
   }
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
-   * 
+   *
    * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
-   * 
+   *
    * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
    * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
-   * 
+   *
    * @param {PlanSubject|Object} entity - Entidad PlanSubject o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
@@ -100,9 +100,9 @@ export class PlanSubjectMapper {
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
    * Solo incluye los campos que están definidos (que existen en la entidad)
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de PlanSubject
-   * 
+   *
    * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
-   * 
+   *
    * @param {PlanSubject|Object} entity - Entidad PlanSubject o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
@@ -145,7 +145,7 @@ export class PlanSubjectMapper {
 
   /**
    * Convierte un array de modelos Sequelize a array de entidades de dominio
-   * 
+   *
    * @param {Array} models - Array de modelos Sequelize
    * @returns {PlanSubject[]} Array de entidades PlanSubject
    */

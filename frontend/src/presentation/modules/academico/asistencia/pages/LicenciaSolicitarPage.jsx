@@ -35,7 +35,7 @@ import { PageHeader } from '@molecules';
 import ListPanelHeader from '@molecules/ListPanelHeader';
 import { DetailField, Button, BackButton, FieldDatePicker, Text } from '@atoms';
 import IdentidadCelda from '@atoms/IdentidadCelda';
-import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
+import { sanitizeDocenteColorHex } from '@docentes/utils/docenteColor';
 import { cfgFormColProps } from '@organisms/CfgFormWorkspace';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import { allSpacing } from '@theme/tokens';

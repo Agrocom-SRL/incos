@@ -4,7 +4,7 @@
  * Menu, Tooltip
  */
 
-import { allColors, backgroundColors } from '../colors';
+import { allColors } from '../colors';
 import { allSpacing } from '../spacing';
 
 /**

@@ -1,25 +1,25 @@
 /**
  * GET /api/v1/materias
  * Controller para listar materias con filtros y paginación
- * 
+ *
  * Responsabilidades:
  * - Recibir peticiones HTTP GET para listar materias
  * - Delegar lógica de negocio a ListMateriasUseCase
  * - Formatear respuesta JSON estandarizada
- * 
+ *
  * Endpoint:
  * GET /api/v1/materias?page=1&limit=50&search=matematica&periodo_id=1
- * 
+ *
  * Query Parameters:
  * - page: Número de página (default: 1)
  * - limit: Cantidad de resultados por página (default: 50)
  * - search: Término de búsqueda por código, nombre, nombre corto o descripción (opcional)
  * - periodo_id: Filtro por ID de periodo (opcional) - filtra materias que tienen asignatura_plan asociado a ese periodo
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja la comunicación HTTP para listar materias
  * - Dependency Inversion: Depende de ListMateriasUseCase (abstracción), no de implementación concreta
- * 
+ *
  * Clean Architecture:
  * - Presentation Layer: Maneja HTTP request/response
  * - Depende de Application Layer (Use Cases) a través de inyección de dependencias
@@ -56,4 +56,3 @@ export class ListMateriasController extends BaseListController {
   //   return filters;
   // }
 }
-

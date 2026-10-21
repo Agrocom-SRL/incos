@@ -14,9 +14,8 @@ import { usePoliticaInstitucional } from '@application-academico/calificaciones/
 import { CALIFICACIONES_PERMISOS } from '@application-academico/calificaciones/utils/calificacionesPermisos.js';
 import { CALIFICACIONES_PATH } from '@application-academico/calificaciones/utils/calificacionesPaths.js';
 import { sumaPesos } from '@application-academico/calificaciones/utils/politicaPorcentajeUtils.js';
-import PoliticaConfiguracionResumenCard, {
-  buildResumenDesdePolitica,
-} from '../components/PoliticaConfiguracionResumenCard.jsx';
+import PoliticaConfiguracionResumenCard from '../components/PoliticaConfiguracionResumenCard.jsx';
+import { buildResumenDesdePolitica } from '@application-academico/calificaciones/utils/buildResumenDesdePolitica.js';
 import PoliticaPonderacionTeoricoPractico from '../components/PoliticaPonderacionTeoricoPractico.jsx';
 import PoliticaPonderacionBimestres from '../components/PoliticaPonderacionBimestres.jsx';
 import PoliticaAsistenciaPanel from '../components/PoliticaAsistenciaPanel.jsx';
@@ -45,7 +44,8 @@ const PoliticaInstitucionalPage = () => {
 
   const cuotaTeorico = Form.useWatch('cuotaTeorico', form);
   const cuotaPractico = Form.useWatch('cuotaPractico', form);
-  const pesosBimestres = Form.useWatch('pesosBimestres', form) ?? [];
+  const pesosBimestresWatch = Form.useWatch('pesosBimestres', form);
+  const pesosBimestres = useMemo(() => pesosBimestresWatch ?? [], [pesosBimestresWatch]);
   const notaMinimaAprobacion = Form.useWatch('notaMinimaAprobacion', form);
   const asistenciaWatch = Form.useWatch('politicaAsistenciaDefault', form);
 
@@ -160,6 +160,7 @@ const PoliticaInstitucionalPage = () => {
     navigate(CALIFICACIONES_PATH);
   }, [navigate]);
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization -- el compilador no preserva la memoización; sin cambio de comportamiento
   const handleUsarGestionAnterior = useCallback(async () => {
     if (!politicaGestionAnterior || isSaving) return;
     try {
@@ -183,6 +184,7 @@ const PoliticaInstitucionalPage = () => {
     aplicarPoliticaAlFormulario,
     gestionVigente,
     politica?.gestionNombre,
+    notification,
   ]);
 
   return (

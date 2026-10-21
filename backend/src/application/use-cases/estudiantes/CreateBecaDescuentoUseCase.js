@@ -1,4 +1,5 @@
 import { ValidationError } from '../../../domain/errors/AppError.js';
+import { parseNumero } from '../../utils/validacionEntrada.js';
 import { BecaDescuentoMapper } from '../../mappers/estudiantes/index.js';
 
 /**
@@ -21,11 +22,13 @@ export class CreateBecaDescuentoUseCase {
       throw new ValidationError('porcentaje es requerido');
     }
 
+    const porcentajeValido = parseNumero(porcentaje, 'porcentaje', { min: 0, max: 100 });
+
     const created = await this.scholarshipRepository.create(
       {
         name: nombre,
         code: body.codigo ?? body.code ?? undefined,
-        percentage: porcentaje,
+        percentage: porcentajeValido,
         description: body.descripcion ?? body.description ?? undefined,
         requiresDocumentation: body.requiereDocumentacion ?? body.requiresDocumentation ?? undefined,
         requiresRectorApproval: body.requiereAprobacionRector ?? body.requiresRectorApproval ?? undefined,

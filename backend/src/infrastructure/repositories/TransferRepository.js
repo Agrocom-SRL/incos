@@ -1,4 +1,3 @@
-import { ITraspasoRepository } from '../../domain/interfaces/repositories/ITraspasoRepository.js';
 import { Traspaso as TraspasoModel } from '../database/models/traspaso.js';
 import { BaseRepository } from './BaseRepository.js';
 import { TransferMapper } from '../mappers/TransferMapper.js';
@@ -86,14 +85,14 @@ export class TransferRepository extends BaseRepository {
   /**
    * Mapeo de datos de dominio → modelo Sequelize (INSERT).
    */
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return TransferMapper.toModel(data);
   }
 
   /**
    * Mapeo de datos de dominio → modelo Sequelize (UPDATE).
    */
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return TransferMapper.toModelForUpdate(data);
   }
 
@@ -104,4 +103,3 @@ export class TransferRepository extends BaseRepository {
     return 'transfers';
   }
 }
-

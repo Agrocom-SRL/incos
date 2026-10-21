@@ -9,28 +9,28 @@ export class CalendarActivity extends BaseEntity {
     super(data);
     // Solo inicializar campos si fueron proporcionados explícitamente
     // Esto permite usar attributes limitados sin inicializar campos no solicitados
-    if (data.hasOwnProperty('academicPeriodId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'academicPeriodId')) {
       this.academicPeriodId = data.academicPeriodId;
     }
-    if (data.hasOwnProperty('activityId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'activityId')) {
       this.activityId = data.activityId;
     }
-    if (data.hasOwnProperty('code')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'code')) {
       this.code = data.code; // Ej: "2025-BIM1-001", "2025-PLAN-005"
     }
-    if (data.hasOwnProperty('customName')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'customName')) {
       this.customName = data.customName;
     }
-    if (data.hasOwnProperty('careerIds')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'careerIds')) {
       this.careerIds = data.careerIds; // Array de IDs de carreras (JSON o Array)
     }
-    if (data.hasOwnProperty('startDate')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'startDate')) {
       this.startDate = data.startDate;
     }
-    if (data.hasOwnProperty('endDate')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'endDate')) {
       this.endDate = data.endDate;
     }
-    if (data.hasOwnProperty('suspendsClasses')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'suspendsClasses')) {
       this.suspendsClasses = data.suspendsClasses; // TRUE = día sin clase (feriado/receso/vacaciones)
     }
   }
@@ -102,30 +102,30 @@ export class CalendarActivity extends BaseEntity {
    */
   toPlainObject() {
     const plainObject = super.toPlainObject();
-    
+
     // Solo incluir campos que fueron inicializados (existen en this)
-    if (this.hasOwnProperty('academicPeriodId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'academicPeriodId')) {
       plainObject.academicPeriodId = this.academicPeriodId;
     }
-    if (this.hasOwnProperty('activityId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'activityId')) {
       plainObject.activityId = this.activityId;
     }
-    if (this.hasOwnProperty('code')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'code')) {
       plainObject.code = this.code;
     }
-    if (this.hasOwnProperty('customName')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'customName')) {
       plainObject.customName = this.customName;
     }
-    if (this.hasOwnProperty('careerIds')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'careerIds')) {
       plainObject.careerIds = this.careerIds;
     }
-    if (this.hasOwnProperty('startDate')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'startDate')) {
       plainObject.startDate = this.startDate;
     }
-    if (this.hasOwnProperty('endDate')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'endDate')) {
       plainObject.endDate = this.endDate;
     }
-    if (this.hasOwnProperty('suspendsClasses')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'suspendsClasses')) {
       plainObject.suspendsClasses = this.suspendsClasses;
     }
 

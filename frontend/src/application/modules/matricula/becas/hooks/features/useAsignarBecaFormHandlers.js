@@ -133,6 +133,7 @@ export const useAsignarBecaFormHandlers = (studentId, options = {}) => {
 
     // Handler para finalizar la asignación de beca
     // selectedBecaDescuento puede venir como parámetro opcional o de las opciones
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization -- el compilador no preserva la memoización por dependencias de objeto; sin cambio de comportamiento
     const handleFinish = useCallback(async (values, selectedBecaDescuentoParam = null) => {
         // Usar selectedBecaDescuento del parámetro o de las opciones
         const becaDescuentoToUse = selectedBecaDescuentoParam || selectedBecaDescuento;

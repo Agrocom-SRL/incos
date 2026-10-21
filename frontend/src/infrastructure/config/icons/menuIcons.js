@@ -125,6 +125,7 @@ export const menuIconMap = {
     'CAP-CURSOS': BookOutlined,
     'CAP-PARTICIPANTES': TeamOutlined,
     'CAP-INSCRIPCIONES': SolutionOutlined,
+    'CAP-GRUPOS': ScheduleOutlined,
 
     // Titulación (TIT) — rename 2026-07-31 desde TUT; Acompañamiento se
     // reclasificó al bloque Académico (ver arriba).

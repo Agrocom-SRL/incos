@@ -1,5 +1,4 @@
 import { Op } from 'sequelize';
-import { IAulaRepository } from '../../domain/interfaces/repositories/IAulaRepository.js';
 import { Aula as AulaModel } from '../database/models/aula.js';
 import { BaseRepository } from './BaseRepository.js';
 import { ClassroomMapper } from '../mappers/ClassroomMapper.js';
@@ -7,21 +6,21 @@ import { ClassroomMapper } from '../mappers/ClassroomMapper.js';
 /**
  * Implementación del repositorio de aulas usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
- * 
+ *
  * Responsabilidades:
  * - Acceso a datos (consultas, persistencia)
  * - Delegar conversión ORM ↔ Entidad a ClassroomMapper
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja acceso a datos
  * - Dependency Inversion: Usa ClassroomMapper para conversiones (depende de abstracción)
- * 
+ *
  * Clean Architecture:
  * - Infrastructure Layer: Implementación concreta de IAulaRepository
  * - Usa ClassroomMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
- * 
+ *
  * @implements {IAulaRepository}
- * 
+ *
  * Esta clase cumple con el contrato IAulaRepository:
  * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
  * - La especialización está en buildWhereClause(), no en métodos adicionales
@@ -39,15 +38,15 @@ export class ClassroomRepository extends BaseRepository {
   /**
    * Construye la cláusula WHERE para filtros específicos
    * Maneja todos los criterios de búsqueda de la entidad Classroom
-   * 
+   *
    * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
    * sin necesidad de crear métodos adicionales en el repositorio.
-   * 
+   *
    * Ejemplos de uso:
    * - findBy({ code: 'A-101' }) → Busca por código
    * - findAll({ category: 'AULA' }) → Busca aulas regulares
    * - findAll({ minCapacity: 30, maxCapacity: 50 }) → Busca aulas con capacidad entre 30 y 50
-   * 
+   *
    * @param {Object} filters - Filtros de búsqueda
    *   - code: Código del aula (búsqueda exacta, para búsqueda de texto usar search())
    *   - name: Nombre del aula (búsqueda exacta, para búsqueda de texto usar search())
@@ -91,7 +90,7 @@ export class ClassroomRepository extends BaseRepository {
   /**
    * Retorna los campos que se usarán para búsqueda de texto
    * Estos campos se usan en el método search() para búsqueda por término
-   * 
+   *
    * @returns {string[]} Array de nombres de campos del modelo Sequelize
    */
   getSearchFields() {
@@ -101,24 +100,24 @@ export class ClassroomRepository extends BaseRepository {
   /**
    * Retorna el orden por defecto para las consultas
    * Delega el orden al BaseRepository que ordena por ID ASC
-   * 
+   *
    * @returns {Array} Array vacío para usar el orden por defecto del BaseRepository (id ASC)
    */
   getDefaultSort() {
     return []; // Usa el orden por defecto de BaseRepository: [['id', 'ASC']]
   }
 
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return ClassroomMapper.toModel(data);
   }
 
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return ClassroomMapper.toModelForUpdate(data);
   }
 
   /**
    * Retorna el nombre de la colección en la respuesta JSON
-   * 
+   *
    * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {

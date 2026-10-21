@@ -3,11 +3,11 @@
  *
  * Servicio de infraestructura que genera el ACTA DE COMPROMISO PARA LA ENTREGA DE DOCUMENTOS
  * a partir de una plantilla PDF (Plantilla.pdf).
- * 
+ *
  * Tecnología: Usa pdf-lib para cargar y editar la plantilla PDF existente.
- * 
+ *
  * Se registra en el contenedor DI (services.container) y se inyecta en GenerateActaCompromisoUseCase.
- * 
+ *
  * NOTA: Este es el único método para generar actas de compromiso. Ya no se usa Word.
  * El flujo anterior (Word → DOCX → PDF) fue reemplazado por este método directo.
  *
@@ -16,10 +16,10 @@
  * - Solo contiene lógica específica del acta de compromiso:
  *   - _addDocumentTitle(): Título principal del documento (específico del acta)
  *   - generate(): Método principal de generación (orquesta la construcción)
- * 
+ *
  * Todos los métodos comunes (_addSubtitle, _addParagraph, _addSection, _addBulletPoint, etc.) están
  * en IncosPDFLibBase y se heredan automáticamente.
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja lógica específica del acta de compromiso
  * - Open/Closed: Extiende IncosPDFLibBase sin modificar la clase base
@@ -97,7 +97,7 @@ export class ActaCompromisoPdfGenerator extends IncosPDFLibBase {
 
     /**
      * Construye el encabezado del documento (título y subtítulo)
-     * 
+     *
      * @private
      * @param {Object} options - Opciones de generación
      * @returns {Promise<void>}
@@ -118,7 +118,7 @@ export class ActaCompromisoPdfGenerator extends IncosPDFLibBase {
 
     /**
      * Construye la sección de fecha de registro
-     * 
+     *
      * @private
      * @param {Object} options - Opciones de generación
      * @returns {Promise<void>}
@@ -135,7 +135,7 @@ export class ActaCompromisoPdfGenerator extends IncosPDFLibBase {
 
     /**
      * Construye la sección de nombre completo e identificación
-     * 
+     *
      * @private
      * @param {Object} options - Opciones de generación
      * @returns {Promise<void>}
@@ -157,7 +157,7 @@ export class ActaCompromisoPdfGenerator extends IncosPDFLibBase {
 
     /**
      * Construye la sección de requisitos con lista de documentos
-     * 
+     *
      * @private
      * @param {Object} options - Opciones de generación
      * @returns {Promise<void>}
@@ -190,7 +190,7 @@ export class ActaCompromisoPdfGenerator extends IncosPDFLibBase {
 
     /**
      * Construye la sección de plazos de compromiso
-     * 
+     *
      * @private
      * @param {Object} options - Opciones de generación
      * @returns {Promise<void>}
@@ -208,7 +208,7 @@ export class ActaCompromisoPdfGenerator extends IncosPDFLibBase {
 
     /**
      * Construye la sección de motivos con lista de observaciones
-     * 
+     *
      * @private
      * @param {Object} options - Opciones de generación
      * @returns {Promise<void>}
@@ -229,10 +229,10 @@ export class ActaCompromisoPdfGenerator extends IncosPDFLibBase {
                 if (observaciones) {
                     // Limpiar saltos de línea y caracteres problemáticos para pdf-lib
                     const observacionesLimpias = observaciones
-                        .replace(/\n/g, ' ')  // Reemplazar saltos de línea con espacios
-                        .replace(/\r/g, '')   // Eliminar retornos de carro
-                        .replace(/\t/g, ' ')   // Reemplazar tabs con espacios
-                        .trim();               // Eliminar espacios al inicio y final
+                        .replace(/\n/g, ' ') // Reemplazar saltos de línea con espacios
+                        .replace(/\r/g, '') // Eliminar retornos de carro
+                        .replace(/\t/g, ' ') // Reemplazar tabs con espacios
+                        .trim(); // Eliminar espacios al inicio y final
 
                     if (observacionesLimpias) {
                         // Agregar nombre del documento entre paréntesis
@@ -265,7 +265,7 @@ export class ActaCompromisoPdfGenerator extends IncosPDFLibBase {
     /**
      * Agrega un párrafo de texto normal con tamaño de fuente aumentado (específico para Acta de Compromiso).
      * Sobrescribe el comportamiento del método base para usar un tamaño de fuente más grande.
-     * 
+     *
      * @protected
      * @param {string} text - Texto del párrafo
      * @returns {Promise<void>} Actualiza el estado interno _currentY
@@ -323,7 +323,6 @@ export class ActaCompromisoPdfGenerator extends IncosPDFLibBase {
         const lines = Array.isArray(opts.lines) ? opts.lines : [];
         const { width: pageWidth } = this._currentPage.getSize();
         const cfg = IncosPDFBase.LAYOUT;
-        const margins = cfg.margins;
         const lineWidth = cfg.signatureLineWidth ?? 150;
         const lineThickness = cfg.signatureLineThickness ?? 1;
         const headerHeight = cfg.headerHeight ?? 90;
@@ -338,10 +337,6 @@ export class ActaCompromisoPdfGenerator extends IncosPDFLibBase {
         const centerX = pageWidth / 2;
         const halfLine = lineWidth / 2;
 
-        // Calcular altura del bloque de firma
-        const blockHeight = lineThickness + spaceLineToFirst +
-            lines.length * fontSize + Math.max(0, lines.length - 1) * spaceBetweenLines;
-        
         // Posicionar la firma continuando desde _currentY con un espaciado basado en headerHeight
         // El espaciado es igual al headerHeight (90 puntos) para dar suficiente espacio
         const spacingFromContent = headerHeight;

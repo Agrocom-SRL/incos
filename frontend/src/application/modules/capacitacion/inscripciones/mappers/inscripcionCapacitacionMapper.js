@@ -17,6 +17,7 @@
 
 import dayjs from 'dayjs';
 import { buildFullName, buildCompleteCI } from '@application/utils/formatters';
+import { CONCEPTO_PAGO, formatConceptoPago } from '@application-capacitacion/utils/capacitacionCatalogos';
 
 const toNumber = (value, fallback = 0) => {
   const n = Number(value);
@@ -72,16 +73,29 @@ export const mapInscripcionCapacitacion = (raw) => {
     capacitacionId: raw.capacitacionId ?? null,
     capacitacionTitulo: cleanText(raw.capacitacionTitulo) || 'Sin curso',
     capacitacionEstado: raw.capacitacionEstado ?? null,
-    capacitacionFechasLabel:
-      fechaInicioLabel && fechaFinLabel
+    capacitacionFechasLabel: fechaInicioLabel
+      ? fechaFinLabel
         ? `${fechaInicioLabel} – ${fechaFinLabel}`
-        : fechaInicioLabel,
-    // Pago (persistido/calculado por el backend)
+        : `Desde ${fechaInicioLabel}`
+      : null,
+    // Grupo elegido (tipo «paralelo») y la etiqueta de sus horarios.
+    capacitacionGrupoId: raw.capacitacionGrupoId ?? null,
+    grupoNombre: cleanText(raw.grupoNombre),
+    grupoHorariosEtiqueta: cleanText(raw.grupoHorariosEtiqueta ?? raw.grupoHorarios),
+    // Pago (persistido/calculado por el backend). Dos conceptos independientes:
+    // CURSO (`montoObligatorio`, entidad certificadora) y MATRICULA (instituto).
     costo: toNumber(raw.costo),
     montoObligatorio: toNumber(raw.montoObligatorio),
+    montoMatricula: toNumber(raw.montoMatricula),
+    montoTotal: toNumber(raw.montoObligatorio) + toNumber(raw.montoMatricula),
     totalPagado: toNumber(raw.totalPagado),
     saldo: toNumber(raw.saldo),
+    saldoCurso: toNumber(raw.saldoCurso ?? raw.saldo),
+    saldoMatricula: toNumber(raw.saldoMatricula),
+    saldoTotal: toNumber(raw.saldoCurso ?? raw.saldo) + toNumber(raw.saldoMatricula),
     estadoPago: raw.estadoPago ?? null,
+    estadoPagoCurso: raw.estadoPagoCurso ?? null,
+    estadoPagoMatricula: raw.estadoPagoMatricula ?? null,
     pagosCount: toNumber(raw.pagosCount),
     // Compromiso de pago (solo existe si la inscripción quedó con saldo parcial)
     compromisoId: raw.compromisoId ?? null,
@@ -115,6 +129,10 @@ const mapPagoCapacitacion = (raw) => {
     fechaPagoLabel: formatFecha(raw.fechaPago),
     numeroRecibo: cleanText(raw.numeroRecibo),
     observaciones: cleanText(raw.observaciones),
+    concepto: raw.concepto ?? null,
+    conceptoLabel: raw.concepto ? formatConceptoPago(raw.concepto) : null,
+    tieneComprobante: raw.tieneComprobante === true || raw.tieneComprobante === 1,
+    comprobanteNombre: cleanText(raw.comprobanteNombre),
     metodoPagoId: raw.metodoPagoId ?? null,
     metodoPagoNombre: cleanText(raw.metodoPagoNombre),
     cuentaPagoId: raw.cuentaPagoId ?? null,
@@ -127,7 +145,27 @@ const mapPagoCapacitacion = (raw) => {
 };
 
 /**
- * Mapea la ficha completa (dataKey `inscripcionCapacitacion`): base + pagos[].
+ * Mapea un requisito del checklist de la inscripción.
+ * @param {Object} raw - { requisitoId, descripcion, obligatorio, entregado, fechaEntrega, observacion }
+ * @returns {Object|null}
+ */
+export const mapRequisitoInscripcion = (raw) => {
+  if (!raw || typeof raw !== 'object') return null;
+  const requisitoId = raw.requisitoId ?? raw.id ?? null;
+  if (requisitoId == null) return null;
+  return {
+    requisitoId,
+    descripcion: cleanText(raw.descripcion) || 'Requisito',
+    obligatorio: raw.obligatorio !== false && raw.obligatorio !== 0,
+    entregado: raw.entregado === true || raw.entregado === 1,
+    fechaEntrega: raw.fechaEntrega ?? null,
+    observacion: cleanText(raw.observacion),
+  };
+};
+
+/**
+ * Mapea la ficha completa (dataKey `inscripcionCapacitacion`): base + pagos[]
+ * + requisitos[] (checklist).
  * @param {Object} raw
  * @returns {Object|null}
  */
@@ -138,16 +176,21 @@ export const mapInscripcionCapacitacionDetail = (raw) => {
   return {
     ...base,
     pagos: Array.isArray(raw.pagos) ? raw.pagos.map(mapPagoCapacitacion).filter(Boolean) : [],
+    requisitos: Array.isArray(raw.requisitos)
+      ? raw.requisitos.map(mapRequisitoInscripcion).filter(Boolean)
+      : [],
   };
 };
 
 /**
- * Valores del formulario de pago → payload del backend
+ * Valores del formulario de pago → campos del backend
  * (`registerPagoCapacitacionValidator` / objeto anidado `pagoInicial`).
- * @param {Object} values - { monto, fechaPago, metodoPagoId, cuentaPagoId?, observaciones? }
+ * `concepto` (MATRICULA | CURSO) es obligatorio: sin él el backend rechaza el pago.
+ * @param {Object} values - { concepto, monto, fechaPago, metodoPagoId, cuentaPagoId?, observaciones? }
  * @returns {Object}
  */
 export const mapFormValuesToPagoPayload = (values = {}) => ({
+  concepto: values.concepto,
   monto: Number(values.monto),
   metodoPagoId: Number(values.metodoPagoId),
   cuentaPagoId: values.cuentaPagoId != null ? Number(values.cuentaPagoId) : null,
@@ -156,20 +199,85 @@ export const mapFormValuesToPagoPayload = (values = {}) => ({
 });
 
 /**
- * Valores del formulario del paso "Pago inicial" del wizard de inscripción →
- * payload `pagoInicial` (`createInscripcionCapacitacionValidator`). Extiende
- * `mapFormValuesToPagoPayload` con `fechaCompromiso`: solo se incluye cuando
- * el usuario la eligió (campo visible únicamente si el monto ingresado queda
- * por debajo del costo del curso — ver `PagoCapacitacionFormFields`). Nunca se
- * usa para el registro de una cuota posterior (`POST /:id/pagos` no acepta
- * `fechaCompromiso`, el compromiso ya existe o no aplica).
- * @param {Object} values - { monto, fechaPago, metodoPagoId, cuentaPagoId?, observaciones?, fechaCompromiso? }
+ * Archivo de comprobante desde el valor del `Upload` de AntD (fileList) o un
+ * File directo. `undefined` si no hay archivo (el comprobante es opcional).
+ */
+export const extractComprobanteFile = (value) => {
+  const first = Array.isArray(value) ? value[0] : value;
+  return first?.originFileObj ?? first ?? undefined;
+};
+
+/**
+ * Arma el cuerpo de `POST /:id/pagos`: JSON plano sin comprobante, o
+ * `FormData` (campos + `comprobante`) cuando hay archivo. Los campos nulos/
+ * indefinidos no se envían en multipart.
+ * @param {Object} payload - salida de `mapFormValuesToPagoPayload`
+ * @param {File} [comprobante]
+ * @returns {Object|FormData}
+ */
+export const buildPagoRequestBody = (payload, comprobante) => {
+  if (!comprobante) return payload;
+  const formData = new FormData();
+  Object.entries(payload).forEach(([clave, valor]) => {
+    if (valor !== undefined && valor !== null) formData.append(clave, String(valor));
+  });
+  formData.append('comprobante', comprobante);
+  return formData;
+};
+
+/**
+ * Pago inicial OPCIONAL del wizard de inscripción → `pagoInicial` (mismos
+ * campos que un pago; el comprobante se adjunta después desde la ficha).
+ * @param {Object} values
  * @returns {Object}
  */
-export const mapFormValuesToPagoInicialPayload = (values = {}) => {
-  const base = mapFormValuesToPagoPayload(values);
-  const fechaCompromiso = values.fechaCompromiso
-    ? dayjs(values.fechaCompromiso).format('YYYY-MM-DD')
-    : undefined;
-  return fechaCompromiso ? { ...base, fechaCompromiso } : base;
+export const mapFormValuesToPagoInicialPayload = (values = {}) => mapFormValuesToPagoPayload(values);
+
+/**
+ * Checklist de la ficha → `requisitos[]` de `PUT /:id/requisitos`: envía el
+ * estado completo (entregado sí/no por requisito). `fechaEntrega` solo viaja
+ * si el requisito está entregado y ya tenía fecha.
+ * @param {Array} requisitos - requisitos mapeados (con `entregado` editado)
+ * @returns {Array}
+ */
+export const mapRequisitosToPayload = (requisitos = []) =>
+  requisitos.map((r) => ({
+    requisitoId: r.requisitoId,
+    entregado: r.entregado === true,
+    ...(r.entregado && r.fechaEntrega ? { fechaEntrega: r.fechaEntrega } : {}),
+    ...(r.observacion ? { observacion: r.observacion } : {}),
+  }));
+
+/** Concepto → clave del saldo/monto en la inscripción mapeada. */
+export const saldoPorConcepto = (inscripcion, concepto) =>
+  concepto === CONCEPTO_PAGO.MATRICULA ? inscripcion?.saldoMatricula ?? 0 : inscripcion?.saldoCurso ?? 0;
+
+/**
+ * Cuerpo de `POST /inscripciones-capacitacion` (`createInscripcionCapacitacionValidator`).
+ *
+ * - participante EXISTENTE → `participanteId`; NUEVO → objeto `participante`.
+ * - `capacitacionGrupoId`, `requisitosEntregados` y `pagoInicial` son opcionales
+ *   y solo se incluyen cuando traen dato (inscribir con pendientes es válido).
+ * - El curso viaja como `capacitacionId` (nombre del validator actual) y también
+ *   como `cursoId` (nombre del contrato de la extensión): el backend ignora el que no use.
+ * @param {Object} params
+ * @returns {Object}
+ */
+export const buildInscripcionPayload = ({
+  cursoId,
+  participanteId = null,
+  participanteNuevo = null,
+  capacitacionGrupoId = null,
+  requisitosEntregados = [],
+  pagoInicial = null,
+}) => {
+  const payload = { capacitacionId: Number(cursoId), cursoId: Number(cursoId) };
+  if (participanteId != null) payload.participanteId = Number(participanteId);
+  else if (participanteNuevo) payload.participante = participanteNuevo;
+  if (capacitacionGrupoId != null) payload.capacitacionGrupoId = Number(capacitacionGrupoId);
+  if (Array.isArray(requisitosEntregados) && requisitosEntregados.length > 0) {
+    payload.requisitosEntregados = requisitosEntregados.map(Number);
+  }
+  if (pagoInicial) payload.pagoInicial = pagoInicial;
+  return payload;
 };

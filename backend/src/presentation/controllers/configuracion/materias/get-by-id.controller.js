@@ -11,4 +11,3 @@ export class GetMateriaByIdController extends BaseGetController {
     });
   }
 }
-

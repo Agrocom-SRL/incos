@@ -1,24 +1,24 @@
 /**
  * GET /api/v1/carreras
  * Controller para listar carreras con filtros y paginación
- * 
+ *
  * Responsabilidades:
  * - Recibir peticiones HTTP GET para listar carreras
  * - Delegar lógica de negocio a ListCarrerasUseCase
  * - Formatear respuesta JSON estandarizada
- * 
+ *
  * Endpoint:
  * GET /api/v1/carreras?page=1&limit=50&search=informatica
- * 
+ *
  * Query Parameters:
  * - page: Número de página (default: 1)
  * - limit: Cantidad de resultados por página (default: 50)
  * - search: Término de búsqueda por código, nombre o descripción (opcional)
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja la comunicación HTTP para listar carreras
  * - Dependency Inversion: Depende de ListCarrerasUseCase (abstracción), no de implementación concreta
- * 
+ *
  * Clean Architecture:
  * - Presentation Layer: Maneja HTTP request/response
  * - Depende de Application Layer (Use Cases) a través de inyección de dependencias
@@ -55,4 +55,3 @@ export class ListCarrerasController extends BaseListController {
   //   return filters;
   // }
 }
-

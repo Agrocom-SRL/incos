@@ -38,7 +38,7 @@ bower_components
 build/Release
 
 # Dependency directories
-node_modules/
+node_modules
 jspm_packages/
 
 # Snowpack dependency directory (https://snowpack.dev/)
@@ -142,10 +142,11 @@ vite.config.ts.timestamp-*
 .DS_Store
 **/.DS_Store
 
-# Tooling de IA (Claude, Cursor) — no versionar
-.claude/
+# Tooling de IA: se versionan CLAUDE.md y .claude/ (agentes, skills, prompt maestro) para
+# continuar con el mismo contexto en otra máquina. No se versiona lo local/personal.
+.claude/settings.local.json
+.claude/worktrees/
 .cursor/
-/CLAUDE.md
 
 # Prototipo de rediseño UI/UX (vive en la rama `revamp`). En `development` no se
 # versiona: aquí seguimos con los módulos del frontend principal.

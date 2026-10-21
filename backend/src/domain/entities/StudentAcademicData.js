@@ -1,5 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
-import { ESTADOS_ACADEMICOS_VALUES, ESTADOS_ACADEMICOS, ESTADOS_REGISTRO_ESTUDIANTE_VALUES, ESTADOS_REGISTRO_ESTUDIANTE, TIPOS_ADMISION_VALUES, TIPOS_ADMISION } from '../constants/index.js';
+import { ESTADOS_ACADEMICOS_VALUES, ESTADOS_ACADEMICOS, ESTADOS_REGISTRO_ESTUDIANTE_VALUES, ESTADOS_REGISTRO_ESTUDIANTE, TIPOS_ADMISION } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: StudentAcademicData
@@ -10,38 +10,38 @@ export class StudentAcademicData extends BaseEntity {
     super(data);
     // Solo inicializar campos si fueron proporcionados explícitamente
     // Esto permite usar attributes limitados sin inicializar campos no solicitados
-    if (data.hasOwnProperty('studentId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'studentId')) {
       this.studentId = data.studentId;
     }
-    if (data.hasOwnProperty('careerId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'careerId')) {
       this.careerId = data.careerId;
     }
-    if (data.hasOwnProperty('managementId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'managementId')) {
       this.managementId = data.managementId;
     }
-    if (data.hasOwnProperty('academicState')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'academicState')) {
       this.academicState = data.academicState;
-    } else if (!data.hasOwnProperty('studentId')) {
+    } else if (!Object.prototype.hasOwnProperty.call(data, 'studentId')) {
       // Solo usar valor por defecto si no se está usando attributes limitados
       this.academicState = ESTADOS_ACADEMICOS.REGULAR;
     }
-    if (data.hasOwnProperty('registrationState')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'registrationState')) {
       this.registrationState = data.registrationState;
-    } else if (!data.hasOwnProperty('studentId')) {
+    } else if (!Object.prototype.hasOwnProperty.call(data, 'studentId')) {
       // Solo usar valor por defecto si no se está usando attributes limitados
       this.registrationState = ESTADOS_REGISTRO_ESTUDIANTE.BORRADOR;
     }
-    if (data.hasOwnProperty('admissionType')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'admissionType')) {
       this.admissionType = data.admissionType;
-    } else if (data.hasOwnProperty('tipoAdmision')) {
+    } else if (Object.prototype.hasOwnProperty.call(data, 'tipoAdmision')) {
       this.admissionType = data.tipoAdmision;
-    } else if (!data.hasOwnProperty('studentId')) {
+    } else if (!Object.prototype.hasOwnProperty.call(data, 'studentId')) {
       this.admissionType = TIPOS_ADMISION.NUEVO;
     }
-    if (data.hasOwnProperty('annualAverage')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'annualAverage')) {
       this.annualAverage = data.annualAverage;
     }
-    if (data.hasOwnProperty('photoUrl')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'photoUrl')) {
       this.photoUrl = data.photoUrl;
     }
   }
@@ -96,33 +96,33 @@ export class StudentAcademicData extends BaseEntity {
    */
   toPlainObject() {
     const plainObject = super.toPlainObject();
-    
+
     // Solo incluir campos que fueron inicializados (existen en this)
-    if (this.hasOwnProperty('studentId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'studentId')) {
       plainObject.studentId = this.studentId;
     }
-    if (this.hasOwnProperty('careerId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'careerId')) {
       plainObject.careerId = this.careerId;
       plainObject.carreraId = this.careerId; // API: frontend espera carreraId
     }
-    if (this.hasOwnProperty('managementId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'managementId')) {
       plainObject.managementId = this.managementId;
       plainObject.gestionIngresoId = this.managementId; // API: frontend espera gestionIngresoId
     }
-    if (this.hasOwnProperty('academicState')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'academicState')) {
       plainObject.academicState = this.academicState;
     }
-    if (this.hasOwnProperty('registrationState')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'registrationState')) {
       plainObject.registrationState = this.registrationState;
     }
-    if (this.hasOwnProperty('admissionType')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'admissionType')) {
       plainObject.admissionType = this.admissionType;
       plainObject.tipoAdmision = this.admissionType; // API: frontend espera tipoAdmision
     }
-    if (this.hasOwnProperty('annualAverage')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'annualAverage')) {
       plainObject.annualAverage = this.annualAverage;
     }
-    if (this.hasOwnProperty('photoUrl')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'photoUrl')) {
       plainObject.photoUrl = this.photoUrl;
     }
 

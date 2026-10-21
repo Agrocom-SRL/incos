@@ -55,4 +55,15 @@ export class IInscripcionCapacitacionRepository extends IRepository {
   async findListadoRowById(_id) {
     throw new Error('Method findListadoRowById() must be implemented');
   }
+
+  /**
+   * Cantidad de inscripciones vigentes (PENDIENTE o INSCRITO) por grupo.
+   *
+   * @param {number[]} grupoIds
+   * @param {Object} options - Opciones opcionales (ej: `{ transaction }`)
+   * @returns {Promise<Object<number, number>>} Mapa grupoId → cantidad
+   */
+  async countVigentesByGrupoIds(_grupoIds, _options = {}) {
+    throw new Error('Method countVigentesByGrupoIds() must be implemented');
+  }
 }

@@ -13,4 +13,3 @@ export class DeleteMateriaUseCase {
     return true;
   }
 }
-

@@ -35,7 +35,7 @@
  *   LicenseRepository, TransferRepository, TransitabilityRepository
  */
 
-import { NotFoundError } from '../../../domain/errors/AppError.js';
+import { ConflictError, NotFoundError } from '../../../domain/errors/AppError.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -126,6 +126,9 @@ export class DeleteStudentUseCase {
         ? student.toPlainObject()
         : student;
 
+      // 1b. Comprobar TODO lo que pueda impedir el borrado antes de borrar nada
+      await this._assertSinPagosCobrados(studentId);
+
       // 2. Licencias (antes de inscripciones: FK inscripcion_id)
       await this._deleteLicensesForStudent(studentId);
 
@@ -186,6 +189,56 @@ export class DeleteStudentUseCase {
   }
 
   /**
+   * Un estudiante con pagos ya cobrados (cuota con monto > 0) no se elimina:
+   * borrarlo dejaría sin respaldo dinero ingresado. Se comprueba antes de borrar nada.
+   * Las cuotas de monto 0 (compromisos de pago) no bloquean.
+   *
+   * @private
+   * @param {number} studentId
+   * @throws {ConflictError}
+   */
+  async _assertSinPagosCobrados(studentId) {
+    const paymentsResult = await this.contributionPaymentRepository.findAll(
+      { studentId, active: true },
+      null,
+      null
+    );
+    const payments =
+      paymentsResult.contributionPayments ||
+      paymentsResult.pagos ||
+      paymentsResult.payments ||
+      [];
+
+    let cuotasCobradas = 0;
+    for (const payment of payments) {
+      const plain = payment.toPlainObject ? payment.toPlainObject() : payment;
+      if (!plain.id) continue;
+      const installmentsResult = await this.contributionPaymentInstallmentRepository.findAll(
+        { contributionPaymentId: plain.id, active: true },
+        null,
+        null
+      );
+      const installments =
+        installmentsResult.contributionPaymentInstallments ||
+        installmentsResult.pagoCuotas ||
+        installmentsResult.cuotas ||
+        installmentsResult.data ||
+        [];
+      for (const inst of installments) {
+        const instPlain = inst.toPlainObject ? inst.toPlainObject() : inst;
+        if (Number(instPlain.amount) > 0) cuotasCobradas += 1;
+      }
+    }
+
+    if (cuotasCobradas > 0) {
+      throw new ConflictError(
+        `El estudiante tiene ${cuotasCobradas} pago(s) ya cobrado(s); no se puede eliminar`,
+        { cuotasCobradas }
+      );
+    }
+  }
+
+  /**
    * Soft delete de todas las inscripciones del estudiante y sus inscripciones_materias.
    * No toca calificaciones ni historial_nivelaciones (módulos no implementados).
    *
@@ -221,7 +274,7 @@ export class DeleteStudentUseCase {
         if (!academicDataId) continue;
 
         const enrollmentsResult = await this.enrollmentRepository.findAll(
-          { academicDataId: academicDataId, active: true },
+          { academicDataId, active: true },
           null,
           null
         );
@@ -598,7 +651,7 @@ export class DeleteStudentUseCase {
     try {
       // Buscar todos los documentos del estudiante
       const documentsResult = await this.studentDocumentRepository.findAll(
-        { studentId: studentId, active: true },
+        { studentId, active: true },
         null,
         null
       );
@@ -687,7 +740,7 @@ export class DeleteStudentUseCase {
     try {
       const deliveriesResult =
         await this.studentDocumentDeliveryRepository.findAll(
-          { studentId: studentId, active: true },
+          { studentId, active: true },
           null,
           null
         );
@@ -741,7 +794,7 @@ export class DeleteStudentUseCase {
   async _deleteOrigins(studentId) {
     try {
       const originsResult = await this.studentOriginRepository.findAll(
-        { studentId: studentId, active: true },
+        { studentId, active: true },
         null,
         null
       );
@@ -790,7 +843,7 @@ export class DeleteStudentUseCase {
     try {
       const disabilitiesResult =
         await this.studentDisabilityRepository.findAll(
-          { studentId: studentId, active: true },
+          { studentId, active: true },
           null,
           null
         );
@@ -844,7 +897,7 @@ export class DeleteStudentUseCase {
   async _deleteGuardians(studentId) {
     try {
       const guardiansResult = await this.studentGuardianRepository.findAll(
-        { studentId: studentId, active: true },
+        { studentId, active: true },
         null,
         null
       );
@@ -895,7 +948,7 @@ export class DeleteStudentUseCase {
   async _deleteAcademicData(studentId) {
     try {
       const academicDataResult = await this.studentAcademicDataRepository.findAll(
-        { studentId: studentId, active: true },
+        { studentId, active: true },
         null,
         null
       );

@@ -1,5 +1,8 @@
 # Centralizador de notas ↔ Libro de registro (+ hallazgo Nivelación) — plan de desarrollo
 
+> **Estado: implementado — verificado 2026-10-20.** Comprobado contra el código: ciclo cerrado; continúa en `calificaciones-centralizador-nivelacion-rediseno.md`. Falta: nada.
+
+
 > **CERRADO/HECHO — continúa en `docs/plan/calificaciones-centralizador-nivelacion-rediseno.md`.**
 > Este documento no se reabre; el siguiente ciclo (auditoría de la base
 > Calificaciones + hoja de ruta Fases A-E, incluida la decisión de

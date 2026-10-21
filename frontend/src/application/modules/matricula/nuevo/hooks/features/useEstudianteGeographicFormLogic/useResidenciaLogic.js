@@ -44,15 +44,10 @@ export const useResidenciaLogic = ({
   isEditMode = false,
 }) => {
   const initializedRef = useRef(false);
-  const santaCruzIdRef = useRef(null);
   const primeraProvinciaSeleccionadaRef = useRef(false);
   
   // Encontrar el ID de Santa Cruz
   const santaCruzId = useMemo(() => {
-    if (santaCruzIdRef.current) {
-      return santaCruzIdRef.current;
-    }
-    
     if (!departamentos || departamentos.length === 0) {
       return null;
     }
@@ -62,12 +57,7 @@ export const useResidenciaLogic = ({
       return nombre.toUpperCase().includes('SANTA CRUZ') || nombre.toUpperCase() === 'SANTA CRUZ';
     });
     
-    const id = santaCruz?.id || null;
-    if (id) {
-      santaCruzIdRef.current = id;
-    }
-    
-    return id;
+    return santaCruz?.id || null;
   }, [departamentos]);
 
   // Cargar departamentos si no están disponibles

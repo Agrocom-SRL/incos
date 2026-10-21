@@ -1,6 +1,6 @@
 /**
  * Constantes del dominio relacionadas con Usuarios y Seguridad
- * 
+ *
  * Estas constantes son parte del dominio de negocio y pueden ser usadas
  * por entidades, value objects y servicios de dominio relacionados con usuarios.
  */
@@ -108,4 +108,3 @@ export const TIPOS_DISPOSITIVO = {
  * Array de tipos de dispositivo válidos (útil para validators)
  */
 export const TIPOS_DISPOSITIVO_VALUES = Object.values(TIPOS_DISPOSITIVO);
-

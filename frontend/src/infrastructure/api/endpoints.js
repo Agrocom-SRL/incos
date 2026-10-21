@@ -696,6 +696,24 @@ export const CURSOS_CAPACITACION_ENDPOINTS = {
   EXPORTAR_INSCRITOS: (id) => `${API_BASE}/cursos-capacitacion/${id}/inscritos/exportar`,
 };
 
+/**
+ * Horarios de capacitación (tipo_horario='CAPACITACION'), CRUD propio bajo
+ * `/cursos-capacitacion/horarios` (permiso `capacitacion.grupo`). El POST es
+ * find-or-create; el DELETE responde 409 con el motivo si lo usa algún curso.
+ */
+export const HORARIOS_CAPACITACION_ENDPOINTS = {
+  ...createCRUDEndpoints('/cursos-capacitacion/horarios'),
+};
+
+/**
+ * Grupos de todos los cursos de capacitación (listado de solo lectura del tab
+ * «Grupos»): `GET /cursos-capacitacion/grupos` (`dataFieldName: 'grupos'`;
+ * params `search`, `cursoId`, `estado`). Permiso `capacitacion.grupo`.
+ */
+export const GRUPOS_CAPACITACION_ENDPOINTS = {
+  BASE: `${API_BASE}/cursos-capacitacion/grupos`,
+};
+
 export const PARTICIPANTES_CAPACITACION_ENDPOINTS = {
   ...createCRUDEndpoints('/participantes'),
 };
@@ -706,6 +724,11 @@ export const INSCRIPCIONES_CAPACITACION_ENDPOINTS = {
   PAGOS: (id) => `${API_BASE}/inscripciones-capacitacion/${id}/pagos`,
   /** POST — anular inscripción, decisión administrativa manual (permiso capacitacion.inscripcion EDITAR — no existe acción ANULAR en el vocabulario cerrado de permisos) */
   ANULAR: (id) => `${API_BASE}/inscripciones-capacitacion/${id}/anular`,
+  /** PUT — checklist de requisitos entregados `{requisitos:[{requisitoId, entregado, ...}]}` (permiso EDITAR) */
+  REQUISITOS: (id) => `${API_BASE}/inscripciones-capacitacion/${id}/requisitos`,
+  /** POST (multipart `comprobante`, adjuntar/reemplazar) y GET (descarga) del comprobante de un pago */
+  PAGO_COMPROBANTE: (id, pagoId) =>
+    `${API_BASE}/inscripciones-capacitacion/${id}/pagos/${pagoId}/comprobante`,
 };
 
 // ============================================

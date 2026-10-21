@@ -17,6 +17,14 @@ export class DeleteOfertaCursoUseCase {
       );
     }
 
+    const { asignaciones, bloques } = await this.courseOfferRepository.countDependenciasByOfferId(id);
+    if (asignaciones > 0 || bloques > 0) {
+      throw new ValidationError(
+        'No se puede eliminar: la oferta tiene asignaciones docentes o bloques de horario; retírelos primero',
+        { asignaciones, bloques }
+      );
+    }
+
     await this.courseOfferRepository.delete(id, userId);
     return { eliminado: true, id };
   }

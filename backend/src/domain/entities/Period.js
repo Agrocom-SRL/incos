@@ -10,22 +10,22 @@ export class Period extends BaseEntity {
     super(data);
     // Solo inicializar campos si fueron proporcionados explícitamente
     // Esto permite usar attributes limitados sin inicializar campos no solicitados
-    if (data.hasOwnProperty('studyPlanId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'studyPlanId')) {
       this.studyPlanId = data.studyPlanId;
     }
-    if (data.hasOwnProperty('name')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'name')) {
       this.name = data.name;
     }
-    if (data.hasOwnProperty('number')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'number')) {
       this.number = data.number;
     }
-    if (data.hasOwnProperty('displayOrder')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'displayOrder')) {
       this.displayOrder = data.displayOrder;
-    } else if (!data.hasOwnProperty('studyPlanId')) {
+    } else if (!Object.prototype.hasOwnProperty.call(data, 'studyPlanId')) {
       // Solo usar valor por defecto si no se está usando attributes limitados
       this.displayOrder = 1;
     }
-    if (data.hasOwnProperty('description')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'description')) {
       this.description = data.description;
     }
   }
@@ -45,21 +45,21 @@ export class Period extends BaseEntity {
    */
   toPlainObject() {
     const plainObject = super.toPlainObject();
-    
+
     // Solo incluir campos que fueron inicializados (existen en this)
-    if (this.hasOwnProperty('studyPlanId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'studyPlanId')) {
       plainObject.studyPlanId = this.studyPlanId;
     }
-    if (this.hasOwnProperty('name')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'name')) {
       plainObject.name = this.name;
     }
-    if (this.hasOwnProperty('number')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'number')) {
       plainObject.number = this.number;
     }
-    if (this.hasOwnProperty('displayOrder')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'displayOrder')) {
       plainObject.displayOrder = this.displayOrder;
     }
-    if (this.hasOwnProperty('description')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'description')) {
       plainObject.description = this.description;
     }
 

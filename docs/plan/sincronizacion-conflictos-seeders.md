@@ -1,5 +1,8 @@
 # Conflictos seeders (`02-seeders`) vs servidor
 
+> **Estado: implementado (informe) — verificado 2026-10-20.** Comprobado contra el código: informe generado el 2026-10-19; no es un plan ejecutable. Los datos que compara (`backend/database/instituto_incos/`) no versionan en git, por lo que no se puede reverificar desde el repo. Falta: resolver los conflictos listados con prioridad servidor para datos y seeder para RBAC/horarios 2026.
+
+
 > Generado el 2026-10-19. Compara los `INSERT` de `02-seeders/` contra los datos del servidor
 > (`backend/database/instituto_incos/tablas/`) **por `id`**. Se omiten las filas idénticas.
 > Los valores personales aparecen como `[dato personal]`.

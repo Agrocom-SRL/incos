@@ -1,0 +1,16 @@
+/** Jest en ESM nativo (package.json "type": "module"): sin transformaciones. */
+module.exports = {
+  testEnvironment: 'node',
+  transform: {},
+  setupFiles: ['<rootDir>/tests/setup/env.js'],
+  // Las pruebas de integración hablan con una BD real: margen amplio.
+  testTimeout: 30000,
+  testMatch: ['**/tests/**/*.test.js'],
+  coveragePathIgnorePatterns: ['/node_modules/'],
+  collectCoverageFrom: [
+    'src/**/*.js',
+    '!src/server.js',
+    '!src/infrastructure/database/models/index.js',
+  ],
+  // Sin umbral al inicio; subirlo cuando haya suficiente cobertura.
+};

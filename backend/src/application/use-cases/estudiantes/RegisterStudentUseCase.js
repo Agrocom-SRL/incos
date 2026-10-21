@@ -1,3 +1,4 @@
+import { ConflictError, NotFoundError } from '../../../domain/errors/AppError.js';
 /**
  * Use Case: RegisterStudentUseCase
  * Módulo: Estudiantes
@@ -156,7 +157,7 @@ export class RegisterStudentUseCase {
       // Estudiante antiguo: usar la gestión de ingreso proporcionada
       gestionInfo = await this.managementRepository.findById(gestionIngresoId);
       if (!gestionInfo) {
-        throw new Error(`No se encontró la gestión con ID ${gestionIngresoId}`);
+        throw new NotFoundError(`Gestión con ID ${gestionIngresoId}`);
       }
 
       const gestionPlain = gestionInfo.toPlainObject ? gestionInfo.toPlainObject() : gestionInfo;
@@ -260,7 +261,8 @@ export class RegisterStudentUseCase {
    * @param {number} studentId - ID del estudiante recién creado
    */
   async _createPagoAporteIfNeeded(studentId) {
-    if (!this.contributionPaymentRepository || !this.managementRepository || !this.contributionConfigurationRepository) {
+    if (!this.contributionPaymentRepository || !this.managementRepository
+      || !this.contributionConfigurationRepository) {
       this.logger.warn('[Estudiantes] Repositorios de pago/gestión/config no inyectados; no se crea pago_aporte');
       return;
     }
@@ -514,7 +516,7 @@ export class RegisterStudentUseCase {
 
   /**
    * Ejecuta el caso de uso de registro de estudiante
-   * 
+   *
    * @param {Object} data - Datos del estudiante a registrar
    * @param {Object} data.student - Datos del estudiante principal
    * @param {Array} data.guardians - Array de apoderados
@@ -522,7 +524,7 @@ export class RegisterStudentUseCase {
    * @param {Array} data.origins - Array de orígenes
    * @param {Object} data.documentation - Objeto con entregas de documentos (key: documentacionId)
    * @returns {Promise<Object>} Estudiante creado con todos sus datos relacionados
-   * 
+   *
    * NOTA: Los datos académicos se manejan en otro módulo, no se incluyen aquí
    * NOTA: userId no se pasa porque actualmente no hay autenticación
    * Los repositorios tienen userId = null como default para los campos de auditoría
@@ -530,14 +532,15 @@ export class RegisterStudentUseCase {
   async execute(data) {
     this.logger.info('[Estudiantes] Iniciando registro de estudiante', {
       ci: data.student?.ci,
-      expedicion: data.student?.expedicion,
+      expedicion: data.student?.expedition ?? data.student?.expedicion,
     });
 
     try {
       // 1. Validar que no exista un estudiante con el mismo CI + expedición (par único)
       // Importante: validar siempre que haya CI; si expedición viene vacía o null, se trata como "sin expedición" (un solo permitido por CI)
       if (data.student?.ci) {
-        const rawExpedicion = data.student.expedicion ?? null;
+        // El DTO entrega `expedition` (entidad Student); `expedicion` se acepta por compatibilidad
+        const rawExpedicion = data.student.expedition ?? data.student.expedicion ?? null;
         const expedicionToCheck =
           rawExpedicion !== undefined &&
           rawExpedicion !== null &&
@@ -551,10 +554,8 @@ export class RegisterStudentUseCase {
         });
 
         if (existingStudent) {
-          const expedicionLabel = expedicionToCheck
-            ? expedicionToCheck
-            : 'sin expedición';
-          throw new Error(
+          const expedicionLabel = expedicionToCheck || 'sin expedición';
+          throw new ConflictError(
             `Ya existe un estudiante con CI ${data.student.ci} ${expedicionLabel}`
           );
         }
@@ -682,7 +683,7 @@ export class RegisterStudentUseCase {
         this.logger.info('[Estudiantes] Orígenes creados', {
           studentId: student.id,
           count: origins.length,
-          tipos: origins.map(o => {
+          tipos: origins.map((o) => {
             const plain = o.toPlainObject ? o.toPlainObject() : o;
             return { tipo: plain.originType, principal: plain.isPrincipal };
           }),
@@ -698,7 +699,7 @@ export class RegisterStudentUseCase {
         for (const [docKey, docData] of Object.entries(data.documentation)) {
           const documentacionId = parseInt(docKey.replace('doc_', ''), 10);
 
-          if (!isNaN(documentacionId) && docData) {
+          if (!Number.isNaN(Number(documentacionId)) && docData) {
             if (tipoAdmision !== 'TRASPASO' && traspasoDocumentacionIds.includes(documentacionId)) {
               continue;
             }
@@ -797,10 +798,9 @@ export class RegisterStudentUseCase {
         error: error.message,
         stack: error.stack,
         ci: data.student?.ci,
-        expedicion: data.student?.expedicion,
+        expedicion: data.student?.expedition ?? data.student?.expedicion,
       });
       throw error;
     }
   }
 }
-

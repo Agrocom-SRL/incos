@@ -3,11 +3,11 @@ import { IRepository } from './IRepository.js';
 /**
  * Interfaz de Repositorio: IEstudianteDiscapacidadRepository
  * Define el contrato que debe cumplir el repositorio de discapacidades de estudiantes
- * 
+ *
  * NOTA: Solo extiende IRepository sin métodos adicionales.
  * La especialización está en la implementación (buildWhereClause), no en la interfaz.
  * La lógica de múltiples operaciones (createMultiple, deleteByEstudianteId) debe estar en casos de uso.
- * 
+ *
  * Métodos heredados de IRepository:
  * - findById(id)
  * - findBy(criteria, options)
@@ -21,4 +21,3 @@ import { IRepository } from './IRepository.js';
 export class IEstudianteDiscapacidadRepository extends IRepository {
   // Solo hereda métodos de IRepository
 }
-

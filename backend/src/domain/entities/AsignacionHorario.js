@@ -6,18 +6,18 @@ import { BaseEntity } from './BaseEntity.js';
 export class AsignacionHorario extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    if (data.hasOwnProperty('teacherAssignmentId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'teacherAssignmentId')) {
       this.teacherAssignmentId = data.teacherAssignmentId;
     }
-    if (data.hasOwnProperty('scheduleId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'scheduleId')) {
       this.scheduleId = data.scheduleId;
     }
-    if (data.hasOwnProperty('classroomId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'classroomId')) {
       this.classroomId = data.classroomId;
     }
-    if (data.hasOwnProperty('sequenceOrder')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'sequenceOrder')) {
       this.sequenceOrder = data.sequenceOrder;
-    } else if (!data.hasOwnProperty('teacherAssignmentId')) {
+    } else if (!Object.prototype.hasOwnProperty.call(data, 'teacherAssignmentId')) {
       this.sequenceOrder = 1;
     }
   }
@@ -28,16 +28,16 @@ export class AsignacionHorario extends BaseEntity {
 
   toPlainObject() {
     const plainObject = super.toPlainObject();
-    if (this.hasOwnProperty('teacherAssignmentId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'teacherAssignmentId')) {
       plainObject.teacherAssignmentId = this.teacherAssignmentId;
     }
-    if (this.hasOwnProperty('scheduleId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'scheduleId')) {
       plainObject.scheduleId = this.scheduleId;
     }
-    if (this.hasOwnProperty('classroomId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'classroomId')) {
       plainObject.classroomId = this.classroomId;
     }
-    if (this.hasOwnProperty('sequenceOrder')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'sequenceOrder')) {
       plainObject.sequenceOrder = this.sequenceOrder;
     }
     return plainObject;

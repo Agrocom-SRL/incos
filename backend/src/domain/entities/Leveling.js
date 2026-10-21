@@ -9,28 +9,28 @@ export class Leveling extends BaseEntity {
     constructor(data = {}) {
         super(data);
 
-        if (data.hasOwnProperty('subjectEnrollmentHistoryId')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'subjectEnrollmentHistoryId')) {
             this.subjectEnrollmentHistoryId = data.subjectEnrollmentHistoryId;
         }
-        if (data.hasOwnProperty('managementId')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'managementId')) {
             this.managementId = data.managementId;
         }
-        if (data.hasOwnProperty('evaluatorTeacherId')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'evaluatorTeacherId')) {
             this.evaluatorTeacherId = data.evaluatorTeacherId;
         }
-        if (data.hasOwnProperty('examDate')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'examDate')) {
             this.examDate = data.examDate;
         }
-        if (data.hasOwnProperty('levelingGrade')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'levelingGrade')) {
             this.levelingGrade = data.levelingGrade;
         }
-        if (data.hasOwnProperty('status')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'status')) {
             this.status = data.status;
         }
-        if (data.hasOwnProperty('passed')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'passed')) {
             this.passed = data.passed;
         }
-        if (data.hasOwnProperty('observations')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'observations')) {
             this.observations = data.observations;
         }
     }
@@ -49,18 +49,18 @@ export class Leveling extends BaseEntity {
     toPlainObject() {
         const plainObject = super.toPlainObject();
 
-        if (this.hasOwnProperty('subjectEnrollmentHistoryId')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'subjectEnrollmentHistoryId')) {
             plainObject.subjectEnrollmentHistoryId = this.subjectEnrollmentHistoryId;
         }
-        if (this.hasOwnProperty('managementId')) plainObject.managementId = this.managementId;
-        if (this.hasOwnProperty('evaluatorTeacherId')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'managementId')) plainObject.managementId = this.managementId;
+        if (Object.prototype.hasOwnProperty.call(this, 'evaluatorTeacherId')) {
             plainObject.evaluatorTeacherId = this.evaluatorTeacherId;
         }
-        if (this.hasOwnProperty('examDate')) plainObject.examDate = this.examDate;
-        if (this.hasOwnProperty('levelingGrade')) plainObject.levelingGrade = this.levelingGrade;
-        if (this.hasOwnProperty('status')) plainObject.status = this.status;
-        if (this.hasOwnProperty('passed')) plainObject.passed = this.passed;
-        if (this.hasOwnProperty('observations')) plainObject.observations = this.observations;
+        if (Object.prototype.hasOwnProperty.call(this, 'examDate')) plainObject.examDate = this.examDate;
+        if (Object.prototype.hasOwnProperty.call(this, 'levelingGrade')) plainObject.levelingGrade = this.levelingGrade;
+        if (Object.prototype.hasOwnProperty.call(this, 'status')) plainObject.status = this.status;
+        if (Object.prototype.hasOwnProperty.call(this, 'passed')) plainObject.passed = this.passed;
+        if (Object.prototype.hasOwnProperty.call(this, 'observations')) plainObject.observations = this.observations;
 
         return plainObject;
     }

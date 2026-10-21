@@ -15,8 +15,17 @@ import { InscripcionCapacitacionDetailContext } from '@application-capacitacion/
 
 export const InscripcionCapacitacionDetailProvider = ({ children, inscripcionId }) => {
   const { inscripcion, loading, error, cargar } = useGetInscripcionCapacitacion();
-  const { registrandoPago, registrarPago, anulando, anularInscripcion } =
-    useInscripcionCapacitacionMutations();
+  const {
+    registrandoPago,
+    registrarPago,
+    anulando,
+    anularInscripcion,
+    guardandoRequisitos,
+    subiendoComprobante,
+    actualizarRequisitos,
+    adjuntarComprobante,
+    descargarComprobante,
+  } = useInscripcionCapacitacionMutations();
   const {
     metodosPago,
     cuentasPago,
@@ -39,11 +48,41 @@ export const InscripcionCapacitacionDetailProvider = ({ children, inscripcionId 
   }, [idValido, id, cargar]);
 
   const registrarPagoInscripcion = useCallback(
-    (payload) => {
+    (payload, comprobante) => {
       if (!idValido) return Promise.resolve({ success: false, error: 'Inscripción inválida' });
-      return registrarPago(id, payload);
+      return registrarPago(id, payload, comprobante);
     },
     [idValido, id, registrarPago],
+  );
+
+  /** Guarda el checklist de requisitos; en éxito refresca la ficha (el estado se recalcula). */
+  const guardarRequisitos = useCallback(
+    async (requisitos) => {
+      if (!idValido) return { success: false, error: 'Inscripción inválida' };
+      const result = await actualizarRequisitos(id, requisitos);
+      if (result?.success) await cargar(id);
+      return result;
+    },
+    [idValido, id, actualizarRequisitos, cargar],
+  );
+
+  /** Adjunta/reemplaza el comprobante de un pago y refresca la ficha. */
+  const adjuntarComprobantePago = useCallback(
+    async (pagoId, archivo) => {
+      if (!idValido) return { success: false, error: 'Inscripción inválida' };
+      const result = await adjuntarComprobante(id, pagoId, archivo);
+      if (result?.success) await cargar(id);
+      return result;
+    },
+    [idValido, id, adjuntarComprobante, cargar],
+  );
+
+  const descargarComprobantePago = useCallback(
+    (pagoId) => {
+      if (!idValido) return Promise.resolve({ success: false, error: 'Inscripción inválida' });
+      return descargarComprobante(id, pagoId);
+    },
+    [idValido, id, descargarComprobante],
   );
 
   /** Anular (decisión administrativa manual): refetch de la ficha en éxito. */
@@ -67,6 +106,12 @@ export const InscripcionCapacitacionDetailProvider = ({ children, inscripcionId 
       // Registro de pago
       registrarPago: registrarPagoInscripcion,
       registrandoPago,
+      // Requisitos y comprobantes
+      guardarRequisitos,
+      guardandoRequisitos,
+      adjuntarComprobantePago,
+      subiendoComprobante,
+      descargarComprobantePago,
       // Anular inscripción (decisión administrativa manual)
       anularInscripcion: anularInscripcionActual,
       anulando,
@@ -85,6 +130,11 @@ export const InscripcionCapacitacionDetailProvider = ({ children, inscripcionId 
       refetch,
       registrarPagoInscripcion,
       registrandoPago,
+      guardarRequisitos,
+      guardandoRequisitos,
+      adjuntarComprobantePago,
+      subiendoComprobante,
+      descargarComprobantePago,
       anularInscripcionActual,
       anulando,
       metodosPago,

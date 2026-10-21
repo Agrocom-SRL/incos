@@ -1,7 +1,7 @@
 /**
  * Entidad Base: BaseEntity
  * Factoriza los atributos comunes de auditoría para todas las entidades
- * 
+ *
  * Atributos comunes:
  * - id: Identificador único
  * - active: Estado activo/inactivo
@@ -16,30 +16,30 @@ export class BaseEntity {
   constructor(data = {}) {
     // Solo inicializar campos si fueron proporcionados explícitamente
     // Esto permite usar attributes limitados sin inicializar campos no solicitados
-    if (data.hasOwnProperty('id')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'id')) {
       this.id = data.id;
     }
-    if (data.hasOwnProperty('active')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'active')) {
       this.active = data.active;
     }
     // NOTA: No inicializamos active por defecto para permitir attributes limitados
     // Si se necesita active, debe ser proporcionado explícitamente en los attributes
-    if (data.hasOwnProperty('createdAt')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'createdAt')) {
       this.createdAt = data.createdAt;
     }
-    if (data.hasOwnProperty('updatedAt')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'updatedAt')) {
       this.updatedAt = data.updatedAt;
     }
-    if (data.hasOwnProperty('deletedAt')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'deletedAt')) {
       this.deletedAt = data.deletedAt;
     }
-    if (data.hasOwnProperty('createdBy')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'createdBy')) {
       this.createdBy = data.createdBy;
     }
-    if (data.hasOwnProperty('updatedBy')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'updatedBy')) {
       this.updatedBy = data.updatedBy;
     }
-    if (data.hasOwnProperty('deletedBy')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'deletedBy')) {
       this.deletedBy = data.deletedBy;
     }
   }
@@ -103,30 +103,30 @@ export class BaseEntity {
    */
   toPlainObject() {
     const plainObject = {};
-    
+
     // Solo incluir campos que fueron inicializados (existen en this)
-    if (this.hasOwnProperty('id')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'id')) {
       plainObject.id = this.id;
     }
-    if (this.hasOwnProperty('active')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'active')) {
       plainObject.active = this.active;
     }
-    if (this.hasOwnProperty('createdAt')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'createdAt')) {
       plainObject.createdAt = this.createdAt;
     }
-    if (this.hasOwnProperty('updatedAt')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'updatedAt')) {
       plainObject.updatedAt = this.updatedAt;
     }
-    if (this.hasOwnProperty('deletedAt')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'deletedAt')) {
       plainObject.deletedAt = this.deletedAt;
     }
-    if (this.hasOwnProperty('createdBy')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'createdBy')) {
       plainObject.createdBy = this.createdBy;
     }
-    if (this.hasOwnProperty('updatedBy')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'updatedBy')) {
       plainObject.updatedBy = this.updatedBy;
     }
-    if (this.hasOwnProperty('deletedBy')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'deletedBy')) {
       plainObject.deletedBy = this.deletedBy;
     }
 

@@ -4,12 +4,25 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { getEnv, getEnvAsNumber } from './env.validator.js';
 import { serverConfig } from './server.config.js';
+import { redactSensitive } from '../utils/redactSensitive.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Directorio de logs (relativo a la raíz del proyecto)
 const logsDir = path.join(__dirname, '../../../', getEnv('LOG_DIR', 'logs'));
+
+/**
+ * Redacta datos sensibles (contraseñas, tokens, etc.) en la metadata de TODO log,
+ * antes de que lo reciba cualquier transport.
+ */
+export const redactFormat = winston.format((info) => {
+    for (const key of Object.keys(info)) {
+        if (['level', 'message', 'timestamp', 'stack'].includes(key)) continue;
+        info[key] = redactSensitive({ [key]: info[key] })[key];
+    }
+    return info;
+});
 
 /**
  * Formato personalizado para logs
@@ -75,7 +88,7 @@ const consoleFormat = winston.format.combine(
                     filteredMeta[key] = meta[key];
                 }
             }
-            
+
             // Si hay otras propiedades, agregarlas también
             for (const [key, value] of Object.entries(meta)) {
                 if (!importantProps.includes(key) && value !== undefined) {
@@ -124,7 +137,7 @@ if (!serverConfig.isTest) {
             datePattern: 'YYYY-MM-DD',
             level: 'error',
             maxSize: getEnv('LOG_MAX_SIZE', '20m'),
-            maxFiles: getEnvAsNumber('LOG_MAX_FILES', 14) + 'd',
+            maxFiles: `${getEnvAsNumber('LOG_MAX_FILES', 14)}d`,
             format: customFormat,
         })
     );
@@ -135,7 +148,7 @@ if (!serverConfig.isTest) {
             filename: path.join(logsDir, 'combined-%DATE%.log'),
             datePattern: 'YYYY-MM-DD',
             maxSize: getEnv('LOG_MAX_SIZE', '20m'),
-            maxFiles: getEnvAsNumber('LOG_MAX_FILES', 14) + 'd',
+            maxFiles: `${getEnvAsNumber('LOG_MAX_FILES', 14)}d`,
             format: customFormat,
         })
     );
@@ -146,7 +159,7 @@ if (!serverConfig.isTest) {
  */
 export const loggerConfig = {
     level: getEnv('LOG_LEVEL', serverConfig.isDevelopment ? 'debug' : 'info'),
-    format: customFormat,
+    format: winston.format.combine(redactFormat(), customFormat),
     transports,
     exitOnError: false,
 };

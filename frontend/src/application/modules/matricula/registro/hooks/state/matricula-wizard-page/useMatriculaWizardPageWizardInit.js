@@ -25,13 +25,18 @@ export const useMatriculaWizardPageWizardInit = ({
 }) => {
   // Índices dinámicos: «carrera» e «historial» pueden ser null (paso excluido
   // para estudiantes con historial digital). Nunca usar números mágicos aquí.
-  const indices = wizardStepMeta?.indices ?? {
-    buscar: 0,
-    carrera: 1,
-    periodo: 2,
-    paralelo: 3,
-    historial: null,
-  };
+  const metaIndices = wizardStepMeta?.indices;
+  const indices = useMemo(
+    () =>
+      metaIndices ?? {
+        buscar: 0,
+        carrera: 1,
+        periodo: 2,
+        paralelo: 3,
+        historial: null,
+      },
+    [metaIndices],
+  );
 
   // Selección confirmada (con la pausa aplicada) que habilita el avance de paso.
   const selectedStudentId = studentSearch?.selectedStudent?.id ?? null;
@@ -85,7 +90,6 @@ export const useMatriculaWizardPageWizardInit = ({
       : indices.periodo;
   }, [
     editData,
-    editData?.completarSoloHistorialPrevio,
     isNuevoEstudiante,
     studentSearch?.selectedStudent,
     studentSearch?.loading,
@@ -95,15 +99,16 @@ export const useMatriculaWizardPageWizardInit = ({
     indices,
   ]);
 
+  const carrerasLista = carrerasData?.carreras;
   const initialValues = useMemo(() => {
     if (!editData) return {};
     const values = {};
-    if (editData.carreraId && carrerasData?.carreras) {
-      const carrera = carrerasData.carreras.find((c) => c.id === Number(editData.carreraId));
+    if (editData.carreraId && carrerasLista) {
+      const carrera = carrerasLista.find((c) => c.id === Number(editData.carreraId));
       if (carrera) values.carrera = carrera.id;
     }
     return values;
-  }, [editData, carrerasData?.carreras]);
+  }, [editData, carrerasLista]);
 
   useEffect(() => {
     if (

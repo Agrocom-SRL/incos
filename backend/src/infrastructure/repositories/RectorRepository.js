@@ -1,4 +1,3 @@
-import { IRectorRepository } from '../../domain/interfaces/repositories/IRectorRepository.js';
 import { Rector as RectorModel } from '../database/models/rector.js';
 import { BaseRepository } from './BaseRepository.js';
 import { RectorMapper } from '../mappers/RectorMapper.js';
@@ -31,11 +30,11 @@ export class RectorRepository extends BaseRepository {
     return [];
   }
 
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return RectorMapper.toModel(data);
   }
 
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return RectorMapper.toModelForUpdate(data);
   }
 

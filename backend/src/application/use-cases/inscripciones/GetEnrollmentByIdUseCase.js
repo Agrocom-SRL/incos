@@ -2,25 +2,25 @@
  * Use Case: GetEnrollmentByIdUseCase
  * Módulo: Inscripciones
  * Obtiene una inscripción por ID con todos sus datos relacionados
- * 
+ *
  * Responsabilidades:
  * - Validar que la inscripción exista
  * - Obtener la inscripción principal
  * - Obtener materias inscritas (múltiples)
  * - Obtener datos relacionados (estudiante, gestión, etc.)
  * - Retornar la inscripción con todos sus datos relacionados
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja la obtención completa de inscripciones
  * - Dependency Inversion: Depende de abstracciones (repositorios)
- * 
+ *
  * Clean Architecture:
  * - Application Layer: Orquesta la lógica de negocio
  * - Depende de Repositories (Infrastructure) a través de abstracciones
  * - Usa Mapper (Application) para conversión Domain → Presentation
  */
 
-import { ValidationError } from '../../../domain/errors/AppError.js';
+import { NotFoundError } from '../../../domain/errors/AppError.js';
 import { derivarCarreraPlanDesdeMatriculas } from './enrollmentBusinessRules.js';
 import { EnrollmentMapper, PriorEnrollmentHistoryMapper } from '../../mappers/inscripciones/index.js';
 import { TIPOS_INSCRIPCION } from '../../../domain/constants/inscripciones.constants.js';
@@ -97,13 +97,13 @@ export class GetEnrollmentByIdUseCase {
 
   /**
    * Método interno para obtener una inscripción por ID
-   * Valida que la inscripción exista y lanza ValidationError si no se encuentra
+   * Valida que la inscripción exista y lanza NotFoundError si no se encuentra
    * Solo recupera los campos necesarios: id, academicDataId, managementId, enrollmentType
-   * 
+   *
    * @private
    * @param {number} enrollmentId - ID de la inscripción a obtener
    * @returns {Promise<Object>} Inscripción encontrada con solo los campos especificados
-   * @throws {ValidationError} Si la inscripción no existe
+   * @throws {NotFoundError} Si la inscripción no existe
    */
   async _getEnrollmentById(enrollmentId) {
     // Obtener solo los campos necesarios usando los nombres del modelo Sequelize
@@ -111,10 +111,10 @@ export class GetEnrollmentByIdUseCase {
       attributes: ['id', 'datosAcademicosId', 'gestionId', 'tipoInscripcion'],
     });
 
-    // Si se proporciona ID pero no se encuentra, lanzar ValidationError (inconsistencia de datos)
+    // Si se proporciona ID pero no se encuentra, lanzar NotFoundError (inconsistencia de datos)
     if (!enrollment) {
-      throw new ValidationError(
-        `No se encontró una inscripción con ID ${enrollmentId}`,
+      throw new NotFoundError(
+        `Inscripción con ID ${enrollmentId}`,
       );
     }
 
@@ -125,11 +125,11 @@ export class GetEnrollmentByIdUseCase {
    * Método interno para obtener datos académicos del estudiante por ID
    * Valida que existan si se proporciona un ID, retorna null si no se proporciona ID (opcional)
    * Solo recupera los campos necesarios: estudianteId, carreraId, estadoRegistro
-   * 
+   *
    * @private
    * @param {number|null|undefined} academicDataId - ID de los datos académicos del estudiante
    * @returns {Promise<Object|null>} Datos académicos encontrados o null si no se proporciona ID
-   * @throws {ValidationError} Si se proporciona ID pero no se encuentra el registro
+   * @throws {NotFoundError} Si se proporciona ID pero no se encuentra el registro
    */
   async _getStudentAcademicDataById(academicDataId) {
     // Si no se proporciona ID, retornar null (es opcional)
@@ -145,10 +145,10 @@ export class GetEnrollmentByIdUseCase {
       }
     );
 
-    // Si se proporciona ID pero no se encuentra, lanzar ValidationError (inconsistencia de datos)
+    // Si se proporciona ID pero no se encuentra, lanzar NotFoundError (inconsistencia de datos)
     if (!studentAcademicData) {
-      throw new ValidationError(
-        `No se encontraron datos académicos del estudiante con ID ${academicDataId}`,
+      throw new NotFoundError(
+        `Datos académicos con ID ${academicDataId}`,
       );
     }
 
@@ -159,11 +159,11 @@ export class GetEnrollmentByIdUseCase {
    * Método interno para obtener gestión académica por ID
    * Valida que exista si se proporciona un ID, retorna null si no se proporciona ID (opcional)
    * Solo recupera los campos necesarios: nombre, anio
-   * 
+   *
    * @private
    * @param {number|null|undefined} managementId - ID de la gestión académica
    * @returns {Promise<Object|null>} Gestión encontrada o null si no se proporciona ID
-   * @throws {ValidationError} Si se proporciona ID pero no se encuentra el registro
+   * @throws {NotFoundError} Si se proporciona ID pero no se encuentra el registro
    */
   async _getManagementById(managementId) {
     // Si no se proporciona ID, retornar null (es opcional)
@@ -176,10 +176,10 @@ export class GetEnrollmentByIdUseCase {
       attributes: ['id', 'nombre', 'anio'],
     });
 
-    // Si se proporciona ID pero no se encuentra, lanzar ValidationError (inconsistencia de datos)
+    // Si se proporciona ID pero no se encuentra, lanzar NotFoundError (inconsistencia de datos)
     if (!management) {
-      throw new ValidationError(
-        `No se encontró una gestión académica con ID ${managementId}`,
+      throw new NotFoundError(
+        `Gestión con ID ${managementId}`,
       );
     }
 
@@ -190,11 +190,11 @@ export class GetEnrollmentByIdUseCase {
    * Método interno para obtener estudiante por ID
    * Valida que exista si se proporciona un ID, retorna null si no se proporciona ID (opcional)
    * Solo recupera los campos necesarios: codigoEstudiante, nombres, apellidoPaterno, apellidoMaterno, ci, expedicion
-   * 
+   *
    * @private
    * @param {number|null|undefined} studentId - ID del estudiante
    * @returns {Promise<Object|null>} Estudiante encontrado o null si no se proporciona ID
-   * @throws {ValidationError} Si se proporciona ID pero no se encuentra el registro
+   * @throws {NotFoundError} Si se proporciona ID pero no se encuentra el registro
    */
   async _getStudentById(studentId) {
     // Si no se proporciona ID, retornar null (es opcional)
@@ -207,10 +207,10 @@ export class GetEnrollmentByIdUseCase {
       attributes: ['id', 'codigoEstudiante', 'nombres', 'apellidoPaterno', 'apellidoMaterno', 'ci', 'expedicion', 'genero', 'celular'],
     });
 
-    // Si se proporciona ID pero no se encuentra, lanzar ValidationError (inconsistencia de datos)
+    // Si se proporciona ID pero no se encuentra, lanzar NotFoundError (inconsistencia de datos)
     if (!student) {
-      throw new ValidationError(
-        `No se encontró un estudiante con ID ${studentId}`,
+      throw new NotFoundError(
+        `Estudiante con ID ${studentId}`,
       );
     }
 
@@ -221,11 +221,11 @@ export class GetEnrollmentByIdUseCase {
    * Método interno para obtener carrera por ID
    * Valida que exista si se proporciona un ID, retorna null si no se proporciona ID (opcional)
    * Solo recupera los campos necesarios: codigo, nombre
-   * 
+   *
    * @private
    * @param {number|null|undefined} careerId - ID de la carrera
    * @returns {Promise<Object|null>} Carrera encontrada o null si no se proporciona ID
-   * @throws {ValidationError} Si se proporciona ID pero no se encuentra el registro
+   * @throws {NotFoundError} Si se proporciona ID pero no se encuentra el registro
    */
   async _getCareerById(careerId) {
     // Si no se proporciona ID, retornar null (es opcional)
@@ -238,10 +238,10 @@ export class GetEnrollmentByIdUseCase {
       attributes: ['id', 'codigo', 'nombre', 'tituloOtorgado'],
     });
 
-    // Si se proporciona ID pero no se encuentra, lanzar ValidationError (inconsistencia de datos)
+    // Si se proporciona ID pero no se encuentra, lanzar NotFoundError (inconsistencia de datos)
     if (!career) {
-      throw new ValidationError(
-        `No se encontró una carrera con ID ${careerId}`,
+      throw new NotFoundError(
+        `Carrera con ID ${careerId}`,
       );
     }
 
@@ -250,19 +250,19 @@ export class GetEnrollmentByIdUseCase {
 
   /**
    * Ejecuta el caso de uso de obtención de inscripción por ID
-   * 
+   *
    * Sigue el patrón de BaseListUseCase y BaseSearchUseCase:
    * - Logging inicial
    * - Try-catch para manejo de errores
    * - Logging de éxito/error
    * - Conversión a formato de presentación usando mapper
-   * 
+   *
    * NOTA: Desarrollo incremental - Los comentarios representan funcionalidad futura
    * que se implementará por pasos. El método _getEnrollmentById es el paso actual.
-   * 
+   *
    * @param {number} enrollmentId - ID de la inscripción a obtener
    * @returns {Promise<Object>} Inscripción encontrada en formato de presentación
-   * @throws {ValidationError} Si la inscripción no existe
+   * @throws {NotFoundError} Si la inscripción no existe
    */
   async execute(enrollmentId) {
     // Logging inicial
@@ -317,7 +317,7 @@ export class GetEnrollmentByIdUseCase {
 
             let teacherAssignment = null;
             let teacher = null;
-            let course = null;
+            const course = null;
             let planSubject = null;
             let subject = null;
             let horarios = [];
@@ -566,7 +566,7 @@ export class GetEnrollmentByIdUseCase {
           this.logger.info('[Inscripciones] Documentos encontrados para estudiante', {
             studentId: student.id,
             totalDocumentos: documentos.length,
-            documentosConTipoInscripcion: documentos.filter(d => {
+            documentosConTipoInscripcion: documentos.filter((d) => {
               const docPlain = d.toPlainObject ? d.toPlainObject() : d;
               return docPlain.tipoDocumento === 'INSCRIPCION';
             }).length,
@@ -576,11 +576,11 @@ export class GetEnrollmentByIdUseCase {
           // Nombres aceptados: BOLETA_INSCRIPCION, FORMULARIO_INSCRIPCION, o formulario_inscripcion_* (GenerateFormularioInscripcionUseCase)
           // Ordenar por fecha de creación descendente para obtener el más reciente
           const formulariosDocs = documentos
-            .map(doc => {
+            .map((doc) => {
               const docPlain = doc.toPlainObject ? doc.toPlainObject() : doc;
               return docPlain;
             })
-            .filter(doc => {
+            .filter((doc) => {
               // El documento puede tener fileName (desde entidad) o nombreArchivo (desde modelo Sequelize directo)
               const fileName = doc.fileName || doc.nombreArchivo || '';
               const extension = doc.extension || '';
@@ -596,10 +596,10 @@ export class GetEnrollmentByIdUseCase {
 
               if (doc.tipoDocumento === 'INSCRIPCION') {
                 this.logger.debug('[Inscripciones] Documento INSCRIPCION encontrado', {
-                  fileName: fileName,
-                  extension: extension,
+                  fileName,
+                  extension,
                   docKeys: Object.keys(doc),
-                  matches: matches,
+                  matches,
                 });
               }
 
@@ -627,13 +627,13 @@ export class GetEnrollmentByIdUseCase {
               : `/${uploadDir}/${filePathRaw}`.replace(/\\/g, '/');
 
             formularioInscripcion = {
-              filePath: filePath,
+              filePath,
               fileName: fileNameRaw,
             };
 
             this.logger.info('[Inscripciones] Formulario de inscripción encontrado', {
               fileName: formularioDoc.fileName,
-              filePath: filePath,
+              filePath,
             });
           } else {
             this.logger.warn('[Inscripciones] No se encontró boleta de inscripción', {

@@ -3,18 +3,18 @@ import { BaseMapper } from './BaseMapper.js';
 
 /**
  * Mapper: PeriodMapper
- * 
+ *
  * Responsabilidad única: Conversión entre Modelo ORM (Sequelize) ↔ Entidad de Dominio (Period)
- * 
+ *
  * Patrón: Usa BaseMapper para campos comunes, solo maneja campos específicos de Period
- * 
+ *
  * Ubicación: Infrastructure Layer (es un detalle de implementación específico de Sequelize)
- * 
+ *
  * Principios SOLID aplicados:
  * - Single Responsibility: Solo se encarga de mapear campos específicos de Period
  * - Open/Closed: Extiende funcionalidad de BaseMapper sin modificarlo
  * - Dependency Inversion: Depende de la entidad de dominio, no de implementaciones concretas
- * 
+ *
  * Clean Architecture:
  * - Domain Layer: Period (entidad pura)
  * - Infrastructure Layer: BaseMapper (campos comunes) + PeriodMapper (campos específicos)
@@ -25,9 +25,9 @@ export class PeriodMapper {
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de Period
    * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
-   * 
+   *
    * Flujo: Base de Datos → ORM Model → Domain Entity
-   * 
+   *
    * @param {Object|null} model - Modelo Sequelize de Periodo
    * @returns {Period|null} Entidad de dominio Period
    */
@@ -39,7 +39,7 @@ export class PeriodMapper {
     // Cuando se usan attributes limitados, Sequelize almacena los campos en dataValues
     const dataValues = model.dataValues || model;
     const specificFields = {};
-    
+
     // Mapeo: BD (snake_case español) → Dominio (camelCase inglés)
     if ('planEstudioId' in dataValues && dataValues.planEstudioId !== undefined) {
       specificFields.studyPlanId = dataValues.planEstudioId ?? null;
@@ -59,18 +59,18 @@ export class PeriodMapper {
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
-    
+
     return new Period(entityData);
   }
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
-   * 
+   *
    * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
-   * 
+   *
    * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
    * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
-   * 
+   *
    * @param {Period|Object} entity - Entidad Period o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
@@ -92,9 +92,9 @@ export class PeriodMapper {
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
    * Solo incluye los campos que están definidos (que existen en la entidad)
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de Period
-   * 
+   *
    * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
-   * 
+   *
    * @param {Period|Object} entity - Entidad Period o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
@@ -131,7 +131,7 @@ export class PeriodMapper {
 
   /**
    * Convierte un array de modelos Sequelize a array de entidades de dominio
-   * 
+   *
    * @param {Array} models - Array de modelos Sequelize
    * @returns {Period[]} Array de entidades Period
    */
@@ -140,4 +140,3 @@ export class PeriodMapper {
     return models.map((model) => this.toEntity(model)).filter((entity) => entity !== null);
   }
 }
-

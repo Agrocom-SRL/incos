@@ -1,6 +1,9 @@
-import { body, query } from 'express-validator';
+import { body, param, query } from 'express-validator';
 import { listValidator } from '../common/list.validator.js';
-import { ESTADOS_INSCRIPCION_CAPACITACION_VALUES } from '../../../domain/constants/capacitacion.constants.js';
+import {
+  CONCEPTOS_PAGO_CAPACITACION_VALUES,
+  ESTADOS_INSCRIPCION_CAPACITACION_VALUES,
+} from '../../../domain/constants/capacitacion.constants.js';
 import { buildParticipanteFieldValidators } from './participantes.validator.js';
 
 /**
@@ -47,7 +50,16 @@ function buildPagoFieldValidators(prefix = '', required = true) {
     ? body(`${prefix}metodoPagoId`).notEmpty().withMessage(`${prefix}metodoPagoId es requerido`)
     : body(`${prefix}metodoPagoId`).optional();
 
+  const conceptoChain = required
+    ? body(`${prefix}concepto`).notEmpty().withMessage(`${prefix}concepto es requerido`)
+    : body(`${prefix}concepto`).if(body('pagoInicial').exists({ checkNull: true })).notEmpty()
+        .withMessage(`${prefix}concepto es requerido`);
+
   return [
+    conceptoChain
+      .toUpperCase()
+      .isIn(CONCEPTOS_PAGO_CAPACITACION_VALUES)
+      .withMessage(`${prefix}concepto debe ser uno de: ${CONCEPTOS_PAGO_CAPACITACION_VALUES.join(', ')}`),
     montoChain.isFloat({ gt: 0 }).withMessage(`${prefix}monto debe ser un número mayor a 0`),
     metodoChain.isInt({ min: 1 }).withMessage(`${prefix}metodoPagoId debe ser un entero positivo`),
     body(`${prefix}cuentaPagoId`)
@@ -68,11 +80,29 @@ function buildPagoFieldValidators(prefix = '', required = true) {
 }
 
 export const createInscripcionCapacitacionValidator = [
+  // `cursoId` es alias de `capacitacionId`; debe venir al menos uno
   body('capacitacionId')
+    .if((value, { req }) => value !== undefined || req.body?.cursoId === undefined)
     .notEmpty()
     .withMessage('capacitacionId es requerido')
     .isInt({ min: 1 })
     .withMessage('capacitacionId debe ser un entero positivo'),
+  body('cursoId').optional().isInt({ min: 1 }).withMessage('cursoId debe ser un entero positivo'),
+  body('capacitacionGrupoId')
+    .optional({ nullable: true })
+    .isInt({ min: 1 })
+    .withMessage('capacitacionGrupoId debe ser un entero positivo'),
+  body('requisitosEntregados')
+    .optional({ nullable: true })
+    .isArray()
+    .withMessage('requisitosEntregados debe ser un array de IDs de requisitos'),
+  body('requisitosEntregados.*')
+    .isInt({ min: 1 })
+    .withMessage('cada elemento de requisitosEntregados debe ser un entero positivo'),
+  body('fechaCompromiso')
+    .optional({ nullable: true })
+    .isISO8601()
+    .withMessage('fechaCompromiso debe ser una fecha válida (YYYY-MM-DD)'),
   body('participanteId')
     .optional({ nullable: true })
     .isInt({ min: 1 })
@@ -119,4 +149,31 @@ export const anularInscripcionCapacitacionValidator = [
     .trim()
     .isLength({ max: 500 })
     .withMessage('observacion no debe superar los 500 caracteres'),
+];
+
+/** Parámetro de ruta :pagoId (id del pago de la inscripción). */
+export const pagoIdValidator = [
+  param('pagoId').isInt({ min: 1 }).withMessage('pagoId debe ser un entero positivo'),
+];
+
+/**
+ * PUT /:id/requisitos — checklist de requisitos entregados de la inscripción.
+ * Que los requisitos pertenezcan al curso se valida en el use case.
+ */
+export const updateRequisitosInscripcionValidator = [
+  body('requisitos').isArray({ min: 1 }).withMessage('requisitos debe ser un array con al menos un elemento'),
+  body('requisitos.*.requisitoId')
+    .isInt({ min: 1 })
+    .withMessage('requisitos[].requisitoId debe ser un entero positivo'),
+  body('requisitos.*.entregado').isBoolean().withMessage('requisitos[].entregado debe ser boolean'),
+  body('requisitos.*.fechaEntrega')
+    .optional({ nullable: true })
+    .isISO8601()
+    .withMessage('requisitos[].fechaEntrega debe ser una fecha válida (YYYY-MM-DD)'),
+  body('requisitos.*.observacion')
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .isLength({ max: 255 })
+    .withMessage('requisitos[].observacion no debe superar los 255 caracteres'),
 ];

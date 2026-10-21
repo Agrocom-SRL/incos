@@ -148,24 +148,28 @@ export const usePagosRegistrarData = (studentId = null) => {
         if (cuentaPago && paymentAccountsData.onSelectCuentaPago) {
             paymentAccountsData.onSelectCuentaPago(cuentaPago);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- se depende solo del callback estable, no del objeto completo
     }, [paymentAccountsData.onSelectCuentaPago]);
 
     const handleSelectBanco = useCallback((banco) => {
         if (banco && authorizedBanksData.onSelectBanco) {
             authorizedBanksData.onSelectBanco(banco);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- se depende solo del callback estable, no del objeto completo
     }, [authorizedBanksData.onSelectBanco]);
 
     const handleSelectMetodoPago = useCallback((metodoPago) => {
         if (metodoPago && paymentMethodsData.onSelectMetodoPago) {
             paymentMethodsData.onSelectMetodoPago(metodoPago);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- se depende solo del callback estable, no del objeto completo
     }, [paymentMethodsData.onSelectMetodoPago]);
 
     const handleSelectConfiguracion = useCallback((configuracion) => {
         if (configuracion && contributionConfigurationsData.onSelectConfiguracion) {
             contributionConfigurationsData.onSelectConfiguracion(configuracion);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- se depende solo del callback estable, no del objeto completo
     }, [contributionConfigurationsData.onSelectConfiguracion]);
 
     // 4. Función para registrar el pago (llama directamente al use case para preservar el error completo)

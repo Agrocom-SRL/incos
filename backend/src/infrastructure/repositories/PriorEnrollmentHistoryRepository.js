@@ -1,5 +1,4 @@
 import { Op } from 'sequelize';
-import { IHistorialPrevioRepository } from '../../domain/interfaces/repositories/IHistorialPrevioRepository.js';
 import { HistorialPrevio as HistorialPrevioModel } from '../database/models/historial_previo.js';
 import { BaseRepository } from './BaseRepository.js';
 import { PriorEnrollmentHistoryMapper } from '../mappers/PriorEnrollmentHistoryMapper.js';
@@ -60,11 +59,11 @@ export class PriorEnrollmentHistoryRepository extends BaseRepository {
         return [['id', 'ASC']];
     }
 
-    mapDataToModel(data, userId = null) {
+    mapDataToModel(data, _userId = null) {
         return PriorEnrollmentHistoryMapper.toModel(data);
     }
 
-    mapDataToUpdate(data, userId = null) {
+    mapDataToUpdate(data, _userId = null) {
         return PriorEnrollmentHistoryMapper.toModelForUpdate(data);
     }
 

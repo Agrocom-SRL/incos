@@ -202,6 +202,7 @@ export const createApiHook = ({
         // OPTIMIZACIÓN: Solo actualizar si el valor realmente cambió
         optimizedSetLoadingRef.current(false);
       }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- setters en refs estables; initialData es config estática del hook
     }, []); // Sin dependencias porque los setters están en refs estables
 
     // Auto-fetch si está configurado
@@ -230,6 +231,7 @@ export const createApiHook = ({
       } else {
         await fetch(...args);
       }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- autoFetchArgs se lee en el callback y sí debe re-crear refetch al cambiar
     }, [fetch, autoFetchArgs]);
 
     // Construir el objeto de resultado

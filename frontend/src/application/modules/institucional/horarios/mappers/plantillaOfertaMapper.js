@@ -26,7 +26,6 @@ export function mapOfertaCursoToFilaCurso(oc) {
     materiaNombre: nombre || null,
     cupoMinimo: null,
     cupoMaximo: null,
-    colorHex: null,
     estado: oc.estado ?? null,
     horasSemanalesPlan: oc.horasSemanales ?? oc.horas_semanales ?? null,
     asignacionDocenteId: oc.asignacionDocenteId ?? oc.asignacion_docente_id ?? null,

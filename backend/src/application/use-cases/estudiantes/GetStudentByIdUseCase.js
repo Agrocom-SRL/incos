@@ -2,7 +2,7 @@
  * Use Case: GetStudentByIdUseCase
  * Módulo: Estudiantes
  * Obtiene un estudiante por ID con todos sus datos relacionados
- * 
+ *
  * Responsabilidades:
  * - Validar que el estudiante exista
  * - Obtener el estudiante principal
@@ -13,13 +13,13 @@
  * - Obtener asignaciones de becas (múltiples)
  * - Calcular si faltan documentos de inscripción
  * - Retornar el estudiante con todos sus datos relacionados
- * 
+ *
  * NOTA: Los datos académicos se manejan en otro módulo, no se incluyen aquí
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja la obtención completa de estudiantes
  * - Dependency Inversion: Depende de abstracciones (repositorios)
- * 
+ *
  * Clean Architecture:
  * - Application Layer: Orquesta la lógica de negocio
  * - Depende de Repositories (Infrastructure) a través de abstracciones
@@ -115,7 +115,7 @@ export class GetStudentByIdUseCase {
 
   /**
    * Ejecuta el caso de uso de obtención de estudiante por ID
-   * 
+   *
    * @param {number} studentId - ID del estudiante a obtener
    * @returns {Promise<Object>} Estudiante con todos sus datos relacionados
    */
@@ -230,22 +230,22 @@ export class GetStudentByIdUseCase {
           );
 
           const documentos = documentosResult.studentDocuments || [];
-          
+
           // Buscar el más reciente que contenga ACTA_COMPROMISO en el nombre
-          const actaDoc = documentos.find(doc => {
+          const actaDoc = documentos.find((doc) => {
             const docPlain = doc.toPlainObject ? doc.toPlainObject() : doc;
-            return docPlain.fileName?.includes('ACTA_COMPROMISO') || 
+            return docPlain.fileName?.includes('ACTA_COMPROMISO') ||
                    docPlain.tipoDocumento === 'ACTA_COMPROMISO';
           });
 
           if (actaDoc) {
             const docPlain = actaDoc.toPlainObject ? actaDoc.toPlainObject() : actaDoc;
             const uploadDir = serverConfig.uploadsPath || 'uploads';
-            const filePath = docPlain.filePath?.startsWith('/') 
-              ? docPlain.filePath 
+            const filePath = docPlain.filePath?.startsWith('/')
+              ? docPlain.filePath
               : `/${uploadDir}/${docPlain.filePath}`.replace(/\\/g, '/');
             actaCompromiso = {
-              filePath: filePath,
+              filePath,
               fileName: docPlain.fileName || 'acta_compromiso.pdf',
             };
           }
@@ -324,7 +324,7 @@ export class GetStudentByIdUseCase {
 
             for (const academicData of academicDataList) {
               const academicDataPlain = academicData.toPlainObject ? academicData.toPlainObject() : academicData;
-              
+
               if (academicDataPlain.id) {
                 try {
                   const enrollmentsResult = await this.enrollmentRepository.findAll(
@@ -338,8 +338,9 @@ export class GetStudentByIdUseCase {
                   for (const enrollment of enrollments) {
                     const enrollmentPlain = enrollment.toPlainObject ? enrollment.toPlainObject() : enrollment;
                     const enrollmentDate = enrollmentPlain.createdAt || enrollmentPlain.fechaInscripcion;
-                    
-                    if (enrollmentDate && (!latestEnrollmentDate || new Date(enrollmentDate) > new Date(latestEnrollmentDate))) {
+
+                    if (enrollmentDate && (!latestEnrollmentDate
+                      || new Date(enrollmentDate) > new Date(latestEnrollmentDate))) {
                       latestEnrollment = enrollmentPlain;
                       latestEnrollmentDate = enrollmentDate;
                     }
@@ -428,7 +429,8 @@ export class GetStudentByIdUseCase {
                 const dep = await this.departmentRepository.findById(depId, { paranoid: false });
                 if (dep) {
                   const dPlain = dep.toPlainObject ? dep.toPlainObject() : dep;
-                  departamentoNombre = (dPlain && (dPlain.name ?? dPlain.nombre)) ? (dPlain.name ?? dPlain.nombre) : null;
+                  departamentoNombre = (dPlain && (dPlain.name ?? dPlain.nombre)) ? (dPlain.name ?? dPlain.nombre)
+                    : null;
                 }
               } catch (err) {
                 this.logger.warn('[Estudiantes] Error al obtener departamento de transitabilidad', {
@@ -444,7 +446,8 @@ export class GetStudentByIdUseCase {
               codigoSie: institution?.codigoSie || null,
               tipoInstitucion: institution?.tipo || null,
               dependencia: institution?.dependencia || null,
-              departamentoId: institution?.departamentoId ?? institution?.departmentId ?? institution?.departamento_id ?? null,
+              departamentoId: institution?.departamentoId ?? institution?.departmentId
+                ?? institution?.departamento_id ?? null,
               departamento: departamentoNombre,
               distritoEducativo: institution?.distritoEducativo || null,
               carreraOrigen: tPlain.carreraOrigen || null,
@@ -494,7 +497,8 @@ export class GetStudentByIdUseCase {
                 const dep = await this.departmentRepository.findById(trDepId, { paranoid: false });
                 if (dep) {
                   const dPlain = dep.toPlainObject ? dep.toPlainObject() : dep;
-                  transferDepartamentoNombre = (dPlain && (dPlain.name ?? dPlain.nombre)) ? (dPlain.name ?? dPlain.nombre) : null;
+                  transferDepartamentoNombre = (dPlain && (dPlain.name ?? dPlain.nombre))
+                    ? (dPlain.name ?? dPlain.nombre) : null;
                 }
               } catch (err) {
                 this.logger.warn('[Estudiantes] Error al obtener departamento de traspaso', {
@@ -509,7 +513,8 @@ export class GetStudentByIdUseCase {
               institucionNombre: institution?.nombre || null,
               codigoRude: tPlain.codigoRude || null,
               dependencia: institution?.dependencia || null,
-              departamentoId: institution?.departamentoId ?? institution?.departmentId ?? institution?.departamento_id ?? null,
+              departamentoId: institution?.departamentoId ?? institution?.departmentId
+                ?? institution?.departamento_id ?? null,
               departamento: transferDepartamentoNombre,
               distritoEducativo: institution?.distritoEducativo || null,
               carreraOrigen: tPlain.carreraOrigen || null,
@@ -529,7 +534,7 @@ export class GetStudentByIdUseCase {
 
       // 9. Retornar el estudiante con todos sus datos relacionados
       const result = {
-        student: student,
+        student,
         guardians,
         disabilities,
         origins,
@@ -585,4 +590,3 @@ export class GetStudentByIdUseCase {
     }
   }
 }
-

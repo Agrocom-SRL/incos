@@ -1,13 +1,13 @@
 /**
  * Registro de dependencias del recurso Inscripciones (CRUD básico)
- * 
+ *
  * Responsabilidades:
  * - Registrar Use Cases del recurso Inscripciones (List, Create, GetById, Update, Delete)
  * - Registrar Controllers del recurso Inscripciones
  * - Construir y registrar el router del recurso Inscripciones
- * 
+ *
  * Principio SRP: Cada container maneja solo UN recurso/entidad
- * 
+ *
  * @param {Container} container - Contenedor de DI
  * @returns {Container} Contenedor con recurso Inscripciones registrado
  */
@@ -30,7 +30,7 @@ import { buildInscripcionesRouter } from '../../../../presentation/routes/inscri
 
 /**
  * Registra el recurso Inscripciones en el contenedor
- * 
+ *
  * @param {Container} container - Contenedor de DI
  * @returns {Container} Contenedor actualizado
  */
@@ -287,7 +287,8 @@ export function registerInscripcionesResource(container) {
         INSCRIPCIONES_TOKENS.generateFormularioInscripcionController,
         (c) =>
             new GenerateFormularioInscripcionController({
-                generateFormularioInscripcionUseCase: c.resolve(INSCRIPCIONES_TOKENS.generateFormularioInscripcionUseCase),
+                generateFormularioInscripcionUseCase:
+                  c.resolve(INSCRIPCIONES_TOKENS.generateFormularioInscripcionUseCase),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
                 responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
             })
@@ -351,7 +352,8 @@ export function registerInscripcionesResource(container) {
                 createEnrollmentController: c.resolve(INSCRIPCIONES_TOKENS.createEnrollmentController),
                 getEnrollmentByIdController: c.resolve(INSCRIPCIONES_TOKENS.getEnrollmentByIdController),
                 deleteEnrollmentController: c.resolve(INSCRIPCIONES_TOKENS.deleteEnrollmentController),
-                generateFormularioInscripcionController: c.resolve(INSCRIPCIONES_TOKENS.generateFormularioInscripcionController),
+                generateFormularioInscripcionController:
+                  c.resolve(INSCRIPCIONES_TOKENS.generateFormularioInscripcionController),
                 updateEnrollmentController: c.resolve(INSCRIPCIONES_TOKENS.updateEnrollmentController),
                 updateEnrollmentPriorHistoryController: c.resolve(
                   INSCRIPCIONES_TOKENS.updateEnrollmentPriorHistoryController

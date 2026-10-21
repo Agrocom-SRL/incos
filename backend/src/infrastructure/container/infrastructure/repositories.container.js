@@ -1,19 +1,19 @@
 /**
  * Registrador de dependencias de todos los repositorios de infraestructura
  * Centraliza la configuración de todos los repositorios de la aplicación
- * 
+ *
  * Responsabilidades:
  * - Registrar todos los repositorios como singletons
  * - Organizar repositorios por categoría funcional
  * - Proveer punto único de configuración para la capa de persistencia
  * - Validar que no se registren duplicados
- * 
+ *
  * Todos los repositorios se registran como singletons porque:
  * - No mantienen estado mutable entre requests
  * - Son thread-safe (Node.js es single-threaded)
  * - Comparten la misma instancia de conexión a BD (Sequelize pool)
  * - Mejora el rendimiento (una sola instancia por tipo)
- * 
+ *
  * @param {Container} container - Contenedor de inyección de dependencias
  * @returns {Container} El mismo contenedor (para encadenamiento)
  */
@@ -170,7 +170,7 @@ import { AulasHorariosSemanaRepository } from '../../repositories/views/AulasHor
 
 /**
  * Registra todas las dependencias de repositorios
- * 
+ *
  * @param {Container} container - Contenedor de DI
  * @returns {Container} Contenedor con repositorios registrados
  */
@@ -318,15 +318,27 @@ export function registerRepositoriesModule(container) {
     registerRepository(container, REPOSITORIOS_TOKENS.studentRepository, StudentRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.studentAcademicDataRepository, StudentAcademicDataRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.studentDocumentRepository, StudentDocumentRepository);
-    registerRepository(container, REPOSITORIOS_TOKENS.studentDocumentDeliveryRepository, StudentDocumentDeliveryRepository);
+    registerRepository(
+      container,
+      REPOSITORIOS_TOKENS.studentDocumentDeliveryRepository,
+      StudentDocumentDeliveryRepository,
+    );
     registerRepository(container, REPOSITORIOS_TOKENS.studentDisabilityRepository, StudentDisabilityRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.studentOriginRepository, StudentOriginRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.scholarshipRepository, ScholarshipRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.studentScholarshipRepository, StudentScholarshipRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.licenseRepository, LicenseRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.studentGuardianRepository, StudentGuardianRepository);
-    registerRepository(container, REPOSITORIOS_TOKENS.studentEnrollmentExcelReportRepository, StudentEnrollmentExcelReportRepository);
-    registerRepository(container, REPOSITORIOS_TOKENS.studentEnrollmentStudentListExcelReportRepository, StudentEnrollmentStudentListExcelReportRepository);
+    registerRepository(
+      container,
+      REPOSITORIOS_TOKENS.studentEnrollmentExcelReportRepository,
+      StudentEnrollmentExcelReportRepository,
+    );
+    registerRepository(
+      container,
+      REPOSITORIOS_TOKENS.studentEnrollmentStudentListExcelReportRepository,
+      StudentEnrollmentStudentListExcelReportRepository,
+    );
 
     // ============================================
     // TRANSITABILIDAD Y TRASPASOS
@@ -339,17 +351,37 @@ export function registerRepositoriesModule(container) {
     // ============================================
     registerRepository(container, REPOSITORIOS_TOKENS.enrollmentRepository, EnrollmentRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.subjectEnrollmentRepository, SubjectEnrollmentRepository);
-    registerRepository(container, REPOSITORIOS_TOKENS.subjectEnrollmentHistoryRepository, SubjectEnrollmentHistoryRepository);
-    registerRepository(container, REPOSITORIOS_TOKENS.priorEnrollmentHistoryRepository, PriorEnrollmentHistoryRepository);
+    registerRepository(
+      container,
+      REPOSITORIOS_TOKENS.subjectEnrollmentHistoryRepository,
+      SubjectEnrollmentHistoryRepository,
+    );
+    registerRepository(
+      container,
+      REPOSITORIOS_TOKENS.priorEnrollmentHistoryRepository,
+      PriorEnrollmentHistoryRepository,
+    );
 
     // ============================================
     // EVALUACIONES
     // ============================================
     registerRepository(container, REPOSITORIOS_TOKENS.evaluationTypeRepository, EvaluationTypeRepository);
-    registerRepository(container, REPOSITORIOS_TOKENS.evaluationConfigurationRepository, EvaluationConfigurationRepository);
-    registerRepository(container, REPOSITORIOS_TOKENS.subjectEnrollmentBimesterRepository, SubjectEnrollmentBimesterRepository);
+    registerRepository(
+      container,
+      REPOSITORIOS_TOKENS.evaluationConfigurationRepository,
+      EvaluationConfigurationRepository,
+    );
+    registerRepository(
+      container,
+      REPOSITORIOS_TOKENS.subjectEnrollmentBimesterRepository,
+      SubjectEnrollmentBimesterRepository,
+    );
     registerRepository(container, REPOSITORIOS_TOKENS.bimesterEvaluationRepository, BimesterEvaluationRepository);
-    registerRepository(container, REPOSITORIOS_TOKENS.bimesterEvaluationGradeRepository, BimesterEvaluationGradeRepository);
+    registerRepository(
+      container,
+      REPOSITORIOS_TOKENS.bimesterEvaluationGradeRepository,
+      BimesterEvaluationGradeRepository,
+    );
     registerRepository(
       container,
       REPOSITORIOS_TOKENS.calificacionContextoRepository,
@@ -466,13 +498,25 @@ export function registerRepositoriesModule(container) {
     // ============================================
     // PAGOS ACADÉMICOS
     // ============================================
-    registerRepository(container, REPOSITORIOS_TOKENS.contributionConfigurationRepository, ContributionConfigurationRepository);
+    registerRepository(
+      container,
+      REPOSITORIOS_TOKENS.contributionConfigurationRepository,
+      ContributionConfigurationRepository,
+    );
     registerRepository(container, REPOSITORIOS_TOKENS.paymentMethodRepository, PaymentMethodRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.authorizedBankRepository, AuthorizedBankRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.paymentAccountRepository, PaymentAccountRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.contributionPaymentRepository, ContributionPaymentRepository);
-    registerRepository(container, REPOSITORIOS_TOKENS.contributionPaymentInstallmentRepository, ContributionPaymentInstallmentRepository);
-    registerRepository(container, REPOSITORIOS_TOKENS.contributionPaymentByCareerExcelReportRepository, PaymentAporteCareerExcelReportRepository);
+    registerRepository(
+      container,
+      REPOSITORIOS_TOKENS.contributionPaymentInstallmentRepository,
+      ContributionPaymentInstallmentRepository,
+    );
+    registerRepository(
+      container,
+      REPOSITORIOS_TOKENS.contributionPaymentByCareerExcelReportRepository,
+      PaymentAporteCareerExcelReportRepository,
+    );
     registerRepository(container, REPOSITORIOS_TOKENS.becasPorCarreraViewRepository, BecasPorCarreraViewRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.compromisoPagoRepository, CompromisoPagoRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.cuentasPorCobrarViewRepository, CuentasPorCobrarViewRepository);
@@ -490,5 +534,3 @@ export function registerRepositoriesModule(container) {
 
     return container;
 }
-
-

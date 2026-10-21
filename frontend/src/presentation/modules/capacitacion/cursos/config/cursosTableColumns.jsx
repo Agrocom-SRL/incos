@@ -14,7 +14,6 @@ import {
   CalendarOutlined,
   ClockCircleOutlined,
   DollarOutlined,
-  EnvironmentOutlined,
   FileExcelOutlined,
   TeamOutlined,
 } from '@ant-design/icons';
@@ -24,7 +23,6 @@ import { createCatalogoEstadoColumn } from '@presentation/utils/tableColumns/cre
 import { formatBs } from '@application/utils/formatters';
 import { CAPACITACION_PERMISOS } from '@application-capacitacion/utils/capacitacionPermisos';
 import {
-  esCursoGratuito,
   formatEstadoCurso,
   getEstadoCursoPillClass,
 } from '@application-capacitacion/utils/capacitacionPills';
@@ -34,6 +32,7 @@ import {
   cursoCapEditarPath,
 } from '@application-capacitacion/config/paths';
 import CostoCursoLabel from '@capacitacion/components/atoms/CostoCursoLabel';
+import CursoGratuitoPill from '@capacitacion/components/atoms/CursoGratuitoPill';
 
 export const createCursosCapacitacionTableColumns = ({
   navigate,
@@ -80,21 +79,46 @@ export const createCursosCapacitacionTableColumns = ({
       sortCompare: (a, b) => (a.estado || '').localeCompare(b.estado || ''),
     },
     {
-      title: 'Costo y fechas',
+      title: 'Costos y fechas',
       key: 'costoFechas',
-      width: 200,
+      width: 240,
       render: (_, record) => (
         <InfoLinesCell
           lines={[
-            { icon: <DollarOutlined />, label: <CostoCursoLabel costo={record.costo} /> },
+            record.esGratuito
+              ? { icon: <DollarOutlined />, label: <CursoGratuitoPill /> }
+              : null,
+            !record.esGratuito && record.tieneCosto
+              ? {
+                  icon: <DollarOutlined />,
+                  label: (
+                    <>
+                      Curso: <CostoCursoLabel costo={record.costo} />
+                    </>
+                  ),
+                }
+              : null,
+            !record.esGratuito && record.cobraMatricula
+              ? {
+                  icon: <DollarOutlined />,
+                  label: (
+                    <>
+                      Matrícula: <CostoCursoLabel costo={record.costoMatricula} />
+                    </>
+                  ),
+                }
+              : null,
             record.fechasLabel
               ? { icon: <CalendarOutlined />, label: record.fechasLabel }
               : null,
+            record.modalidadLabel ? { label: `Modalidad: ${record.modalidadLabel}` } : null,
           ].filter(Boolean)}
         />
       ),
       sorter: true,
-      sortCompare: (a, b) => (Number(a.costo) || 0) - (Number(b.costo) || 0),
+      sortCompare: (a, b) =>
+        (Number(a.costo) || 0) + (Number(a.costoMatricula) || 0) -
+        ((Number(b.costo) || 0) + (Number(b.costoMatricula) || 0)),
     },
     {
       title: 'Horarios',
@@ -108,10 +132,7 @@ export const createCursosCapacitacionTableColumns = ({
               icon: <ClockCircleOutlined />,
               label: linea,
             })),
-            record.aulaLabel
-              ? { key: 'aula', icon: <EnvironmentOutlined />, label: record.aulaLabel }
-              : null,
-          ].filter(Boolean)}
+          ]}
         />
       ),
     },
@@ -154,8 +175,13 @@ export const createCursosCapacitacionTableColumns = ({
           { label: 'Curso', value: record.titulo },
           { label: 'Estado', value: formatEstadoCurso(record.estado) },
           {
-            label: 'Costo',
-            value: esCursoGratuito(record.costo) ? 'Gratis' : `Bs ${formatBs(record.costo)}`,
+            label: 'Costo del curso',
+            value: record.tieneCosto ? `Bs ${formatBs(record.costo)}` : 'No aplica',
+            icon: <DollarOutlined />,
+          },
+          {
+            label: 'Matrícula',
+            value: record.cobraMatricula ? `Bs ${formatBs(record.costoMatricula)}` : 'No aplica',
             icon: <DollarOutlined />,
           },
           { label: 'Fechas', value: record.fechasLabel, icon: <CalendarOutlined /> },

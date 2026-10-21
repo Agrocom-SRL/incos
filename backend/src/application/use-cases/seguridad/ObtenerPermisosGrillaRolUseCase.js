@@ -2,6 +2,8 @@
  * Devuelve permisos agrupados por grupo_ui para el panel de seguridad.
  * Separa: que esta asignado al rol vs que es valido para el permiso.
  */
+import { ValidationError } from '../../../domain/errors/AppError.js';
+
 export class ObtenerPermisosGrillaRolUseCase {
   constructor({ rolPermisoRepository }) {
     this.rolPermisoRepository = rolPermisoRepository;
@@ -13,7 +15,7 @@ export class ObtenerPermisosGrillaRolUseCase {
    */
   async execute(rolId, dominio) {
     if (!dominio) {
-      throw new Error('El parámetro dominio es obligatorio');
+      throw new ValidationError('El parámetro dominio es obligatorio');
     }
 
     return this.rolPermisoRepository.findPermisosParaGrilla(rolId, dominio);

@@ -3,13 +3,13 @@ import { listValidator } from '../common/index.js';
 
 /**
  * Validador para listar materias
- * 
+ *
  * Combina el validador común de listado (page, limit, search)
  * con validaciones específicas para materias (periodo_id)
- * 
+ *
  * Los parámetros específicos son opcionales, pero si se proporcionan
  * deben ser números enteros válidos.
- * 
+ *
  * @example
  * router.get('/', listMateriasValidator, validateRequest, controller);
  */

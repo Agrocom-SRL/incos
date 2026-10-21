@@ -53,4 +53,3 @@ export const Institucion = sequelize.define(
 );
 
 export default Institucion;
-

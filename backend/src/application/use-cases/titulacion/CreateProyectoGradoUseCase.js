@@ -67,6 +67,10 @@ export class CreateProyectoGradoUseCase {
    * @returns {Promise<{proyectoGrado: Object}>}
    */
   async execute(body = {}, userId = null) {
+    const titulo = typeof body.titulo === 'string' ? body.titulo.trim() : '';
+    if (titulo === '') {
+      throw new ValidationError('titulo es requerido');
+    }
     const estudianteIds = this._normalizeEstudianteIds(body.estudianteIds);
     const titularEstudianteId = this._resolveTitular(body, estudianteIds);
     const modalidad = await this._validateModalidad(body.modalidadId, estudianteIds);
@@ -87,7 +91,7 @@ export class CreateProyectoGradoUseCase {
       tutorId: null,
       carreraId: body.carreraId ?? titularInscripcion?.carrera_id ?? null,
       gestionId: body.gestionId ?? titularInscripcion?.gestion_id ?? gestionIdVigente ?? null,
-      titulo: String(body.titulo).trim(),
+      titulo,
       descripcion: body.descripcion ?? null,
       objetivos: body.objetivos ?? null,
       alcance: body.alcance ?? null,

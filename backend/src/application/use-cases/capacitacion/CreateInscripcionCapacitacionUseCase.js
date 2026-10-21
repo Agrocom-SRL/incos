@@ -10,7 +10,16 @@ import {
   InscripcionCapacitacionMapper,
   ParticipanteMapper,
 } from '../../mappers/capacitacion/index.js';
+import { parseFechaISO, parseIdOpcional, parseIdPositivo } from '../../utils/validacionEntrada.js';
 import { resolveEstadoEfectivoCurso } from './helpers/cursoEstadoEfectivo.js';
+import { esCursoGratuito } from './helpers/cursoCapacitacionInput.js';
+import {
+  calcularEstadosInscripcion,
+  recalcularEstadoInscripcion,
+} from './helpers/estadoInscripcion.js';
+
+const esVacio = (valor) =>
+  valor === undefined || valor === null || (typeof valor === 'string' && valor.trim() === '');
 
 /**
  * Use Case: CreateInscripcionCapacitacionUseCase
@@ -21,25 +30,31 @@ import { resolveEstadoEfectivoCurso } from './helpers/cursoEstadoEfectivo.js';
  *    (objeto `participante` con datos mínimos; valida unicidad CI+expedición).
  * 2. Valida que no exista ya una inscripción vigente del participante al curso
  *    (regla de negocio, sin UNIQUE en BD).
- * 3. Crea la inscripción (fecha_inscripcion = hoy si no se envía) con el
- *    snapshot `montoObligatorio` = `capacitaciones.costo` en este momento.
- * 4. Pago por cuotas (reglas definitivas del módulo):
- *    - Curso GRATUITO (costo <= 0): inscripción directa
- *      estado=INSCRITO/estadoPago=CANCELADO, SIN pago ni compromiso.
- *    - Curso CON COSTO: el pago inicial es OBLIGATORIO (delega en
- *      RegisterPagoCapacitacionUseCase, misma transacción). Si no cubre el
- *      total, la inscripción queda PENDIENTE/PARCIAL y se crea un
- *      `capacitacion_compromiso` VIGENTE con la `fechaCompromiso` del payload
- *      (sin cálculo automático de plazo — la fecha la elige el usuario).
+ * 3. Crea la inscripción (fecha_inscripcion = hoy si no se envía) con los
+ *    snapshots `montoObligatorio` = `capacitaciones.costo` (curso) y
+ *    `montoMatricula` = `capacitaciones.costo_matricula` en este momento (0 si
+ *    el interruptor `tieneCosto`/`cobraMatricula` del curso está apagado).
+ *    El participante elige un GRUPO (`capacitacionGrupoId`): obligatorio si el
+ *    curso tiene 2 o más grupos, se asigna solo si tiene uno y es null si no
+ *    tiene; debe pertenecer al curso. Si el grupo define su propio
+ *    `cupoMaximo`, alcanzarlo bloquea la inscripción (409).
+ * 4. Registra los requisitos ya entregados (`requisitosEntregados`: ids de
+ *    `capacitacion_requisitos` del curso).
+ * 5. Pago inicial OPCIONAL (`pagoInicial: { concepto, monto, ... }`, delega en
+ *    RegisterPagoCapacitacionUseCase, misma transacción). Matrícula y curso se
+ *    saldan por separado y en cualquier orden.
+ *
+ * La inscripción SIEMPRE se puede registrar: queda INSCRITO solo si matrícula
+ * y curso están CANCELADOS y los requisitos obligatorios entregados
+ * (`recalcularEstadoInscripcion`); en otro caso queda PENDIENTE. Si queda saldo
+ * y se envía `fechaCompromiso`, se crea un `capacitacion_compromiso` VIGENTE
+ * (sin cálculo automático de plazo — la fecha la elige el usuario).
  *
  * El curso acepta inscripciones mientras esté ABIERTO o EN_CURSO (estado
  * EFECTIVO, calculado por fecha vs `fecha_inicio`/`fecha_fin` en
- * `resolveEstadoEfectivoCurso`) — el corte real es `fecha_fin`: recién al
- * pasarla el curso pasa a CERRADO y deja de aceptar inscripciones. PROPUESTO
- * (aún no abierto) y CANCELADO se rechazan con ConflictError. El frontend ya
- * filtra por estos mismos 2 estados al listar cursos en el wizard
- * (useCursosCapacitacionOptions); esta validación es la defensa real, por si
- * se llama a la API directamente.
+ * `resolveEstadoEfectivoCurso`) — con `fecha_fin` definida, recién al pasarla
+ * el curso pasa a CERRADO y deja de aceptar inscripciones. PROPUESTO (aún no
+ * abierto) y CANCELADO se rechazan con ConflictError.
  *
  * El cupo del curso es INFORMATIVO en el MVP (decisión §6.9 del plan): no
  * bloquea la inscripción al llegar a cupo_maximo (solo se registra en el log).
@@ -53,6 +68,10 @@ export class CreateInscripcionCapacitacionUseCase {
    * @param {Object} params.participanteRepository
    * @param {Object} params.cursoCapacitacionRepository
    * @param {Object} params.capacitacionCompromisoRepository
+   * @param {Object} params.capacitacionRequisitoRepository
+   * @param {Object} params.grupoCapacitacionRepository
+   * @param {Object} params.capacitacionInscritoRequisitoRepository
+   * @param {Object} params.pagoCapacitacionRepository
    * @param {Object} params.registerPagoCapacitacionUseCase - Pago inicial (composición)
    * @param {ILogger} params.logger
    */
@@ -61,6 +80,10 @@ export class CreateInscripcionCapacitacionUseCase {
     participanteRepository,
     cursoCapacitacionRepository,
     capacitacionCompromisoRepository,
+    capacitacionRequisitoRepository,
+    grupoCapacitacionRepository,
+    capacitacionInscritoRequisitoRepository,
+    pagoCapacitacionRepository,
     registerPagoCapacitacionUseCase,
     logger,
   }) {
@@ -68,23 +91,24 @@ export class CreateInscripcionCapacitacionUseCase {
     this.participanteRepository = participanteRepository;
     this.cursoCapacitacionRepository = cursoCapacitacionRepository;
     this.capacitacionCompromisoRepository = capacitacionCompromisoRepository;
+    this.capacitacionRequisitoRepository = capacitacionRequisitoRepository;
+    this.grupoCapacitacionRepository = grupoCapacitacionRepository;
+    this.capacitacionInscritoRequisitoRepository = capacitacionInscritoRequisitoRepository;
+    this.pagoCapacitacionRepository = pagoCapacitacionRepository;
     this.registerPagoCapacitacionUseCase = registerPagoCapacitacionUseCase;
     this.logger = logger;
   }
 
   /**
-   * @param {Object} body - { capacitacionId, participanteId? | participante?, fechaInscripcion?, pagoInicial? }
-   *   pagoInicial: { monto, metodoPagoId, cuentaPagoId?, fechaPago?, observaciones?, fechaCompromiso? }
-   *   fechaCompromiso es requerida cuando el pago inicial no cubre el costo total del curso.
+   * @param {Object} body - { capacitacionId (alias cursoId), participanteId? | participante?,
+   *   fechaInscripcion?, capacitacionGrupoId?, requisitosEntregados?, pagoInicial?, fechaCompromiso? }
+   *   pagoInicial: { concepto, monto, metodoPagoId, cuentaPagoId?, fechaPago?, observaciones?, fechaCompromiso? }
    * @param {number|null} userId - Usuario que inscribe (auditoría)
    * @returns {Promise<{inscripcionCapacitacion: Object}>}
    */
   async execute(body = {}, userId = null) {
     // 1. Curso destino
-    const capacitacionId = Number(body.capacitacionId);
-    if (!capacitacionId) {
-      throw new ValidationError('capacitacionId es requerido');
-    }
+    const capacitacionId = parseIdPositivo(body.capacitacionId ?? body.cursoId, 'capacitacionId');
     const curso = await this.cursoCapacitacionRepository.findById(capacitacionId);
     if (!curso) throw new NotFoundError('curso de capacitación');
     const estadoEfectivo = resolveEstadoEfectivoCurso(
@@ -102,7 +126,18 @@ export class CreateInscripcionCapacitacionUseCase {
       );
     }
 
-    // 2. Cupo informativo (decisión §6.9: NO bloquea). PENDIENTE + INSCRITO ocupan cupo.
+    // 2. Entradas opcionales: fecha, grupo/horario del curso, requisitos entregados
+    const fechaInscripcion = esVacio(body.fechaInscripcion)
+      ? new Date().toISOString().slice(0, 10)
+      : parseFechaISO(body.fechaInscripcion, 'fechaInscripcion');
+    const fechaCompromiso = this._parseFechaCompromiso(body);
+    const grupo = await this._resolverGrupo(body.capacitacionGrupoId, curso);
+    const requisitosEntregados = await this._validarRequisitosEntregados(
+      body.requisitosEntregados,
+      capacitacionId
+    );
+
+    // 3. Cupo informativo (decisión §6.9: NO bloquea). PENDIENTE + INSCRITO ocupan cupo.
     const [pendientesCount, inscritosCount] = await Promise.all([
       this.inscripcionCapacitacionRepository.count({
         capacitacionId,
@@ -122,24 +157,16 @@ export class CreateInscripcionCapacitacionUseCase {
       });
     }
 
-    // 3. Pago por cuotas: reglas de negocio según costo (snapshot en este instante)
-    const costo = Number(curso.costo ?? 0);
-    const esGratuito = costo <= 0;
-
-    if (!esGratuito) {
-      const montoInicial = body.pagoInicial ? Number(body.pagoInicial.monto) : NaN;
-      if (!body.pagoInicial || Number.isNaN(montoInicial) || montoInicial <= 0) {
-        throw new ValidationError(
-          'El curso tiene costo: debe registrarse un pago inicial (pagoInicial.monto > 0)'
-        );
-      }
-      const quedaParcial = montoInicial < costo;
-      if (quedaParcial && !body.pagoInicial.fechaCompromiso) {
-        throw new ValidationError(
-          'pagoInicial.fechaCompromiso es requerida cuando el pago inicial no cubre el costo total del curso'
-        );
-      }
-    } else if (body.pagoInicial) {
+    // 4. Montos (snapshot en este instante). Un curso totalmente gratuito no registra pagos.
+    const costo = curso.tieneCosto ? Number(curso.costo ?? 0) : 0;
+    const costoMatricula = curso.cobraMatricula ? Number(curso.costoMatricula ?? 0) : 0;
+    const esGratuito = esCursoGratuito(curso);
+    const pagoInicialBody = body.pagoInicial ?? null;
+    if (pagoInicialBody !== null && (typeof pagoInicialBody !== 'object' || Array.isArray(pagoInicialBody))) {
+      throw new ValidationError('pagoInicial debe ser un objeto { concepto, monto, metodoPagoId, ... }');
+    }
+    const registrarPagoInicial = pagoInicialBody !== null && !esGratuito;
+    if (pagoInicialBody !== null && esGratuito) {
       this.logger.warn(
         '[Capacitación] Se recibió pagoInicial para un curso gratuito; se ignora (curso gratuito no registra pagos)',
         { capacitacionId }
@@ -151,10 +178,11 @@ export class CreateInscripcionCapacitacionUseCase {
     let inscripcionCreada = null;
     let participante = null;
     let pagoInicial = null;
+    let resumen = null;
     let compromisoCreado = null;
 
     await sequelize.transaction(async (transaction) => {
-      // 4. Resolver participante (existente por id o nuevo)
+      // 5. Resolver participante (existente por id o nuevo)
       participante = await this._resolveParticipante(
         body,
         datosParticipanteNuevo,
@@ -162,7 +190,7 @@ export class CreateInscripcionCapacitacionUseCase {
         transaction
       );
 
-      // 5. Regla: una sola inscripción vigente (PENDIENTE o INSCRITO) por participante+curso
+      // 6. Regla: una sola inscripción vigente (PENDIENTE o INSCRITO) por participante+curso
       const existente =
         await this.inscripcionCapacitacionRepository.findActivaByParticipanteAndCapacitacion(
           participante.id,
@@ -175,58 +203,89 @@ export class CreateInscripcionCapacitacionUseCase {
         );
       }
 
-      // 6. Crear inscripción con el snapshot de costo (montoObligatorio)
-      const estadoInicial = esGratuito
-        ? ESTADOS_INSCRIPCION_CAPACITACION.INSCRITO
-        : ESTADOS_INSCRIPCION_CAPACITACION.PENDIENTE;
-      const estadoPagoInicial = esGratuito
-        ? ESTADOS_PAGO_INSCRITO_CAPACITACION.CANCELADO
-        : ESTADOS_PAGO_INSCRITO_CAPACITACION.PARCIAL;
-
+      // 7. Crear inscripción con los snapshots de costo y matrícula. Nace PENDIENTE; el
+      //    estado definitivo lo fija el recálculo (pagos por concepto + requisitos).
+      const inicial = calcularEstadosInscripcion({
+        montoCurso: costo,
+        montoMatricula: costoMatricula,
+        pagadoCurso: 0,
+        pagadoMatricula: 0,
+        requisitosPendientes: 1,
+        estadoActual: ESTADOS_INSCRIPCION_CAPACITACION.PENDIENTE,
+      });
       inscripcionCreada = await this.inscripcionCapacitacionRepository.create(
         {
           participanteId: participante.id,
           capacitacionId,
-          fechaInscripcion: body.fechaInscripcion ?? new Date().toISOString().slice(0, 10),
-          estado: estadoInicial,
+          fechaInscripcion,
+          estado: ESTADOS_INSCRIPCION_CAPACITACION.PENDIENTE,
           montoObligatorio: costo,
-          estadoPago: estadoPagoInicial,
+          montoMatricula: costoMatricula,
+          estadoPago: inicial.estadoPago,
+          estadoPagoCurso: inicial.estadoPagoCurso,
+          estadoPagoMatricula: inicial.estadoPagoMatricula,
+          capacitacionGrupoId: grupo?.id ?? null,
         },
         userId,
         { transaction }
       );
 
-      // 7. Curso con costo: pago inicial OBLIGATORIO (mismo use case de POST /:id/pagos)
-      if (!esGratuito) {
+      // 8. Requisitos ya entregados al inscribirse
+      for (const requisitoId of requisitosEntregados) {
+        // eslint-disable-next-line no-await-in-loop
+        await this.capacitacionInscritoRequisitoRepository.create(
+          {
+            capacitacionInscritoId: inscripcionCreada.id,
+            capacitacionRequisitoId: requisitoId,
+            entregado: true,
+            fechaEntrega: fechaInscripcion,
+          },
+          userId,
+          { transaction }
+        );
+      }
+
+      // 9. Pago inicial OPCIONAL (mismo use case de POST /:id/pagos; recalcula estados)
+      if (registrarPagoInicial) {
         const resultado = await this.registerPagoCapacitacionUseCase.execute(
           inscripcionCreada.id,
-          body.pagoInicial,
+          pagoInicialBody,
           userId,
           { transaction }
         );
         pagoInicial = resultado.pagoCapacitacion;
+        resumen = pagoInicial.inscripcion ?? null;
+      }
+      if (!resumen) {
+        resumen = await recalcularEstadoInscripcion({
+          inscripcion: inscripcionCreada,
+          pagoCapacitacionRepository: this.pagoCapacitacionRepository,
+          capacitacionInscritoRequisitoRepository: this.capacitacionInscritoRequisitoRepository,
+          inscripcionCapacitacionRepository: this.inscripcionCapacitacionRepository,
+          capacitacionCompromisoRepository: this.capacitacionCompromisoRepository,
+          userId,
+          transaction,
+        });
+      }
 
-        // RegisterPagoCapacitacionUseCase pudo haber actualizado estado/estadoPago
-        // a INSCRITO/CANCELADO si el pago inicial cubrió el total: releer.
-        inscripcionCreada = await this.inscripcionCapacitacionRepository.findById(
-          inscripcionCreada.id,
+      // El recálculo pudo cambiar estado/estados de pago: releer.
+      inscripcionCreada = await this.inscripcionCapacitacionRepository.findById(
+        inscripcionCreada.id,
+        { transaction }
+      );
+
+      // 10. Queda saldo y se acordó una fecha: compromiso VIGENTE (la fecha la elige el usuario)
+      if (fechaCompromiso && inscripcionCreada.estadoPago === ESTADOS_PAGO_INSCRITO_CAPACITACION.PARCIAL) {
+        compromisoCreado = await this.capacitacionCompromisoRepository.create(
+          {
+            capacitacionInscritoId: inscripcionCreada.id,
+            fechaCompromiso,
+            observacion: null,
+            estado: ESTADOS_COMPROMISO_CAPACITACION.VIGENTE,
+          },
+          userId,
           { transaction }
         );
-
-        // Sigue PENDIENTE (pago parcial): crear el compromiso con la fecha del payload
-        // (sin cálculo automático de plazo, se persiste tal cual la envía el caller).
-        if (inscripcionCreada.estado === ESTADOS_INSCRIPCION_CAPACITACION.PENDIENTE) {
-          compromisoCreado = await this.capacitacionCompromisoRepository.create(
-            {
-              capacitacionInscritoId: inscripcionCreada.id,
-              fechaCompromiso: body.pagoInicial.fechaCompromiso,
-              observacion: null,
-              estado: ESTADOS_COMPROMISO_CAPACITACION.VIGENTE,
-            },
-            userId,
-            { transaction }
-          );
-        }
       }
     });
 
@@ -234,7 +293,9 @@ export class CreateInscripcionCapacitacionUseCase {
       id: inscripcionCreada.id,
       participanteId: participante.id,
       capacitacionId,
+      estado: inscripcionCreada.estado,
       conPagoInicial: Boolean(pagoInicial),
+      requisitosEntregados: requisitosEntregados.length,
       conCompromiso: Boolean(compromisoCreado),
     });
 
@@ -242,6 +303,8 @@ export class CreateInscripcionCapacitacionUseCase {
     presentation.participante = ParticipanteMapper.entityToPresentation(participante);
     presentation.capacitacionTitulo = curso.titulo;
     presentation.costo = costo;
+    presentation.saldoCurso = resumen?.saldoCurso ?? 0;
+    presentation.saldoMatricula = resumen?.saldoMatricula ?? 0;
     // pagoInicial ya viene en formato de presentación desde RegisterPagoCapacitacionUseCase
     presentation.pagoInicial = pagoInicial;
     if (compromisoCreado) {
@@ -250,6 +313,79 @@ export class CreateInscripcionCapacitacionUseCase {
     }
 
     return { inscripcionCapacitacion: presentation };
+  }
+
+  /**
+   * Fecha de compromiso opcional (en `pagoInicial.fechaCompromiso` o en la raíz).
+   * @private
+   */
+  _parseFechaCompromiso(body) {
+    const valor = body.pagoInicial?.fechaCompromiso ?? body.fechaCompromiso;
+    return esVacio(valor) ? null : parseFechaISO(valor, 'fechaCompromiso');
+  }
+
+  /**
+   * Resuelve el grupo elegido: obligatorio con 2 o más grupos, automático con
+   * uno y null sin grupos. Valida pertenencia al curso y el cupo propio del grupo.
+   * @private
+   */
+  async _resolverGrupo(valor, curso) {
+    const grupos = await this.grupoCapacitacionRepository.findByCapacitacionId(curso.id);
+    const elegido = parseIdOpcional(valor, 'capacitacionGrupoId');
+
+    if (grupos.length === 0) {
+      if (elegido !== null) throw new ValidationError('El curso no tiene grupos');
+      return null;
+    }
+    if (grupos.length === 1 && elegido === null) {
+      return this._validarCupoGrupo(grupos[0]);
+    }
+    if (elegido === null) {
+      throw new ValidationError(
+        `capacitacionGrupoId es requerido: el curso tiene ${grupos.length} grupos`
+      );
+    }
+    const grupo = grupos.find((g) => g.id === elegido);
+    if (!grupo) {
+      throw new ValidationError('capacitacionGrupoId no pertenece a los grupos del curso');
+    }
+    return this._validarCupoGrupo(grupo);
+  }
+
+  /**
+   * Un grupo con `cupoMaximo` propio bloquea al alcanzarlo; sin cupo propio rige
+   * el cupo informativo del curso.
+   * @private
+   */
+  async _validarCupoGrupo(grupo) {
+    if (grupo.cupoMaximo === null || grupo.cupoMaximo === undefined) return grupo;
+    const conteos = await this.inscripcionCapacitacionRepository.countVigentesByGrupoIds([grupo.id]);
+    if (conteos[grupo.id] >= grupo.cupoMaximo) {
+      throw new ConflictError(
+        `El grupo "${grupo.nombre}" alcanzó su cupo máximo (${grupo.cupoMaximo})`
+      );
+    }
+    return grupo;
+  }
+
+  /**
+   * `requisitosEntregados` opcional: ids de requisitos vigentes DEL curso.
+   * @private
+   */
+  async _validarRequisitosEntregados(valor, capacitacionId) {
+    if (valor === undefined || valor === null) return [];
+    if (!Array.isArray(valor)) {
+      throw new ValidationError('requisitosEntregados debe ser un array de IDs de requisitos');
+    }
+    const ids = [...new Set(valor.map((id) => parseIdPositivo(id, 'requisitosEntregados')))];
+    if (ids.length === 0) return [];
+    const requisitosCurso = await this.capacitacionRequisitoRepository.findByCapacitacionId(capacitacionId);
+    const permitidos = new Set(requisitosCurso.map((r) => r.id));
+    const ajeno = ids.find((id) => !permitidos.has(id));
+    if (ajeno !== undefined) {
+      throw new ValidationError(`El requisito ${ajeno} no pertenece al curso`);
+    }
+    return ids;
   }
 
   /**

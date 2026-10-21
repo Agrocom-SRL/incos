@@ -111,7 +111,7 @@ export const TimetableCalendar = ({
   loading = false,
 }) => {
   // Validar schedule
-  const validSchedule = Array.isArray(schedule) ? schedule : [];
+  const validSchedule = useMemo(() => (Array.isArray(schedule) ? schedule : []), [schedule]);
 
   // Convertir schedule a eventos
   const events = useMemo(
@@ -207,31 +207,6 @@ export const TimetableCalendar = ({
       max: new Date(0, 0, 0, maxHour, maxMinute, 0),
     };
   }, [validSchedule]);
-
-  // Días dinámicos desde config o calculados
-  const visibleDays = useMemo(() => {
-    if (config.days && config.days.length > 0) {
-      // Mapear días del config a números
-      const dayMap = {
-        'monday': 1, 'tuesday': 2, 'wednesday': 3,
-        'thursday': 4, 'friday': 5, 'saturday': 6, 'sunday': 0,
-      };
-      return config.days.map(day => dayMap[day.key]).filter(d => d !== undefined);
-    }
-
-    // Calcular desde schedule
-    const uniqueDays = new Set(
-      validSchedule.map(item => {
-        const dayMap = {
-          'monday': 1, 'tuesday': 2, 'wednesday': 3,
-          'thursday': 4, 'friday': 5, 'saturday': 6, 'sunday': 0,
-        };
-        return dayMap[item.day];
-      }).filter(Boolean)
-    );
-
-    return Array.from(uniqueDays).sort();
-  }, [config.days, validSchedule]);
 
   // Mostrar loading
   if (loading) {

@@ -10,9 +10,9 @@
 export class IPDFGenerator {
   /**
    * Genera un Recibo de Pago con diseño institucional mejorado
-   * 
+   *
    * Crea un PDF desde cero usando pdf-lib (ReciboPagoPdfGenerator).
-   * 
+   *
    * @param {Object} data - Datos del pago
    * @returns {Promise<Buffer>} Contenido del PDF generado
    */
@@ -22,9 +22,9 @@ export class IPDFGenerator {
 
   /**
    * Genera un Acta de Compromiso a partir de la plantilla PDF
-   * 
+   *
    * Edita la plantilla PDF (Plantilla.pdf) usando pdf-lib.
-   * 
+   *
    * @returns {Promise<Buffer>} Contenido del PDF generado
    */
   generateActaCompromiso() {
@@ -48,9 +48,9 @@ export class IPDFGenerator {
 
   /**
    * Genera un Formulario de Inscripción a partir de la plantilla PDF
-   * 
+   *
    * Edita la plantilla PDF (Plantilla.pdf) usando pdf-lib (FormularioInscripcionPdfGenerator).
-   * 
+   *
    * @param {Object} [options] - Opciones (gestionYear, apellidoPaterno, apellidoMaterno, nombres, ci, expedicion, etc.)
    * @returns {Promise<Buffer>} Contenido del PDF generado
    */

@@ -36,15 +36,35 @@ export class UpdateAsignacionHorarioUseCase {
       body?.orden_secuencia ?? body?.ordenSecuencia ?? existing.sequenceOrder ?? 1
     );
 
+    if (!Number.isFinite(asignacionDocenteId) || asignacionDocenteId < 1) {
+      throw new ValidationError('asignacion_docente_id inválido');
+    }
+    if (!Number.isFinite(horarioId) || horarioId < 1) {
+      throw new ValidationError('horario_id inválido');
+    }
+    if (!Number.isFinite(ordenSecuencia) || ordenSecuencia < 1) {
+      throw new ValidationError('orden_secuencia inválido');
+    }
+
     const assignment = await this.teacherAssignmentRepository.findEnrichedById(asignacionDocenteId);
     if (!assignment?.vigente) throw new NotFoundError('Asignación docente');
+
+    // Un bloque no puede cambiar de paralelo en gestión: el origen podría estar CERRADO.
+    if (asignacionDocenteId !== Number(existing.teacherAssignmentId)) {
+      const origen = await this.teacherAssignmentRepository.findEnrichedById(
+        Number(existing.teacherAssignmentId)
+      );
+      if (origen && Number(origen.paralelo_gestion_id) !== Number(assignment.paralelo_gestion_id)) {
+        throw new ValidationError('El bloque no puede moverse a una asignación de otro paralelo');
+      }
+    }
 
     const pg = await this.parallelManagementRepository.findById(assignment.paralelo_gestion_id);
     if (!pg) throw new NotFoundError('Paralelo en gestión');
 
     assertParaleloGestionHorarioReubicable(pg.state);
 
-    if (Number(body?.horario_id ?? body?.horarioId)) {
+    if (body?.horario_id ?? body?.horarioId) {
       const horario = await this.scheduleRepository.findById(horarioId);
       if (!horario) throw new NotFoundError('Horario');
     }

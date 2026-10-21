@@ -4,18 +4,18 @@ import { TIPOS_HORARIO } from '../../domain/constants/cursos.constants.js';
 
 /**
  * Mapper: ScheduleMapper
- * 
+ *
  * Responsabilidad única: Conversión entre Modelo ORM (Sequelize) ↔ Entidad de Dominio (Schedule)
- * 
+ *
  * Patrón: Usa BaseMapper para campos comunes, solo maneja campos específicos de Schedule
- * 
+ *
  * Ubicación: Infrastructure Layer (es un detalle de implementación específico de Sequelize)
- * 
+ *
  * Principios SOLID aplicados:
  * - Single Responsibility: Solo se encarga de mapear campos específicos de Schedule
  * - Open/Closed: Extiende funcionalidad de BaseMapper sin modificarlo
  * - Dependency Inversion: Depende de la entidad de dominio, no de implementaciones concretas
- * 
+ *
  * Clean Architecture:
  * - Domain Layer: Schedule (entidad pura)
  * - Infrastructure Layer: BaseMapper (campos comunes) + ScheduleMapper (campos específicos)
@@ -26,9 +26,9 @@ export class ScheduleMapper {
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de Schedule
    * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
-   * 
+   *
    * Flujo: Base de Datos → ORM Model → Domain Entity
-   * 
+   *
    * @param {Object|null} model - Modelo Sequelize de Horario
    * @returns {Schedule|null} Entidad de dominio Schedule
    */
@@ -40,7 +40,7 @@ export class ScheduleMapper {
     // Cuando se usan attributes limitados, Sequelize almacena los campos en dataValues
     const dataValues = model.dataValues || model;
     const specificFields = {};
-    
+
     // Mapeo: BD (snake_case español) → Dominio (camelCase inglés)
     if ('nombre' in dataValues && dataValues.nombre !== undefined) {
       specificFields.name = dataValues.nombre;
@@ -71,12 +71,12 @@ export class ScheduleMapper {
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
-   * 
+   *
    * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
-   * 
+   *
    * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
    * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
-   * 
+   *
    * @param {Schedule|Object} entity - Entidad Schedule o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
@@ -100,9 +100,9 @@ export class ScheduleMapper {
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
    * Solo incluye los campos que están definidos (que existen en la entidad)
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de Schedule
-   * 
+   *
    * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
-   * 
+   *
    * @param {Schedule|Object} entity - Entidad Schedule o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
@@ -131,7 +131,7 @@ export class ScheduleMapper {
 
   /**
    * Convierte un array de modelos Sequelize a array de entidades de dominio
-   * 
+   *
    * @param {Array} models - Array de modelos Sequelize
    * @returns {Schedule[]} Array de entidades Schedule
    */

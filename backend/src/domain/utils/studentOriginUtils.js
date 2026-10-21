@@ -2,13 +2,13 @@ import { TIPOS_ORIGEN_VALUES, TIPOS_ORIGEN } from '../constants/index.js';
 
 /**
  * Utilidades para normalización de valores relacionados con StudentOrigin
- * 
+ *
  * Responsabilidades:
  * - Normalizar valores de tipo de origen desde diferentes formatos (números, strings) a ENUM
  * - Funciones puras sin dependencias externas (excepto constantes del dominio)
- * 
+ *
  * Ubicación: domain/utils (capa de dominio - funciones puras sin dependencias)
- * 
+ *
  * Principios SOLID aplicados:
  * - Single Responsibility: Solo normalización de valores de tipo de origen
  * - Open/Closed: Extensible para nuevos tipos de normalización sin modificar existentes
@@ -17,10 +17,10 @@ import { TIPOS_ORIGEN_VALUES, TIPOS_ORIGEN } from '../constants/index.js';
 /**
  * Normaliza un valor numérico o texto de tipo de origen a su valor ENUM correspondiente
  * Convierte valores de la base de datos (números) a valores del dominio (ENUM)
- * 
+ *
  * @param {number|string} value - Valor numérico (0, 1, 2) o texto del ENUM
  * @returns {string} Valor del ENUM: 'BOLIVIANA', 'EXTRANJERA', 'DOBLE_NACIONALIDAD'
- * 
+ *
  * @example
  * normalizeOriginType(0) // 'BOLIVIANA'
  * normalizeOriginType(1) // 'EXTRANJERA'
@@ -47,18 +47,18 @@ export function normalizeOriginType(value) {
     const cleaned = value.trim();
     numericValue = parseInt(cleaned, 10);
     // Si parseInt falla (devuelve NaN), intentar comparar directamente
-    if (isNaN(numericValue)) {
+    if (Number.isNaN(Number(numericValue))) {
       // Si no es un número válido, retornar por defecto
       return TIPOS_ORIGEN.BOLIVIANA;
     }
   } else {
     numericValue = Number(value);
     // Si no es un número válido, retornar por defecto
-    if (isNaN(numericValue)) {
+    if (Number.isNaN(Number(numericValue))) {
       return TIPOS_ORIGEN.BOLIVIANA;
     }
   }
-  
+
   // Mapear valores numéricos a ENUM
   switch (numericValue) {
     case 0:

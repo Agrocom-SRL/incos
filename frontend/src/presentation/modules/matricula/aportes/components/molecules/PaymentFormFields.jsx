@@ -36,7 +36,7 @@ import { Button } from '@atoms';
 const { TextArea } = Input;
 
 const PaymentFormFields = ({
-  form, // eslint-disable-line no-unused-vars -- contrato histórico del padre; los campos usan el Form del contexto
+  form,
   cuentasPagoData,
   bancosAutorizadosData,
   requiereFechaPago = false,

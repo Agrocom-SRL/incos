@@ -1,4 +1,5 @@
 import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
+import { parseFechaISO } from '../../utils/validacionEntrada.js';
 
 /**
  * Crea (o reemplaza) el compromiso de pago VIGENTE de una cabecera de aporte.
@@ -84,15 +85,7 @@ export class UpsertCompromisoUseCase {
       throw new ValidationError('fecha_compromiso es requerida');
     }
     // Acepta 'YYYY-MM-DD' (DATEONLY).
-    const str = String(value).slice(0, 10);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(str)) {
-      throw new ValidationError('fecha_compromiso debe tener formato YYYY-MM-DD');
-    }
-    const parsed = new Date(`${str}T00:00:00`);
-    if (Number.isNaN(parsed.getTime())) {
-      throw new ValidationError('fecha_compromiso no es una fecha válida');
-    }
-    return str;
+    return parseFechaISO(value, 'fecha_compromiso');
   }
 
   _normalizeObservacion(value) {

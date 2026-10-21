@@ -28,6 +28,7 @@ const DocenteAsignacionesPage = () => {
   const s = useDocenteAsignacionesState();
   const activePanel = DOCENTE_ASIGNACIONES_TAB_PANEL_META[s.tab];
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization -- el compilador no preserva la memoización; sin cambio de comportamiento
   const workspaceDescription = useMemo(() => {
     const partes = [`Docente: ${s.docenteNombre}`];
     if (s.gestionLabel) {

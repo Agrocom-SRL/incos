@@ -49,6 +49,16 @@ export class AssignTeacherToCourseUseCase {
       );
     }
 
+    if (input.hours !== undefined && input.hours !== null) {
+      const hours = Number(input.hours);
+      if (typeof input.hours === 'boolean' || String(input.hours).trim() === '' || !Number.isFinite(hours) || hours < 0 || hours > 200) {
+        throw new UnprocessableEntityError('carga_horaria debe estar entre 0 y 200.', [
+          { field: 'carga_horaria', message: 'Inválido' },
+        ]);
+      }
+      input.hours = Math.round(hours);
+    }
+
     const teacher = await this.teacherRepository.findById(docenteId);
     if (!teacher) throw new NotFoundError('Docente');
 

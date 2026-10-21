@@ -25,10 +25,8 @@
  * (`wizardRef.current.goToStep`) porque seleccionar una fila YA es una
  * selección válida — no hace falta repetir la validación del paso.
  *
- * Elegir un curso avanza directo al paso "Pago inicial" SOLO si ese curso
- * tiene costo (el paso no existe para cursos gratuitos, ver
- * `useInscribirParticipantePage`): si el curso elegido es gratuito, "Curso"
- * ya es el último paso y no hace falta saltar a ningún lado.
+ * Elegir un curso avanza directo al paso "Grupo y requisitos". El paso
+ * "Pago inicial" (opcional) solo existe si el curso cobra algo.
  */
 
 import { useCallback, useMemo, useRef } from 'react';
@@ -47,6 +45,7 @@ import {
 import { CAPACITACION_PERMISOS } from '@application-capacitacion/utils/capacitacionPermisos';
 import InscribirParticipanteSeccionParticipante from '@capacitacion/inscripciones/components/organisms/InscribirParticipanteSeccionParticipante';
 import InscribirParticipanteSeccionCurso from '@capacitacion/inscripciones/components/organisms/InscribirParticipanteSeccionCurso';
+import InscribirParticipanteSeccionInscripcion from '@capacitacion/inscripciones/components/organisms/InscribirParticipanteSeccionInscripcion';
 import InscribirParticipanteSeccionPago from '@capacitacion/inscripciones/components/organisms/InscribirParticipanteSeccionPago';
 import CursoCapacitacionResumen from '@capacitacion/inscripciones/components/molecules/CursoCapacitacionResumen';
 import '@presentation/styles/pages/detail-page.css';
@@ -83,11 +82,22 @@ const InscribirParticipantePage = () => {
     cursoSeleccionadoId,
     cursoSeleccionado,
     handleCursoChange,
+    loadingCursoDetalle,
+    errorCursoDetalle,
+    gruposCurso,
+    requisitosCurso,
+    capacitacionGrupoId,
+    setCapacitacionGrupoId,
+    requisitosEntregados,
+    setRequisitosEntregados,
+    registrarPagoInicial,
+    handleTogglePagoInicial,
+    saldosPorConcepto,
+    conceptoOptions,
     metodosPago,
     cuentasPago,
     loadingCatalogos,
     errorCatalogos,
-    metodoPagoId,
     reglasMetodo,
     handleMetodoPagoChange,
     handleFinish,
@@ -107,20 +117,14 @@ const InscribirParticipantePage = () => {
 
   /**
    * Elegir una tarjeta de curso ya es una elección válida: avanza directo al
-   * paso "Pago inicial" SOLO si ese curso tiene costo (el paso no existe para
-   * cursos gratuitos). Se resuelve el costo con el `value` recién elegido
-   * (no con `cursoSeleccionado` del hook, que todavía no se actualizó en este
-   * mismo ciclo síncrono) para no saltar a un índice de paso inexistente.
+   * paso "Grupo y requisitos" (siempre existe).
    */
   const handleCursoSeleccionarYAvanzar = useCallback(
     (value) => {
       handleCursoChange(value);
-      const curso = cursos.find((c) => c.id === value);
-      if (Number(curso?.costo ?? 0) > 0) {
-        wizardRef.current?.goToStep(2);
-      }
+      wizardRef.current?.goToStep(2);
     },
-    [handleCursoChange, cursos],
+    [handleCursoChange],
   );
 
   const participanteHeaderActions = useMemo(() => {
@@ -189,22 +193,38 @@ const InscribirParticipantePage = () => {
         );
       }
 
+      if (sectionKey === 'inscripcion') {
+        return (
+          <Flex vertical gap="middle" key="inscripcion">
+            <CursoCapacitacionResumen curso={cursoSeleccionado} />
+            <InscribirParticipanteSeccionInscripcion
+              loading={loadingCursoDetalle}
+              error={errorCursoDetalle}
+              grupos={gruposCurso}
+              requisitos={requisitosCurso}
+              capacitacionGrupoId={capacitacionGrupoId}
+              onGrupoChange={setCapacitacionGrupoId}
+              requisitosEntregados={requisitosEntregados}
+              onRequisitosChange={setRequisitosEntregados}
+            />
+          </Flex>
+        );
+      }
+
       if (sectionKey === 'pago') {
-        // Este paso solo existe en `wizardSteps` cuando el curso tiene costo
-        // (`requierePago`): el pago inicial es siempre obligatorio aquí, ya
-        // no hay switch para omitirlo. Un curso gratuito nunca llega a este
-        // sectionKey (el paso completo se omite del wizard).
         return (
           <Flex vertical gap="middle" key="pago">
             <CursoCapacitacionResumen curso={cursoSeleccionado} />
             <InscribirParticipanteSeccionPago
+              registrarPagoInicial={registrarPagoInicial}
+              onTogglePagoInicial={handleTogglePagoInicial}
               errorCatalogos={errorCatalogos}
               metodosPago={metodosPago}
               cuentasPago={cuentasPago}
               loadingCatalogos={loadingCatalogos}
-              metodoPagoId={metodoPagoId}
               reglasMetodo={reglasMetodo}
-              costoCurso={cursoSeleccionado?.costo ?? 0}
+              saldosPorConcepto={saldosPorConcepto}
+              conceptoOptions={conceptoOptions}
               onMetodoPagoChange={handleMetodoPagoChange}
               disabled={inscribiendo}
             />
@@ -233,11 +253,22 @@ const InscribirParticipantePage = () => {
       cursoSeleccionadoId,
       cursoSeleccionado,
       handleCursoSeleccionarYAvanzar,
+      loadingCursoDetalle,
+      errorCursoDetalle,
+      gruposCurso,
+      requisitosCurso,
+      capacitacionGrupoId,
+      setCapacitacionGrupoId,
+      requisitosEntregados,
+      setRequisitosEntregados,
+      registrarPagoInicial,
+      handleTogglePagoInicial,
+      saldosPorConcepto,
+      conceptoOptions,
       errorCatalogos,
       metodosPago,
       cuentasPago,
       loadingCatalogos,
-      metodoPagoId,
       reglasMetodo,
       handleMetodoPagoChange,
     ],

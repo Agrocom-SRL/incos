@@ -1,6 +1,6 @@
 /**
  * Constantes del dominio relacionadas con Configuración del Sistema
- * 
+ *
  * Estas constantes son parte del dominio de negocio y pueden ser usadas
  * por entidades, value objects y servicios de dominio relacionados con configuración.
  */

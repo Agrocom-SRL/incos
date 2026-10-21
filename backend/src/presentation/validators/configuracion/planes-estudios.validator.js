@@ -187,4 +187,3 @@ export const createPrerrequisitoValidator = [
     .withMessage('prerrequisito_id inválido')
     .toInt(),
 ];
-

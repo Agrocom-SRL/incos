@@ -37,7 +37,9 @@ export class ListarUsuariosUseCase {
     const categoria = query.categoria
       ? String(query.categoria).trim().toLowerCase()
       : '';
-    const rolCodigos = CATEGORIA_ROL_CODIGOS[categoria] || null;
+    const rolCodigos = Object.hasOwn(CATEGORIA_ROL_CODIGOS, categoria)
+      ? CATEGORIA_ROL_CODIGOS[categoria]
+      : null;
 
     const total = await this.userRepository.countAllWithRoleSearch({
       search: search || null,

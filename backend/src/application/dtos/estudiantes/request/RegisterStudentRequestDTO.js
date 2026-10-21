@@ -1,9 +1,9 @@
 /**
  * Request DTO: RegisterStudentRequestDTO
  * Módulo: Estudiantes
- * 
+ *
  * Transforma la estructura plana del frontend a la estructura anidada que espera el use case.
- * 
+ *
  * Frontend envía (estructura plana):
  * {
  *   ci, expedicionId, nombres, apellidoPaterno, apellidoMaterno, fechaNacimiento,
@@ -14,7 +14,7 @@
  *   contactosEmergencia: [ ... ],
  *   documentacion: { doc_1: { ... }, doc_2: { ... } }
  * }
- * 
+ *
  * Use Case espera (estructura anidada):
  * {
  *   student: { ... },
@@ -23,12 +23,12 @@
  *   origins: [ ... ],
  *   documentation: { ... }
  * }
- * 
- * 
+ *
+ *
  * Clean Architecture:
  * - Application Layer: Transforma datos de Presentation → Application
  * - Depende solo de estructuras de datos, no de entidades de dominio
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo transforma estructura de datos del request
  * - Open/Closed: Extensible para agregar nuevas transformaciones sin modificar el use case
@@ -36,7 +36,7 @@
 export class RegisterStudentRequestDTO {
   /**
    * Transforma el body del request del frontend a la estructura que espera el use case
-   * 
+   *
    * @param {Object} body - Body del request HTTP (estructura plana del frontend)
    * @returns {Object} Estructura anidada para el use case
    */
@@ -58,8 +58,6 @@ export class RegisterStudentRequestDTO {
       telefonoFijo,
       direccion,
       municipioResidenciaId,
-      departamentoResidenciaId,
-      provinciaResidenciaId,
       zona,
       trabaja,
       empresaInstitucion,
@@ -159,20 +157,21 @@ export class RegisterStudentRequestDTO {
 
     // 3. Orígenes (array, opcional)
     // IMPORTANTE: tipoOrigen puede ser 0 (BOLIVIANA), que es falsy, por lo que debemos verificar explícitamente !== undefined
-    const hasOriginData = paisId || ciudadNacimiento || municipioId || localidadComunidad || idiomaMaternoId || idiomaSecundarioId || (tipoOrigen !== undefined && tipoOrigen !== null);
-    let origins = [];
-    
+    const hasOriginData = paisId || ciudadNacimiento || municipioId || localidadComunidad || idiomaMaternoId
+      || idiomaSecundarioId || (tipoOrigen !== undefined && tipoOrigen !== null);
+    const origins = [];
+
     if (hasOriginData) {
       // Normalizar tipoOrigen a string
       const tipoOrigenNormalizado = tipoOrigen === 0 || tipoOrigen === '0' ? 'BOLIVIANA'
         : tipoOrigen === 1 || tipoOrigen === '1' ? 'EXTRANJERA'
         : tipoOrigen === 2 || tipoOrigen === '2' ? 'DOBLE_NACIONALIDAD'
         : tipoOrigen;
-      
+
       if (tipoOrigenNormalizado === 'DOBLE_NACIONALIDAD' && primeraNacionalidad) {
         // Doble nacionalidad: crear 2 orígenes
         const primeraEsBoliviana = primeraNacionalidad === 'BOLIVIANA' || primeraNacionalidad === '0';
-        
+
         // Primera nacionalidad (principal)
         origins.push({
           countryId: primeraEsBoliviana ? null : (paisId || null),
@@ -183,7 +182,7 @@ export class RegisterStudentRequestDTO {
           originType: primeraEsBoliviana ? 'BOLIVIANA' : 'EXTRANJERA',
           isPrincipal: true,
         });
-        
+
         // Segunda nacionalidad (secundaria)
         const segundaEsBoliviana = !primeraEsBoliviana;
         origins.push({
@@ -302,4 +301,3 @@ export class RegisterStudentRequestDTO {
     };
   }
 }
-

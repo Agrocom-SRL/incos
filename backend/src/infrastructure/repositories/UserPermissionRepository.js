@@ -1,4 +1,3 @@
-import { IUsuarioPermisoRepository } from '../../domain/interfaces/repositories/IUsuarioPermisoRepository.js';
 import { UsuarioPermiso as UsuarioPermisoModel } from '../database/models/usuario_permiso.js';
 import { sequelize } from '../database/sequelize.js';
 import { BaseRepository } from './BaseRepository.js';
@@ -41,11 +40,11 @@ export class UserPermissionRepository extends BaseRepository {
     return [];
   }
 
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return UserPermissionMapper.toModel(data);
   }
 
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return UserPermissionMapper.toModelForUpdate(data);
   }
 

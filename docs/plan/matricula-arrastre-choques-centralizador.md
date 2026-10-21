@@ -1,5 +1,8 @@
 # Plan — Arrastre, choques de horario y centralizador anual
 
+> **Estado: pendiente — verificado 2026-10-20.** Comprobado contra el código: no existe código de las Fases 1-6: no hay `GET /nivelaciones/choques`, ni `vecesReprobada`/regla de 3.ª matrícula, ni `CentralizadorPdfGenerator`, ni «código RITT» en la UI; el estado anual sigue calculándose también en el frontend (`resumenAnualEstudiante` en `CentralizadorAnualGrid.jsx`). Falta: todo el plan (las reglas de negocio R1-R5 siguen vigentes como requisito); los `choques` actuales son solo de horarios docentes.
+
+
 > Fecha de acuerdo de alcance: 2026-08-14. Complementa (no reemplaza) a
 > `docs/plan/centralizador-nivelacion-plan-desarrollo.md` y
 > `docs/plan/matricula-wizard-rediseno.md`. Contrato de handoff backend-first:

@@ -10,7 +10,7 @@
  * Usado por: StudentRegisterProvider
  */
 
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import { Form } from 'antd';
 import { useDocumentacionDinamica } from './useDocumentacionDinamica';
 
@@ -26,29 +26,28 @@ export const useDocumentacionProcesada = (documentacion = [], formRef) => {
 
   const documentacionProcesadaResult = useDocumentacionDinamica(documentacion, formValues);
 
-  const prevResultRef = useRef(null);
+  const {
+    documentacion: docs,
+    documentosRequeridos,
+    documentosOpcionales,
+    cantidadDocumentos,
+    cantidadRequeridos,
+    cantidadOpcionales,
+  } = documentacionProcesadaResult;
 
-  return useMemo(() => {
-    const current = {
-      documentacion: documentacionProcesadaResult.documentacion,
-      documentosRequeridos: documentacionProcesadaResult.documentosRequeridos,
-      documentosOpcionales: documentacionProcesadaResult.documentosOpcionales,
-      cantidadDocumentos: documentacionProcesadaResult.cantidadDocumentos,
-      cantidadRequeridos: documentacionProcesadaResult.cantidadRequeridos,
-      cantidadOpcionales: documentacionProcesadaResult.cantidadOpcionales,
-    };
-    const prev = prevResultRef.current;
-    if (prev &&
-        prev.cantidadDocumentos === current.cantidadDocumentos &&
-        prev.cantidadRequeridos === current.cantidadRequeridos &&
-        prev.cantidadOpcionales === current.cantidadOpcionales) {
-      const prevDocIds = prev.documentacion?.map(d => d.id).sort().join(',') || '';
-      const currentDocIds = current.documentacion?.map(d => d.id).sort().join(',') || '';
-      if (prevDocIds === currentDocIds) return prev;
-    }
-    prevResultRef.current = current;
-    return current;
-  }, [documentacionProcesadaResult]);
+  // useDocumentacionDinamica devuelve objetos/arrays nuevos en cada render: se estabiliza por
+  // valor (cantidades + ids de documentos) para no recrear el contexto del provider.
+  const docIdsKey = docs?.map((d) => d.id).sort().join(',') || '';
+
+  return useMemo(() => ({
+    documentacion: docs,
+    documentosRequeridos,
+    documentosOpcionales,
+    cantidadDocumentos,
+    cantidadRequeridos,
+    cantidadOpcionales,
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- estabiliza por valor: los arrays cambian de referencia en cada render
+  }), [docIdsKey, cantidadDocumentos, cantidadRequeridos, cantidadOpcionales]);
 };
 
 /**

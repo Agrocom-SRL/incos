@@ -66,4 +66,3 @@ export class ILogger {
     throw new Error('Method silly must be implemented');
   }
 }
-

@@ -92,7 +92,7 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
      * @returns {Promise<{filePath: string, fileName: string, absolutePath: string}>} Rutas del PDF generado
      * @throws {Error} Si falla la generación del PDF
      */
-    async execute(studentId, options = {}) {
+    async execute(studentId, _options = {}) {
         this.logger.info('[Inscripciones] Iniciando generación de FORMULARIO DE INSCRIPCIÓN', {
             studentId,
         });
@@ -125,7 +125,13 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
             const entregas = await this._fetchDocumentDeliveries(studentId);
 
             // 6. Generar PDF con gestión activa, datos del estudiante, datos académicos, inscripción y entregas
-            const pdfBuffer = await this._generatePdfBuffer(gestionYear, student, academicData, enrollmentData, entregas);
+            const pdfBuffer = await this._generatePdfBuffer(
+              gestionYear,
+              student,
+              academicData,
+              enrollmentData,
+              entregas,
+            );
 
             // 7. Guardar archivo y persistir en BD
             const result = await this._persistDocument(studentId, pdfBuffer, student);
@@ -315,7 +321,7 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
 
     /**
      * Obtiene los datos académicos del estudiante desde vista_estudiante_datos_academicos
-     * 
+     *
      * @private
      * @param {number} studentId - ID del estudiante
      * @returns {Promise<Object|null>} Datos académicos o null si no existen
@@ -376,7 +382,7 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
             // Extraer datos únicos de la inscripción (todos los registros tienen los mismos datos de inscripción)
             const firstRow = results[0];
             // Cada fila de la vista trae paralelo y periodo de esa materia/curso (pueden variar por materia)
-            const materias = results.map(row => ({
+            const materias = results.map((row) => ({
                 sigla: row.materia_sigla || row.materiaSigla || '',
                 nombre: row.materia_nombre || row.materiaNombre || '',
                 periodo: row.periodo_numero || row.periodoNumero || null,
@@ -388,7 +394,7 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
 
             // Periodo: desde primera fila (vista_estudiante_inscripcion_actual trae periodo_nombre por paralelo)
             const periodoNombreFromRow = (firstRow.periodo_nombre ?? firstRow.periodoNombre ?? '').toString().trim() || null;
-            const periodosUnicos = [...new Set(materias.map(m => m.periodoNombre).filter(Boolean))];
+            const periodosUnicos = [...new Set(materias.map((m) => m.periodoNombre).filter(Boolean))];
             const periodoNombre = periodoNombreFromRow || (periodosUnicos.length === 1 ? periodosUnicos[0] : null);
 
             // Paralelo y turno desde la vista (una fila por materia; paralelo/periodo son iguales en todas)
@@ -421,7 +427,7 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
 
     /**
      * Busca las entregas de documentos de inscripción entregados (entregado: true)
-     * 
+     *
      * @private
      * @param {number} studentId - ID del estudiante
      * @returns {Promise<Array>} Lista de entregas entregadas

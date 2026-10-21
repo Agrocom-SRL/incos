@@ -1,361 +1,182 @@
-# 🎓 Instituto INCOS - Backend
+# Instituto INCOS — Backend
 
-Sistema de Gestión Académica del **Instituto Comercial Superior de la Nación INCOS Santa Cruz**, Bolivia.
+API del Sistema de Gestión Académica del **Instituto Comercial Superior de la Nación INCOS Santa Cruz** (Santa Cruz de la Sierra, Bolivia).
 
-## 📋 Información del Instituto
+Stack: Node.js (ESM) + Express 4 + Sequelize 6 + MySQL/MariaDB, con **Clean Architecture**.
 
-**Nombre Completo**: El Instituto Comercial Superior de la Nación INCOS Santa Cruz
+## Contexto institucional
 
-**Historia**:
-El Instituto Comercial Superior de la Nación INCOS Santa Cruz fue fundado el **2 de agosto de 1985** mediante la **Resolución Ministerial 746/1985**. Actualmente cuenta con la **R.M. 0426/2016**, ofertando inicialmente las Carreras de **Contaduría General** y **Secretariado Ejecutivo**. Posteriormente, en el año **1988**, se ampliaron las carreras de **Administración de Empresas** e **Informática**.
+Institución de Educación Superior estatal fundada el 2 de agosto de 1985 (R.M. 746/1985; vigente R.M. 0426/2016). Ofrece tres carreras de Técnico Superior: **Sistemas Informáticos**, **Administración de Empresas** y **Contaduría General**. Turnos de atención: tarde, noche y sábados. Sede: Calle Ñuflo de Chávez Nº 62, centro histórico de Santa Cruz de la Sierra.
 
-**Ubicación**:
-Calle Ñuflo de Chavez Nº 62, entre René Moreno y Calle Chuquisaca, dentro del centro histórico del municipio de **Santa Cruz de la Sierra**.
+## Equipo
 
-**Horarios de Atención**:
+- **Jefe del Proyecto:** Carlos Ferrufino ([@agrocom-developer](https://github.com/agrocom-developer))
+- **Frontend:** Nelson Farel ([@hfarel](https://github.com/hfarel))
+- **Backend:** Miguel Escobar ([@Angello-27](https://github.com/Angello-27))
 
-- **Turno Tarde**: Lunes a Viernes 14:00 - 16:30
-- **Turno Noche**: Lunes a Viernes 18:45 - 22:30
-- **Sábados**: 17:00 - 21:00
-
-**Carreras Técnicas** (Nivel Técnico Superior):
-
-Actualmente el instituto ofrece **tres carreras**:
-
-1. **Sistemas Informáticos**
-2. **Administración de Empresas**
-3. **Contaduría General**
-
-**Naturaleza Institucional**:
-Somos una **Institución de Educación Superior Estatal**, abierta al conjunto de la sociedad, establecida con plenas facultades legales dentro del sistema Educativo Nacional.
-
----
-
-## 👥 Equipo de Desarrollo
-
-**Jefe del Proyecto**: Carlos Ferrufino  
-🔗 GitHub: [@agrocom-developer](https://github.com/agrocom-developer)
-
-**Desarrollador Frontend**: Nelson Farel  
-🔗 GitHub: [@hfarel](https://github.com/hfarel)
-
-**Desarrollador Backend**: Miguel Escobar  
-🔗 GitHub: [@Angello-27](https://github.com/Angello-27)
-
----
-
-## 🏗️ Arquitectura
-
-Este proyecto sigue **Clean Architecture** con las siguientes capas:
+## Arquitectura
 
 ```text
 src/
-├── config/              # Configuraciones (DB, JWT, Logger)
-├── domain/              # Lógica de negocio pura (Entities, Value Objects)
-├── application/         # Casos de uso y DTOs
-├── infrastructure/      # Implementaciones técnicas (DB, Email, etc.)
-├── presentation/        # Controllers, Routes, Middleware
-└── shared/              # Código compartido (Utils, Errors, Constants)
+├── app.js, server.js        # Arranque (Application.js en infrastructure/bootstrap)
+├── domain/                  # constants, entities, errors (AppError), interfaces, utils
+├── application/             # use-cases/<módulo>/, dtos, mappers, services, utils
+├── infrastructure/
+│   ├── bootstrap/           # Application, ExpressApp, middleware, rutas, estáticos
+│   ├── config/              # database, server, security, logger, swagger, multer, uploads, env
+│   ├── container/           # Inyección de dependencias: tokens/ y modules/ por dominio
+│   ├── database/            # Sequelize y models
+│   ├── repositories/        # Implementaciones Sequelize (*Repository)
+│   ├── mappers/             # Modelo ⇄ entidad de dominio
+│   ├── external/            # excel/, pdf/, storage/, templates/ (generación de archivos)
+│   └── services/, utils/    # Servicios técnicos (p. ej. redactSensitive)
+└── presentation/            # routes/, controllers/, middleware/, validators/
 ```
 
-## 🚀 Inicio Rápido
+Reglas: las dependencias apuntan hacia adentro; el negocio vive en los **use cases** (clases con dependencias inyectadas), no en controllers ni routers; los repositorios se resuelven por el contenedor (`infrastructure/container`). El contrato de respuesta y el RBAC se mantienen estables entre capas.
 
-### Prerrequisitos
+Módulos de use cases (`src/application/use-cases/`): `academico`, `aulas-horarios`, `auth`, `base`, `capacitacion`, `configuracion`, `dashboard`, `docentes`, `estudiantes`, `geograficos`, `horarios`, `ingresos`, `inscripciones`, `oferta`, `pagos`, `pasantias`, `referencia`, `seguridad`, `titulacion`.
 
-- Node.js >= 20.0.0 LTS
-- npm >= 10.0.0
-- MySQL >= 8.0
-- Git
-- **LibreOffice** (requerido para conversión de documentos Word a PDF)
+Todas las rutas cuelgan de `/api/v1` (`src/presentation/routes/index.js`, un archivo `*.routes.js` por recurso).
 
-#### Instalación de LibreOffice
+## Lógica de negocio central: la cadena de horarios
 
-El sistema requiere LibreOffice para convertir documentos Word (.docx) a PDF. Puedes instalarlo de las siguientes formas:
+El orden operativo es Configuración Académica → Oferta académica → Asignación docente → Gestión de horarios. La cadena de datos no es negociable:
 
-**Opción 1: Script automático (recomendado)**
-```bash
-npm run setup:libreoffice
+```text
+paralelos_gestion → oferta_cursos → asignaciones_docentes → asignacion_horarios → horarios
 ```
 
-**Opción 2: Instalación manual**
+- `paralelos_gestion`: paralelo abierto en una gestión (turno, aula).
+- `oferta_cursos`: curso ofertado por paralelo (en payloads heredados, `cursoId` equivale a `oferta_curso_id`).
+- `asignaciones_docentes`: docente vigente por oferta, con color y carga horaria.
+- `asignacion_horarios`: bloques de la grilla semanal que cubren la carga de cada asignación.
 
-- **macOS** (con Homebrew):
-  ```bash
-  brew install --cask libreoffice
-  ```
+El flujo completo entre módulos está en `docs/referencia/flujo-operativo-gestion-academica.md`.
 
-- **Ubuntu/Debian**:
-  ```bash
-  sudo apt-get update
-  sudo apt-get install libreoffice
-  ```
+## Requisitos
 
-- **CentOS/RHEL**:
-  ```bash
-  sudo yum install libreoffice
-  ```
+- Node.js >= 20 (el CI usa 22) y npm >= 10
+- MySQL 8 o MariaDB (el CI integra contra MariaDB 10.11)
+- Cliente `mysql` o `mariadb` en el PATH (para cargar los scripts SQL)
 
-**Verificar instalación:**
-```bash
-npm run check:libreoffice
-```
-
-O manualmente:
-```bash
-soffice --version
-```
-
-### Instalación
+## Inicio rápido
 
 ```bash
-# 1. Instalar dependencias
+cd backend
 npm install
-
-# 2. Copiar archivo de entorno
-cp .env.example .env
-
-# 3. Editar .env con tus credenciales de MySQL
-nano .env
-
-# 4. Crear base de datos
-mysql -u root -p < database/01-schemas/01-base.sql
-
-# 5. Ejecutar migraciones
-npm run db:migrate
-
-# 6. Poblar datos iniciales
-npm run db:seed
-
-# 7. Iniciar en modo desarrollo
-npm run dev
+cp .env.example .env        # ajustar credenciales de BD y JWT_SECRET
+# Cargar la BD (ver «Base de datos»)
+npm run dev                 # http://localhost:3000
 ```
 
-El servidor estará corriendo en `http://localhost:3000`
+Salud del servicio: `GET /health` y `GET /api/v1/health`. Documentación OpenAPI (Swagger UI): `http://localhost:3000/api-docs` (JSON en `/api-docs.json`).
 
-## 📝 Scripts Disponibles
+## Scripts de `package.json`
 
-```bash
-npm start              # Iniciar servidor en producción
-npm run dev            # Iniciar en modo desarrollo (con nodemon)
-npm run dev:debug      # Iniciar en modo debug
-npm test               # Ejecutar todos los tests
-npm run test:watch     # Tests en modo watch
-npm run lint           # Ejecutar ESLint
-npm run lint:fix       # Corregir errores de ESLint automáticamente
-npm run format         # Formatear código con Prettier
-npm run db:migrate     # Ejecutar migraciones de BD
-npm run db:seed        # Poblar datos iniciales
-npm run db:reset       # Resetear base de datos completa
-npm run db:backup      # Crear backup de BD
-npm run db:restore     # Restaurar desde backup
-npm run setup:libreoffice  # Instalar LibreOffice (requiere permisos admin)
-npm run check:libreoffice  # Verificar si LibreOffice está instalado
-```
+| Script | Qué hace |
+|--------|----------|
+| `npm start` | Servidor (`node src/server.js`) |
+| `npm run dev` / `dev:debug` | Nodemon (con `--inspect` en `dev:debug`) |
+| `npm run lint` / `lint:fix` | ESLint sobre `src/` |
+| `npm run format` | Prettier sobre `src/` |
+| `npm run test:unit` | Pruebas unitarias Jest (`tests/unit`, sin BD) |
+| `npm test` | Igual que `test:unit`, con cobertura |
+| `npm run test:integration` | Pruebas de integración (`tests/integration`) contra una BD descartable `*_test` |
+| `npm run test:watch` / `test:e2e` | Jest en vigilancia / carpeta `tests/e2e` |
+| `npm run pm2:start` / `pm2:stop` / `pm2:restart` / `pm2:logs` | Atajos de PM2 (requieren un `ecosystem.config.js`, que no está versionado) |
 
-## 🗄️ Base de Datos
+No existen scripts `db:*`: la base se carga con los SQL de `database/` (ver abajo).
 
-### Estructura
+## Variables de entorno
 
-Los scripts SQL están organizados en:
+Plantilla en `.env.example`. Las que lee el código:
+
+| Grupo | Variables |
+|-------|-----------|
+| Servidor | `NODE_ENV`, `PORT`, `APP_NAME`, `APP_URL`, `FRONTEND_URL`, `TRUST_PROXY`, `HELMET_ENABLED` |
+| Base de datos | `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_LOGGING`, `DB_POOL_MAX`, `DB_POOL_MIN`, `DB_POOL_ACQUIRE`, `DB_POOL_IDLE` |
+| JWT | `JWT_SECRET`, `JWT_EXPIRES_IN` (8h por defecto en la plantilla) |
+| CORS | `CORS_ORIGIN`, `CORS_CREDENTIALS` |
+| Logs | `LOG_LEVEL`, `LOG_DIR`, `LOG_MAX_SIZE`, `LOG_MAX_FILES` |
+| Archivos | `UPLOAD_DIR`, `MAX_FILE_SIZE`, `MAX_AVANCE_PROYECTO_SIZE`, `MAX_CARRERA_IMAGE_SIZE`, `MAX_CUENTA_PAGO_QR_SIZE` |
+| Swagger | `API_TITLE`, `API_VERSION`, `API_DESCRIPTION`, `API_CONTACT_NAME`, `API_CONTACT_EMAIL`, `API_LICENSE_NAME`, `API_PRODUCTION_URL` |
+| Opcional | `REDIS_URL` (hoy solo se consulta; la caché aún no está conectada) |
+
+`.env` y `.env.*` están ignorados por git (solo se versiona `.env.example`). Nunca subir credenciales reales. Las variables `RATE_LIMIT_*`, `BCRYPT_SALT_ROUNDS`, `SMTP_*`, `SESSION_*` y `BACKUP_*` de la plantilla no las usa el código actual.
+
+## Base de datos
+
+Todo el SQL vive en `backend/database/`:
 
 ```text
 database/
-├── 01-schemas/             # DDL (CREATE TABLE) - Scripts de schema principales
-├── 02-seeders/             # Datos iniciales
-├── 03-views/               # Vistas de BD
-├── 04-stored-procedures/   # Procedimientos almacenados
-├── 05-triggers/            # Triggers
-├── 06-functions/           # Funciones
-├── 07-migrations/          # Migraciones versionadas
-└── 08-rollback/            # Scripts de rollback
+├── 00-config/        # database-config.sql: sql_mode, zona horaria -04:00, charset, CREATE DATABASE instituto_incos
+├── 01-schemas/       # DDL (01-base … 27-supervision-docente), orden numérico
+├── 02-seeders/       # Datos iniciales (01 … 67), orden numérico
+├── 03-views/         # Vistas de lectura (vista-base-* y vistas finales)
+├── 04-test-seeds/    # Solo pruebas: usuarios ficticios por rol (jamás en producción)
+└── 05-migrations/    # Migraciones DDL/datos incrementales para el servidor (10 … 28)
 ```
 
-### Scripts de Schema (Orden de Ejecución)
+- **Fuente de verdad del esquema:** `01-schemas/`. Cada schema incluye `deleted_at`, campos de auditoría (`created_at`, `updated_at`, `created_by`, `updated_by`, `deleted_by`) y eliminación lógica; lea el DDL antes de asumir columnas.
+- **Collation:** `utf8mb4` / `utf8mb4_unicode_ci` en toda la base y en la sesión del cliente (`SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci`). Si una vista mezcla literales con otra collation (p. ej. `utf8mb4_general_ci`) falla con «Illegal mix of collations»; `tests/integration/collation.test.js` lo vigila.
+- **Orden de carga:** `01-schemas` → `02-seeders` → `03-views`. Los scripts traen `USE instituto_incos;`. Las vistas no siempre se numeran por dependencia: se recrean reintentando las pendientes (lo hace `scripts/ci-cargar-bd.sh`).
+- **Vistas (`03-views/`):** antes de crear una, buscar una existente por nombre lógico y tabla base y reutilizarla (`JOIN` o columnas adicionales). Preferir vistas finales delgadas que unan pocas vistas base. Tras cambiar SQL, recrear la vista y alinear el mapper (`dataFieldName`) con el `dataKey` del frontend. No se usan etiquetas «V2/beta».
+- **Migraciones (`05-migrations/`):** llevan la estructura de un servidor existente hacia `01-schemas`. Plan de sincronización: `docs/plan/sincronizacion-servidor-local.md`.
 
-Los scripts principales están en `database/01-schemas/` y deben ejecutarse en este orden:
+### Cargar una BD local
 
-1. **`01-base.sql`** - Configuración inicial y estándares
-2. **`02-catalogos-geograficos.sql`** - Catálogos geográficos (países, departamentos, provincias, municipios)
-3. **`03-catalogos-referencia.sql`** - Catálogos de referencia (estados civiles, idiomas, tipos de discapacidad, etc.)
-4. **`04-sistema-seguridad.sql`** - Sistema de autenticación y autorización (usuarios, roles, permisos)
-5. **`05-estructura-academica-parte1.sql`** - Carreras, gestiones, periodos, materias, plan de estudios, prerrequisitos
-6. **`05-estructura-academica-parte2.sql`** - Docentes, asignaciones, horarios, aulas, turnos
-7. **`06-estudiantes-parte1.sql`** - Estudiantes, datos académicos, documentos
-8. **`06-estudiantes-parte2.sql`** - Datos económicos, becas, descuentos, contactos de emergencia
-9. **`09-inscripciones-parte1.sql`** - Inscripciones principales por gestión
-10. **`09-inscripciones-parte2.sql`** - Inscripciones a materias, calificaciones, asistencias
-11. **`10-pagos-academicos.sql`** - Sistema de pagos (aranceles, detalle de pagos)
-12. **`12-traspasos.sql`** - Traspasos de estudiantes de otros institutos (instituciones, traspasos, traspasos_materias)
-13. **`12-bloqueos-inscripcion.sql`** - Bloqueos de inscripción (nivelaciones pendientes, documentos, mora, etc.)
-14. **`12-transitabilidades.sql`** - Transitabilidades (Técnico Medio a Técnico Superior)
-15. **`14-pasantias.sql`** - Pasantías (empresas, asignaciones, evaluaciones)
-16. **`14-supervision-libros.sql`** - Supervisión docente y libros de registro oficial (supervisiones, fichas, libros, folios)
-14. **`12-indices.sql`** - Índices de optimización
-15. **`12-sincronizacion.sql`** - Sistema de sincronización con sistema nacional
-16. **`13-indices-optimizacion.sql`** - Índices adicionales de optimización
-
-### Características de la Base de Datos
-
-✅ **Normalización 3FN**: Todas las tablas siguen tercera forma normal  
-✅ **Soft Delete**: Todas las tablas tienen `deleted_at` para eliminación lógica  
-✅ **Auditoría Completa**: Campos estándar `created_at`, `updated_at`, `created_by`, `updated_by`, `deleted_by`  
-✅ **ON DELETE SET NULL**: Todas las foreign keys usan `ON DELETE SET NULL`  
-✅ **Sin UNIQUE**: Se eliminaron restricciones UNIQUE para permitir flexibilidad  
-✅ **Campos Generados**: Uso de `GENERATED ALWAYS AS` para campos calculados  
-✅ **Índices Optimizados**: Índices compuestos para consultas frecuentes  
-
-### Estándares de Tablas
-
-Todas las tablas incluyen los siguientes campos de auditoría y control:
-
-- `id INT AUTO_INCREMENT PRIMARY KEY`
-- `activo BOOLEAN DEFAULT TRUE`
-- `created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`
-- `updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`
-- `deleted_at TIMESTAMP NULL DEFAULT NULL`
-- `created_by INT` (FK a usuarios)
-- `updated_by INT` (FK a usuarios)
-- `deleted_by INT` (FK a usuarios)
-
-### Ejecutar Schema Completo
+Para producción/desarrollo use los SQL en el orden anterior (p. ej. `mysql -u root -p < database/00-config/database-config.sql` y luego cada archivo con `--database=instituto_incos`). Para una BD **descartable** de pruebas existe el script:
 
 ```bash
-# Opción 1: Script por script (recomendado para primera vez)
-mysql -u root -p instituto_incos < database/01-schemas/01-base.sql
-mysql -u root -p instituto_incos < database/01-schemas/02-catalogos-geograficos.sql
-mysql -u root -p instituto_incos < database/01-schemas/03-catalogos-referencia.sql
-mysql -u root -p instituto_incos < database/01-schemas/04-sistema-seguridad.sql
-mysql -u root -p instituto_incos < database/01-schemas/05-estructura-academica-parte1.sql
-mysql -u root -p instituto_incos < database/01-schemas/05-estructura-academica-parte2.sql
-mysql -u root -p instituto_incos < database/01-schemas/06-estudiantes-parte1.sql
-mysql -u root -p instituto_incos < database/01-schemas/06-estudiantes-parte2.sql
-mysql -u root -p instituto_incos < database/01-schemas/07-inscripciones-parte1.sql
-mysql -u root -p instituto_incos < database/01-schemas/09-inscripciones-parte2.sql
-mysql -u root -p instituto_incos < database/01-schemas/10-pagos-academicos.sql
-mysql -u root -p instituto_incos < database/01-schemas/12-traspasos.sql
-mysql -u root -p instituto_incos < database/01-schemas/12-bloqueos-inscripcion.sql
-mysql -u root -p instituto_incos < database/01-schemas/12-transitabilidades.sql
-mysql -u root -p instituto_incos < database/01-schemas/14-pasantias.sql
-mysql -u root -p instituto_incos < database/01-schemas/14-supervision-libros.sql
-mysql -u root -p instituto_incos < database/01-schemas/12-indices.sql
-mysql -u root -p instituto_incos < database/01-schemas/12-sincronizacion.sql
-mysql -u root -p instituto_incos < database/01-schemas/13-indices-optimizacion.sql
-
-# Opción 2: Script maestro (cuando esté disponible)
-npm run db:setup
+cd backend
+export DB_HOST=127.0.0.1 DB_PORT=3306 DB_USER=root DB_PASSWORD=<clave> DB_NAME=incos_ci_test
+bash scripts/ci-cargar-bd.sh
 ```
 
-## 🔐 Seguridad
+El script se niega a operar si `DB_NAME` no termina en `_test` y nunca toca `instituto_incos`.
 
-- ✅ Autenticación con JWT (8 horas de validez)
-- ✅ RBAC con 11 roles y 70+ permisos granulares
-- ✅ Bcrypt para hash de contraseñas (10 salt rounds)
-- ✅ Rate limiting (protección contra fuerza bruta)
-- ✅ Helmet para headers de seguridad
-- ✅ CORS configurado
-- ✅ Validación de inputs con express-validator y Joi
-- ✅ SQL Injection protection (ORM Sequelize)
-- ✅ XSS protection
+## Seguridad y RBAC
 
-## 📊 Logging
+- Autenticación con **JWT** más sesión persistida (`findSesionActiva`): el logout invalida el token; las cuentas con estado distinto de activo se rechazan.
+- Contraseñas con **bcryptjs**; cambio de contraseña propio en `CambiarMiPasswordUseCase`.
+- **Helmet**, **CORS** configurable, compresión, validación con `express-validator` (middleware de validación y validators por dominio) y Sequelize (consultas parametrizadas).
+- **Redacción de secretos en logs:** `infrastructure/utils/redactSensitive.js` sustituye por `[REDACTED]` el valor de toda propiedad cuyo nombre indique secreto (contraseña/clave, token, authorization, cookie, api key, credential, jwt, pin), a cualquier profundidad, y se aplica a la metadata de todo log (`logger.config.js`). Nunca registrar contraseñas ni tokens a mano.
+- **RBAC:** 8 roles de sistema (`55-seed-roles.sql`: `ADMIN_SISTEMA`, `RECTOR`, `DIR_ACADEMICO`, `DIR_ADMIN`, `SEC_ACADEMICA`, `SEC_ADMIN`, `DOCENTE`, `ESTUDIANTE`). Los permisos tienen **código** (p. ej. `matricula.inscribir`) y acciones (`LISTAR`, `DETALLE`, `CREAR`, …) y se protegen en las rutas con `verificarPermiso` (`presentation/middleware/permisos.middleware.js`). Hay middlewares de alcance propio (`*SelfOnly`, `estudianteAlcanceDocente`) para que estudiante y docente solo vean lo suyo.
+- **Seeds RBAC:** `55-seed-roles` → `56-seed-usuarios-admin` → permisos por módulo `58`–`67` (`mat`, `aca`, `doc`, `fin`, `inst`, `rep`, `cap`, `tit`, `cfg`, `seg`). **Sin ids:** el `id` es AUTO_INCREMENT y las tablas hijas (acciones, roles) referencian por **código**. La misma acción debe existir en la ruta del frontend, en los controles de UI y en el backend. Referencia: `docs/referencia/matriz-permisos-sistema.md`.
 
-Los logs se guardan en el directorio `logs/`:
+## Logging
 
-- `error.log` - Solo errores
-- `combined.log` - Todos los logs
-- Rotación automática diaria
-- Máximo 30 días de retención
+Winston con rotación diaria (`winston-daily-rotate-file`) en el directorio `LOG_DIR` (por defecto `logs/`, ignorado por git); nivel por `LOG_LEVEL`. Los datos sensibles se redactan (ver arriba).
 
-Niveles de log:
+## Generación de archivos
 
-- `error` - Errores críticos
-- `warn` - Advertencias
-- `info` - Información general
-- `http` - Requests HTTP
-- `debug` - Información de debugging (solo en desarrollo)
+Excel con `exceljs` y PDF con `pdf-lib`/`pdfkit` (`infrastructure/external/excel`, `pdf`, plantillas y fuentes en `external/templates`). **No se requiere LibreOffice**: el flujo antiguo Word → PDF fue eliminado. Los archivos subidos van a `UPLOAD_DIR` (`uploads/`, servido por la configuración de estáticos).
 
-## 🧪 Testing
+## Pruebas
 
-```bash
-# Ejecutar todos los tests
-npm test
+Jest en ESM nativo. Guía completa: `docs/guias/pruebas.md`.
 
-# Tests unitarios
-npm run test:unit
+- **Unitarias** (`tests/unit/<módulo>/`): sin BD ni red; use cases con repositorios simulados (`jest.fn()`). `npm run test:unit`.
+- **Integración** (`tests/integration/`): `supertest` sobre `src/app.js` contra una BD descartable `*_test` cargada con `scripts/ci-cargar-bd.sh` (login por rol, RBAC, dashboard, listados, que cada vista de `03-views` responda, exportaciones, collation). Los usuarios de prueba salen de `database/04-test-seeds/01-test-usuarios.sql`. `npm run test:integration`.
+- Todo cambio de lógica lleva su prueba en el mismo PR; un bug corregido lleva la prueba que lo reproduce.
 
-# Tests de integración
-npm run test:integration
+El CI (`.github/workflows/ci.yml`) corre en cada PR: lint, comprobación de sintaxis de `src/` y `npm run test:unit`, y el job de integración con MariaDB 10.11 efímera.
 
-# Tests end-to-end
-npm run test:e2e
+## Flujo de trabajo
 
-# Coverage
-npm test -- --coverage
-```
+- No se trabaja directamente en `master`, `main` ni `develop`: se crea una rama (`feature/…`, `fix/…`) y se abre PR.
+- Conventional Commits en español y descriptivos.
+- Respetar ESLint (`.eslintrc.json`) y la arquitectura por capas; documentar endpoints nuevos con anotaciones Swagger.
 
-## 📚 Documentación API
+## Documentación relacionada
 
-Una vez iniciado el servidor, la documentación interactiva de la API estará disponible en:
+- `docs/README.md` — índice de documentación
+- `docs/guias/` — cookbooks de listado y detalle, checklists y pruebas
+- `docs/referencia/` — matriz de permisos, flujo operativo, estilo de textos
+- `docs/plan/` — planes de desarrollo y sincronización de datos
 
-```text
-http://localhost:3000/api-docs
-```
+## Licencia y soporte
 
-## 🐳 Docker (Opcional)
-
-```bash
-# Construir imagen
-docker build -t incos-backend .
-
-# Ejecutar con Docker Compose
-docker-compose up -d
-```
-
-## 🚀 Deployment
-
-### Con PM2
-
-```bash
-# Instalar PM2 globalmente
-npm install -g pm2
-
-# Iniciar aplicación
-npm run pm2:start
-
-# Ver logs
-npm run pm2:logs
-
-# Reiniciar
-npm run pm2:restart
-
-# Detener
-npm run pm2:stop
-```
-
-### Con Nginx
-
-Ver documentación completa en: `docs/deployment.md`
-
-## 🤝 Contribución
-
-1. Seguir estándares de código (ESLint + Prettier configurados)
-2. Escribir tests para nuevas funcionalidades
-3. Mantener cobertura de tests > 70%
-4. Documentar endpoints nuevos
-5. Commits descriptivos siguiendo Conventional Commits
-
-## 📄 Licencia
-
-Uso privado - Instituto INCOS © 2025
-
-## 👥 Equipo
-
-**Jefe del Proyecto**: Carlos Ferrufino ([@agrocom-developer](https://github.com/agrocom-developer))  
-**Desarrollador Frontend**: Nelson Farel ([@hfarel](https://github.com/hfarel))  
-**Desarrollador Backend**: Miguel Escobar ([@Angello-27](https://github.com/Angello-27))
-
-Para más información sobre el equipo y la documentación, ver `/docs`
-
-## 📞 Soporte
-
-Para soporte técnico, contactar a: [sistema@incos.edu.bo](mailto:sistema@incos.edu.bo)
+Uso privado — Instituto INCOS. Soporte: [sistema@incos.edu.bo](mailto:sistema@incos.edu.bo)

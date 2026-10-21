@@ -48,4 +48,3 @@ export const EstudianteDocumentoEntrega = sequelize.define(
 );
 
 export default EstudianteDocumentoEntrega;
-

@@ -1,25 +1,25 @@
 /**
  * GET /api/v1/pagos-aportes
  * Controller para listar pagos de aportes con filtros y paginación
- * 
+ *
  * Responsabilidades:
  * - Recibir peticiones HTTP GET para listar pagos de aportes
  * - Delegar lógica de negocio a ListPagosAportesUseCase
  * - Formatear respuesta JSON estandarizada
- * 
+ *
  * Endpoint:
  * GET /api/v1/pagos-aportes?page=1&limit=50&search=texto&sort=id:ASC
- * 
+ *
  * Query Parameters:
  * - page: Número de página (default: 1)
  * - limit: Cantidad de resultados por página (default: 50, max: 100)
  * - search: Término de búsqueda general (opcional)
  * - sort: Ordenamiento (opcional, formato: "campo:DIRECCION")
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja la comunicación HTTP para listar pagos de aportes
  * - Dependency Inversion: Depende de ListPagosAportesUseCase (abstracción), no de implementación concreta
- * 
+ *
  * Clean Architecture:
  * - Presentation Layer: Maneja HTTP request/response
  * - Usa DTOs genéricos de Application Layer (ListRequestDTO) para normalización común

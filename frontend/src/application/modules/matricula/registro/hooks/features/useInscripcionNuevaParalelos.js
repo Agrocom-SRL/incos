@@ -7,7 +7,7 @@
  * - Maneja la selección del paralelo para el formulario de inscripción.
  */
 
-import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useParalelosApi } from '@application-academico/paralelos/hooks/useParalelosApi';
 import { useCasesFactory } from '@container';
 import { normalizeFieldToArray } from '@application/utils';
@@ -25,9 +25,14 @@ import { mapParalelosList } from '@application-academico/paralelos/mappers';
  */
 export const useInscripcionNuevaParalelos = (options = {}) => {
   const { carreraId, periodoId, periodoIds: periodoIdsProp, initialParaleloId = null, initialParallelIdsByPeriod = null } = options;
-  const periodoIds = Array.isArray(periodoIdsProp) && periodoIdsProp.length > 0
-    ? periodoIdsProp
-    : periodoId != null ? [periodoId] : [];
+  const periodoIds = useMemo(
+    () => (Array.isArray(periodoIdsProp) && periodoIdsProp.length > 0
+      ? periodoIdsProp
+      : periodoId != null ? [periodoId] : []),
+    [periodoIdsProp, periodoId]
+  );
+  // Clave por contenido: evita re-ejecutar efectos cuando solo cambia la referencia del array
+  const periodoIdsKey = periodoIds.join(',');
 
   const { paralelos: paralelosSingle, loading: loadingSingle, error: errorSingle, fetch } = useParalelosApi();
   const [mergedParalelos, setMergedParalelos] = useState([]);
@@ -50,6 +55,7 @@ export const useInscripcionNuevaParalelos = (options = {}) => {
   useEffect(() => {
     if (!isMultiPeriod || carreraId == null) return;
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- efecto de sincronización/carga: el estado local depende de props externas (fetch/preselección)
     setMergedLoading(true);
     setMergedError(null);
     const useCaseInstance = useCasesFactory.obtenerTodosParalelos?.();
@@ -58,8 +64,9 @@ export const useInscripcionNuevaParalelos = (options = {}) => {
       setMergedError('No disponible');
       return;
     }
+    const idsToLoad = periodoIdsKey ? periodoIdsKey.split(',').map(Number) : [];
     Promise.all(
-      periodoIds.map((pid) =>
+      idsToLoad.map((pid) =>
         useCaseInstance.ejecutar({ params: { periodo_id: pid, carrera_id: carreraId } })
       )
     )
@@ -81,7 +88,7 @@ export const useInscripcionNuevaParalelos = (options = {}) => {
         if (!cancelled) setMergedLoading(false);
       });
     return () => { cancelled = true; };
-  }, [isMultiPeriod, carreraId, periodoIds.join(',')]);
+  }, [isMultiPeriod, carreraId, periodoIdsKey]);
 
   const paralelos = isMultiPeriod ? mergedParalelos : paralelosSingle;
   const loading = isMultiPeriod ? mergedLoading : loadingSingle;
@@ -149,7 +156,8 @@ export const useInscripcionNuevaParalelos = (options = {}) => {
 
   // Limpiar selecciones de periodos que ya no están seleccionados
   useEffect(() => {
-    const currentIds = new Set(periodoIds);
+    const currentIds = new Set(periodoIdsKey ? periodoIdsKey.split(',').map(Number) : []);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- efecto de sincronización/carga: el estado local depende de props externas (fetch/preselección)
     setSelectedParalelosByPeriod((prev) => {
       const next = { ...prev };
       let changed = false;
@@ -162,7 +170,7 @@ export const useInscripcionNuevaParalelos = (options = {}) => {
       });
       return changed ? next : prev;
     });
-  }, [periodoIds.join(',')]);
+  }, [periodoIdsKey]);
 
   // Pre-seleccionar paralelo si se proporciona initialParaleloId
   useEffect(() => {
@@ -170,6 +178,7 @@ export const useInscripcionNuevaParalelos = (options = {}) => {
     const paralelo = paralelos.find((p) => p.id === Number(initialParaleloId));
     if (paralelo) {
       const pid = paralelo.periodoId ?? paralelo.periodo_id;
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- efecto de sincronización/carga: el estado local depende de props externas (fetch/preselección)
       setSelectedParalelosByPeriod((prev) => {
         if (prev[pid]?.id === paralelo.id) return prev;
         return {
@@ -192,6 +201,7 @@ export const useInscripcionNuevaParalelos = (options = {}) => {
     if (!initialParallelIdsByPeriod || typeof initialParallelIdsByPeriod !== 'object' || !paralelos?.length) return;
     const entries = Object.entries(initialParallelIdsByPeriod).filter(([, plid]) => plid != null);
     if (entries.length === 0) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- efecto de sincronización/carga: el estado local depende de props externas (fetch/preselección)
     setSelectedParalelosByPeriod((prev) => {
       let next = { ...prev };
       let changed = false;
@@ -221,12 +231,8 @@ export const useInscripcionNuevaParalelos = (options = {}) => {
   // TODO: Aquí se puede agregar lógica específica de inscripciones si es necesario
   // Por ejemplo: filtrar paralelos según la carrera seleccionada, validaciones específicas, etc.
 
-  // MANTENER REFERENCIA ESTABLE
-  // Comparar valores, no solo referencias, para evitar recálculos innecesarios
-  const prevResultRef = useRef(null);
-  
-  return useMemo(() => {
-    const current = {
+  // Referencia estable: useMemo solo recrea el objeto si cambia alguna dependencia
+  return useMemo(() => ({
       paralelos,
       loading,
       error,
@@ -234,28 +240,5 @@ export const useInscripcionNuevaParalelos = (options = {}) => {
       selectedParalelo,
       selectedParalelosByPeriod,
       onSelectParalelo,
-    };
-
-    const prev = prevResultRef.current;
-    const sameByPeriod =
-      prev?.selectedParalelosByPeriod &&
-      Object.keys(prev.selectedParalelosByPeriod).length === Object.keys(selectedParalelosByPeriod).length &&
-      Object.keys(selectedParalelosByPeriod).every((k) => prev.selectedParalelosByPeriod[k]?.id === selectedParalelosByPeriod[k]?.id);
-
-    if (
-      prev &&
-      prev.loading === current.loading &&
-      prev.error === current.error &&
-      prev.refetch === current.refetch &&
-      prev.paralelos === current.paralelos &&
-      prev.selectedParalelo?.id === current.selectedParalelo?.id &&
-      sameByPeriod &&
-      prev.onSelectParalelo === current.onSelectParalelo
-    ) {
-      return prev;
-    }
-
-    prevResultRef.current = current;
-    return current;
-  }, [paralelos, loading, error, refetch, selectedParalelo, selectedParalelosByPeriod, onSelectParalelo]);
+    }), [paralelos, loading, error, refetch, selectedParalelo, selectedParalelosByPeriod, onSelectParalelo]);
 };

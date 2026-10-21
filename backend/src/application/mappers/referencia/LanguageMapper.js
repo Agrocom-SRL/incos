@@ -1,11 +1,11 @@
 /**
  * Mapper de aplicación: Language
  * Convierte entidades de dominio (Language) a formato de presentación (API/Spanish)
- * 
+ *
  * Clean Architecture:
  * - Application Layer: Convierte Domain Entities → Presentation Format
  * - Depende de Domain Layer (Language entity)
- * 
+ *
  * Responsabilidades:
  * - Mapear propiedades de dominio (English/camelCase) a presentación (Spanish/snake_case)
  * - Formatear datos para consumo por el frontend
@@ -51,4 +51,3 @@ export class LanguageMapper {
     return entitiesToPresentation(languages);
   }
 }
-

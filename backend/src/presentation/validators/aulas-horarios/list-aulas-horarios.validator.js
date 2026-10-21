@@ -10,4 +10,3 @@ export const listAulasHorariosValidator = [
   query('turno').optional().isIn(['TARDE', 'NOCHE']).withMessage('turno inválido'),
   query('aula_id').optional().isInt({ min: 1 }).withMessage('aula_id debe ser entero > 0').toInt(),
 ];
-

@@ -20,10 +20,8 @@ import CalificacionRepository from '@infrastructure/repositories/CalificacionRep
 import { useRouteViewMode } from '@navigation/hooks/useRouteViewMode.js';
 import { CALIFICACIONES_VIEW_ROUTE_KEY } from '@application-academico/calificaciones/utils/calificacionesPaths.js';
 import { CALIFICACIONES_PERMISOS } from '@application-academico/calificaciones/utils/calificacionesPermisos.js';
-import {
-  CuadernoAutosaveProvider,
-  useCuadernoAutosaveRegistry,
-} from '@application-academico/calificaciones/context/CuadernoAutosaveContext.jsx';
+import { CuadernoAutosaveProvider } from '@application-academico/calificaciones/context/CuadernoAutosaveContext.jsx';
+import { useCuadernoAutosaveRegistry } from '@application-academico/calificaciones/context/cuadernoAutosaveContexts';
 import CuadernoBimestrePager from '../components/CuadernoBimestrePager.jsx';
 import CuadernoContextoPanel from '../components/CuadernoContextoPanel.jsx';
 import CuadernoGrillaSeparador from '../components/CuadernoGrillaSeparador.jsx';

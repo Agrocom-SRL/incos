@@ -1,5 +1,4 @@
 import { Op } from 'sequelize';
-import { IBimestreMatriculaRepository } from '../../domain/interfaces/repositories/IBimestreMatriculaRepository.js';
 import { BimestreMatricula as BimestreMatriculaModel } from '../database/models/bimestre_matricula.js';
 import { BaseRepository } from './BaseRepository.js';
 import { SubjectEnrollmentBimesterMapper } from '../mappers/SubjectEnrollmentBimesterMapper.js';
@@ -58,11 +57,11 @@ export class SubjectEnrollmentBimesterRepository extends BaseRepository {
         return [['bimestre', 'ASC'], ['id', 'ASC']];
     }
 
-    mapDataToModel(data, userId = null) {
+    mapDataToModel(data, _userId = null) {
         return SubjectEnrollmentBimesterMapper.toModel(data);
     }
 
-    mapDataToUpdate(data, userId = null) {
+    mapDataToUpdate(data, _userId = null) {
         return SubjectEnrollmentBimesterMapper.toModelForUpdate(data);
     }
 
@@ -326,7 +325,8 @@ export class SubjectEnrollmentBimesterRepository extends BaseRepository {
     }
 
     /** Componentes calculados del bimestre. @returns {Promise<void>} */
-    async actualizarComponentesBimestreMatricula(bimestreMatriculaId, { teorico, practico, bimestre }, usuarioId, { transaction } = {}) {
+    async actualizarComponentesBimestreMatricula(bimestreMatriculaId, { teorico, practico, bimestre }, usuarioId,
+      { transaction } = {}) {
         await sequelize.query(
             `
             UPDATE bimestres_matricula

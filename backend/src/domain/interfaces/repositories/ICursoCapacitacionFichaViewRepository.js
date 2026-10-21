@@ -3,7 +3,7 @@
  *
  * Lecturas del listado y ficha de cursos de capacitación (módulo CAP) desde
  * las vistas SQL:
- * - `vista_cursos_capacitacion_listado` (155): 1 fila por curso con aula,
+ * - `vista_cursos_capacitacion_listado` (155): 1 fila por curso con resumen de aulas de sus grupos,
  *   inscritos_count, cupo_disponible, horarios_count y horarios_detalle.
  * - `vista_base_cursos_capacitacion_horarios` (154): 1 fila por bloque
  *   horario del curso con bloque_etiqueta y dia_orden.

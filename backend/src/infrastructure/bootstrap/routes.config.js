@@ -6,11 +6,11 @@ import swaggerSpec from '../config/swagger.config.js';
 
 /**
  * Configuración de rutas de Express
- * 
+ *
  * @param {Express} app - Aplicación Express
  * @param {ILogger} logger - Logger inyectado
  * @param {ErrorFormatter} errorFormatter - ErrorFormatter inyectado
- * 
+ *
  * Incluye:
  * - Health check
  * - API v1 routes

@@ -15,7 +15,7 @@
  * - Organism maneja: funcionalidad (wizard, pasos, validación, guardado)
  */
 
-import { useMemo, useEffect, useRef, useCallback, useState } from 'react';
+import { useMemo, useEffect, useRef, useCallback, useState, useContext } from 'react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { Flex, Form, Spin } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
@@ -26,8 +26,8 @@ import { BackButton } from '@atoms';
 import DashboardPageShell from '@presentation/modules/dashboard/components/organisms/DashboardPageShell';
 import {
   useStudentContext,
-  useStudentDetailContext,
 } from '@application-matricula/admision/hooks';
+import { StudentDetailContext } from '@application-matricula/admision/context/StudentDetailContext';
 import { useStudentRegisterContext } from '@application-matricula/nuevo/hooks/context/useStudentRegisterContext';
 import { useEstudianteGeographicFormLogic } from '@application-matricula/nuevo/hooks/features/useEstudianteGeographicFormLogic';
 import {
@@ -125,7 +125,6 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
 
     // Funciones de carga bajo demanda
     loadDiscapacidades,
-    loadTiposParentesco,
     loadDepartamentos,
     loadProvincias,
     loadMunicipios,
@@ -134,8 +133,10 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
   // Obtener el contexto global de estudiantes para agregar al estado
   const { addStudent } = useStudentContext();
 
-  // Obtener datos del estudiante si está en modo edición
-  const studentDetailContext = isEditMode ? useStudentDetailContext() : null;
+  // Obtener datos del estudiante si está en modo edición. Se lee el contexto directo
+  // (null en modo crear, donde no hay StudentDetailProvider) para no llamar el hook condicionalmente.
+  const studentDetailContextRaw = useContext(StudentDetailContext);
+  const studentDetailContext = isEditMode ? studentDetailContextRaw : null;
   const studentDetail = studentDetailContext?.student || null;
   const loadingStudentDetail = studentDetailContext?.loading || false;
 
@@ -241,8 +242,8 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
         // Establecer todos los valores excepto los geográficos de origen, segunda nacionalidad y residencia
         // (residencia se establece arriba cuando las opciones están cargadas)
         const {
-          departamentoId, provinciaId, municipioId,
-          segundaDepartamentoId, segundaProvinciaId, segundaMunicipioId,
+          departamentoId: _dId, provinciaId: _pId, municipioId: _mId,
+          segundaDepartamentoId: _sdId, segundaProvinciaId: _spId, segundaMunicipioId: _smId,
           departamentoResidenciaId: _dRes, provinciaResidenciaId: _pRes, municipioResidenciaId: _mRes,
           ...otrosValores
         } = formData;
@@ -286,6 +287,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
 
         // Sincronizar tipo para la lista de pasos (modo edición)
         if (formData.tipoAdmision != null) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect -- sincroniza tipo de admisión en modo edición al cargar datos
           setTipoAdmisionForSteps(formData.tipoAdmision);
         }
 

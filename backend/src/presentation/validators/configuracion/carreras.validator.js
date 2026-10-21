@@ -38,4 +38,3 @@ export const updateCarreraValidator = [
     .isBoolean()
     .withMessage('activo debe ser boolean'),
 ];
-

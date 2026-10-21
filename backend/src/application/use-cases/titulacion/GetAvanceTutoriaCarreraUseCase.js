@@ -1,3 +1,4 @@
+import { parseFiltroId } from '../../utils/validacionEntrada.js';
 import { TutoriaAvanceMapper, ProyectoGradoMapper } from '../../mappers/titulacion/index.js';
 
 /** Límite de detalle por proyecto en el reporte (suficiente para el volumen real de TIT). */
@@ -53,9 +54,9 @@ export class GetAvanceTutoriaCarreraUseCase {
    */
   async execute(queryParams = {}) {
     const gestionId = await this.resolverGestion(
-      queryParams.gestionId ? Number(queryParams.gestionId) : null
+      parseFiltroId(queryParams.gestionId, 'gestionId') ?? null
     );
-    const carreraId = queryParams.carreraId ? Number(queryParams.carreraId) : undefined;
+    const carreraId = parseFiltroId(queryParams.carreraId, 'carreraId');
 
     const [resumenRows, detalleResult] = await Promise.all([
       this.tutoriaAvanceViewRepository.findAvancePorCarrera({

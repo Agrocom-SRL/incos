@@ -1,4 +1,4 @@
-import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
+import { sanitizeDocenteColorHex } from '@docentes/utils/docenteColor';
 import { buildFullName } from '@application/utils/formatters';
 
 const horasMesDesdeSemana = (horasSem) => {

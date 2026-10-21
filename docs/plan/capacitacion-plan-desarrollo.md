@@ -1,5 +1,8 @@
 # Plan de desarrollo — Módulo "Cursos de Capacitación"
 
+> **Estado: implementado — verificado 2026-10-20.** Comprobado contra el código: backend (`cursos-capacitacion`, `participantes`, `inscripciones-capacitacion`), schema con pago por cuotas (`01-schemas/21-cursos-capacitacion.sql`, hoy numerado 21, no 25) y frontend completo en `modules/capacitacion/`. Falta: confirmar la siembra en BD (schema 21, `64-seed-permisos-cap.sql`, vistas 154/155). Notas y certificado quedaron descartados.
+
+
 > **Estado (2026-07-22): PAGO POR CUOTAS — schema editado y aprobado,
 > backend en implementación.** El negocio pidió que el pago de una
 > capacitación se pueda hacer en cuotas (primera cuota parcial permitida) y
@@ -549,3 +552,38 @@ autorización explícita antes de correrlos (paso 5 del checklist §5).
 - Frontend módulo: `frontend/src/presentation/modules/capacitacion/`, `frontend/src/application/modules/capacitacion/`
 - Registro frontend compartido: `presentation/modules/dominios/routes.jsx`, `presentation/modules/index.js`, `vite.config.js`, `jsconfig.json`
 - Documentación RBAC: `docs/referencia/matriz-permisos-sistema.md`
+
+---
+
+## Extensión 2026-10-21 — folleto «Curso de Guaraní» (matrícula separada, modalidad, requisitos, horarios)
+
+**Rama:** `feature/capacitacion-matricula-horarios`. Motivo: el folleto del curso mostró lo que el módulo no soportaba.
+
+### Decisiones de negocio (del dueño del proyecto)
+- **`fecha_fin` es opcional**: el curso se define por rango/duración (`duracion` texto libre, ej. «2 meses»).
+- **Matrícula y costo del curso son instituciones distintas**: la matrícula (Bs 150) se paga en secretaría del instituto; el costo del curso (Bs 440) se deposita a la entidad certificadora (IPELC, Banco Unión). Se registran y se saldan **por separado**: `capacitacion_pagos.concepto` = `MATRICULA` | `CURSO`. Un participante puede pagar el curso y la matrícula después (o al revés); el sistema debe soportarlo.
+- **Modalidad** del curso: `VIRTUAL` | `PRESENCIAL` | `SEMIPRESENCIAL`. Más `nivel` («Básico»), `dirigido_a` (público objetivo), `entidad_certificadora`.
+- **Horarios propios**: sábado 08:00-12:00 y 15:00-19:00 (dos grupos). Se crean como `horarios.tipo_horario='CAPACITACION'` **desde el módulo** (`POST /cursos-capacitacion/horarios`); **no hay seed** de horarios de capacitación (se prueba el CRUD con datos reales). El **aula es irrelevante** por ahora (opcional; no debe condicionar el selector de horarios).
+- **Requisitos de inscripción** configurables por curso (`capacitacion_requisitos`) con checklist por inscripción (`capacitacion_inscrito_requisitos`). La inscripción **se puede registrar** con requisitos o pagos pendientes (queda `PENDIENTE`); pasa a `INSCRITO` solo con matrícula y curso cancelados **y** requisitos obligatorios entregados.
+- **Comprobante de depósito**: subida **opcional** por pago (nunca obligatoria). Se puede adjuntar al registrar el pago o después.
+- Decisión abierta (aplicada con criterio conservador): el ingreso del instituto cuenta `MATRICULA` siempre y `CURSO` solo si el curso no tiene `entidad_certificadora` (si la tiene, ese dinero va a la entidad).
+
+### Datos (ya hechos)
+`01-schemas/21-cursos-capacitacion.sql` (fuente de verdad; se recrean las tablas de capacitación desde cero, sin migración: el módulo aún no tiene datos que conservar), constantes en `domain/constants/capacitacion.constants.js`.
+
+### Contrato de API (camelCase; permisos `capacitacion.curso|inscripcion|pago` + nuevo `capacitacion.grupo`)
+**Curso** (create/update/detalle/listado): `titulo, descripcion, tieneCosto, costo, cobraMatricula, costoMatricula, entidadCertificadora, modalidad, nivel, dirigidoA, duracion, cupoMaximo, aulaId` (opcional), `fechaInicio, fechaFin` (opcional/null), `grupos[{id?, nombre, cupoMaximo?, aulaId? (opcional, se valida contra `aulas`), orden, horarios:[{horarioId}]}]` (el curso ya NO lleva `aulaId`: el aula es del grupo), `requisitos[{id?, descripcion, obligatorio, orden}]` (sincronizan por diferencia: conservan ids, crean los nuevos y dan de baja los ausentes). El detalle devuelve `grupos[{id, nombre, cupoMaximo, aulaId, aulaCodigo, aulaNombre, orden, inscritosCount, horarios:[{capacitacionHorarioId, horarioId, dia, horaInicio, horaFin, etiqueta}]}]`, `horariosComunes` (bloques sin grupo, no se crean por API) y `requisitos`; el listado trae `gruposCount`, `aulasResumen` y `horariosDetalle` por grupo.
+**Grupos (listado, permiso `capacitacion.grupo` LISTAR):** `GET /cursos-capacitacion/grupos[?page&limit&search&cursoId&estado]` → `grupos[{grupoId, nombre, cursoId, cursoTitulo, cursoEstado (efectivo), modalidad, cupoMaximo (del grupo o del curso), inscritosCount, aulaId, aulaCodigo, aulaNombre, horarios:[{horarioId, etiqueta}], horariosEtiqueta}]` desde la vista 190 (grano grupo) + 154.
+**Horarios (CRUD, permiso `capacitacion.grupo`):** `GET /cursos-capacitacion/horarios[?aulaId&excludeCursoId&search&sort=dia|hora|nombre[:desc]]` → `{horarios:[{horarioId,nombre,dia,horaInicio,horaFin,tipoHorario,ocupado,cursosEnUso}]}` (catálogo `CAPACITACION`; `ocupado` solo si hay `aulaId`; acepta además `capacitacion.curso` CREAR/EDITAR porque lo usa el selector del formulario de curso). `POST` `{dia, horaInicio, horaFin, nombre?}` → find-or-create (201 si crea, 200 si existía) → `{horario}`. `GET /horarios/:id` → `{horario}` con `cursos[{id,titulo}]`. `PUT /horarios/:id` (mismo cuerpo; 409 si otro horario activo tiene el mismo día y horas). `DELETE /horarios/:id` (soft delete; 409 con `details[{cursoId,titulo}]` si lo usa algún curso activo). Solo horarios tipo CAPACITACION; el resto da 404. `GET /horarios-disponibles` (CLASES) se conserva.
+**Inscripción:** crear con `participanteId, cursoId` (alias de `capacitacionId`) (+ `capacitacionGrupoId?` (obligatorio con ≥2 grupos, automático con 1, null con 0; debe ser del curso; un grupo con `cupoMaximo` propio lleno responde 409), `requisitosEntregados?: [requisitoId]`, `pagoInicial?: {concepto, monto, metodoPagoId?, cuentaPagoId?, fechaPago?, observaciones?}` — el pago inicial deja de ser obligatorio). Respuesta/detalle: `montoObligatorio` (curso), `montoMatricula`, `saldoCurso`, `saldoMatricula`, `estadoPagoCurso`, `estadoPagoMatricula`, `estadoPago` (global), `capacitacionGrupoId`, `grupoNombre`, `grupoHorariosEtiqueta`, `requisitos[{requisitoId, descripcion, obligatorio, entregado, fechaEntrega, observacion}]`, pagos con `concepto`, `tieneComprobante`, `comprobanteNombre`.
+**Pagos:** `POST /inscripciones-capacitacion/:id/pagos` exige `concepto` (`MATRICULA`|`CURSO`), valida sobrepago por concepto; acepta `multipart/form-data` con archivo opcional `comprobante` (imagen/PDF). `POST /inscripciones-capacitacion/:id/pagos/:pagoId/comprobante` (adjuntar o reemplazar después) y `GET …/comprobante` (descarga; permiso `capacitacion.inscripcion` DETALLE).
+**Requisitos de la inscripción:** `PUT /inscripciones-capacitacion/:id/requisitos` `{requisitos:[{requisitoId, entregado, fechaEntrega?, observacion?}]}` (permiso EDITAR); recalcula `estado`. El estado nunca baja de `RETIRADO`/`ANULADO` automáticamente.
+
+### Costos condicionales, grupos y CRUD de horarios (ajustes 2026-10-21)
+- **Costos condicionales:** `tieneCosto` (curso no gratuito, habilita `costo`) y `cobraMatricula` (habilita `costoMatricula`). Con el interruptor activo el monto es obligatorio y > 0; apagado se ignora lo enviado y se guarda 0. En un PUT parcial los interruptores no enviados conservan su valor. «Gratuito» = ambos apagados (se decide por los flags, nunca por monto 0); el snapshot de la inscripción usa 0 para el concepto apagado.
+- **Grupos tipo «paralelo»:** tabla `capacitacion_grupos` (nombre, `cupo_maximo` NULL = cupo del curso, orden); los horarios cuelgan del grupo (`capacitacion_horarios.grupo_id`). El participante elige GRUPO (`capacitacion_inscritos.capacitacion_grupo_id`). Quitar un grupo con inscripciones vigentes responde 409 con detalle; quitar solo horarios está permitido. Un horario no puede repetirse dentro de un grupo.
+- **Parte virtual:** queda fuera del sistema (la coordina el docente). `modalidad` del curso es solo informativa. Al ABRIR el curso: si la modalidad no es VIRTUAL debe haber ≥1 grupo con ≥1 horario; un curso VIRTUAL no exige horario. Un curso sin grupos sigue siendo válido como borrador PROPUESTO.
+- **Cupo:** el cupo total del curso sigue siendo informativo; el cupo propio de un grupo bloquea (409) al alcanzarse.
+- **RBAC:** permiso `capacitacion.grupo` (LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR), ruta `/capacitacion/grupos`, grupo UI `cap_grupos` («Grupos y horarios»), mismos roles que `capacitacion.curso` (SEC_ADMIN sin ELIMINAR). Seed `64-seed-permisos-cap.sql`; fila en la matriz de permisos.
+- **Schema `21-cursos-capacitacion.sql`:** no hay seed de horarios ni migración; el usuario recrea las tablas y crea los horarios desde el módulo.
+- **Aula por grupo:** el curso es conceptual; los grupos son el curso físico y llevan horarios y aula (opcional): `capacitacion_grupos.aula_id`; se elimina `capacitaciones.aula_id`. `horarios-disponibles` y el `ocupado` del catálogo de horarios calculan el choque con `capacitacion_grupos.aula_id`.

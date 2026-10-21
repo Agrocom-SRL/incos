@@ -14,7 +14,7 @@
 /**
  * Mapea campos base comunes de una entidad a formato de presentación
  * Solo incluye campos que existen en la entidad (útil cuando se usan attributes limitados)
- * 
+ *
  * @param {Object} entity - Entidad de dominio o objeto plano
  * @param {Object} presentation - Objeto de presentación donde agregar los campos base
  * @returns {Object} Objeto de presentación con campos base agregados
@@ -23,16 +23,16 @@ export function mapBaseFields(entity, presentation = {}) {
   if (!entity) return presentation;
 
   // Solo incluir campos que existen en la entidad
-  if (entity.hasOwnProperty('id') && entity.id !== undefined) {
+  if (Object.prototype.hasOwnProperty.call(entity, 'id') && entity.id !== undefined) {
     presentation.id = entity.id;
   }
-  if (entity.hasOwnProperty('active') && entity.active !== undefined) {
+  if (Object.prototype.hasOwnProperty.call(entity, 'active') && entity.active !== undefined) {
     presentation.activo = entity.active;
   }
-  if (entity.hasOwnProperty('createdAt') && entity.createdAt !== undefined) {
+  if (Object.prototype.hasOwnProperty.call(entity, 'createdAt') && entity.createdAt !== undefined) {
     presentation.createdAt = entity.createdAt;
   }
-  if (entity.hasOwnProperty('updatedAt') && entity.updatedAt !== undefined) {
+  if (Object.prototype.hasOwnProperty.call(entity, 'updatedAt') && entity.updatedAt !== undefined) {
     presentation.updatedAt = entity.updatedAt;
   }
 
@@ -42,7 +42,7 @@ export function mapBaseFields(entity, presentation = {}) {
 /**
  * Mapea un campo condicionalmente solo si existe en la entidad
  * Útil para mapear campos opcionales o cuando se usan attributes limitados
- * 
+ *
  * @param {Object} entity - Entidad de dominio o objeto plano
  * @param {string} sourceField - Nombre del campo en la entidad (camelCase)
  * @param {string} targetField - Nombre del campo en la presentación (snake_case)
@@ -52,7 +52,7 @@ export function mapBaseFields(entity, presentation = {}) {
 export function mapFieldIfExists(entity, sourceField, targetField, presentation = {}) {
   if (!entity) return presentation;
 
-  if (entity.hasOwnProperty(sourceField) && entity[sourceField] !== undefined) {
+  if (Object.prototype.hasOwnProperty.call(entity, sourceField) && entity[sourceField] !== undefined) {
     presentation[targetField] = entity[sourceField];
   }
 

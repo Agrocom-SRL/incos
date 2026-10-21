@@ -1,5 +1,8 @@
 # Diseño frontend: Centralizador (ajustes) + Nivelación (pantallas nuevas) + baja Traspasos/Transitabilidad
 
+> **Estado: implementado — verificado 2026-10-20.** Comprobado contra el código: módulos `academico/centralizador` y `academico/nivelaciones` (Listar, Aprobar, Paralelo) existen. Falta: nada de código; Traspasos/Transitabilidad siguen apagados en el seed 59 (su función migraría a una pestaña de la ficha de Inscripción, aún sin hacer).
+
+
 > Plan de diseño frontend (2026-08-06), persistido para retomar en sesión
 > nueva. Complementa (no reemplaza) `docs/plan/calificaciones-centralizador-nivelacion-rediseno.md`
 > (plan de datos/backend, Fases A-E, aprobado y documentado). Este documento

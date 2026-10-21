@@ -10,25 +10,25 @@ export class Classroom extends BaseEntity {
     super(data);
     // Solo inicializar campos si fueron proporcionados explícitamente
     // Esto permite usar attributes limitados sin inicializar campos no solicitados
-    if (data.hasOwnProperty('code')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'code')) {
       this.code = data.code;
     }
-    if (data.hasOwnProperty('name')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'name')) {
       this.name = data.name;
     }
-    if (data.hasOwnProperty('category')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'category')) {
       this.category = data.category;
-    } else if (!data.hasOwnProperty('code')) {
+    } else if (!Object.prototype.hasOwnProperty.call(data, 'code')) {
       // Solo usar valor por defecto si no se está usando attributes limitados
       this.category = CATEGORIAS_AULA.AULA;
     }
-    if (data.hasOwnProperty('capacity')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'capacity')) {
       this.capacity = data.capacity;
-    } else if (!data.hasOwnProperty('code')) {
+    } else if (!Object.prototype.hasOwnProperty.call(data, 'code')) {
       // Solo usar valor por defecto si no se está usando attributes limitados
       this.capacity = 35;
     }
-    if (data.hasOwnProperty('observations')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'observations')) {
       this.observations = data.observations;
     }
   }
@@ -57,21 +57,21 @@ export class Classroom extends BaseEntity {
    */
   toPlainObject() {
     const plainObject = super.toPlainObject();
-    
+
     // Solo incluir campos que fueron inicializados (existen en this)
-    if (this.hasOwnProperty('code')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'code')) {
       plainObject.code = this.code;
     }
-    if (this.hasOwnProperty('name')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'name')) {
       plainObject.name = this.name;
     }
-    if (this.hasOwnProperty('category')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'category')) {
       plainObject.category = this.category;
     }
-    if (this.hasOwnProperty('capacity')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'capacity')) {
       plainObject.capacity = this.capacity;
     }
-    if (this.hasOwnProperty('observations')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'observations')) {
       plainObject.observations = this.observations;
     }
 

@@ -36,6 +36,7 @@ export const useFieldDatePicker = (minAge = null, value, defaultValue) => {
   }, [minAge]);
 
   // Función para deshabilitar fechas que no cumplan con la restricción de edad
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization -- el compilador no preserva la memoización; sin cambio de comportamiento
   const disabledDate = useMemo(() => {
     if (!maxDate) {
       return () => false; // No deshabilitar ninguna fecha si no hay restricción

@@ -6,14 +6,15 @@
  * independiente de la cadena formal de matrícula. Cada ítem del submenú tiene
  * su directorio y routes.jsx propio (mismo patrón que finanzas/).
  *
- * Menú CAP: Cursos · Participantes · Inscripciones.
- * Permisos del seed 65-CAP: capacitacion.{curso,participante,inscripcion,pago}.
+ * Menú CAP: Cursos · Participantes · Inscripciones · Grupos.
+ * Permisos del seed 65-CAP: capacitacion.{curso,participante,inscripcion,pago,grupo}.
  */
 
 import { UnderConstruction } from '@components/pages';
 import { capacitacionCursosRoutes } from './cursos/routes.jsx';
 import { capacitacionParticipantesRoutes } from './participantes/routes.jsx';
 import { capacitacionInscripcionesRoutes } from './inscripciones/routes.jsx';
+import { capacitacionGruposRoutes } from './grupos/routes.jsx';
 
 export const capacitacionRoutes = [
   {
@@ -25,6 +26,7 @@ export const capacitacionRoutes = [
   ...capacitacionCursosRoutes,
   ...capacitacionParticipantesRoutes,
   ...capacitacionInscripcionesRoutes,
+  ...capacitacionGruposRoutes,
 ];
 
 export default capacitacionRoutes;

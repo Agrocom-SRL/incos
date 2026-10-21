@@ -2,22 +2,22 @@ import { body } from 'express-validator';
 
 /**
  * Validador para actualización de estudiantes (PUT /api/v1/estudiantes/:id)
- * 
+ *
  * Valida la estructura de datos que viene del frontend para actualizar un estudiante.
  * Todos los campos son OPCIONALES ya que es una actualización parcial.
- * 
+ *
  * NOTA: Este validator valida la estructura del frontend.
  * El controller transformará estos datos a la estructura que espera el use case.
- * 
+ *
  * Campos opcionales (actualización parcial):
  * - Todos los campos son opcionales, pero cuando están presentes deben cumplir las validaciones
- * 
+ *
  * Ubicación: presentation/validators/estudiantes (validators específicos del módulo)
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo valida estructura y tipos de datos del request
  * - La lógica de negocio (validaciones complejas) está en el use case
- * 
+ *
  * @example
  * import { updateStudentValidator } from '../validators/estudiantes/index.js';
  * router.put('/:id', updateStudentValidator, validateRequest, controller);
@@ -104,16 +104,16 @@ export const updateStudentValidator = [
         if (!fechaRegex.test(value)) {
           throw new Error('Fecha de nacimiento debe ser una fecha válida (ISO 8601)');
         }
-        
+
         const fecha = new Date(value);
-        if (isNaN(fecha.getTime())) {
+        if (Number.isNaN(Number(fecha.getTime()))) {
           throw new Error('Fecha de nacimiento debe ser una fecha válida');
         }
-        
+
         const hoy = new Date();
         const edadMinima = new Date();
         edadMinima.setFullYear(hoy.getFullYear() - 100);
-        
+
         if (fecha > hoy) {
           throw new Error('La fecha de nacimiento no puede ser futura');
         }
@@ -177,7 +177,7 @@ export const updateStudentValidator = [
       // Si se proporciona y no es null/undefined, validar
       if (value !== null && value !== undefined) {
         const numValue = parseInt(value, 10);
-        if (isNaN(numValue) || numValue < 1) {
+        if (Number.isNaN(Number(numValue)) || numValue < 1) {
           throw new Error('Estado civil ID debe ser un número entero mayor a 0');
         }
       }
@@ -258,7 +258,7 @@ export const updateStudentValidator = [
       // Si se proporciona, debe ser un número entero válido
       if (value !== null && value !== undefined && value !== '') {
         const numValue = parseInt(value, 10);
-        if (isNaN(numValue) || numValue < 1) {
+        if (Number.isNaN(Number(numValue)) || numValue < 1) {
           throw new Error('Municipio de residencia ID debe ser un número entero mayor a 0');
         }
       }
@@ -274,7 +274,7 @@ export const updateStudentValidator = [
       // Si se proporciona, debe ser un número entero válido
       if (value !== null && value !== undefined && value !== '') {
         const numValue = parseInt(value, 10);
-        if (isNaN(numValue) || numValue < 1) {
+        if (Number.isNaN(Number(numValue)) || numValue < 1) {
           throw new Error('Departamento de residencia ID debe ser un número entero mayor a 0');
         }
       }
@@ -287,7 +287,7 @@ export const updateStudentValidator = [
       // Si se proporciona, debe ser un número entero válido
       if (value !== null && value !== undefined && value !== '') {
         const numValue = parseInt(value, 10);
-        if (isNaN(numValue) || numValue < 1) {
+        if (Number.isNaN(Number(numValue)) || numValue < 1) {
           throw new Error('Provincia de residencia ID debe ser un número entero mayor a 0');
         }
       }
@@ -308,7 +308,7 @@ export const updateStudentValidator = [
       // Si se proporciona, debe ser un número entero válido
       if (value !== null && value !== undefined && value !== '') {
         const numValue = parseInt(value, 10);
-        if (isNaN(numValue) || numValue < 1) {
+        if (Number.isNaN(Number(numValue)) || numValue < 1) {
           throw new Error('Tipo de discapacidad ID debe ser un número entero mayor a 0');
         }
       }
@@ -354,7 +354,7 @@ export const updateStudentValidator = [
       // Si se proporciona, debe ser un número entero válido
       if (value !== null && value !== undefined && value !== '') {
         const numValue = parseInt(value, 10);
-        if (isNaN(numValue) || numValue < 1) {
+        if (Number.isNaN(Number(numValue)) || numValue < 1) {
           throw new Error('País ID debe ser un número entero mayor a 0');
         }
       }
@@ -382,7 +382,7 @@ export const updateStudentValidator = [
       // Si se proporciona, debe ser un número entero válido
       if (value !== null && value !== undefined && value !== '') {
         const numValue = parseInt(value, 10);
-        if (isNaN(numValue) || numValue < 1) {
+        if (Number.isNaN(Number(numValue)) || numValue < 1) {
           throw new Error('Idioma materno ID debe ser un número entero mayor a 0');
         }
       }
@@ -395,7 +395,7 @@ export const updateStudentValidator = [
       // Si se proporciona, debe ser un número entero válido
       if (value !== null && value !== undefined && value !== '') {
         const numValue = parseInt(value, 10);
-        if (isNaN(numValue) || numValue < 1) {
+        if (Number.isNaN(Number(numValue)) || numValue < 1) {
           throw new Error('Idioma secundario ID debe ser un número entero mayor a 0');
         }
       }
@@ -432,7 +432,7 @@ export const updateStudentValidator = [
       // Si se proporciona y no es null/undefined/vacío, validar
       if (value !== null && value !== undefined && value !== '') {
         const numValue = parseInt(value, 10);
-        if (isNaN(numValue) || numValue < 1) {
+        if (Number.isNaN(Number(numValue)) || numValue < 1) {
           throw new Error('Tipo de parentesco ID debe ser un número entero mayor a 0');
         }
       }
@@ -552,7 +552,7 @@ export const updateStudentValidator = [
           throw new Error('fechaEntrega debe ser una fecha válida (ISO 8601)');
         }
         const fecha = new Date(value);
-        if (isNaN(fecha.getTime())) {
+        if (Number.isNaN(Number(fecha.getTime()))) {
           throw new Error('fechaEntrega debe ser una fecha válida');
         }
       }
@@ -602,7 +602,7 @@ export const updateStudentValidator = [
     .custom((value) => {
       if (value !== null && value !== undefined) {
         const numValue = parseInt(value, 10);
-        if (isNaN(numValue) || numValue < 1) {
+        if (Number.isNaN(Number(numValue)) || numValue < 1) {
           throw new Error('Gestión de ingreso ID debe ser un número entero mayor a 0');
         }
       }
@@ -621,7 +621,7 @@ export const updateStudentValidator = [
     .custom((value) => {
       if (value !== null && value !== undefined) {
         const numValue = parseInt(value, 10);
-        if (isNaN(numValue) || numValue < 1) {
+        if (Number.isNaN(Number(numValue)) || numValue < 1) {
           throw new Error('Carrera ID debe ser un número entero mayor a 0');
         }
       }

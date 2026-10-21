@@ -73,7 +73,8 @@ export function registerPagosAportesResource(container) {
         (c) =>
             new RegisterAporteVoluntarioUseCase({
                 contributionPaymentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentRepository),
-                contributionPaymentInstallmentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentInstallmentRepository),
+                contributionPaymentInstallmentRepository:
+                  c.resolve(REPOSITORIOS_TOKENS.contributionPaymentInstallmentRepository),
                 paymentMethodRepository: c.resolve(REPOSITORIOS_TOKENS.paymentMethodRepository),
                 studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
                 studentScholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.studentScholarshipRepository),
@@ -140,7 +141,8 @@ export function registerPagosAportesResource(container) {
         (c) =>
             new GetEstadoAporteRegistroUseCase({
                 contributionPaymentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentRepository),
-                contributionPaymentInstallmentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentInstallmentRepository),
+                contributionPaymentInstallmentRepository:
+                  c.resolve(REPOSITORIOS_TOKENS.contributionPaymentInstallmentRepository),
                 paymentMethodRepository: c.resolve(REPOSITORIOS_TOKENS.paymentMethodRepository),
                 paymentAccountRepository: c.resolve(REPOSITORIOS_TOKENS.paymentAccountRepository),
                 managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
@@ -157,7 +159,8 @@ export function registerPagosAportesResource(container) {
         (c) =>
             new DeletePaymentAporteUseCase({
                 contributionPaymentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentRepository),
-                contributionPaymentInstallmentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentInstallmentRepository),
+                contributionPaymentInstallmentRepository:
+                  c.resolve(REPOSITORIOS_TOKENS.contributionPaymentInstallmentRepository),
                 studentDocumentRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentRepository),
                 studentDocumentDeliveryRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentDeliveryRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
@@ -197,7 +200,8 @@ export function registerPagosAportesResource(container) {
         (c) =>
             new GenerateReciboPagoUseCase({
                 contributionPaymentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentRepository),
-                contributionPaymentInstallmentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentInstallmentRepository),
+                contributionPaymentInstallmentRepository:
+                  c.resolve(REPOSITORIOS_TOKENS.contributionPaymentInstallmentRepository),
                 studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
                 managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
                 paymentMethodRepository: c.resolve(REPOSITORIOS_TOKENS.paymentMethodRepository),
@@ -573,7 +577,8 @@ export function registerPagosAportesResource(container) {
                 misAportesController: c.resolve(PAGOS_TOKENS.misAportesController),
                 misAporteDetailController: c.resolve(PAGOS_TOKENS.misAporteDetailController),
                 getEstadoAporteRegistroController: c.resolve(PAGOS_TOKENS.getEstadoAporteRegistroController),
-                searchStudentsForAporteRegistroController: c.resolve(PAGOS_TOKENS.searchStudentsForAporteRegistroController),
+                searchStudentsForAporteRegistroController:
+                  c.resolve(PAGOS_TOKENS.searchStudentsForAporteRegistroController),
                 deletePaymentAporteController: c.resolve(PAGOS_TOKENS.deletePaymentAporteController),
                 deletePaymentInstallmentController: c.resolve(PAGOS_TOKENS.deletePaymentInstallmentController),
                 updatePaymentInstallmentController: c.resolve(PAGOS_TOKENS.updatePaymentInstallmentController),

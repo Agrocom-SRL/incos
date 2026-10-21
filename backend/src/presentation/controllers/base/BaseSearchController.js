@@ -1,23 +1,23 @@
 /**
  * Controlador base para operaciones de búsqueda por texto libre
- * 
+ *
  * Implementa el patrón Template Method para proporcionar funcionalidad común
  * a todos los controladores de búsqueda
- * 
+ *
  * Responsabilidades:
  * - Extraer término de búsqueda de query parameters
  * - Ejecutar el caso de uso correspondiente
  * - Formatear respuesta JSON estandarizada
  * - Manejar errores de manera consistente
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Maneja solo la lógica común de búsqueda
  * - Template Method: Define el algoritmo común
- * 
+ *
  * Clean Architecture:
  * - Presentation Layer: Maneja la comunicación HTTP (request/response)
  * - Depende de Use Cases (Application Layer) a través de abstracción
- * 
+ *
  * @abstract
  */
 import { NotFoundError } from '../../../domain/errors/AppError.js';
@@ -57,7 +57,7 @@ export class BaseSearchController {
 
   /**
    * Extrae los parámetros de búsqueda de la petición HTTP
-   * 
+   *
    * @param {Object} req - Request de Express
    * @returns {Object} Objeto con searchTerm y limit
    */
@@ -69,7 +69,7 @@ export class BaseSearchController {
 
   /**
    * Valida que se hayan encontrado resultados
-   * 
+   *
    * @param {Array} results - Resultados de la búsqueda
    * @throws {NotFoundError} Si no hay resultados
    */
@@ -83,15 +83,15 @@ export class BaseSearchController {
    * Formatea la respuesta según la cantidad de resultados
    * Si hay un solo resultado, retorna el objeto directamente
    * Si hay múltiples, retorna el array
-   * 
+   *
    * @param {Array} results - Resultados de la búsqueda
    * @returns {Object} Datos formateados para la respuesta
    */
   formatSearchResponse(results) {
     const isSingleResult = results.length === 1;
     const data = isSingleResult ? results[0] : results;
-    
-    return this.dataFieldName 
+
+    return this.dataFieldName
       ? { [this.dataFieldName]: data }
       : data;
   }
@@ -100,7 +100,7 @@ export class BaseSearchController {
    * Obtiene el ID del recurso para la respuesta
    * Si hay un solo resultado con ID, lo retorna
    * Si hay múltiples, retorna 'búsqueda'
-   * 
+   *
    * @param {Array} results - Resultados de la búsqueda
    * @returns {string|number} ID del recurso
    */
@@ -111,7 +111,7 @@ export class BaseSearchController {
 
   /**
    * Maneja la petición HTTP GET para buscar un recurso por texto libre
-   * 
+   *
    * @param {Object} req - Request de Express
    * @param {Object} res - Response de Express
    * @param {Function} next - Next middleware
@@ -138,7 +138,7 @@ export class BaseSearchController {
       // 5. Formatear respuesta exitosa
       const responseData = this.formatSearchResponse(results);
       const resourceId = this.getResourceId(results);
-      
+
       return this.responseFormatter.retrieved(res, responseData, this.resourceName, resourceId, req);
     } catch (error) {
       // 6. Manejo de errores consistente

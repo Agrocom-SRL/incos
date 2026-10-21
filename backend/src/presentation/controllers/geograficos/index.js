@@ -25,4 +25,3 @@ export { ListProvinciasController } from './provincias/list.controller.js';
 // ============================================
 export { ListMunicipiosController } from './municipios/list.controller.js';
 // TODO: Agregar otros controllers cuando se implementen sus endpoints
-

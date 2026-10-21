@@ -124,11 +124,11 @@ const PagosDetail = () => {
   const [editCuotaModalOpen, setEditCuotaModalOpen] = useState(false);
   const [editCuotaRecord, setEditCuotaRecord] = useState(null);
   const [editCuotaForm] = Form.useForm();
-  const [catalogosPagoLoaded, setCatalogosPagoLoaded] = useState(false);
-  const [loadingCatalogosPago, setLoadingCatalogosPago] = useState(false);
+  const [_catalogosPagoLoaded, _setCatalogosPagoLoaded] = useState(false);
+  const [loadingCatalogosPago, _setLoadingCatalogosPago] = useState(false);
   const [savingCuotaEdit, setSavingCuotaEdit] = useState(false);
-  const [metodosPagoOptions, setMetodosPagoOptions] = useState([]);
-  const [cuentasPagoOptions, setCuentasPagoOptions] = useState([]);
+  const [metodosPagoOptions, _setMetodosPagoOptions] = useState([]);
+  const [cuentasPagoOptions, _setCuentasPagoOptions] = useState([]);
 
   const paymentMethodIdWatch = Form.useWatch('payment_method_id', editCuotaForm);
 
@@ -739,6 +739,7 @@ const PagosDetail = () => {
       items.push({ key: 'inscripcion', label: <span className="sd-tab-label"><FileTextOutlined /> Inscripción</span>, children: inscripcionChildren });
     }
     return items;
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- dependencias adicionales mantienen la recomputación ante cambios de estudiante/cuota
   }, [
     pago,
     estadoAporte,

@@ -241,7 +241,7 @@ export class ListCursosCalificacionesUseCase {
         bimestreNombre: ctx.bimestre_nombre ?? null,
         notaMinimaAprobacion,
         periodoLectivoEnCurso:
-          periodosCalendario.find((p) => p.estado_calendario === 'abierto')?.nombre ??
+          (periodosCalendario ?? []).find((p) => p.estado_calendario === 'abierto')?.nombre ??
           ctx.bimestre_nombre ??
           null,
       },

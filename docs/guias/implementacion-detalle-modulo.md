@@ -9,15 +9,15 @@ Patrones de referencia: docente (ficha) · plan de estudio (pantalla transaccion
 
 **Complementa:** `docs/guias/implementacion-listado-modulo.md` (listado o tab enlaza al detalle).
 
-**Arquitectura frontend:** `.cursor/rules/incos-frontend-module.mdc`  
+**Arquitectura frontend:** `.claude/skills/incos-frontend-module/SKILL.md`  
 
-**Arquitectura backend (detalle, bundle, DI, RBAC):** `.cursor/rules/incos-backend-module.mdc` — **obligatoria** junto con esta guía.
+**Arquitectura backend (detalle, bundle, DI, RBAC):** `.claude/skills/incos-backend-module/SKILL.md` — **obligatoria** junto con esta guía.
 
 **Relación con otros documentos**
 
-- `docs/02_estructura_sidebar.md` — keys de menú, `permiso` / `accion` en rutas de presentación.
+- Keys de menú, `permiso` / `accion` en rutas: `frontend/src/presentation/modules/*/routes.jsx` (el antiguo `docs/02_estructura_sidebar.md` ya no existe).
 - `docs/referencia/matriz-permisos-sistema.md` — acción **`DETALLE`** para ver ficha (`GET /:id`), coherente con `TableActions` y middleware.
-- `docs/plan/SPRINT_1.md` — detalle de plan `/configuracion/academico/plan/:planId` (matriz + prerrequisitos), solo mientras aplique Plan V2.
+- Plan de estudio (CFG académico): detalle de plan `/configuracion/academico/plan/:planId` (matriz + prerrequisitos); ver `docs/plan/estado-avance-y-proximos-pasos.md` (el antiguo `SPRINT_1.md` ya no existe).
 
 ---
 
@@ -47,7 +47,7 @@ Patrones de referencia:
 
 ## 3. Backend — proceso completo
 
-Visión de capas: **`.cursor/rules/incos-backend-module.mdc`** §4 y §8.
+Visión de capas: **`.claude/skills/incos-backend-module/SKILL.md`** §4 y §8.
 
 ### 3.0 Flujo resumido
 
@@ -117,7 +117,7 @@ Si no existe registro principal → **`NotFoundError`** → 404 coherente.
 | `GET /planes-estudios/:id/validar` | `configuracion.plan-estudio` | LISTAR |
 | Mutaciones periodos/asignaturas/prerrequisitos | `configuracion.plan-estudio.periodos` / `.asignaturas` / `.prerrequisitos` | CREAR, EDITAR, ELIMINAR |
 
-Documentar cada uno en **matriz** y en `SPRINT_1.md` §4.
+Documentar cada uno en la **matriz** de permisos.
 
 ### 3.7 Contrato de respuesta detalle
 
@@ -290,7 +290,7 @@ Así el botón `Volver` siempre respeta el punto de entrada real y evita perder 
 1. **`GET /:id` antes que `/matriz` o `/validar`** — Express interpreta el segmento como id.
 2. **Vistas no recreadas** — columnas nuevas en `undefined`.
 3. **Bundle incompleto en repositorio** — ficha parcial sin hijos.
-4. **Permiso `DETALLE` ausente en 55** — 403 con menú visible por otro permiso del tab.
+4. **Permiso `DETALLE` ausente en el seed del módulo (`roles_permisos`)** — 403 con menú visible por otro permiso del tab.
 
 ### Frontend
 

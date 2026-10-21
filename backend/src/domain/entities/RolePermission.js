@@ -14,13 +14,13 @@ export class RolePermission extends BaseEntity {
     super(data);
     // Solo inicializar campos si fueron proporcionados explícitamente
     // Esto permite usar attributes limitados sin inicializar campos no solicitados
-    if (data.hasOwnProperty('roleId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'roleId')) {
       this.roleId = data.roleId;
     }
-    if (data.hasOwnProperty('permissionId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'permissionId')) {
       this.permissionId = data.permissionId;
     }
-    if (data.hasOwnProperty('action')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'action')) {
       this.action = data.action; // VER, CREAR, EDITAR, ELIMINAR, APROBAR, EXPORTAR
     }
   }
@@ -41,15 +41,15 @@ export class RolePermission extends BaseEntity {
    */
   toPlainObject() {
     const plainObject = super.toPlainObject();
-    
+
     // Solo incluir campos que fueron inicializados (existen en this)
-    if (this.hasOwnProperty('roleId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'roleId')) {
       plainObject.roleId = this.roleId;
     }
-    if (this.hasOwnProperty('permissionId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'permissionId')) {
       plainObject.permissionId = this.permissionId;
     }
-    if (this.hasOwnProperty('action')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'action')) {
       plainObject.action = this.action;
     }
 

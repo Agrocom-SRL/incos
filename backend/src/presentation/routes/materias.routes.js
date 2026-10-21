@@ -1,7 +1,7 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { verificarPermiso } from '../middleware/permisos.middleware.js';
-import { idValidator, listValidator } from '../validators/common/index.js';
+import { idValidator } from '../validators/common/index.js';
 import { listMateriasValidator } from '../validators/academico/index.js';
 import {
     createMateriaValidator,
@@ -10,17 +10,17 @@ import {
 
 /**
  * Construye el router del módulo Materias
- * 
+ *
  * Responsabilidades:
  * - Definir rutas y métodos HTTP
  * - Vincular validators y middlewares
  * - Delegar lógica a controllers inyectados
- * 
+ *
  * @param {Object} params - Dependencias inyectadas
  * @param {Object} params.controllers - Controllers del módulo
  * @param {Object} params.middlewares - Middlewares (validateRequest, upload, auth, etc.)
  * @returns {Router} Router configurado de Express
- * 
+ *
  * @example
  * const router = buildMateriasRouter({ controllers, middlewares });
  * app.use('/api/v1/materias', router);
@@ -41,7 +41,7 @@ export function buildMateriasRouter({ controllers, middlewares }) {
     /**
      * GET /api/v1/materias
      * Listar todas las materias con filtros y paginación
-     * 
+     *
      * Query params según IBaseRepository.obtenerTodos:
      * - pagina: número de página (paginación)
      * - limite: cantidad por página (paginación)
@@ -92,4 +92,3 @@ export function buildMateriasRouter({ controllers, middlewares }) {
 
     return router;
 }
-

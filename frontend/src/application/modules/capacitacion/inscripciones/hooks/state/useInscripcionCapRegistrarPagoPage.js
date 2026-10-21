@@ -8,15 +8,26 @@
  * derivadas) vivía antes en `useInscripcionCapacitacionDetailPage`; se traslada
  * aquí porque es estado de "registrar pago", no de la ficha.
  *
+ * El pago exige `concepto` (MATRICULA = instituto | CURSO = entidad
+ * certificadora) y valida el sobrepago contra el saldo DE ESE concepto. El
+ * comprobante (imagen/PDF) es OPCIONAL: si viene, el body va en multipart.
+ *
  * Submit con payload EXACTO del backend (`registerPagoCapacitacionValidator`) y,
  * en éxito, refetch de la ficha + navegación de vuelta al detalle.
  */
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { App, Form } from 'antd';
 import { useInscripcionCapacitacionDetailContext } from '@application-capacitacion/inscripciones/hooks/context/useInscripcionCapacitacionDetailContext';
-import { mapFormValuesToPagoPayload } from '@application-capacitacion/inscripciones/mappers/inscripcionCapacitacionMapper';
+import {
+  extractComprobanteFile,
+  mapFormValuesToPagoPayload,
+} from '@application-capacitacion/inscripciones/mappers/inscripcionCapacitacionMapper';
+import {
+  CONCEPTO_PAGO,
+  buildConceptoOptions,
+} from '@application-capacitacion/utils/capacitacionCatalogos';
 import {
   buildReglasMetodo,
   findMetodoCodigo,
@@ -86,7 +97,24 @@ export const useInscripcionCapRegistrarPagoPage = () => {
   );
   const reglasMetodo = useMemo(() => buildReglasMetodo(metodoCodigo), [metodoCodigo]);
 
-  const saldo = inscripcion?.saldo ?? 0;
+  const saldosPorConcepto = useMemo(
+    () => ({
+      [CONCEPTO_PAGO.MATRICULA]: inscripcion?.saldoMatricula ?? 0,
+      [CONCEPTO_PAGO.CURSO]: inscripcion?.saldoCurso ?? 0,
+    }),
+    [inscripcion?.saldoMatricula, inscripcion?.saldoCurso],
+  );
+
+  // Solo se ofrecen los conceptos con saldo (un concepto no cobrado o saldado no se pide).
+  const conceptoOptions = useMemo(() => buildConceptoOptions(saldosPorConcepto), [saldosPorConcepto]);
+
+  // Concepto sugerido: el primero que aún tiene saldo (matrícula antes que curso).
+  useEffect(() => {
+    if (!inscripcion || form.getFieldValue('concepto')) return;
+    const sugerido =
+      saldosPorConcepto[CONCEPTO_PAGO.MATRICULA] > 0 ? CONCEPTO_PAGO.MATRICULA : CONCEPTO_PAGO.CURSO;
+    form.setFieldsValue({ concepto: sugerido });
+  }, [inscripcion, saldosPorConcepto, form]);
 
   /** Submit: POST /:id/pagos + feedback + refetch de la ficha + volver al detalle. */
   const handleSubmit = useCallback(async () => {
@@ -97,7 +125,7 @@ export const useInscripcionCapRegistrarPagoPage = () => {
       if (!Number.isFinite(payload.monto) || payload.monto <= 0) {
         throw new Error('Indique un monto válido para el pago');
       }
-      const result = await registrarPago(payload);
+      const result = await registrarPago(payload, extractComprobanteFile(values.comprobante));
       if (!result?.success) {
         throw new Error(result?.error || 'No se pudo registrar el pago');
       }
@@ -141,7 +169,8 @@ export const useInscripcionCapRegistrarPagoPage = () => {
     metodoPagoId,
     reglasMetodo,
     handleMetodoPagoChange,
-    saldo,
+    saldosPorConcepto,
+    conceptoOptions,
     metodosPago,
     cuentasPago,
     loadingCatalogos,

@@ -1,19 +1,19 @@
 /**
  * DELETE /api/v1/estudiantes/becas/:id
  * Controller para eliminar una beca asignada a un estudiante
- * 
+ *
  * Responsabilidades:
  * - Recibir peticiones HTTP DELETE para eliminar una beca asignada
  * - Delegar lógica de negocio a DeleteStudentScholarshipUseCase
  * - Formatear respuesta JSON estandarizada
- * 
+ *
  * Endpoint:
  * DELETE /api/v1/estudiantes/becas/:id
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja la comunicación HTTP para eliminar becas asignadas
  * - Dependency Inversion: Depende de DeleteStudentScholarshipUseCase (abstracción)
- * 
+ *
  * Clean Architecture:
  * - Presentation Layer: Maneja HTTP request/response
  * - Depende de Application Layer (Use Cases inyectados)

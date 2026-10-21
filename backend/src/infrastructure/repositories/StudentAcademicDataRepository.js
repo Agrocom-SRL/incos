@@ -1,4 +1,3 @@
-import { IEstudianteDatosAcademicosRepository } from '../../domain/interfaces/repositories/IEstudianteDatosAcademicosRepository.js';
 import { EstudianteDatosAcademicos as EstudianteDatosAcademicosModel } from '../database/models/estudiante_datos_academicos.js';
 import { BaseRepository } from './BaseRepository.js';
 import { StudentAcademicDataMapper } from '../mappers/StudentAcademicDataMapper.js';
@@ -7,21 +6,21 @@ import { sequelize } from '../database/sequelize.js';
 /**
  * Implementación del repositorio de datos académicos de estudiantes usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
- * 
+ *
  * Responsabilidades:
  * - Acceso a datos (consultas, persistencia)
  * - Delegar conversión ORM ↔ Entidad a StudentAcademicDataMapper
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja acceso a datos
  * - Dependency Inversion: Usa StudentAcademicDataMapper para conversiones (depende de abstracción)
- * 
+ *
  * Clean Architecture:
  * - Infrastructure Layer: Implementación concreta de IEstudianteDatosAcademicosRepository
  * - Usa StudentAcademicDataMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
- * 
+ *
  * @implements {IEstudianteDatosAcademicosRepository}
- * 
+ *
  * Esta clase cumple con el contrato IEstudianteDatosAcademicosRepository:
  * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
  * - La especialización está en buildWhereClause(), no en métodos adicionales
@@ -39,7 +38,7 @@ export class StudentAcademicDataRepository extends BaseRepository {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Delega la responsabilidad de mapeo a StudentAcademicDataMapper
-   * 
+   *
    * @param {Object} model - Modelo Sequelize
    * @returns {StudentAcademicData|null} Entidad de dominio
    */
@@ -50,15 +49,15 @@ export class StudentAcademicDataRepository extends BaseRepository {
   /**
    * Construye la cláusula WHERE para filtros específicos
    * Maneja todos los criterios de búsqueda de la entidad StudentAcademicData
-   * 
+   *
    * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
    * sin necesidad de crear métodos adicionales en el repositorio.
-   * 
+   *
    * Ejemplos de uso:
    * - findBy({ studentId: 1 }) → Busca datos académicos de un estudiante
    * - findAll({ careerId: 1 }) → Busca estudiantes de una carrera
    * - findAll({ academicState: 'REGULAR' }) → Busca estudiantes regulares
-   * 
+   *
    * @param {Object} filters - Filtros de búsqueda
    *   - studentId: ID del estudiante
    *   - careerId: ID de la carrera
@@ -101,7 +100,7 @@ export class StudentAcademicDataRepository extends BaseRepository {
   /**
    * Retorna los campos que se usarán para búsqueda de texto
    * Estos campos se usan en el método search() para búsqueda por término
-   * 
+   *
    * @returns {string[]} Array de nombres de campos del modelo Sequelize
    */
   getSearchFields() {
@@ -111,7 +110,7 @@ export class StudentAcademicDataRepository extends BaseRepository {
   /**
    * Retorna el orden por defecto para las consultas
    * Delega el orden al BaseRepository que ordena por ID ASC
-   * 
+   *
    * @returns {Array} Array vacío para usar el orden por defecto del BaseRepository (id ASC)
    */
   getDefaultSort() {
@@ -121,30 +120,30 @@ export class StudentAcademicDataRepository extends BaseRepository {
   /**
    * Mapea datos de dominio a formato del modelo Sequelize (para creación)
    * Delega la responsabilidad de mapeo a StudentAcademicDataMapper
-   * 
+   *
    * @param {StudentAcademicData|Object} data - Entidad StudentAcademicData o objeto con datos de dominio
    * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return StudentAcademicDataMapper.toModel(data);
   }
 
   /**
    * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
    * Delega la responsabilidad de mapeo a StudentAcademicDataMapper
-   * 
+   *
    * @param {StudentAcademicData|Object} data - Entidad StudentAcademicData o objeto con datos de dominio
    * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return StudentAcademicDataMapper.toModelForUpdate(data);
   }
 
   /**
    * Retorna el nombre de la colección en la respuesta JSON
-   * 
+   *
    * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {

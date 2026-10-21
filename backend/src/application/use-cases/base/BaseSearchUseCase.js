@@ -1,29 +1,29 @@
 /**
  * Use Case Base para operaciones de búsqueda por texto libre
- * 
+ *
  * Implementa el patrón Template Method para proporcionar funcionalidad común
  * a todos los casos de uso de búsqueda
- * 
+ *
  * Responsabilidades:
  * - Ejecutar búsqueda en el repositorio (usa getSearchFields() del repositorio)
  * - Manejar límite de resultados parametrizable
  * - Registrar logs durante la operación
  * - Retornar resultado estandarizado
- * 
+ *
  * NOTA: La validación del término de búsqueda y el límite se realiza en las rutas
  * mediante el validator común (searchValidator), por lo que este use case
  * asume que searchTerm y limit ya están validados.
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Maneja solo la lógica común de búsqueda
  * - Template Method: Define el algoritmo común
  * - Open/Closed: Permite personalizar el comportamiento mediante opciones
- * 
+ *
  * Clean Architecture:
  * - Application Layer: Orquesta la lógica de casos de uso
  * - Depende de Repository (Infrastructure) a través de abstracción
  * - El repositorio define los campos de búsqueda en getSearchFields()
- * 
+ *
  * @abstract
  * @example
  * class SearchStudentUseCase extends BaseSearchUseCase {
@@ -35,13 +35,29 @@
  *       resourceName: 'estudiante',
  *     });
  *   }
- * 
+ *
  *   getMapper() {
  *     return StudentMapper;
  *   }
  * }
  */
+import { ValidationError } from '../../../domain/errors/AppError.js';
+
 export class BaseSearchUseCase {
+    /** Tope de resultados por búsqueda (las rutas validan 1-50; se deja margen a llamadas internas). */
+    static LIMIT_MAXIMO = 100;
+
+    /**
+     * Entero entre 1 y LIMIT_MAXIMO; cualquier otro valor (NaN, '5abc', 0, negativos) cae al default 50.
+     * @param {*} limit
+     * @returns {number}
+     */
+    static normalizarLimit(limit) {
+        const n = typeof limit === 'number' ? limit : /^\d+$/.test(String(limit).trim()) ? Number(limit) : NaN;
+        if (!Number.isInteger(n) || n < 1) return 50;
+        return Math.min(n, BaseSearchUseCase.LIMIT_MAXIMO);
+    }
+
     /**
      * @param {Object} params - Parámetros de configuración
      * @param {Object} params.repository - Repositorio a usar (debe tener método search(searchTerm, options))
@@ -71,9 +87,9 @@ export class BaseSearchUseCase {
 
     /**
      * Retorna el mapper a usar para convertir entidades a presentación
-     * 
+     *
      * Método abstracto: Debe ser implementado por subclases
-     * 
+     *
      * @abstract
      * @returns {Object} Clase mapper con método estático entityToPresentation()
      */
@@ -83,9 +99,9 @@ export class BaseSearchUseCase {
 
     /**
      * Formatea un resultado individual usando el mapper
-     * 
+     *
      * Usa getMapper() para convertir la entidad a formato de presentación
-     * 
+     *
      * @param {Object} result - Resultado a formatear (entidad de dominio)
      * @returns {Object} Resultado formateado
      */
@@ -96,40 +112,44 @@ export class BaseSearchUseCase {
 
     /**
      * Ejecuta el caso de uso de búsqueda
-     * 
+     *
      * Template Method: Define el algoritmo común de:
      * 1. Normalizar término de búsqueda (trim)
      * 2. Logging inicial
      * 3. Ejecutar búsqueda en el repositorio con límite
      * 4. Procesar y formatear resultados
      * 5. Retornar resultado
-     * 
+     *
      * NOTA: searchTerm y limit ya están validados por el validator en las rutas
-     * 
+     *
      * @param {string} searchTerm - Término de búsqueda (ya validado por el validator)
      * @param {number} limit - Límite de resultados (opcional, default: 50)
      * @returns {Promise<Array>} Array de resultados formateados (vacío si no hay resultados)
      */
     async execute(searchTerm, limit = 50) {
         // Normalizar término de búsqueda (trim)
-        const trimmedSearchTerm = searchTerm.trim();
+        if (searchTerm === null || searchTerm === undefined) {
+            throw new ValidationError('El término de búsqueda es requerido');
+        }
+        const trimmedSearchTerm = String(searchTerm).trim();
+        const limitNum = BaseSearchUseCase.normalizarLimit(limit);
 
         // Logging inicial
         this.logger.info(`[${this.moduleName}] Iniciando búsqueda de ${this.resourceName}`, {
             searchTerm: trimmedSearchTerm,
-            limit,
+            limit: limitNum,
         });
 
         try {
             // Ejecutar búsqueda en el repositorio
             // El repositorio usa getSearchFields() para definir los campos de búsqueda
-            const results = await this.repository.search(trimmedSearchTerm, { limit });
+            const results = await this.repository.search(trimmedSearchTerm, { limit: limitNum });
 
             // Procesar resultados
             if (!results || results.length === 0) {
                 this.logger.info(`[${this.moduleName}] No se encontraron ${this.resourceName}s`, {
                     searchTerm: trimmedSearchTerm,
-                    limit,
+                    limit: limitNum,
                 });
                 return [];
             }
@@ -138,7 +158,7 @@ export class BaseSearchUseCase {
             this.logger.info(`[${this.moduleName}] ${this.resourceName}s encontrados`, {
                 count: results.length,
                 searchTerm: trimmedSearchTerm,
-                limit,
+                limit: limitNum,
             });
 
             return results.map((result) => this.formatResult(result));
@@ -148,7 +168,7 @@ export class BaseSearchUseCase {
                 error: error.message,
                 stack: error.stack,
                 searchTerm: trimmedSearchTerm,
-                limit,
+                limit: limitNum,
             });
             throw error;
         }

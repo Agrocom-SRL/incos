@@ -11,27 +11,27 @@ export class Schedule extends BaseEntity {
     super(data);
     // Solo inicializar campos si fueron proporcionados explícitamente
     // Esto permite usar attributes limitados sin inicializar campos no solicitados
-    if (data.hasOwnProperty('name')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'name')) {
       this.name = data.name;
     }
-    if (data.hasOwnProperty('day')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'day')) {
       this.day = data.day;
     }
-    if (data.hasOwnProperty('startTime')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'startTime')) {
       this.startTime = data.startTime;
     }
-    if (data.hasOwnProperty('endTime')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'endTime')) {
       this.endTime = data.endTime;
     }
-    if (data.hasOwnProperty('shift')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'shift')) {
       this.shift = data.shift;
     }
-    if (data.hasOwnProperty('blockNumber')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'blockNumber')) {
       this.blockNumber = data.blockNumber;
     }
-    if (data.hasOwnProperty('scheduleType')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'scheduleType')) {
       this.scheduleType = data.scheduleType;
-    } else if (!data.hasOwnProperty('name')) {
+    } else if (!Object.prototype.hasOwnProperty.call(data, 'name')) {
       // Solo usar valor por defecto si no se está usando attributes limitados
       this.scheduleType = TIPOS_HORARIO.CLASES;
     }
@@ -71,27 +71,27 @@ export class Schedule extends BaseEntity {
    */
   toPlainObject() {
     const plainObject = super.toPlainObject();
-    
+
     // Solo incluir campos que fueron inicializados (existen en this)
-    if (this.hasOwnProperty('name')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'name')) {
       plainObject.name = this.name;
     }
-    if (this.hasOwnProperty('day')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'day')) {
       plainObject.day = this.day;
     }
-    if (this.hasOwnProperty('startTime')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'startTime')) {
       plainObject.startTime = this.startTime;
     }
-    if (this.hasOwnProperty('endTime')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'endTime')) {
       plainObject.endTime = this.endTime;
     }
-    if (this.hasOwnProperty('shift')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'shift')) {
       plainObject.shift = this.shift;
     }
-    if (this.hasOwnProperty('blockNumber')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'blockNumber')) {
       plainObject.blockNumber = this.blockNumber;
     }
-    if (this.hasOwnProperty('scheduleType')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'scheduleType')) {
       plainObject.scheduleType = this.scheduleType;
     }
 

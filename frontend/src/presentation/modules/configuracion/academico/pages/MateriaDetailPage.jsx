@@ -41,7 +41,7 @@ const MateriaDetailPage = () => {
   } = useMateriaDetallePage();
 
   const puedeEditar = hasPermiso('configuracion.materia', 'EDITAR');
-  const asignaturas = materia?.asignaturas ?? [];
+  const asignaturas = useMemo(() => materia?.asignaturas ?? [], [materia?.asignaturas]);
 
   const tabItems = useMemo(() => {
     if (!materia) return [];

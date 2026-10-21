@@ -51,7 +51,7 @@
  * ```
  */
 
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 
 /**
  * Aplica todos los enrichers a un campo
@@ -171,51 +171,14 @@ const enrichStep = (step, stepIndex, enrichers = [], context = {}, stepEnrichmen
  * @returns {Array} WizardSteps enriquecidos
  */
 export const useEnrichWizardSteps = (wizardSteps, enrichers = [], context = {}, stepEnrichmentStrategy = null) => {
-    // Refs para rastrear cambios en dependencias y mantener referencia estable del resultado
-    const prevDepsRef = useRef(null);
-    const prevResultRef = useRef(null);
-    
-    // Enriquecer wizardSteps aplicando todos los enrichers
-    const enrichedWizardSteps = useMemo(() => {
-        const currentDeps = {
-            wizardSteps,
-            enrichers,
-            context,
-            stepEnrichmentStrategy,
-        };
-        
-        const prevDeps = prevDepsRef.current;
-        
-        // Verificar si realmente cambió algo
-        if (prevDeps) {
-            const hasChanges = (
-                prevDeps.wizardSteps !== currentDeps.wizardSteps ||
-                prevDeps.enrichers !== currentDeps.enrichers ||
-                prevDeps.context !== currentDeps.context ||
-                prevDeps.stepEnrichmentStrategy !== currentDeps.stepEnrichmentStrategy
-            );
-
-            if (!hasChanges && prevResultRef.current) {
-                // Mantener la referencia anterior si nada cambió
-                return prevResultRef.current;
-            }
-        }
-        
-        prevDepsRef.current = currentDeps;
-        
+    // useMemo mantiene la referencia anterior mientras no cambie ninguna dependencia
+    return useMemo(() => {
         if (!wizardSteps || !Array.isArray(wizardSteps)) {
-            const emptyResult = [];
-            prevResultRef.current = emptyResult;
-            return emptyResult;
+            return [];
         }
 
-        const result = wizardSteps.map((step, stepIndex) => 
+        return wizardSteps.map((step, stepIndex) =>
             enrichStep(step, stepIndex, enrichers, context, stepEnrichmentStrategy)
         );
-        
-        prevResultRef.current = result;
-        return result;
     }, [wizardSteps, enrichers, context, stepEnrichmentStrategy]);
-
-    return enrichedWizardSteps;
 };

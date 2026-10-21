@@ -81,4 +81,3 @@ export const Traspaso = sequelize.define(
 );
 
 export default Traspaso;
-

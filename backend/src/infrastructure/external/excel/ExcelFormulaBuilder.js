@@ -64,7 +64,7 @@ export class ExcelFormulaBuilder {
         worksheet.getCell(`${cols[colIdx]}${row}`).value = getValor(p[par], colIdx) || 0;
         worksheet.getCell(`${cols[colIdx + 1]}${row}`).value = getValor(p[par], colIdx + 1) || 0;
       });
-      
+
       worksheet.getCell(`${totalCol}${row}`).value = {
         formula: `SUM(${cols[0]}${row}:${cols[cols.length - 1]}${row})`
       };
@@ -91,7 +91,7 @@ export class ExcelFormulaBuilder {
       const colInscripcion = colsInscripcion[i];
       const colReprobado = colsReprobados[i];
       const colAbandono = colsAbandonos[i];
-      
+
       worksheet.getCell(`${col}${row}`).value = {
         formula: `${colInscripcion}${row}-${colReprobado}${row}-${colAbandono}${row}`
       };
@@ -126,14 +126,14 @@ export class ExcelFormulaBuilder {
    * igual criterio que agregarTotalGeneral pero solo entre firstRow y lastRow del grupo.
    */
   static agregarTotalCarrera(worksheet, row, firstRow, lastRow) {
-    this.COLUMNAS_SUMA_VERTICAL_TOTAL_CARRERA.forEach(col => {
+    this.COLUMNAS_SUMA_VERTICAL_TOTAL_CARRERA.forEach((col) => {
       worksheet.getCell(`${col}${row}`).value = {
         formula: `SUM(${col}${firstRow}:${col}${lastRow})`
       };
     });
 
     const totalesGenero = ['AN', 'AO', 'AP', 'AQ', 'AR', 'AS'];
-    totalesGenero.forEach(col => {
+    totalesGenero.forEach((col) => {
       worksheet.getCell(`${col}${row}`).value = {
         formula: `SUM(${col}${firstRow}:${col}${lastRow})`
       };
@@ -157,9 +157,9 @@ export class ExcelFormulaBuilder {
 
     const soloSubtotales = new Set(this.COLUMNAS_TOTAL_GLOBAL_SOLO_SUBTOTALES_CARRERA);
 
-    columnas.forEach(col => {
+    columnas.forEach((col) => {
       if (soloSubtotales.has(col) && filasTotalesCarrera?.length) {
-        const refs = filasTotalesCarrera.map(fr => `${col}${fr}`).join(',');
+        const refs = filasTotalesCarrera.map((fr) => `${col}${fr}`).join(',');
         worksheet.getCell(`${col}${row}`).value = {
           formula: `SUM(${refs})`
         };

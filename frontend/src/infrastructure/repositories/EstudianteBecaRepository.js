@@ -182,7 +182,7 @@ export class EstudianteBecaRepository extends IEstudianteBecaRepository {
    */
   async actualizar(id, data, options = {}) {
     try {
-      const { studentId } = options;
+      const { studentId: _studentId } = options;
 
       // TODO: Cuando el backend implemente PUT /estudiantes/:studentId/scholarships/:id, usar:
       // const response = await apiClient.put(
@@ -279,7 +279,7 @@ export class EstudianteBecaRepository extends IEstudianteBecaRepository {
    */
   async contar(filtros = {}) {
     try {
-      const { studentId } = filtros;
+      const { studentId: _studentId } = filtros;
 
       // TODO: Cuando el backend implemente GET /estudiantes/:studentId/scholarships/contar, usar:
       // const response = await apiClient.get(
@@ -312,7 +312,7 @@ export class EstudianteBecaRepository extends IEstudianteBecaRepository {
    */
   async cambiarEstado(id, activo, options = {}) {
     try {
-      const { studentId } = options;
+      const { studentId: _studentId } = options;
 
       // TODO: Cuando el backend implemente PATCH /estudiantes/:studentId/scholarships/:id/activo, usar:
       // const response = await apiClient.patch(

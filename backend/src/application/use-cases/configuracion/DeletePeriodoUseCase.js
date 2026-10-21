@@ -12,4 +12,3 @@ export class DeletePeriodoUseCase {
     return true;
   }
 }
-

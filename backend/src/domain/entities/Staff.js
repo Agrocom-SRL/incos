@@ -14,46 +14,46 @@ export class Staff extends BaseEntity {
     super(data);
     // Solo inicializar campos si fueron proporcionados explícitamente
     // Esto permite usar attributes limitados sin inicializar campos no solicitados
-    if (data.hasOwnProperty('userId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'userId')) {
       this.userId = data.userId;
     }
-    if (data.hasOwnProperty('ci')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'ci')) {
       this.ci = data.ci;
     }
-    if (data.hasOwnProperty('expedition')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'expedition')) {
       this.expedition = data.expedition;
     }
-    if (data.hasOwnProperty('firstName')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'firstName')) {
       this.firstName = data.firstName;
     }
-    if (data.hasOwnProperty('lastName')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'lastName')) {
       this.lastName = data.lastName;
     }
-    if (data.hasOwnProperty('motherLastName')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'motherLastName')) {
       this.motherLastName = data.motherLastName;
     }
-    if (data.hasOwnProperty('birthDate')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'birthDate')) {
       this.birthDate = data.birthDate;
     }
-    if (data.hasOwnProperty('gender')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'gender')) {
       this.gender = data.gender;
     }
-    if (data.hasOwnProperty('civilStatusId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'civilStatusId')) {
       this.civilStatusId = data.civilStatusId;
     }
-    if (data.hasOwnProperty('personalEmail')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'personalEmail')) {
       this.personalEmail = data.personalEmail;
     }
-    if (data.hasOwnProperty('phone')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'phone')) {
       this.phone = data.phone;
     }
-    if (data.hasOwnProperty('mobilePhone')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'mobilePhone')) {
       this.mobilePhone = data.mobilePhone;
     }
-    if (data.hasOwnProperty('address')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'address')) {
       this.address = data.address;
     }
-    if (data.hasOwnProperty('municipalityId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'municipalityId')) {
       this.municipalityId = data.municipalityId;
     }
   }
@@ -104,48 +104,48 @@ export class Staff extends BaseEntity {
    */
   toPlainObject() {
     const plainObject = super.toPlainObject();
-    
+
     // Solo incluir campos que fueron inicializados (existen en this)
-    if (this.hasOwnProperty('userId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'userId')) {
       plainObject.userId = this.userId;
     }
-    if (this.hasOwnProperty('ci')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'ci')) {
       plainObject.ci = this.ci;
     }
-    if (this.hasOwnProperty('expedition')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'expedition')) {
       plainObject.expedition = this.expedition;
     }
-    if (this.hasOwnProperty('firstName')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'firstName')) {
       plainObject.firstName = this.firstName;
     }
-    if (this.hasOwnProperty('lastName')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'lastName')) {
       plainObject.lastName = this.lastName;
     }
-    if (this.hasOwnProperty('motherLastName')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'motherLastName')) {
       plainObject.motherLastName = this.motherLastName;
     }
-    if (this.hasOwnProperty('birthDate')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'birthDate')) {
       plainObject.birthDate = this.birthDate;
     }
-    if (this.hasOwnProperty('gender')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'gender')) {
       plainObject.gender = this.gender;
     }
-    if (this.hasOwnProperty('civilStatusId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'civilStatusId')) {
       plainObject.civilStatusId = this.civilStatusId;
     }
-    if (this.hasOwnProperty('personalEmail')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'personalEmail')) {
       plainObject.personalEmail = this.personalEmail;
     }
-    if (this.hasOwnProperty('phone')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'phone')) {
       plainObject.phone = this.phone;
     }
-    if (this.hasOwnProperty('mobilePhone')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'mobilePhone')) {
       plainObject.mobilePhone = this.mobilePhone;
     }
-    if (this.hasOwnProperty('address')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'address')) {
       plainObject.address = this.address;
     }
-    if (this.hasOwnProperty('municipalityId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'municipalityId')) {
       plainObject.municipalityId = this.municipalityId;
     }
 

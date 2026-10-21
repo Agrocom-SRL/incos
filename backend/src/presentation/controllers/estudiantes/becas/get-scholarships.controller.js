@@ -1,23 +1,23 @@
 /**
  * GET /api/v1/estudiantes/:id/scholarships
  * Controller para obtener las becas de un estudiante
- * 
+ *
  * Responsabilidades:
  * - Recibir peticiones HTTP GET para obtener becas de un estudiante
  * - Extraer el ID del estudiante de los parámetros de ruta
  * - Delegar lógica de negocio a GetStudentScholarshipsByStudentIdUseCase
  * - Formatear respuesta JSON estandarizada
- * 
+ *
  * Endpoint:
  * GET /api/v1/estudiantes/:id/scholarships
- * 
+ *
  * Path Parameters:
  * - id: ID del estudiante
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja la comunicación HTTP para obtener becas
  * - Dependency Inversion: Depende de GetStudentScholarshipsByStudentIdUseCase (abstracción)
- * 
+ *
  * Clean Architecture:
  * - Presentation Layer: Maneja HTTP request/response
  * - Depende de Application Layer (Use Cases inyectados)
@@ -46,7 +46,7 @@ export class GetStudentScholarshipsController extends BaseGetController {
   /**
    * Maneja la petición HTTP GET para obtener las becas de un estudiante
    * Sobrescribe el método handle de BaseGetController para pasar el ID del path
-   * 
+   *
    * @param {Object} req - Request de Express
    * @param {Object} res - Response de Express
    * @param {Function} next - Next middleware de Express
@@ -57,7 +57,7 @@ export class GetStudentScholarshipsController extends BaseGetController {
       const studentId = parseInt(req.params.id, 10);
 
       // 2. Validar que el ID sea válido
-      if (!studentId || isNaN(studentId)) {
+      if (!studentId || Number.isNaN(Number(studentId))) {
         return res.status(400).json({
           success: false,
           error: {

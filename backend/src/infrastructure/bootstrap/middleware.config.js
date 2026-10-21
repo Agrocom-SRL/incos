@@ -14,10 +14,10 @@ import { createNotFoundHandler } from '../../presentation/middleware/notFound.mi
 
 /**
  * Configuración de middleware de Express
- * 
+ *
  * @param {Express} app - Aplicación Express
  * @param {ILogger} logger - Logger inyectado
- * 
+ *
  * Orden de middleware:
  * 1. Seguridad (Helmet, CORS)
  * 2. Parsing (JSON, URL-encoded)
@@ -27,7 +27,6 @@ import { createNotFoundHandler } from '../../presentation/middleware/notFound.mi
  * 6. Debugging (solo desarrollo)
  */
 export function setupMiddleware(app, logger) {
-
     // ============================================
     // 1. SEGURIDAD
     // ============================================
@@ -89,7 +88,7 @@ export function setupMiddleware(app, logger) {
 /**
  * Configuración de manejo de errores
  * Debe llamarse DESPUÉS de setupRoutes()
- * 
+ *
  * @param {Express} app - Aplicación Express
  * @param {ILogger} logger - Logger inyectado
  * @param {ErrorFormatter} errorFormatter - ErrorFormatter inyectado

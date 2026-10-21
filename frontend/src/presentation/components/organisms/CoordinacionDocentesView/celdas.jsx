@@ -10,7 +10,7 @@ import {
   ReadOutlined,
   TeamOutlined,
 } from '@ant-design/icons';
-import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
+import { sanitizeDocenteColorHex } from '@docentes/utils/docenteColor';
 
 const { Text } = Typography;
 

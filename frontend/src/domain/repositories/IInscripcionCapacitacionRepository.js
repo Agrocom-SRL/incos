@@ -23,6 +23,37 @@ export class IInscripcionCapacitacionRepository extends IBaseRepository {
   }
 
   /**
+   * Reemplaza el checklist de requisitos entregados (PUT /:id/requisitos, EDITAR).
+   * @param {string|number} _inscripcionId
+   * @param {Array} _requisitos - [{ requisitoId, entregado, fechaEntrega?, observacion? }]
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async actualizarRequisitos(_inscripcionId, _requisitos) {
+    throw new Error('Método actualizarRequisitos debe ser implementado');
+  }
+
+  /**
+   * Adjunta o reemplaza el comprobante de un pago (POST multipart `comprobante`).
+   * @param {string|number} _inscripcionId
+   * @param {string|number} _pagoId
+   * @param {File} _archivo
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async adjuntarComprobante(_inscripcionId, _pagoId, _archivo) {
+    throw new Error('Método adjuntarComprobante debe ser implementado');
+  }
+
+  /**
+   * Descarga el comprobante de un pago (GET, permiso capacitacion.inscripcion DETALLE).
+   * @param {string|number} _inscripcionId
+   * @param {string|number} _pagoId
+   * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
+   */
+  async descargarComprobante(_inscripcionId, _pagoId) {
+    throw new Error('Método descargarComprobante debe ser implementado');
+  }
+
+  /**
    * Anula la inscripción (POST /:id/anular, permiso capacitacion.inscripcion
    * EDITAR — no existe acción ANULAR en el vocabulario cerrado de permisos).
    * Decisión administrativa manual: el monto ya pagado no se devuelve.

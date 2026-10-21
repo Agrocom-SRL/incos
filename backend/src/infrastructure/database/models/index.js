@@ -140,10 +140,13 @@ export { ConfiguracionSistema } from './configuracion_sistema.js';
 // ============================================
 export { Participante } from './participante.js';
 export { CursoCapacitacion } from './curso_capacitacion.js';
+export { GrupoCapacitacion } from './grupo_capacitacion.js';
 export { BloqueCapacitacion } from './bloque_capacitacion.js';
 export { InscripcionCapacitacion } from './inscripcion_capacitacion.js';
 export { CapacitacionCompromiso } from './capacitacion_compromiso.js';
 export { PagoCapacitacion } from './pago_capacitacion.js';
+export { CapacitacionRequisito } from './capacitacion_requisito.js';
+export { CapacitacionInscritoRequisito } from './capacitacion_inscrito_requisito.js';
 
 // ============================================
 // TUTORÍAS Y ACOMPAÑAMIENTO (módulo TUT)

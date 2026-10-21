@@ -26,7 +26,7 @@
  * - Expone datos + lógica vía StudentRegisterContext
  */
 
-import { useMemo, useEffect, useRef, useState, useCallback } from 'react';
+import { useMemo, useEffect, useCallback } from 'react';
 import {
     useStudentCatalogApi,
     useStudentGeographicApi,
@@ -41,6 +41,9 @@ import { useStudentFormOptions } from '@application-matricula/nuevo/hooks/featur
 import { useStudentFormHandlers } from '@application-matricula/nuevo/hooks/features/useStudentFormHandlers';
 import { useDocumentacionProcesada } from '@application-matricula/nuevo/hooks/features/useDocumentacionProcesada';
 import { useContactosEmergenciaDinamicos } from '@application-matricula/nuevo/hooks/features/useContactosEmergenciaDinamicos';
+
+// Referencia estable para valores por defecto (evita recrear dependencias en cada render)
+const EMPTY_ARRAY = [];
 
 export const StudentRegisterProvider = ({ children, mode = 'create', studentId = null }) => {
     // Hook genérico compartido para mostrar mensajes
@@ -58,49 +61,51 @@ export const StudentRegisterProvider = ({ children, mode = 'create', studentId =
 
     // Cargar tipos de parentesco al inicializar (siempre se necesitan para contacto de emergencia)
     // En modo edición, esperar un poco para evitar llamadas paralelas con StudentDetailProvider
+    const { loadTiposParentesco, loadDiscapacidades } = referenceData;
     useEffect(() => {
-        if (referenceData.loadTiposParentesco && typeof referenceData.loadTiposParentesco === 'function') {
+        if (loadTiposParentesco && typeof loadTiposParentesco === 'function') {
             // En modo edición, esperar 200ms para que primero se cargue el estudiante
             // Esto evita problemas de concurrencia en el servidor con múltiples llamadas simultáneas
             if (mode === 'edit') {
                 const timeoutId = setTimeout(() => {
-                    referenceData.loadTiposParentesco();
+                    loadTiposParentesco();
                 }, 200);
                 return () => clearTimeout(timeoutId);
             } else {
                 // En modo creación, cargar inmediatamente
-                referenceData.loadTiposParentesco();
+                loadTiposParentesco();
             }
         }
-    }, [referenceData.loadTiposParentesco, mode]);
+    }, [loadTiposParentesco, mode]);
 
     // Hook para gestiones académicas
     // Por defecto NO carga gestiones (estudiantes nuevos no necesitan gestiones)
     // La carga y el filtro (vigentes / no vigentes / todas) dependen del tipo de admisión
     const gestionesApi = useGestionesApi({ autoFetch: false });
-    const gestiones = gestionesApi.gestiones || [];
+    const gestiones = gestionesApi.gestiones || EMPTY_ARRAY;
     const gestionesLoading = gestionesApi.loading || false;
     const gestionesError = gestionesApi.error || null;
     
     // Función para cargar gestiones según el tipo de admisión
     // - ANTIGUO: solo gestiones no vigentes (pasadas)
     // - TRANSITABILIDAD / TRASPASO: todas las gestiones (incluye la vigente)
+    const { fetch: fetchGestiones } = gestionesApi;
     const cargarGestiones = useCallback((tipoAdmision) => {
-      if (!gestionesApi.fetch) return;
+      if (!fetchGestiones) return;
 
       if (tipoAdmision === 'ANTIGUO') {
-        gestionesApi.fetch({ params: { vigente: 0 } });
+        fetchGestiones({ params: { vigente: 0 } });
         return;
       }
 
       if (tipoAdmision === 'TRANSITABILIDAD' || tipoAdmision === 'TRASPASO') {
-        gestionesApi.fetch(); // Sin filtro de vigente => todas las gestiones
+        fetchGestiones(); // Sin filtro de vigente => todas las gestiones
       }
-    }, [gestionesApi.fetch]);
+    }, [fetchGestiones]);
 
     // Hook para cargar carreras académicas
     const carrerasApi = useCarrerasApi();
-    const carreras = carrerasApi.carreras || [];
+    const carreras = carrerasApi.carreras || EMPTY_ARRAY;
     const carrerasLoading = carrerasApi.loading || false;
     const carrerasError = carrerasApi.error || null;
 
@@ -118,14 +123,14 @@ export const StudentRegisterProvider = ({ children, mode = 'create', studentId =
     const resolveOptions = useStudentFormOptions(contextData);
 
     // Obtener documentación del catálogo (no de referenceData)
-    const documentacion = catalogData.documentacion || [];
-    const documentacionTraspaso = catalogData.documentacionTraspaso || [];
+    const documentacion = catalogData.documentacion || EMPTY_ARRAY;
+    const documentacionTraspaso = catalogData.documentacionTraspaso || EMPTY_ARRAY;
 
     // Hook especializado: manejar handlers de submit y gestión del formulario
     // Este hook usa useRegisterStudent o useUpdateStudent según el modo
     // IMPORTANTE: Inicialmente pasamos array vacío, pero useStudentFormHandlers usa un ref interno
     // que se actualizará cuando documentacionProcesada esté disponible
-    const { handleFinish, handleSave, registerForm, getFormValues, formRef, loading, error, validationErrors, registrationResult } = useStudentFormHandlers(showMessage, mode, studentId, []);
+    const { formRef } = useStudentFormHandlers(showMessage, mode, studentId, []);
 
     // Hook compuesto: procesar documentación sin observar valores del formulario
     // NO observa valores en tiempo real - solo procesa con valores por defecto
@@ -145,104 +150,82 @@ export const StudentRegisterProvider = ({ children, mode = 'create', studentId =
     // vacío, el useEffect interno no se ejecutará cuando documentacionProcesada esté disponible.
     // Para solucionar esto, pasamos documentacionProcesada directamente cuando esté disponible.
     // Como los hooks se ejecutan en orden, usamos documentacionProcesada directamente si está disponible.
-    const { handleFinish: handleFinishFinal, handleSave: handleSaveFinal, registerForm: registerFormFinal, getFormValues: getFormValuesFinal, saveStep0Values: saveStep0ValuesFinal, getStep0Values: getStep0ValuesFinal, formRef: formRefFinal, loading: loadingFinal, error: errorFinal, validationErrors: validationErrorsFinal, registrationResult: registrationResultFinal } = useStudentFormHandlers(showMessage, mode, studentId, documentacionProcesada || []);
+    // Handlers finales (incluyen documentacionProcesada cuando esté disponible)
+    const { handleFinish, handleSave, registerForm, saveStep0Values, getStep0Values, loading, error, validationErrors, registrationResult } = useStudentFormHandlers(showMessage, mode, studentId, documentacionProcesada || []);
     
-    // Usar los handlers finales (que incluyen documentacionProcesada cuando esté disponible)
-    const finalHandlers = {
-      handleFinish: handleFinishFinal,
-      handleSave: handleSaveFinal,
-      registerForm: registerFormFinal,
-      getFormValues: getFormValuesFinal,
-      saveStep0Values: saveStep0ValuesFinal,
-      getStep0Values: getStep0ValuesFinal,
-      formRef: formRefFinal,
-      loading: loadingFinal,
-      error: errorFinal,
-      validationErrors: validationErrorsFinal,
-      registrationResult: registrationResultFinal,
-    };
-
     // Hook para manejar el estado de contactos de emergencia dinámicos
     const { contactosIndices, agregarContacto, eliminarContacto } = useContactosEmergenciaDinamicos();
 
-    // MANTENER REFERENCIA ESTABLE DEL CONTEXTO
-    // Comparar valores, no solo referencias, para evitar recálculos innecesarios
-    const prevValueRef = useRef(null);
-    
     // Componer el valor del contexto: datos + lógica + funciones de carga
     // El provider solo orquesta hooks y expone sus resultados
-    const value = useMemo(() => {
-        const current = {
-            ...contextData,
-            resolveOptions,
-            handleFinish: finalHandlers.handleFinish,
-            handleSave: finalHandlers.handleSave,
-            minAge: EDAD_MINIMA_REGISTRO,
-            registerForm: finalHandlers.registerForm, // Expuesto desde useStudentFormHandlers
-            saveStep0Values: finalHandlers.saveStep0Values, // Preservar valores del paso 0 al cambiar de paso
-            getStep0Values: finalHandlers.getStep0Values, // Valores preservados del paso 0 (para restaurar al volver)
-            // Estados del registro (expuestos desde useStudentFormHandlers)
-            loading: finalHandlers.loading,
-            error: finalHandlers.error,
-            validationErrors: finalHandlers.validationErrors,
-            registrationResult: finalHandlers.registrationResult, // Resultado del registro para que la página pueda reaccionar
-            // Contactos de emergencia dinámicos
-            contactosIndices,
-            agregarContacto,
-            eliminarContacto,
-            // Documentación procesada (INSCRIPCION y TRASPASO para step Documentación)
-            documentacionProcesada,
-            documentacionTraspasoProcesada,
-            // Documentación raw del catálogo (para paso documentación con lógica padre-hijo dinámica)
-            documentacionRaw: documentacion,
-            documentacionTraspasoRaw: documentacionTraspaso,
-            // Exponer funciones de carga bajo demanda
-            loadDiscapacidades: referenceData.loadDiscapacidades,
-            loadTiposParentesco: referenceData.loadTiposParentesco,
-            loadDepartamentos: geographicData.loadDepartamentos,
-            loadProvincias: geographicData.loadProvincias,
-            loadMunicipios: geographicData.loadMunicipios,
-            // Estados de carreras y gestiones para componentes visuales
-            carrerasLoading,
-            gestionesLoading,
-            carrerasError,
-            gestionesError,
-            // Función para cargar gestiones (cuando tipo es ANTIGUO)
-            cargarGestiones,
-        };
-
-        const prev = prevValueRef.current;
-        
-        // Comparar valores clave, no solo referencias
-        if (prev &&
-            prev.loading === current.loading &&
-            prev.error === current.error &&
-            prev.validationErrors === current.validationErrors &&
-            prev.registrationResult === current.registrationResult &&
-            prev.minAge === current.minAge &&
-            prev.resolveOptions === current.resolveOptions &&
-            prev.handleFinish === current.handleFinish &&
-            prev.handleSave === current.handleSave &&
-            prev.registerForm === current.registerForm &&
-            prev.saveStep0Values === current.saveStep0Values &&
-            prev.getStep0Values === current.getStep0Values &&
-            prev.contactosIndices === current.contactosIndices &&
-            prev.agregarContacto === current.agregarContacto &&
-            prev.eliminarContacto === current.eliminarContacto &&
-            prev.documentacionProcesada === current.documentacionProcesada &&
-            prev.documentacionTraspasoProcesada === current.documentacionTraspasoProcesada &&
-            prev.loadDiscapacidades === current.loadDiscapacidades &&
-            prev.loadTiposParentesco === current.loadTiposParentesco &&
-            prev.loadDepartamentos === current.loadDepartamentos &&
-            prev.loadProvincias === current.loadProvincias &&
-            prev.loadMunicipios === current.loadMunicipios &&
-            prev.contextData === current.contextData) {
-            return prev;
-        }
-
-        prevValueRef.current = current;
-        return current;
-    }, [contextData, resolveOptions, finalHandlers, contactosIndices, agregarContacto, eliminarContacto, documentacionProcesada, documentacionTraspasoProcesada, referenceData.loadDiscapacidades, referenceData.loadTiposParentesco, geographicData.loadDepartamentos, geographicData.loadProvincias, geographicData.loadMunicipios]);
+    // useMemo mantiene la referencia estable mientras no cambie ninguna dependencia
+    const value = useMemo(() => ({
+        ...contextData,
+        resolveOptions,
+        handleFinish,
+        handleSave,
+        minAge: EDAD_MINIMA_REGISTRO,
+        registerForm, // Expuesto desde useStudentFormHandlers
+        saveStep0Values, // Preservar valores del paso 0 al cambiar de paso
+        getStep0Values, // Valores preservados del paso 0 (para restaurar al volver)
+        // Estados del registro (expuestos desde useStudentFormHandlers)
+        loading,
+        error,
+        validationErrors,
+        registrationResult, // Resultado del registro para que la página pueda reaccionar
+        // Contactos de emergencia dinámicos
+        contactosIndices,
+        agregarContacto,
+        eliminarContacto,
+        // Documentación procesada (INSCRIPCION y TRASPASO para step Documentación)
+        documentacionProcesada,
+        documentacionTraspasoProcesada,
+        // Documentación raw del catálogo (para paso documentación con lógica padre-hijo dinámica)
+        documentacionRaw: documentacion,
+        documentacionTraspasoRaw: documentacionTraspaso,
+        // Exponer funciones de carga bajo demanda
+        loadDiscapacidades,
+        loadTiposParentesco,
+        loadDepartamentos: geographicData.loadDepartamentos,
+        loadProvincias: geographicData.loadProvincias,
+        loadMunicipios: geographicData.loadMunicipios,
+        // Estados de carreras y gestiones para componentes visuales
+        carrerasLoading,
+        gestionesLoading,
+        carrerasError,
+        gestionesError,
+        // Función para cargar gestiones (cuando tipo es ANTIGUO)
+        cargarGestiones,
+    }), [
+        contextData,
+        resolveOptions,
+        handleFinish,
+        handleSave,
+        registerForm,
+        saveStep0Values,
+        getStep0Values,
+        loading,
+        error,
+        validationErrors,
+        registrationResult,
+        contactosIndices,
+        agregarContacto,
+        eliminarContacto,
+        documentacionProcesada,
+        documentacionTraspasoProcesada,
+        documentacion,
+        documentacionTraspaso,
+        loadDiscapacidades,
+        loadTiposParentesco,
+        geographicData.loadDepartamentos,
+        geographicData.loadProvincias,
+        geographicData.loadMunicipios,
+        carrerasLoading,
+        gestionesLoading,
+        carrerasError,
+        gestionesError,
+        cargarGestiones,
+    ]);
 
     return (
         <StudentRegisterContext.Provider value={value}>

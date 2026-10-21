@@ -146,6 +146,7 @@ export const useCuadernoCurso = () => {
     return () => {
       cancelled = true;
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- init solo al cambiar de curso; bimestreDesdeUrl se aplica en el efecto siguiente
   }, [cursoIdResolved, construirEstadoBimestre, navigate]);
 
   useEffect(() => {

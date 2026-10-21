@@ -1,4 +1,3 @@
-import { IMunicipioRepository } from '../../domain/interfaces/repositories/IMunicipioRepository.js';
 import { Municipio as MunicipioModel } from '../database/models/municipio.js';
 import { BaseRepository } from './BaseRepository.js';
 import { MunicipalityMapper } from '../mappers/MunicipalityMapper.js';
@@ -6,26 +5,26 @@ import { MunicipalityMapper } from '../mappers/MunicipalityMapper.js';
 /**
  * Implementación del repositorio de municipios usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
- * 
+ *
  * Responsabilidades:
  * - Acceso a datos (consultas, persistencia)
  * - Delegar conversión ORM ↔ Entidad a MunicipalityMapper
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja acceso a datos
  * - Dependency Inversion: Usa MunicipalityMapper para conversiones (depende de abstracción)
- * 
+ *
  * Clean Architecture:
  * - Infrastructure Layer: Implementación concreta de IMunicipioRepository
  * - Usa MunicipalityMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
- * 
+ *
  * @implements {IMunicipioRepository}
- * 
+ *
  * Esta clase cumple con el contrato IMunicipioRepository:
  * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
  * - La especialización está en buildWhereClause(), no en métodos adicionales
  * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda
- * 
+ *
  * IMPORTANTE: Se eliminaron findByProvinciaId() y findByCodigo() porque son redundantes.
  * Usar en su lugar:
  * - findAll({ provinceId: X }) → Reemplaza findByProvinciaId()
@@ -43,7 +42,7 @@ export class MunicipalityRepository extends BaseRepository {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Delega la responsabilidad de mapeo a MunicipalityMapper
-   * 
+   *
    * @param {Object} model - Modelo Sequelize
    * @returns {Municipality|null} Entidad de dominio
    */
@@ -54,15 +53,15 @@ export class MunicipalityRepository extends BaseRepository {
   /**
    * Construye la cláusula WHERE para filtros específicos
    * Maneja todos los criterios de búsqueda de la entidad Municipality
-   * 
+   *
    * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
    * sin necesidad de crear métodos adicionales en el repositorio.
-   * 
+   *
    * Ejemplos de uso:
    * - findAll({ provinceId: 1 }) → Busca municipios de una provincia
    * - findBy({ code: 'LP' }) → Busca municipio por código
    * - findAll({ name: 'La Paz' }) → Busca por nombre exacto
-   * 
+   *
    * @param {Object} filters - Filtros de búsqueda
    *   - provinceId: ID de la provincia
    *   - name: Nombre del municipio (búsqueda exacta, para búsqueda de texto usar search())
@@ -103,30 +102,30 @@ export class MunicipalityRepository extends BaseRepository {
   /**
    * Mapea datos de dominio a formato del modelo Sequelize (para creación)
    * Delega la responsabilidad de mapeo a MunicipalityMapper
-   * 
+   *
    * @param {Municipality|Object} data - Entidad Municipality o objeto con datos de dominio
    * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return MunicipalityMapper.toModel(data);
   }
 
   /**
    * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
    * Delega la responsabilidad de mapeo a MunicipalityMapper
-   * 
+   *
    * @param {Municipality|Object} data - Entidad Municipality o objeto con datos de dominio
    * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return MunicipalityMapper.toModelForUpdate(data);
   }
 
   /**
    * Retorna el nombre de la colección en la respuesta JSON
-   * 
+   *
    * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {

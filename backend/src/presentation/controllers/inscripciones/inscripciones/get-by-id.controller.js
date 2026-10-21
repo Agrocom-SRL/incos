@@ -1,22 +1,22 @@
 /**
  * GET /api/v1/inscripciones/:id
  * Controller para obtener una inscripción por ID
- * 
+ *
  * Responsabilidades:
  * - Recibir peticiones HTTP GET para obtener inscripciones por ID
  * - Delegar lógica de negocio a GetEnrollmentByIdUseCase
  * - Formatear respuesta JSON estandarizada
- * 
+ *
  * Endpoint:
  * GET /api/v1/inscripciones/:id
- * 
+ *
  * Path Parameters:
  * - id: ID de la inscripción
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja la comunicación HTTP para obtener inscripciones por ID
  * - Dependency Inversion: Depende de GetEnrollmentByIdUseCase (abstracción), no de implementación concreta
- * 
+ *
  * Clean Architecture:
  * - Presentation Layer: Maneja HTTP request/response
  * - Depende de Application Layer (Use Cases inyectados)

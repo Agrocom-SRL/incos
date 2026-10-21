@@ -1,10 +1,10 @@
-import { NotFoundError } from '../../../domain/errors/AppError.js';
+import { ConflictError, NotFoundError } from '../../../domain/errors/AppError.js';
 
 /**
  * Use Case: UpdateStudentUseCase
  * Módulo: Estudiantes
  * Actualiza un estudiante existente con todos sus datos relacionados
- * 
+ *
  * Responsabilidades:
  * - Validar que el estudiante exista
  * - Validar que no exista otro estudiante con el mismo CI (si se actualiza CI)
@@ -25,7 +25,7 @@ import { NotFoundError } from '../../../domain/errors/AppError.js';
  * Principios SOLID aplicados:
  * - Single Responsibility: Solo maneja la actualización completa de estudiantes
  * - Dependency Inversion: Depende de abstracciones (repositorios inyectados)
- * 
+ *
  * Clean Architecture:
  * - Application Layer: Orquesta la lógica de negocio
  * - Depende de Repositories (Infrastructure) a través de abstracciones
@@ -427,7 +427,8 @@ export class UpdateStudentUseCase {
       try {
         const existingTransitability = await this.transitabilityRepository.findBy({ studentId });
         if (existingTransitability) {
-          const plain = existingTransitability.toPlainObject ? existingTransitability.toPlainObject() : existingTransitability;
+          const plain = existingTransitability.toPlainObject ? existingTransitability.toPlainObject()
+            : existingTransitability;
           await this.transitabilityRepository.delete(plain.id);
           this.logger.info('[Estudiantes] Registro de transitabilidad eliminado (tipo de admisión no es TRANSITABILIDAD)', {
             studentId,
@@ -477,7 +478,14 @@ export class UpdateStudentUseCase {
    * @param {number|null} gestionIngresoIdActual - Gestión actual en BD
    * @returns {boolean}
    */
-  _shouldUpdateStudentCode(existingAcademic, data, tipoAdmision, gestionIngresoId, tipoAdmisionActual, gestionIngresoIdActual) {
+  _shouldUpdateStudentCode(
+    existingAcademic,
+    data,
+    tipoAdmision,
+    gestionIngresoId,
+    tipoAdmisionActual,
+    gestionIngresoIdActual,
+  ) {
     const tieneDatosAcademicosPrevios = existingAcademic !== null;
     const tipoAdmisionCambio = tieneDatosAcademicosPrevios &&
       data.tipoAdmision !== undefined &&
@@ -502,7 +510,14 @@ export class UpdateStudentUseCase {
    * @param {number|null} gestionIngresoIdNuevo - Gestión que quedará
    * @throws {Error} Si falla la generación o actualización del código
    */
-  async _updateStudentCodeForNewManagement(studentId, gestionIngresoIdForCode, existingStudent, existingAcademicPlain, tipoAdmision, gestionIngresoIdNuevo) {
+  async _updateStudentCodeForNewManagement(
+    studentId,
+    gestionIngresoIdForCode,
+    existingStudent,
+    existingAcademicPlain,
+    tipoAdmision,
+    gestionIngresoIdNuevo,
+  ) {
     const nuevoCodigoEstudiante = await this.generateStudentCode(gestionIngresoIdForCode);
     await this.studentRepository.update(studentId, { studentCode: nuevoCodigoEstudiante });
     this.logger.info('[Estudiantes] Código de estudiante actualizado por cambio de tipo admisión/gestión (año de gestión)', {
@@ -512,7 +527,7 @@ export class UpdateStudentUseCase {
       tipoAdmisionAnterior: existingAcademicPlain?.admissionType ?? existingAcademicPlain?.tipoAdmision ?? null,
       tipoAdmisionNuevo: tipoAdmision,
       gestionIngresoIdAnterior: existingAcademicPlain?.managementId ?? existingAcademicPlain?.gestionIngresoId ?? null,
-      gestionIngresoIdNuevo: gestionIngresoIdNuevo,
+      gestionIngresoIdNuevo,
     });
   }
 
@@ -597,7 +612,7 @@ export class UpdateStudentUseCase {
   /**
    * Genera un nuevo código de estudiante basado en la gestión de ingreso y el correlativo.
    * Misma lógica que RegisterStudentUseCase.generateStudentCode.
-   * 
+   *
    * @param {number|null} gestionIngresoId - ID de la gestión de ingreso (null para estudiantes nuevos)
    * @returns {Promise<string>} Código del estudiante generado (YYYYNNNN)
    */
@@ -617,7 +632,7 @@ export class UpdateStudentUseCase {
       }
       gestionInfo = await this.managementRepository.findById(gestionIngresoId);
       if (!gestionInfo) {
-        throw new Error(`No se encontró la gestión con ID ${gestionIngresoId}`);
+        throw new NotFoundError(`Gestión con ID ${gestionIngresoId}`);
       }
 
       const gestionPlain = gestionInfo.toPlainObject ? gestionInfo.toPlainObject() : gestionInfo;
@@ -688,7 +703,7 @@ export class UpdateStudentUseCase {
 
   /**
    * Ejecuta el caso de uso de actualización de estudiante
-   * 
+   *
    * @param {number} studentId - ID del estudiante a actualizar
    * @param {Object} data - Datos a actualizar
    * @param {Object} data.student - Datos básicos del estudiante (opcional, actualización parcial)
@@ -697,11 +712,11 @@ export class UpdateStudentUseCase {
    * @param {Array} data.origins - Array de orígenes (opcional, reemplazo completo)
    * @param {Object} data.documentation - Objeto con entregas de documentos (opcional, reemplazo completo)
    * @returns {Promise<Object>} Estudiante actualizado con todos sus datos relacionados
-   * 
+   *
    * NOTA: Los datos académicos se manejan en otro módulo, no se incluyen aquí
    * NOTA: userId no se pasa porque actualmente no hay autenticación
    * Los repositorios tienen userId = null como default para los campos de auditoría
-   * 
+   *
    * ESTRATEGIA DE ACTUALIZACIÓN:
    * - Datos básicos del estudiante: actualización parcial (solo campos proporcionados)
    * - Relaciones (guardians, disabilities, origins, documentDeliveries): reemplazo completo
@@ -757,7 +772,7 @@ export class UpdateStudentUseCase {
           const anotherWithSameCI = list.length > 0 ? list[0] : null;
           if (anotherWithSameCI) {
             const expedicionLabel = expedicionToCheck ?? 'sin expedición';
-            throw new Error(
+            throw new ConflictError(
               `Ya existe otro estudiante con CI ${ciToCheck} ${expedicionLabel}`
             );
           }
@@ -863,7 +878,7 @@ export class UpdateStudentUseCase {
           for (const disabilityData of data.disabilities) {
             const disabilityToCreate = {
               ...disabilityData,
-              studentId: studentId,
+              studentId,
             };
             // NOTA: userId no se pasa porque actualmente no hay autenticación
             const disability = await this.studentDisabilityRepository.create(disabilityToCreate);
@@ -907,10 +922,12 @@ export class UpdateStudentUseCase {
               // Actualizar origen existente
               const updatePayload = {
                 countryId: originData.countryId !== undefined ? originData.countryId : null,
-                birthMunicipalityId: originData.birthMunicipalityId !== undefined ? originData.birthMunicipalityId : null,
+                birthMunicipalityId: originData.birthMunicipalityId !== undefined ? originData.birthMunicipalityId
+                  : null,
                 birthCity: originData.birthCity !== undefined ? originData.birthCity : null,
                 motherTongueId: originData.motherTongueId !== undefined ? originData.motherTongueId : null,
-                secondaryLanguageId: originData.secondaryLanguageId !== undefined ? originData.secondaryLanguageId : null,
+                secondaryLanguageId: originData.secondaryLanguageId !== undefined ? originData.secondaryLanguageId
+                  : null,
                 originType: originData.originType,
                 isPrincipal: originData.isPrincipal !== undefined ? originData.isPrincipal : true,
               };
@@ -921,7 +938,7 @@ export class UpdateStudentUseCase {
             } else {
               // Crear nuevo origen
               const createPayload = {
-                studentId: studentId,
+                studentId,
                 countryId: originData.countryId || null,
                 birthMunicipalityId: originData.birthMunicipalityId || null,
                 birthCity: originData.birthCity || null,
@@ -948,7 +965,7 @@ export class UpdateStudentUseCase {
         this.logger.info('[Estudiantes] Orígenes procesados', {
           studentId,
           total: origins.length,
-          tipos: origins.map(o => {
+          tipos: origins.map((o) => {
             const plain = o.toPlainObject ? o.toPlainObject() : o;
             return { tipo: plain.originType, principal: plain.isPrincipal };
           }),
@@ -967,7 +984,7 @@ export class UpdateStudentUseCase {
           null
         );
         const existingDeliveries = existingDeliveriesResult.studentDocumentDeliveries || [];
-        
+
         // Crear mapa de entregas existentes por documentacionId
         // NOTA: Un estudiante puede tener múltiples entregas para el mismo documento (historial)
         // Pero para actualización, tomamos la última entrega activa por documentacionId
@@ -976,7 +993,7 @@ export class UpdateStudentUseCase {
           const deliveryPlain = delivery.toPlainObject ? delivery.toPlainObject() : delivery;
           const docId = deliveryPlain.documentacionId;
           // Si ya existe una entrega para este documentacionId, mantener la más reciente (mayor ID)
-          if (!deliveryMapByDocumentacionId.has(docId) || 
+          if (!deliveryMapByDocumentacionId.has(docId) ||
               deliveryPlain.id > deliveryMapByDocumentacionId.get(docId).id) {
             deliveryMapByDocumentacionId.set(docId, deliveryPlain);
           }
@@ -1009,7 +1026,7 @@ export class UpdateStudentUseCase {
           for (const [docKey, docData] of Object.entries(data.documentation)) {
             const documentacionId = parseInt(docKey.replace('doc_', ''), 10);
 
-            if (!isNaN(documentacionId) && docData) {
+            if (!Number.isNaN(Number(documentacionId)) && docData) {
               if (tipoAdmisionParaDoc !== 'TRASPASO' && traspasoDocumentacionIds.includes(documentacionId)) {
                 continue;
               }
@@ -1035,7 +1052,7 @@ export class UpdateStudentUseCase {
 
               // Verificar si ya existe una entrega para este documentacionId
               const existingDelivery = deliveryMapByDocumentacionId.get(documentacionId);
-              
+
               if (existingDelivery) {
                 // 6.2.1. Actualizar entrega existente
                 // NOTA: userId no se pasa porque actualmente no hay autenticación
@@ -1053,7 +1070,7 @@ export class UpdateStudentUseCase {
                 // 6.2.2. Crear nueva entrega
                 const deliveryToCreate = {
                   ...deliveryData,
-                  studentId: studentId,
+                  studentId,
                   documentacionId,
                 };
                 // NOTA: userId no se pasa porque actualmente no hay autenticación
@@ -1086,11 +1103,11 @@ export class UpdateStudentUseCase {
 
           this.logger.info('[Estudiantes] Entregas de documentos procesadas', {
             studentId,
-            actualizadas: documentDeliveries.filter(d => {
+            actualizadas: documentDeliveries.filter((d) => {
               const plain = d.toPlainObject ? d.toPlainObject() : d;
               return deliveryMapByDocumentacionId.has(plain.documentacionId);
             }).length,
-            creadas: documentDeliveries.filter(d => {
+            creadas: documentDeliveries.filter((d) => {
               const plain = d.toPlainObject ? d.toPlainObject() : d;
               return !deliveryMapByDocumentacionId.has(plain.documentacionId);
             }).length,
@@ -1136,12 +1153,14 @@ export class UpdateStudentUseCase {
         const existingAcademicPlain = existingAcademic
           ? (existingAcademic.toPlainObject ? existingAcademic.toPlainObject() : existingAcademic)
           : null;
-        
+
         const tipoAdmisionActual = existingAcademicPlain?.admissionType || existingAcademicPlain?.tipoAdmision || null;
-        const gestionIngresoIdActual = existingAcademicPlain?.managementId || existingAcademicPlain?.gestionIngresoId || null;
+        const gestionIngresoIdActual = existingAcademicPlain?.managementId || existingAcademicPlain?.gestionIngresoId
+          || null;
 
         // Resolver tipo, gestión y carrera (NUEVO → gestión vigente; resto → valores enviados)
-        const { tipoAdmision, gestionIngresoId, carreraId } = await this._resolveGestionAndCarreraForAcademicUpdate(data, studentId);
+        const { tipoAdmision, gestionIngresoId,
+          carreraId } = await this._resolveGestionAndCarreraForAcademicUpdate(data, studentId);
 
         // Eliminar transitabilidad/traspaso si el tipo final no corresponde
         await this._removeTransitabilidadAndTraspasoIfNotApplicable(studentId, data, tipoAdmision);
@@ -1180,7 +1199,14 @@ export class UpdateStudentUseCase {
         await this._ensureAdmisionCorrelativoForGestionIfNeeded(gestionIngresoId);
 
         // Persistir datos académicos (update o create)
-        await this._updateOrCreateAcademicData(studentId, data, existingAcademic, tipoAdmision, gestionIngresoId, carreraId);
+        await this._updateOrCreateAcademicData(
+          studentId,
+          data,
+          existingAcademic,
+          tipoAdmision,
+          gestionIngresoId,
+          carreraId,
+        );
       }
 
       // 8. Obtener el estudiante actualizado con todas sus relaciones

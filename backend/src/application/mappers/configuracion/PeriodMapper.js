@@ -21,8 +21,8 @@ export class PeriodMapper {
   static entityToPresentation(period) {
     return entityToPresentation(period);
   }
+
   static entitiesToPresentation(periods) {
     return entitiesToPresentation(periods);
   }
 }
-

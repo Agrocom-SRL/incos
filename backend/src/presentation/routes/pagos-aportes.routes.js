@@ -367,9 +367,9 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
                 next();
             });
         },
-        registerPagoAporteValidator,   // 1. Validator
-        validateRequest,               // 2. Middleware que procesa errores
-        (req, res, next) => controllers.registerPagoAporteController.handle(req, res, next)  // 3. Controller
+        registerPagoAporteValidator, // 1. Validator
+        validateRequest, // 2. Middleware que procesa errores
+        (req, res, next) => controllers.registerPagoAporteController.handle(req, res, next) // 3. Controller
     );
 
     // ============================================

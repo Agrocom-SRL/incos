@@ -3,36 +3,36 @@ import { idValidator } from '../common/id.validator.js';
 
 /**
  * Validador para asignar beca a estudiante (POST /api/v1/estudiantes/:id/scholarships)
- * 
+ *
  * Valida la estructura de datos que viene del frontend:
  * - :id en el path (ID del estudiante, validado con idValidator común)
  * - beca_descuento_id en el body (requerido)
  * - observaciones en el body (opcional, puede ser null, vacío o string con máximo 1000 caracteres)
- * 
+ *
  * NOTA: El ID del estudiante viene en el parámetro de la ruta, no en el body.
  * Esto evita redundancia y sigue el patrón RESTful estándar.
- * 
+ *
  * NOTA: Este validator valida la estructura del frontend.
  * El controller transformará estos datos a la estructura que espera el use case.
- * 
+ *
  * NOTA: La gestión se obtiene automáticamente de la configuración del sistema.
  * La fecha de solicitud se establece automáticamente como la fecha actual.
  * El estado se establece automáticamente como PENDIENTE.
- * 
+ *
  * Campos requeridos:
  * - :id (path parameter): ID del estudiante
  * - beca_descuento_id (body): ID de la beca/descuento
- * 
+ *
  * Campos opcionales:
  * - observaciones (body): Observaciones (puede ser null, vacío o string con máximo 1000 caracteres)
- * 
+ *
  * Ubicación: presentation/validators/estudiantes (validators específicos del módulo)
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo valida estructura y tipos de datos del request
  * - La lógica de negocio (validaciones complejas) está en el use case
  * - DRY: Reutiliza idValidator común para validar el parámetro :id
- * 
+ *
  * @example
  * import { assignBecaValidator } from '../validators/estudiantes/index.js';
  * router.post('/:id/scholarships', assignBecaValidator, validateRequest, controller);

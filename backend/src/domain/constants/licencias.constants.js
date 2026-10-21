@@ -1,6 +1,6 @@
 /**
  * Constantes del dominio relacionadas con Licencias
- * 
+ *
  * Estas constantes son parte del dominio de negocio y pueden ser usadas
  * por entidades, value objects y servicios de dominio relacionados con licencias.
  */
@@ -42,4 +42,3 @@ export const ESTADOS_LICENCIAS = {
  * Array de estados de licencias válidos (útil para validators)
  */
 export const ESTADOS_LICENCIAS_VALUES = Object.values(ESTADOS_LICENCIAS);
-

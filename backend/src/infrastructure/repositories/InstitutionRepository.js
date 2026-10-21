@@ -1,4 +1,3 @@
-import { IInstitucionRepository } from '../../domain/interfaces/repositories/IInstitucionRepository.js';
 import { Institucion as InstitucionModel } from '../database/models/institucion.js';
 import { BaseRepository } from './BaseRepository.js';
 import { InstitutionMapper } from '../mappers/InstitutionMapper.js';
@@ -94,14 +93,14 @@ export class InstitutionRepository extends BaseRepository {
   /**
    * Mapeo de datos de dominio → modelo Sequelize (INSERT).
    */
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return InstitutionMapper.toModel(data);
   }
 
   /**
    * Mapeo de datos de dominio → modelo Sequelize (UPDATE).
    */
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return InstitutionMapper.toModelForUpdate(data);
   }
 
@@ -112,4 +111,3 @@ export class InstitutionRepository extends BaseRepository {
     return 'institutions';
   }
 }
-

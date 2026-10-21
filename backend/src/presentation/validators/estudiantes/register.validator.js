@@ -2,25 +2,25 @@ import { body } from 'express-validator';
 
 /**
  * Validador para registro de estudiantes (POST /api/v1/estudiantes)
- * 
+ *
  * Valida la estructura de datos que viene del frontend:
  * - Campos planos en el root (ci, nombres, apellidoPaterno, etc.)
  * - contactosEmergencia como array
  * - documentacion como objeto con keys doc_1, doc_2, etc.
- * 
+ *
  * NOTA: Este validator valida la estructura del frontend.
  * El controller transformará estos datos a la estructura que espera el use case.
- * 
+ *
  * Campos requeridos basados en schema SQL (NOT NULL):
  * - estudiantes: ci, nombres, fechaNacimiento, genero, celular
  * - estudiantes_apoderados: Todos los campos son opcionales (NULL permitido)
- * 
+ *
  * Ubicación: presentation/validators/estudiantes (validators específicos del módulo)
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo valida estructura y tipos de datos del request
  * - La lógica de negocio (validaciones complejas) está en el use case
- * 
+ *
  * @example
  * import { registerStudentValidator } from '../validators/estudiantes/index.js';
  * router.post('/', registerStudentValidator, validateRequest, controller);
@@ -98,7 +98,7 @@ export const registerStudentValidator = [
       fecha.setHours(0, 0, 0, 0);
       const edadMinima = new Date();
       edadMinima.setFullYear(hoy.getFullYear() - 100); // Máximo 100 años
-      
+
       // Aceptar edad cumplida hasta la fecha (puede ser hoy)
       if (fecha > hoy) {
         throw new Error('La fecha de nacimiento no puede ser futura');
@@ -526,4 +526,3 @@ export const registerStudentValidator = [
       return true;
     }),
 ];
-

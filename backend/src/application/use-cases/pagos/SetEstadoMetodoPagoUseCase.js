@@ -1,5 +1,6 @@
 import { NotFoundError } from '../../../domain/errors/AppError.js';
 import { PaymentMethodMapper } from '../../mappers/pagos/index.js';
+import { parseBooleano } from '../../utils/validacionEntrada.js';
 
 /**
  * Use Case: SetEstadoMetodoPagoUseCase
@@ -25,7 +26,7 @@ export class SetEstadoMetodoPagoUseCase {
     const existing = await this.paymentMethodRepository.findById(id);
     if (!existing) throw new NotFoundError('método de pago');
 
-    const estado = Boolean(activo);
+    const estado = parseBooleano(activo, 'activo');
     const updated = await this.paymentMethodRepository.update(id, { active: estado }, userId);
 
     this.logger.info('[Pagos] Estado de método de pago actualizado', { id, activo: estado });

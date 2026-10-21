@@ -2,7 +2,7 @@
 -- SEEDER permisos · módulo Capacitación (CAP)
 -- Sin ids: id por AUTO_INCREMENT; tablas hijas referencian por CÓDIGO.
 -- Orden: roles (55) → usuarios-admin (56) → permisos+acciones+roles por módulo (57-65).
--- Roles con acceso (primer corte): RECTOR, DIR_ADMIN, SEC_ADMIN (control total).
+-- Roles con acceso (primer corte): RECTOR, DIR_ADMIN, SEC_ADMIN. SEC_ADMIN sin ELIMINAR/ACTIVAR en curso ni ELIMINAR en horario.
 -- ============================================
 
 USE instituto_incos;
@@ -13,14 +13,16 @@ SET FOREIGN_KEY_CHECKS = 0;
 INSERT INTO grupos_ui (codigo, nombre, dominio, orden, activo, created_at, updated_at) VALUES
 ('cap_cursos', 'Cursos de capacitación', 'CAPACITACION', 1, 1, NOW(), NOW()),
 ('cap_participantes', 'Participantes', 'CAPACITACION', 2, 1, NOW(), NOW()),
-('cap_inscripciones', 'Inscripciones y pagos', 'CAPACITACION', 3, 1, NOW(), NOW());
+('cap_inscripciones', 'Inscripciones y pagos', 'CAPACITACION', 3, 1, NOW(), NOW()),
+('cap_grupos', 'Grupos y horarios', 'CAPACITACION', 4, 1, NOW(), NOW());
 
 -- 1) Permisos del módulo CAP
 INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ruta_sidebar, activo, created_at, updated_at) VALUES
 ('capacitacion.curso', 'Cursos de capacitación: listar, ver detalle, crear, editar, eliminar y activar/desactivar', NULL, 'CAPACITACION', 'CAP', 'cap_cursos', '/capacitacion/cursos', 1, NOW(), NOW()),
 ('capacitacion.participante', 'Participantes: listar, ver detalle, crear y editar', NULL, 'CAPACITACION', 'CAP', 'cap_participantes', '/capacitacion/participantes', 1, NOW(), NOW()),
 ('capacitacion.inscripcion', 'Inscripciones: listar, ver detalle, crear y eliminar', NULL, 'CAPACITACION', 'CAP', 'cap_inscripciones', '/capacitacion/inscripciones', 1, NOW(), NOW()),
-('capacitacion.pago', 'Pagos de capacitación: registrar pago y exportar', NULL, 'CAPACITACION', 'CAP', 'cap_inscripciones', '/capacitacion/inscripciones', 1, NOW(), NOW());
+('capacitacion.pago', 'Pagos de capacitación: registrar pago y exportar', NULL, 'CAPACITACION', 'CAP', 'cap_inscripciones', '/capacitacion/inscripciones', 1, NOW(), NOW()),
+('capacitacion.grupo', 'Grupos y horarios de capacitación', NULL, 'CAPACITACION', 'CAP', 'cap_grupos', '/capacitacion/grupos', 1, NOW(), NOW());
 
 -- 2) Acciones de los permisos del módulo CAP
 INSERT INTO permiso_acciones (permiso_id, accion, activo, created_at, updated_at)
@@ -50,6 +52,11 @@ JOIN (
   UNION ALL SELECT 'capacitacion.inscripcion', 'EXPORTAR'
   UNION ALL SELECT 'capacitacion.pago', 'CREAR'
   UNION ALL SELECT 'capacitacion.pago', 'EXPORTAR'
+  UNION ALL SELECT 'capacitacion.grupo', 'LISTAR'
+  UNION ALL SELECT 'capacitacion.grupo', 'DETALLE'
+  UNION ALL SELECT 'capacitacion.grupo', 'CREAR'
+  UNION ALL SELECT 'capacitacion.grupo', 'EDITAR'
+  UNION ALL SELECT 'capacitacion.grupo', 'ELIMINAR'
 ) AS x ON x.codigo = p.codigo;
 
 -- 3) Roles-permisos del módulo CAP (RECTOR, DIR_ADMIN, SEC_ADMIN; ADMIN_SISTEMA hereda por vista)
@@ -106,6 +113,20 @@ FROM (
   UNION ALL SELECT 'DIR_ADMIN', 'capacitacion.pago', 'CREAR'
   UNION ALL SELECT 'DIR_ADMIN', 'capacitacion.pago', 'EXPORTAR'
   UNION ALL SELECT 'SEC_ADMIN', 'capacitacion.pago', 'CREAR'
+  UNION ALL SELECT 'RECTOR', 'capacitacion.grupo', 'LISTAR'
+  UNION ALL SELECT 'RECTOR', 'capacitacion.grupo', 'DETALLE'
+  UNION ALL SELECT 'RECTOR', 'capacitacion.grupo', 'CREAR'
+  UNION ALL SELECT 'RECTOR', 'capacitacion.grupo', 'EDITAR'
+  UNION ALL SELECT 'RECTOR', 'capacitacion.grupo', 'ELIMINAR'
+  UNION ALL SELECT 'DIR_ADMIN', 'capacitacion.grupo', 'LISTAR'
+  UNION ALL SELECT 'DIR_ADMIN', 'capacitacion.grupo', 'DETALLE'
+  UNION ALL SELECT 'DIR_ADMIN', 'capacitacion.grupo', 'CREAR'
+  UNION ALL SELECT 'DIR_ADMIN', 'capacitacion.grupo', 'EDITAR'
+  UNION ALL SELECT 'DIR_ADMIN', 'capacitacion.grupo', 'ELIMINAR'
+  UNION ALL SELECT 'SEC_ADMIN', 'capacitacion.grupo', 'LISTAR'
+  UNION ALL SELECT 'SEC_ADMIN', 'capacitacion.grupo', 'DETALLE'
+  UNION ALL SELECT 'SEC_ADMIN', 'capacitacion.grupo', 'CREAR'
+  UNION ALL SELECT 'SEC_ADMIN', 'capacitacion.grupo', 'EDITAR'
 ) AS g
 JOIN roles r ON r.codigo = g.rol
 JOIN permisos p ON p.codigo = g.codigo;

@@ -167,6 +167,7 @@ export const useInscripcionNuevaStudentSearch = (options = {}) => {
         });
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- selectedStudent se lee solo para evitar re-hidratar; incluirlo provocaría bucle
   }, [studentById, studentId]);
 
   // Cuando se cargó estudiante por ID tras selección en búsqueda (sin studentId), enriquecer selectedStudent con datos académicos

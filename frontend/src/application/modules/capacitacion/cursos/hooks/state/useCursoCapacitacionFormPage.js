@@ -2,141 +2,37 @@
  * Hook de pantalla: alta/edición de un curso de capacitación (CAP · CREAR/EDITAR).
  *
  * Gemelo de `useBancoForm` (Finanzas · Config. de pagos): secciones declarativas
- * para `CfgFormWorkspace`, precarga en modo edición (incluye horarioIds de la
- * junction), submit con payload EXACTO del backend
+ * (`config/cursoFormSections`) para el wizard, precarga en modo edición
+ * (grupos con sus horarios y requisitos), submit con payload EXACTO del backend
  * (`create/updateCursoCapacitacionValidator`) y navegación a la ficha.
+ *
+ * Costos condicionales: «El curso tiene costo» y «Cobra matrícula» habilitan y
+ * exigen su monto; apagados lo limpian (y viajan 0). Los horarios de cada grupo
+ * se marcan con casillas sobre el catálogo (sin IDs hardcodeados); si falta uno,
+ * un modal lo crea (`useCursoHorarioCrear`). El aula es opcional y va por grupo
+ * (catálogo cargado una vez por el provider).
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { App, Form } from 'antd';
-import dayjs from 'dayjs';
 import { useCursoCapacitacionFormContext } from '@application-capacitacion/cursos/hooks/context/useCursoCapacitacionFormContext';
 import {
   mapCursoToFormValues,
   mapFormValuesToCursoPayload,
 } from '@application-capacitacion/cursos/mappers/cursoCapacitacionMapper';
+import { createCursoFormSections } from '@application-capacitacion/cursos/config/cursoFormSections';
+import { useCursoHorarioCrear } from '@application-capacitacion/cursos/hooks/state/useCursoHorarioCrear';
+import { buildHorarioOptions } from '@application-capacitacion/utils/horarioCapacitacion';
+import { hayGrupoSinNombre } from '@application-capacitacion/utils/gruposCapacitacion';
 import {
   CURSOS_CAP_LIST_PATH,
   CAP_CURSOS_MENU_KEY,
   cursoCapDetallePath,
 } from '@application-capacitacion/config/paths';
 
-/** Secciones declarativas del formulario (CfgFormWorkspace). */
-const createCursoFormSections = ({
-  aulas,
-  aulasDisponible,
-  loadingAulas,
-  horarioOptions,
-  loadingHorarios,
-  aulaSeleccionada,
-}) => ({
-  datosCurso: {
-    title: 'Datos del curso',
-    description:
-      'Identificación, costo y vigencia del curso corto. El cupo es informativo: no bloquea inscripciones.',
-    fields: [
-      {
-        name: 'titulo',
-        label: 'Título',
-        type: 'input',
-        required: true,
-        span: 12,
-        placeholder: 'Ej. Word avanzado',
-        maxLength: 200,
-      },
-      {
-        name: 'costo',
-        label: 'Costo (Bs)',
-        type: 'number',
-        required: true,
-        span: 12,
-        min: 0,
-        addonBefore: 'Bs',
-        placeholder: '0',
-      },
-      {
-        name: 'cupoMaximo',
-        label: 'Cupo máximo',
-        type: 'number',
-        required: true,
-        span: 12,
-        min: 1,
-        placeholder: '30',
-      },
-      {
-        name: 'fechaInicio',
-        label: 'Fecha de inicio',
-        type: 'date',
-        required: true,
-        span: 12,
-      },
-      {
-        name: 'fechaFin',
-        label: 'Fecha de fin',
-        type: 'date',
-        required: true,
-        span: 12,
-        dependencies: ['fechaInicio'],
-        rules: [
-          ({ getFieldValue }) => ({
-            validator: (_, value) => {
-              const inicio = getFieldValue('fechaInicio');
-              if (!value || !inicio || !dayjs(value).isBefore(dayjs(inicio), 'day')) {
-                return Promise.resolve();
-              }
-              return Promise.reject(
-                new Error('La fecha de fin no puede ser anterior a la de inicio'),
-              );
-            },
-          }),
-        ],
-      },
-      {
-        name: 'descripcion',
-        label: 'Descripción (opcional)',
-        type: 'textarea',
-        span: 24,
-        rows: 3,
-        maxLength: 5000,
-        placeholder: 'Contenido, requisitos o público objetivo del curso',
-      },
-    ],
-  },
-  horarioAula: {
-    title: 'Horario y aula',
-    description:
-      'El aula determina qué bloques de horario están disponibles. Seleccione primero el aula; los bloques ya ocupados por un paralelo académico u otro curso quedan deshabilitados. El aula es opcional y se comparte con la oferta formal.',
-    fields: [
-      {
-        name: 'aulaId',
-        label: 'Aula (opcional)',
-        type: 'select',
-        span: 12,
-        options: aulas,
-        allowClear: true,
-        disabled: !aulasDisponible,
-        loading: loadingAulas,
-        placeholder: aulasDisponible
-          ? 'Seleccione un aula'
-          : 'Catálogo de aulas no disponible para su rol',
-      },
-      {
-        name: 'horarioIds',
-        label: 'Bloques de horario',
-        type: 'select',
-        mode: 'multiple',
-        span: 12,
-        options: horarioOptions,
-        loading: loadingHorarios,
-        disabled: !aulaSeleccionada,
-        placeholder: aulaSeleccionada
-          ? 'Seleccione uno o más bloques'
-          : 'Seleccione primero un aula',
-      },
-    ],
-  },
-});
+const DESCRIPCION_REQUISITOS =
+  'Documentos o condiciones que debe cumplir el participante. Se puede inscribir sin cumplirlos (queda pendiente), pero solo pasa a «Inscrito» con los obligatorios entregados.';
 
 export const useCursoCapacitacionFormPage = (mode = 'create') => {
   const isEditMode = mode === 'edit';
@@ -155,47 +51,41 @@ export const useCursoCapacitacionFormPage = (mode = 'create') => {
     aulas,
     loadingAulas,
     aulasDisponible,
-    horariosDisponibles,
+    horariosCatalogo,
     loadingHorarios,
-    cargarHorariosDisponibles,
+    errorHorarios,
+    creandoHorario,
+    crearHorario,
   } = useCursoCapacitacionFormContext();
 
   const [error, setError] = useState(null);
+  const [stepError, setStepError] = useState('');
 
-  // El aula gobierna la disponibilidad de bloques de horario: se recarga al
-  // elegirla/cambiarla y también al montar si ya viene precargada (edición).
-  const aulaId = Form.useWatch('aulaId', form);
+  // Los interruptores de costo gobiernan qué montos se piden.
+  // `preserve: true`: en los pasos 2 y 3 los interruptores ya no están montados y sin esto
+  // `useWatch` los vería apagados, lo que borraba los montos escritos en el paso 1.
+  const tieneCosto = Form.useWatch('tieneCosto', { form, preserve: true }) === true;
+  const cobraMatricula = Form.useWatch('cobraMatricula', { form, preserve: true }) === true;
+
+  // Apagar un interruptor limpia su monto (se enviará 0).
   useEffect(() => {
-    cargarHorariosDisponibles(aulaId, isEditMode ? cursoId : undefined);
-  }, [aulaId, isEditMode, cursoId, cargarHorariosDisponibles]);
+    if (!tieneCosto) form.setFieldsValue({ costo: undefined });
+  }, [tieneCosto, form]);
+  useEffect(() => {
+    if (!cobraMatricula) form.setFieldsValue({ costoMatricula: undefined });
+  }, [cobraMatricula, form]);
 
-  const aulaSeleccionada = aulaId != null && aulaId !== '';
+  // Catálogo + horarios ya asignados a los grupos (la edición nunca pierde una selección).
+  const { options: horarioOptions, diaById: horarioDias } = useMemo(
+    () =>
+      buildHorarioOptions(
+        horariosCatalogo,
+        (curso?.grupos ?? []).flatMap((g) => g.horarios),
+      ),
+    [horariosCatalogo, curso?.grupos],
+  );
 
-  const horarioOptions = useMemo(() => {
-    const porTurno = new Map();
-    for (const h of horariosDisponibles) {
-      const turno = h.turno || 'Sin turno';
-      if (!porTurno.has(turno)) porTurno.set(turno, []);
-      porTurno.get(turno).push({
-        value: h.horarioId,
-        label: h.ocupado ? `${h.bloqueLabel} · Ocupado` : h.bloqueLabel,
-        disabled: h.ocupado,
-      });
-    }
-    return Array.from(porTurno.entries()).map(([turno, options]) => ({
-      label: turno,
-      title: turno,
-      options,
-    }));
-  }, [horariosDisponibles]);
-
-  const horarioTurnoById = useMemo(() => {
-    const map = {};
-    for (const h of horariosDisponibles) {
-      map[h.horarioId] = h.turno;
-    }
-    return map;
-  }, [horariosDisponibles]);
+  const horarioCrear = useCursoHorarioCrear({ form, crearHorario });
 
   const pageTitle = isEditMode ? 'Editar curso de capacitación' : 'Nuevo curso de capacitación';
   const permisoAccion = isEditMode ? 'EDITAR' : 'CREAR';
@@ -214,7 +104,7 @@ export const useCursoCapacitacionFormPage = (mode = 'create') => {
     [returnListPath, pageTitle],
   );
 
-  // Precarga: alta → defaults; edición → ficha del curso (con horarioIds).
+  // Precarga: alta → defaults; edición → ficha del curso (grupos y requisitos).
   useEffect(() => {
     if (!isEditMode) {
       form.setFieldsValue(mapCursoToFormValues(null));
@@ -231,7 +121,12 @@ export const useCursoCapacitacionFormPage = (mode = 'create') => {
   const handleSubmit = useCallback(async () => {
     setError(null);
     try {
-      const values = await form.validateFields();
+      await form.validateFields();
+      // Valores completos del store: incluye los horarios de cada grupo, que no son campos registrados.
+      const values = form.getFieldsValue(true);
+      if (hayGrupoSinNombre(values.grupos)) {
+        throw new Error('Todos los grupos deben tener nombre');
+      }
       const payload = mapFormValuesToCursoPayload(values);
       const resultado = await guardarCurso({ id: isEditMode ? cursoId : null, payload });
       if (!resultado?.success) {
@@ -275,15 +170,67 @@ export const useCursoCapacitacionFormPage = (mode = 'create') => {
   const formSections = useMemo(
     () =>
       createCursoFormSections({
-        aulas,
-        aulasDisponible,
-        loadingAulas,
-        horarioOptions,
-        loadingHorarios,
-        aulaSeleccionada,
+        tieneCosto,
+        cobraMatricula,
       }),
-    [aulas, aulasDisponible, loadingAulas, horarioOptions, loadingHorarios, aulaSeleccionada],
+    [tieneCosto, cobraMatricula],
   );
+
+  /**
+   * Pasos del wizard (mismo diseño `tabs` que el alta de estudiantes e inscripciones):
+   * 1 datos y costos, 2 grupos y horarios, 3 requisitos. Las secciones 2 y 3 son
+   * editores propios (`renderSectionContent` en la página).
+   */
+  const wizardSteps = useMemo(
+    () => [
+      {
+        title: 'Datos del curso',
+        formTitle: pageTitle,
+        description: formSections.datosCurso?.description,
+        sections: ['datosCurso', 'costos'],
+        config: {
+          datosCurso: formSections.datosCurso,
+          costos: formSections.costos,
+        },
+      },
+      {
+        title: 'Grupos y horarios',
+        formTitle: pageTitle,
+        description: formSections.gruposHorarios?.description,
+        sections: ['gruposHorarios'],
+        config: {
+          gruposHorarios: {
+            title: formSections.gruposHorarios?.title,
+            description: formSections.gruposHorarios?.description,
+          },
+        },
+      },
+      {
+        title: 'Requisitos de inscripción',
+        formTitle: pageTitle,
+        description: DESCRIPCION_REQUISITOS,
+        sections: ['requisitos'],
+        config: { requisitos: { title: 'Requisitos de inscripción', description: DESCRIPCION_REQUISITOS } },
+      },
+    ],
+    [pageTitle, formSections],
+  );
+
+  /** Valida el paso visible antes de avanzar: lo montado se valida; los grupos exigen nombre. */
+  const onValidateBeforeNext = useCallback(
+    async (stepNumber) => {
+      setStepError('');
+      await form.validateFields();
+      if (stepNumber === 2 && hayGrupoSinNombre(form.getFieldValue('grupos'))) {
+        throw new Error('Todos los grupos deben tener nombre');
+      }
+    },
+    [form],
+  );
+
+  const handleValidationError = useCallback((err) => {
+    setStepError(err?.errorFields ? 'Revise los campos obligatorios' : err?.message || 'Revise los datos del paso actual');
+  }, []);
 
   return {
     form,
@@ -295,7 +242,19 @@ export const useCursoCapacitacionFormPage = (mode = 'create') => {
     submitLoading: saving,
     error: error || (isEditMode ? errorCurso : null),
     formSections,
-    horarioTurnoById,
+    wizardSteps,
+    onValidateBeforeNext,
+    handleValidationError,
+    stepError,
+    horarioOptions,
+    horarioDias,
+    loadingHorarios,
+    errorHorarios,
+    creandoHorario,
+    horarioCrear,
+    aulas,
+    loadingAulas,
+    aulasDisponible,
     handleVolver,
     handleSubmit,
     isInvalidEditId,

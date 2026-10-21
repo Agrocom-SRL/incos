@@ -10,55 +10,55 @@ export class StudentDocument extends BaseEntity {
     super(data);
     // Solo inicializar campos si fueron proporcionados explícitamente
     // Esto permite usar attributes limitados sin inicializar campos no solicitados
-    if (data.hasOwnProperty('studentId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'studentId')) {
       this.studentId = data.studentId;
     }
-    if (data.hasOwnProperty('tipoDocumento')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'tipoDocumento')) {
       this.tipoDocumento = data.tipoDocumento; // INSCRIPCION, LICENCIA, PASANTIA, etc.
     }
-    if (data.hasOwnProperty('documentacionId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'documentacionId')) {
       this.documentacionId = data.documentacionId; // Documento específico de ese tipo (opcional)
     }
-    if (data.hasOwnProperty('fileName')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'fileName')) {
       this.fileName = data.fileName;
     }
-    if (data.hasOwnProperty('filePath')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'filePath')) {
       this.filePath = data.filePath;
     }
-    if (data.hasOwnProperty('extension')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'extension')) {
       this.extension = data.extension;
     }
-    if (data.hasOwnProperty('tipoMime')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'tipoMime')) {
       this.tipoMime = data.tipoMime;
     }
-    if (data.hasOwnProperty('contieneMultipleDocumentos')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'contieneMultipleDocumentos')) {
       this.contieneMultipleDocumentos = data.contieneMultipleDocumentos;
-    } else if (!data.hasOwnProperty('studentId')) {
+    } else if (!Object.prototype.hasOwnProperty.call(data, 'studentId')) {
       // Solo usar valor por defecto si no se está usando attributes limitados
       this.contieneMultipleDocumentos = false;
     }
-    if (data.hasOwnProperty('verified')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'verified')) {
       this.verified = data.verified;
-    } else if (!data.hasOwnProperty('studentId')) {
+    } else if (!Object.prototype.hasOwnProperty.call(data, 'studentId')) {
       // Solo usar valor por defecto si no se está usando attributes limitados
       this.verified = false;
     }
-    if (data.hasOwnProperty('verifiedBy')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'verifiedBy')) {
       this.verifiedBy = data.verifiedBy;
     }
-    if (data.hasOwnProperty('verificationDate')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'verificationDate')) {
       this.verificationDate = data.verificationDate;
     }
-    if (data.hasOwnProperty('verificationObservations')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'verificationObservations')) {
       this.verificationObservations = data.verificationObservations;
     }
-    if (data.hasOwnProperty('state')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'state')) {
       this.state = data.state;
-    } else if (!data.hasOwnProperty('studentId')) {
+    } else if (!Object.prototype.hasOwnProperty.call(data, 'studentId')) {
       // Solo usar valor por defecto si no se está usando attributes limitados
       this.state = ESTADOS_DOCUMENTO.PENDIENTE;
     }
-    if (data.hasOwnProperty('rejectionReason')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'rejectionReason')) {
       this.rejectionReason = data.rejectionReason;
     }
   }
@@ -87,48 +87,48 @@ export class StudentDocument extends BaseEntity {
    */
   toPlainObject() {
     const plainObject = super.toPlainObject();
-    
+
     // Solo incluir campos que fueron inicializados (existen en this)
-    if (this.hasOwnProperty('studentId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'studentId')) {
       plainObject.studentId = this.studentId;
     }
-    if (this.hasOwnProperty('tipoDocumento')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'tipoDocumento')) {
       plainObject.tipoDocumento = this.tipoDocumento;
     }
-    if (this.hasOwnProperty('documentacionId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'documentacionId')) {
       plainObject.documentacionId = this.documentacionId;
     }
-    if (this.hasOwnProperty('fileName')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'fileName')) {
       plainObject.fileName = this.fileName;
     }
-    if (this.hasOwnProperty('filePath')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'filePath')) {
       plainObject.filePath = this.filePath;
     }
-    if (this.hasOwnProperty('extension')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'extension')) {
       plainObject.extension = this.extension;
     }
-    if (this.hasOwnProperty('tipoMime')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'tipoMime')) {
       plainObject.tipoMime = this.tipoMime;
     }
-    if (this.hasOwnProperty('contieneMultipleDocumentos')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'contieneMultipleDocumentos')) {
       plainObject.contieneMultipleDocumentos = this.contieneMultipleDocumentos;
     }
-    if (this.hasOwnProperty('verified')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'verified')) {
       plainObject.verified = this.verified;
     }
-    if (this.hasOwnProperty('verifiedBy')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'verifiedBy')) {
       plainObject.verifiedBy = this.verifiedBy;
     }
-    if (this.hasOwnProperty('verificationDate')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'verificationDate')) {
       plainObject.verificationDate = this.verificationDate;
     }
-    if (this.hasOwnProperty('verificationObservations')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'verificationObservations')) {
       plainObject.verificationObservations = this.verificationObservations;
     }
-    if (this.hasOwnProperty('state')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'state')) {
       plainObject.state = this.state;
     }
-    if (this.hasOwnProperty('rejectionReason')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'rejectionReason')) {
       plainObject.rejectionReason = this.rejectionReason;
     }
 

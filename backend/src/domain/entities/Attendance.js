@@ -9,22 +9,22 @@ export class Attendance extends BaseEntity {
     constructor(data = {}) {
         super(data);
 
-        if (data.hasOwnProperty('subjectEnrollmentId')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'subjectEnrollmentId')) {
             this.subjectEnrollmentId = data.subjectEnrollmentId;
         }
-        if (data.hasOwnProperty('classSessionId')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'classSessionId')) {
             this.classSessionId = data.classSessionId;
         }
-        if (data.hasOwnProperty('status')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'status')) {
             this.status = data.status;
         }
-        if (data.hasOwnProperty('observations')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'observations')) {
             this.observations = data.observations;
         }
-        if (data.hasOwnProperty('registeredBy')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'registeredBy')) {
             this.registeredBy = data.registeredBy;
         }
-        if (data.hasOwnProperty('registeredAt')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'registeredAt')) {
             this.registeredAt = data.registeredAt;
         }
     }
@@ -37,14 +37,14 @@ export class Attendance extends BaseEntity {
     toPlainObject() {
         const plainObject = super.toPlainObject();
 
-        if (this.hasOwnProperty('subjectEnrollmentId')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'subjectEnrollmentId')) {
             plainObject.subjectEnrollmentId = this.subjectEnrollmentId;
         }
-        if (this.hasOwnProperty('classSessionId')) plainObject.classSessionId = this.classSessionId;
-        if (this.hasOwnProperty('status')) plainObject.status = this.status;
-        if (this.hasOwnProperty('observations')) plainObject.observations = this.observations;
-        if (this.hasOwnProperty('registeredBy')) plainObject.registeredBy = this.registeredBy;
-        if (this.hasOwnProperty('registeredAt')) plainObject.registeredAt = this.registeredAt;
+        if (Object.prototype.hasOwnProperty.call(this, 'classSessionId')) plainObject.classSessionId = this.classSessionId;
+        if (Object.prototype.hasOwnProperty.call(this, 'status')) plainObject.status = this.status;
+        if (Object.prototype.hasOwnProperty.call(this, 'observations')) plainObject.observations = this.observations;
+        if (Object.prototype.hasOwnProperty.call(this, 'registeredBy')) plainObject.registeredBy = this.registeredBy;
+        if (Object.prototype.hasOwnProperty.call(this, 'registeredAt')) plainObject.registeredAt = this.registeredAt;
 
         return plainObject;
     }

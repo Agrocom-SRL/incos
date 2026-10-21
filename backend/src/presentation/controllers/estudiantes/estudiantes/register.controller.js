@@ -1,34 +1,34 @@
 /**
  * POST /api/v1/estudiantes
  * Controller para registrar un nuevo estudiante con todos sus datos relacionados
- * 
+ *
  * Responsabilidades:
  * - Recibir peticiones HTTP POST para registrar estudiantes
  * - Transformar datos del frontend usando RegisterStudentRequestDTO
  * - Delegar lógica de negocio a RegisterStudentUseCase
  * - Formatear respuesta JSON estandarizada
- * 
+ *
  * Endpoint:
  * POST /api/v1/estudiantes
- * 
+ *
  * Body Parameters (estructura plana del frontend):
  * - ci, expedicionId, nombres, apellidoPaterno, apellidoMaterno, fechaNacimiento,
  *   generoId, estadoCivilId, tipoSangre, tieneDiscapacidad, emailPersonal, celular,
  *   telefonoFijo, direccion, municipioResidenciaId, zona, observaciones,
  *   contactosEmergencia: [ ... ],
  *   documentacion: { doc_1: { ... }, doc_2: { ... } }
- * 
+ *
  * NOTA: Los datos académicos (careerId, managementId, etc.) se manejan en otro módulo
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja la comunicación HTTP para registrar estudiantes
  * - Dependency Inversion: Depende de RegisterStudentUseCase (abstracción), no de implementación concreta
- * 
+ *
  * Clean Architecture:
  * - Presentation Layer: Maneja HTTP request/response
  * - Usa DTOs de Application Layer para transformar datos
  * - Depende de Application Layer (Use Cases inyectados, DTOs importados directamente)
- * 
+ *
  * NOTA sobre DTOs:
  * - Los DTOs se importan directamente (no se inyectan) porque son objetos estáticos sin dependencias
  * - Esto es válido en Clean Architecture: las capas externas pueden depender de las internas
@@ -69,13 +69,13 @@ export class RegisterStudentController extends BaseCreateController {
   /**
    * Sanitiza datos sensibles para el logging.
    * Oculta información como CI, emails, teléfonos y direcciones.
-   * 
+   *
    * @param {Object} body - Body de la petición
    * @returns {Object} Body sanitizado para logging
    */
   sanitizeBodyForLogging(body) {
     const sanitized = { ...body };
-    
+
     // Sanitizar datos personales del estudiante
     if (sanitized.ci) sanitized.ci = '***';
     if (sanitized.emailPersonal) sanitized.emailPersonal = '***';
@@ -92,9 +92,8 @@ export class RegisterStudentController extends BaseCreateController {
         return sanitizedContact;
       });
     }
-    
+
     // No es necesario sanitizar documentación ya que no contiene PII sensible
     return sanitized;
   }
 }
-

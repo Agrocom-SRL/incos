@@ -1,10 +1,13 @@
 import bcrypt from 'bcryptjs';
 import {
   ConflictError,
+  ForbiddenError,
   NotFoundError,
   UnprocessableEntityError,
 } from '../../../domain/errors/AppError.js';
+import { validarPasswordNueva } from '../../utils/passwordPolicy.js';
 import { mapUsuarioAdminRow } from './usuario-admin.mapper.js';
+import { ROL_ADMIN_SISTEMA_CODIGO, exigirActorAdminSistema } from './rol-admin-sistema.guard.js';
 
 function personalPayloadToStaffPatch(p) {
   const o = p || {};
@@ -47,18 +50,21 @@ export class ActualizarUsuarioUseCase {
    * @param {import('../../../infrastructure/repositories/UserRepository.js').UserRepository} deps.userRepository
    * @param {import('../../../infrastructure/repositories/RoleRepository.js').RoleRepository} deps.roleRepository
    * @param {import('../../../infrastructure/repositories/StaffRepository.js').StaffRepository} deps.staffRepository
+   * @param {import('../../../domain/interfaces/repositories/IAuthRepository.js').IAuthRepository} deps.authRepository
    */
-  constructor({ userRepository, roleRepository, staffRepository }) {
+  constructor({ userRepository, roleRepository, staffRepository, authRepository }) {
     this.userRepository = userRepository;
     this.roleRepository = roleRepository;
     this.staffRepository = staffRepository;
+    this.authRepository = authRepository;
   }
 
   /**
    * @param {number} usuarioId
    * @param {Object} body
+   * @param {number|null} actorId usuario autenticado que ejecuta el cambio
    */
-  async execute(usuarioId, body) {
+  async execute(usuarioId, body, actorId = null) {
     const current = await this.userRepository.findByIdWithRoleForAdmin(usuarioId);
     if (!current) {
       throw new NotFoundError('Usuario');
@@ -67,6 +73,11 @@ export class ActualizarUsuarioUseCase {
     const patch = {};
     if (body.username !== undefined) {
       patch.username = String(body.username).trim();
+      if (patch.username === '') {
+        throw new UnprocessableEntityError('Los datos proporcionados son inválidos', [
+          { field: 'username', message: 'username no puede estar vacío' },
+        ]);
+      }
       if (patch.username !== current.username) {
         if (await this.userRepository.existsUsername(patch.username, usuarioId)) {
           throw new ConflictError('El nombre de usuario ya está en uso');
@@ -78,6 +89,17 @@ export class ActualizarUsuarioUseCase {
       if (!role) {
         throw new NotFoundError('Rol');
       }
+      if (Number(body.rol_id) !== Number(current.rol_id)) {
+        if (actorId != null && Number(actorId) === Number(usuarioId)) {
+          throw new ForbiddenError('No puede cambiar su propio rol');
+        }
+        if (
+          role.code === ROL_ADMIN_SISTEMA_CODIGO ||
+          current.rol_codigo === ROL_ADMIN_SISTEMA_CODIGO
+        ) {
+          await exigirActorAdminSistema(this.userRepository, actorId);
+        }
+      }
       patch.roleId = body.rol_id;
     }
     if (body.foto_url !== undefined) {
@@ -85,11 +107,7 @@ export class ActualizarUsuarioUseCase {
     }
     if (body.password !== undefined && body.password !== null && body.password !== '') {
       const password = String(body.password);
-      if (password.length < 8) {
-        throw new UnprocessableEntityError('Los datos proporcionados son inválidos', [
-          { field: 'password', message: 'password debe tener al menos 8 caracteres' },
-        ]);
-      }
+      validarPasswordNueva(password, 'password');
       patch.passwordHash = await bcrypt.hash(password, 12);
     }
 
@@ -115,6 +133,9 @@ export class ActualizarUsuarioUseCase {
     }
 
     await this.userRepository.update(usuarioId, patch);
+    if (patch.passwordHash) {
+      await this.authRepository.invalidarSesionesUsuario(usuarioId);
+    }
     if (personalPatch && Object.keys(personalPatch).length > 0) {
       await this.staffRepository.update(Number(current.referencia_id), personalPatch);
     }

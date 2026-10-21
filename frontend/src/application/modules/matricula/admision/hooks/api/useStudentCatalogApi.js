@@ -94,6 +94,7 @@ export const useStudentCatalogApi = (initialDelay = 0) => {
       // OPTIMIZACIÓN: Solo actualizar si el valor realmente cambió
       optimizedSetLoadingRef.current(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- initialDelay es constante de montaje
   }, []); // Sin dependencias porque los setters están en refs estables
 
   // Cargar datos esenciales al montar (con delay opcional para evitar llamadas paralelas)

@@ -2,7 +2,7 @@
  * Tabla «Horario específico por docente» — resumen de carga en la gestión vigente.
  */
 import { Empty, Typography } from 'antd';
-import { docenteCarreraTitleStyles } from '@docentes/components/atoms/DocenteColorBar';
+import { docenteCarreraTitleStyles } from '@docentes/utils/docenteColor';
 
 const { Text } = Typography;
 
@@ -16,7 +16,7 @@ const DocenteAsignacionesResumenTable = ({ tabla, gestionLabel }) => {
     );
   }
 
-  const { docenteNombre, perfil, numeroItem, filas, carreraGroups, totales } = tabla;
+  const { perfil, numeroItem, filas, carreraGroups, totales } = tabla;
   const gestionTitulo = gestionLabel ? `GESTIÓN ${String(gestionLabel).toUpperCase()}` : 'GESTIÓN VIGENTE';
 
   const carreraSpanByRow = new Map();

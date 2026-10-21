@@ -13,4 +13,3 @@ export class DeleteCarreraUseCase {
     return true;
   }
 }
-

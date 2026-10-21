@@ -18,12 +18,14 @@ import { registerComponent } from '../../utils/container.helpers.js';
 import { ListInscripcionesCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/ListInscripcionesCapacitacionUseCase.js';
 import { GetInscripcionCapacitacionByIdUseCase } from '../../../../application/use-cases/capacitacion/GetInscripcionCapacitacionByIdUseCase.js';
 import { CreateInscripcionCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/CreateInscripcionCapacitacionUseCase.js';
+import { UpdateRequisitosInscripcionUseCase } from '../../../../application/use-cases/capacitacion/UpdateRequisitosInscripcionUseCase.js';
 import { DeleteInscripcionCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/DeleteInscripcionCapacitacionUseCase.js';
 import { AnularInscripcionCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/AnularInscripcionCapacitacionUseCase.js';
 import {
     ListInscripcionesCapacitacionController,
     GetInscripcionCapacitacionByIdController,
     CreateInscripcionCapacitacionController,
+    UpdateRequisitosInscripcionController,
     DeleteInscripcionCapacitacionController,
     AnularInscripcionCapacitacionController,
 } from '../../../../presentation/controllers/capacitacion/index.js';
@@ -62,6 +64,9 @@ export function registerInscripcionesCapacitacionResource(container) {
                 capacitacionCompromisoRepository: c.resolve(
                     CAPACITACION_TOKENS.capacitacionCompromisoRepository
                 ),
+                capacitacionInscritoRequisitoRepository: c.resolve(
+                    CAPACITACION_TOKENS.capacitacionInscritoRequisitoRepository
+                ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );
@@ -71,6 +76,9 @@ export function registerInscripcionesCapacitacionResource(container) {
         CAPACITACION_TOKENS.createInscripcionCapacitacionUseCase,
         (c) =>
             new CreateInscripcionCapacitacionUseCase({
+                grupoCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.grupoCapacitacionRepository
+                ),
                 inscripcionCapacitacionRepository: c.resolve(
                     CAPACITACION_TOKENS.inscripcionCapacitacionRepository
                 ),
@@ -81,8 +89,41 @@ export function registerInscripcionesCapacitacionResource(container) {
                 capacitacionCompromisoRepository: c.resolve(
                     CAPACITACION_TOKENS.capacitacionCompromisoRepository
                 ),
+                capacitacionRequisitoRepository: c.resolve(
+                    CAPACITACION_TOKENS.capacitacionRequisitoRepository
+                ),
+                capacitacionInscritoRequisitoRepository: c.resolve(
+                    CAPACITACION_TOKENS.capacitacionInscritoRequisitoRepository
+                ),
+                pagoCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.pagoCapacitacionRepository
+                ),
                 registerPagoCapacitacionUseCase: c.resolve(
                     CAPACITACION_TOKENS.registerPagoCapacitacionUseCase
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        CAPACITACION_TOKENS.updateRequisitosInscripcionUseCase,
+        (c) =>
+            new UpdateRequisitosInscripcionUseCase({
+                inscripcionCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.inscripcionCapacitacionRepository
+                ),
+                capacitacionRequisitoRepository: c.resolve(
+                    CAPACITACION_TOKENS.capacitacionRequisitoRepository
+                ),
+                capacitacionInscritoRequisitoRepository: c.resolve(
+                    CAPACITACION_TOKENS.capacitacionInscritoRequisitoRepository
+                ),
+                pagoCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.pagoCapacitacionRepository
+                ),
+                capacitacionCompromisoRepository: c.resolve(
+                    CAPACITACION_TOKENS.capacitacionCompromisoRepository
                 ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
@@ -159,6 +200,19 @@ export function registerInscripcionesCapacitacionResource(container) {
 
     registerComponent(
         container,
+        CAPACITACION_TOKENS.updateRequisitosInscripcionController,
+        (c) =>
+            new UpdateRequisitosInscripcionController({
+                updateRequisitosInscripcionUseCase: c.resolve(
+                    CAPACITACION_TOKENS.updateRequisitosInscripcionUseCase
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    registerComponent(
+        container,
         CAPACITACION_TOKENS.deleteInscripcionCapacitacionController,
         (c) =>
             new DeleteInscripcionCapacitacionController({
@@ -208,6 +262,15 @@ export function registerInscripcionesCapacitacionResource(container) {
                 ),
                 registerPagoCapacitacionController: c.resolve(
                     CAPACITACION_TOKENS.registerPagoCapacitacionController
+                ),
+                updateRequisitosInscripcionController: c.resolve(
+                    CAPACITACION_TOKENS.updateRequisitosInscripcionController
+                ),
+                adjuntarComprobantePagoCapacitacionController: c.resolve(
+                    CAPACITACION_TOKENS.adjuntarComprobantePagoCapacitacionController
+                ),
+                descargarComprobantePagoCapacitacionController: c.resolve(
+                    CAPACITACION_TOKENS.descargarComprobantePagoCapacitacionController
                 ),
             };
 

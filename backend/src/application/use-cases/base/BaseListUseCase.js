@@ -1,9 +1,9 @@
 /**
  * Use Case Base para operaciones de listado
- * 
+ *
  * Implementa el patrón Template Method para proporcionar funcionalidad común
  * a todos los casos de uso de listado (países, departamentos, idiomas, etc.)
- * 
+ *
  * Responsabilidades:
  * - Construir filtros específicos a partir de query parameters
  * - Parsea y valida parámetros de paginación (page, limit)
@@ -12,21 +12,21 @@
  * - Calcula total de páginas
  * - Registra logs durante la operación
  * - Retorna respuesta estandarizada
- * 
+ *
  * NOTA: La validación de parámetros (page, limit, search) se realiza en las rutas
  * mediante el validator común (listValidator), por lo que este use case
  * asume que los parámetros ya están validados.
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Maneja solo la lógica común de listado
  * - Template Method: Define el algoritmo común
  * - Open/Closed: Permite personalizar el comportamiento mediante hook methods
- * 
+ *
  * Clean Architecture:
  * - Application Layer: Orquesta la lógica de casos de uso
  * - Depende de Repository (Infrastructure) a través de abstracción
  * - Depende de Mapper (Application) para conversión Domain → Presentation
- * 
+ *
  * @abstract
  * @example
  * class ListPaisesUseCase extends BaseListUseCase {
@@ -40,13 +40,31 @@
  *       dataFieldName: 'paises',
  *     });
  *   }
- * 
+ *
  *   getMapper() {
  *     return CountryMapper;
  *   }
  * }
  */
 export class BaseListUseCase {
+    /** Mismo tope que `listValidator` en las rutas. */
+    static LIMIT_MAXIMO = 10000;
+
+    /**
+     * Entero dentro de [min, max]. Valores no numéricos o con basura ('5abc', 1.5, NaN, null)
+     * y los menores que `min` caen al `defecto`; los mayores que `max` se acotan a `max`.
+     * @param {*} valor
+     * @param {number} defecto
+     * @param {number} min
+     * @param {number} max
+     * @returns {number}
+     */
+    static normalizarEntero(valor, defecto, min, max) {
+        const n = typeof valor === 'number' ? valor : /^\d+$/.test(String(valor).trim()) ? Number(valor) : NaN;
+        if (!Number.isInteger(n) || n < min) return defecto;
+        return Math.min(n, max);
+    }
+
     /**
      * @param {Object} params - Parámetros de configuración
      * @param {Object} params.repository - Repositorio a usar (debe tener método findAll(filters, page, limit))
@@ -86,9 +104,9 @@ export class BaseListUseCase {
 
     /**
      * Retorna el mapper a usar para convertir entidades a presentación
-     * 
+     *
      * Método abstracto: Debe ser implementado por subclases
-     * 
+     *
      * @abstract
      * @returns {Object} Clase mapper con método estático entitiesToPresentation()
      */
@@ -98,15 +116,15 @@ export class BaseListUseCase {
 
     /**
      * Construye filtros específicos adicionales a partir de los query parameters
-     * 
+     *
      * Hook method: Puede ser sobrescrito por subclases para construir filtros específicos
      * Similar a cómo BaseSearchUseCase normaliza searchTerm.trim()
-     * 
+     *
      * @param {Object} queryParams - Query parameters de Express (req.query)
      * @param {Object} baseFilters - Filtros base ya extraídos por ListRequestDTO (search, sort)
      * @returns {Object} Filtros combinados con filtros específicos normalizados
      */
-    buildSpecificFilters(queryParams = {}, baseFilters = {}) {
+    buildSpecificFilters(_queryParams = {}, baseFilters = {}) {
         // Implementación por defecto: retorna solo los filtros base
         // Las subclases pueden sobrescribir para agregar filtros específicos
         return baseFilters;
@@ -114,19 +132,19 @@ export class BaseListUseCase {
 
     /**
      * Prepara y modifica filtros antes de ejecutar la consulta al repositorio
-     * 
+     *
      * Hook method: Opcional, puede ser sobrescrito por subclases para:
      * - Hacer consultas adicionales a otros repositorios
      * - Transformar filtros basados en resultados de consultas
      * - Modificar filtros antes de pasarlos al repositorio
-     * 
+     *
      * Similar a enrichData pero para filtros. Se ejecuta después de buildSpecificFilters
      * pero antes de llamar al repositorio.
-     * 
+     *
      * @param {Object} filters - Filtros ya construidos por buildSpecificFilters
      * @param {Object} queryParams - Query parameters originales (para consultas adicionales)
      * @returns {Promise<Object>|Object} Filtros modificados o los mismos si no hay cambios
-     * 
+     *
      * @example
      * // ListParalelosUseCase: Si viene periodo (número), buscar IDs de periodos
      * async prepareFilters(filters, queryParams) {
@@ -138,7 +156,7 @@ export class BaseListUseCase {
      *   return filters;
      * }
      */
-    async prepareFilters(filters = {}, queryParams = {}) {
+    async prepareFilters(filters = {}, _queryParams = {}) {
         // Implementación por defecto: retorna los filtros sin modificar
         // Las subclases pueden sobrescribir para hacer consultas y modificar filtros
         return filters;
@@ -146,22 +164,22 @@ export class BaseListUseCase {
 
     /**
      * Enriquece los datos después de la conversión a presentación
-     * 
+     *
      * Hook method: Opcional, puede ser sobrescrito por subclases para agregar
      * campos adicionales (conteos, datos relacionados, etc.)
-     * 
+     *
      * @param {Array} data - Array de objetos ya convertidos a formato de presentación
      * @param {Object} repositoryResult - Resultado completo del repository (incluye total, etc.)
      * @returns {Promise<Array>|Array} Array de datos enriquecidos
      */
-    async enrichData(data, repositoryResult) {
+    async enrichData(data, _repositoryResult) {
         // Implementación por defecto: retorna los datos sin modificar
         return data;
     }
 
     /**
      * Ejecuta el caso de uso de listado
-     * 
+     *
      * Template Method: Define el algoritmo común de:
      * 1. Construir filtros específicos (si buildSpecificFilters fue sobrescrito)
      * 2. Preparar filtros (si prepareFilters fue sobrescrito - permite consultas adicionales)
@@ -172,9 +190,9 @@ export class BaseListUseCase {
      * 7. Enriquecer datos (opcional, hook method)
      * 8. Calcular total de páginas
      * 9. Retornar respuesta estandarizada
-     * 
+     *
      * NOTA: baseFilters, page y limit ya están validados por el validator en las rutas
-     * 
+     *
      * @param {Object} baseFilters - Filtros base (search, sort) ya normalizados por ListRequestDTO
      * @param {number} page - Número de página (default: 1)
      * @param {number} limit - Límite de resultados por página (default: 50)
@@ -191,8 +209,8 @@ export class BaseListUseCase {
         const filters = await this.prepareFilters(initialFilters, queryParams);
 
         // Parsear y validar parámetros
-        const pageNum = parseInt(page) || 1;
-        const limitNum = parseInt(limit) || 50;
+        const pageNum = BaseListUseCase.normalizarEntero(page, 1, 1, Number.MAX_SAFE_INTEGER);
+        const limitNum = BaseListUseCase.normalizarEntero(limit, 50, 1, BaseListUseCase.LIMIT_MAXIMO);
 
         // Logging inicial
         this.logger.info(`[${this.moduleName}] Iniciando listado de ${this.resourceName}`, {
@@ -251,4 +269,3 @@ export class BaseListUseCase {
         }
     }
 }
-

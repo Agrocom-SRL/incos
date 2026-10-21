@@ -1,11 +1,11 @@
 /**
  * Mapper de aplicación: Parallel
  * Convierte entidades de dominio (Parallel) a formato de presentación (API/Spanish)
- * 
+ *
  * Clean Architecture:
  * - Application Layer: Convierte Domain Entities → Presentation Format
  * - Depende de Domain Layer (Parallel entity)
- * 
+ *
  * Responsabilidades:
  * - Mapear propiedades de dominio (English/camelCase) a presentación (Spanish/snake_case)
  * - Formatear datos para consumo por el frontend
@@ -16,7 +16,7 @@
  * Convierte una entidad Parallel a formato de presentación
  * @param {Parallel} parallel - Entidad de dominio Parallel
  * @returns {Object|null} Objeto en formato de presentación o null si parallel es null/undefined
- * 
+ *
  * NOTA: Este mapper solo mapea campos básicos de la entidad.
  * Campos adicionales como 'estadisticas' se agregan después del mapeo
  * en el método enrichData() de ListParalelosUseCase.

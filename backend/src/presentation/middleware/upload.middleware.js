@@ -5,13 +5,14 @@ import { multerConfig } from '../../infrastructure/config/multer.config.js';
 import { serverConfig } from '../../infrastructure/config/server.config.js';
 import { UPLOAD } from '../../infrastructure/config/uploads.config.js';
 import { getEnvAsNumber } from '../../infrastructure/config/env.validator.js';
+import { logger } from '../../infrastructure/services/WinstonLoggerFactory.js';
 
 /**
  * Middleware de upload para documentos de pago
- * 
+ *
  * Configura multer para subir archivos de documentos de respaldo de pagos
  * Los archivos se guardan en: uploads/documentos/estudiantes/{studentId}/pagos/
- * 
+ *
  * @param {string} fieldName - Nombre del campo del formulario que contiene el archivo (default: 'documentoRespaldo')
  * @returns {Function} Middleware de multer
  */
@@ -21,11 +22,11 @@ export function createUploadMiddleware(fieldName = 'documentoRespaldo') {
         destination: (req, file, cb) => {
             // Obtener student_id del body o params
             const studentId = req.body.student_id || req.params.studentId || 'temp';
-            
+
             // Usar configuración centralizada para construir la ruta
             const relativeScope = UPLOAD.studentPayments(studentId);
             const relativePath = path.join(relativeScope);
-            
+
             // Resolver ruta absoluta usando serverConfig
             const uploadPath = path.isAbsolute(multerConfig.uploadDir)
                 ? path.join(multerConfig.uploadDir, relativePath)
@@ -310,9 +311,87 @@ export const uploadAvanceProyecto = (req, res, next) => {
   });
 };
 
+/**
+ * Upload del comprobante de depósito de un pago de capacitación (módulo CAP).
+ * Destino: uploads/documentos/capacitacion/{inscripcionId}/comprobantes/ (el id
+ * sale de req.params.id). Solo imagen o PDF, tamaño acotado. El archivo es
+ * OPCIONAL: si el request no es multipart o no trae archivo, continúa sin
+ * `req.file`. La descarga es SOLO vía endpoint autenticado con res.download.
+ */
+const COMPROBANTE_CAPACITACION_MIME_TYPES = [
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/webp',
+  'application/pdf',
+];
+const COMPROBANTE_CAPACITACION_MAX_BYTES_DEFECTO = 5 * 1024 * 1024;
+
+export function createComprobanteCapacitacionUploadMiddleware(fieldName = 'comprobante') {
+  const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      const relativePath = UPLOAD.capacitacionComprobantes(req.params?.id || 'temp');
+      const uploadPath = path.isAbsolute(multerConfig.uploadDir)
+        ? path.join(multerConfig.uploadDir, relativePath)
+        : path.resolve(serverConfig.backendRoot, multerConfig.uploadDir, relativePath);
+
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+      cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+      cb(null, UPLOAD.generateComprobanteCapacitacionFileName(file.originalname));
+    },
+  });
+
+  const fileFilter = (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (!UPLOAD.comprobanteCapacitacionExtensions.includes(ext)) {
+      return cb(
+        new Error(
+          `Tipo de archivo no permitido. Tipos permitidos: ${UPLOAD.comprobanteCapacitacionExtensions.join(', ')}`
+        ),
+        false
+      );
+    }
+    if (!COMPROBANTE_CAPACITACION_MIME_TYPES.includes(file.mimetype)) {
+      return cb(new Error('Tipo MIME no permitido (solo imagen o PDF)'), false);
+    }
+    cb(null, true);
+  };
+
+  const upload = multer({
+    storage,
+    fileFilter,
+    limits: {
+      fileSize: getEnvAsNumber(
+        'MAX_COMPROBANTE_CAPACITACION_SIZE',
+        COMPROBANTE_CAPACITACION_MAX_BYTES_DEFECTO
+      ),
+      files: 1,
+    },
+  });
+
+  return upload.single(fieldName);
+}
+
+/**
+ * Middleware de upload de comprobante de capacitación (campo multipart `comprobante`).
+ */
+export const uploadComprobanteCapacitacion = (req, res, next) => {
+  const middleware = createComprobanteCapacitacionUploadMiddleware('comprobante');
+  middleware(req, res, (err) => {
+    if (err) {
+      return next(err);
+    }
+    next();
+  });
+};
+
 export const uploadPaymentDocument = (req, res, next) => {
     // Log antes de procesar el upload
-    console.log('[Upload] Iniciando procesamiento de archivo', {
+    logger.debug('[Upload] Iniciando procesamiento de archivo', {
         fieldName: 'documentoRespaldo',
         hasBody: !!req.body,
         bodyKeys: req.body ? Object.keys(req.body) : [],
@@ -321,12 +400,12 @@ export const uploadPaymentDocument = (req, res, next) => {
 
     baseUploadMiddleware(req, res, (err) => {
         if (err) {
-            console.error('[Upload] Error en multer:', err.message, err.code);
+            logger.error('[Upload] Error en multer', { error: err.message, code: err.code });
             return next(err);
         }
 
         // Log después de procesar el upload
-        console.log('[Upload] Archivo procesado', {
+        logger.debug('[Upload] Archivo procesado', {
             hasFile: !!req.file,
             fileInfo: req.file ? {
                 fieldname: req.file.fieldname,

@@ -1,5 +1,6 @@
 import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
 import { ESTADOS_PAGO_APORTE } from '../../../domain/constants/pagos.constants.js';
+import { parseNumero } from '../../utils/validacionEntrada.js';
 
 /**
  * Actualiza una cuota (pago_cuotas) existente y recalcula el estado de la cabecera (pago_aporte).
@@ -53,16 +54,11 @@ export class UpdatePaymentInstallmentUseCase {
     const montoObligatorio = Number(cabPlain.mandatoryAmount ?? cabPlain.montoObligatorio ?? 0);
 
     const oldAmount = Number(plain.amount ?? plain.monto ?? 0);
-    const amount =
-      data.amount !== undefined && data.amount !== null
-        ? Number(data.amount)
-        : data.monto !== undefined && data.monto !== null
-          ? Number(data.monto)
-          : oldAmount;
-
-    if (Number.isNaN(amount) || amount < 0) {
-      throw new ValidationError('El monto de la cuota no es válido');
-    }
+    // Un 0 explícito es válido (cuota gratuita que genera compromiso); '' o texto no se convierten en 0.
+    const rawAmount = data.amount ?? data.monto;
+    const amount = rawAmount !== undefined && rawAmount !== null
+      ? parseNumero(rawAmount, 'El monto de la cuota', { min: 0 })
+      : oldAmount;
 
     const paymentMethodId =
       data.payment_method_id ?? data.paymentMethodId ?? plain.paymentMethodId ?? plain.metodoPagoId;

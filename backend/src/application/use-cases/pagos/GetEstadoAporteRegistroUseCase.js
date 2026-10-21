@@ -69,7 +69,7 @@ export class GetEstadoAporteRegistroUseCase {
 
         const mgmtId = management?.id ?? management?.toPlainObject?.()?.id ?? managementId;
 
-        let cabecera = await this.contributionPaymentRepository.findBy({
+        const cabecera = await this.contributionPaymentRepository.findBy({
             studentId: Number(studentId),
             managementId: mgmtId,
         });
@@ -149,7 +149,12 @@ export class GetEstadoAporteRegistroUseCase {
                 try {
                     const method = await this.paymentMethodRepository.findById(id);
                     const plain = method?.toPlainObject ? method.toPlainObject() : method;
-                    if (plain) metodoPagoMap[id] = { nombre: plain.name ?? plain.nombre, codigo: plain.code ?? plain.codigo };
+                    if (plain) {
+                        metodoPagoMap[id] = {
+                            nombre: plain.name ?? plain.nombre,
+                            codigo: plain.code ?? plain.codigo,
+                        };
+                    }
                 } catch {
                     metodoPagoMap[id] = null;
                 }
@@ -179,7 +184,8 @@ export class GetEstadoAporteRegistroUseCase {
 
         const montoObligatorio = Number(plain.mandatoryAmount ?? plain.montoObligatorio ?? 0);
         const saldoPendiente = Math.max(0, montoObligatorio - totalPagado);
-        const tieneDescuentoAplicado = !!(plain.studentScholarshipId ?? plain.estudianteBecaId ?? plain.estudiante_beca_id) ||
+        const tieneDescuentoAplicado = !!(plain.studentScholarshipId ?? plain.estudianteBecaId
+          ?? plain.estudiante_beca_id) ||
             (Number(plain.scholarshipDiscount ?? plain.descuentoBeca ?? plain.descuento_beca ?? 0) > 0);
 
         const gestionPlain = management?.toPlainObject ? management.toPlainObject() : management || {};
@@ -216,7 +222,11 @@ export class GetEstadoAporteRegistroUseCase {
     async _buildResponseSinCabecera(studentId, managementId, management) {
         const config = await this._getActiveContributionConfiguration(managementId);
         const montoBase = config?.montoBase ?? config?.baseAmount ?? 400;
-        const { scholarshipDiscount, studentScholarshipId } = await this._calculateScholarshipDiscount(studentId, managementId, montoBase);
+        const { scholarshipDiscount, studentScholarshipId } = await this._calculateScholarshipDiscount(
+            studentId,
+            managementId,
+            montoBase,
+        );
         const montoObligatorio = Math.max(0, montoBase - scholarshipDiscount);
         const tieneDescuentoAplicado = !!(studentScholarshipId && scholarshipDiscount > 0);
 
@@ -269,7 +279,8 @@ export class GetEstadoAporteRegistroUseCase {
         if (!activeScholarship) {
             return { scholarshipDiscount: 0, studentScholarshipId: null };
         }
-        const scholarshipId = activeScholarship.scholarshipId ?? activeScholarship.becaDescuentoId ?? activeScholarship.beca_descuento_id;
+        const scholarshipId = activeScholarship.scholarshipId ?? activeScholarship.becaDescuentoId
+          ?? activeScholarship.beca_descuento_id;
         if (!scholarshipId) {
             return { scholarshipDiscount: 0, studentScholarshipId: activeScholarship.id };
         }

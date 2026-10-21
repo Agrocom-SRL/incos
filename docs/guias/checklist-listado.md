@@ -1,8 +1,8 @@
 # Checklist de una página — nuevo listado (INCOS)
 
 **Complemento de:** `docs/guias/implementacion-listado-modulo.md`  
-**Arquitectura frontend:** `.cursor/rules/incos-frontend-module.mdc`  
-**Arquitectura backend:** `.cursor/rules/incos-backend-module.mdc`  
+**Arquitectura frontend:** `.claude/skills/incos-frontend-module/SKILL.md`  
+**Arquitectura backend:** `.claude/skills/incos-backend-module/SKILL.md`  
 
 **Detalle / ficha:** `docs/guias/checklist-detalle.md`
 
@@ -24,7 +24,7 @@ Marca en orden. Si un ítem no aplica, táchalo y anota por qué (ej. listado so
 | 8 | Validators create/update en `presentation/validators/` si hay mutaciones. |
 | 9 | `*.container.js` (use cases, controllers, router) + tokens. |
 | 10 | `register*Module` + `routes/index.js` montaje `/api/v1/...`. |
-| 11 | Seeds **54** (permiso) + **56** (acciones) + **55** (roles) + matriz. |
+| 11 | Seed RBAC del módulo (`58-67`: permisos + acciones + roles, por código) + matriz. |
 | 12 | Prueba API: 200 con datos, 403 sin permiso, 500 descartado (DDL/modelo). |
 
 ---

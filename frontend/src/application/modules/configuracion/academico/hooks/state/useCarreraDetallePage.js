@@ -11,7 +11,7 @@ import {
   resolveMenuSidebarKey,
   resolveReturnListPath,
 } from '@application-configuracion/academico/config/academicoNavigation';
-import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
+import { sanitizeDocenteColorHex } from '@docentes/utils/docenteColor';
 
 const initialsFromCarrera = (c) => {
   const src = (c?.codigo || c?.nombre || '?').trim();
@@ -57,7 +57,7 @@ export const useCarreraDetallePage = () => {
     load();
   }, [load]);
 
-  const periodos = carrera?.periodos ?? [];
+  const periodos = useMemo(() => carrera?.periodos ?? [], [carrera?.periodos]);
 
   const totalMaterias = useMemo(() => {
     const ids = new Set();

@@ -3,7 +3,7 @@
  */
 
 import { buildPersonDisplayData } from '@application/utils/formatters';
-import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
+import { sanitizeDocenteColorHex } from '@docentes/utils/docenteColor';
 
 const toSearchStr = (v) => {
   if (v == null || v === '') return null;

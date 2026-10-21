@@ -1,3 +1,4 @@
+import { normalizarPaginacionLista, parseFiltroId } from '../../utils/validacionEntrada.js';
 import { TutoriaAvanceMapper } from '../../mappers/titulacion/index.js';
 
 /**
@@ -32,16 +33,14 @@ export class ListEstudiantesElegiblesModalidadGradoUseCase {
    * @returns {Promise<{estudiantesElegibles: Array, total: number, page: number, limit: number, totalPages: number}>}
    */
   async execute(baseFilters = {}, page = 1, limit = 50, queryParams = {}) {
-    const pageNum = parseInt(page, 10) || 1;
-    const limitNum = parseInt(limit, 10) || 50;
+    const { page: pageNum, limit: limitNum } = normalizarPaginacionLista(page, limit);
 
-    const gestionId = queryParams.gestionId
-      ? Number(queryParams.gestionId)
-      : await this._resolverGestionVigente();
+    const gestionId =
+      parseFiltroId(queryParams.gestionId, 'gestionId') ?? (await this._resolverGestionVigente());
 
     const { rows, total } = await this.tutoriaAvanceViewRepository.findEstudiantesElegibles(
       {
-        carreraId: queryParams.carreraId ? Number(queryParams.carreraId) : undefined,
+        carreraId: parseFiltroId(queryParams.carreraId, 'carreraId'),
         gestionId: gestionId ?? undefined,
         search: queryParams.search ?? baseFilters.search,
       },

@@ -1,5 +1,4 @@
 import { QueryTypes } from 'sequelize';
-import { IOfertaCursoRepository } from '../../domain/interfaces/repositories/IOfertaCursoRepository.js';
 import { OfertaCurso as OfertaCursoModel } from '../database/models/oferta_curso.js';
 import { BaseRepository } from './BaseRepository.js';
 import { CourseOfferMapper } from '../mappers/CourseOfferMapper.js';
@@ -32,11 +31,11 @@ export class CourseOfferRepository extends BaseRepository {
     return ['observaciones'];
   }
 
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return CourseOfferMapper.toModel(data);
   }
 
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return CourseOfferMapper.toModelForUpdate(data);
   }
 
@@ -147,6 +146,34 @@ export class CourseOfferRepository extends BaseRepository {
       { replacements: { offerId }, type: QueryTypes.SELECT }
     );
     return Number(rows[0]?.total ?? 0) || 0;
+  }
+
+  /**
+   * Cuenta lo que cuelga de una oferta en la cadena
+   * oferta_cursos → asignaciones_docentes → asignacion_horarios (solo registros activos).
+   * @returns {Promise<{asignaciones: number, bloques: number}>}
+   */
+  async countDependenciasByOfferId(offerId) {
+    const rows = await sequelize.query(
+      `
+      SELECT
+        COUNT(DISTINCT ad.id) AS asignaciones,
+        COUNT(DISTINCT ah.id) AS bloques
+      FROM asignaciones_docentes ad
+      LEFT JOIN asignacion_horarios ah
+        ON ah.asignacion_docente_id = ad.id
+       AND ah.deleted_at IS NULL
+       AND ah.activo = TRUE
+      WHERE ad.oferta_curso_id = :offerId
+        AND ad.deleted_at IS NULL
+        AND ad.activo = TRUE
+      `,
+      { replacements: { offerId }, type: QueryTypes.SELECT }
+    );
+    return {
+      asignaciones: Number(rows[0]?.asignaciones ?? 0) || 0,
+      bloques: Number(rows[0]?.bloques ?? 0) || 0,
+    };
   }
 
   /**

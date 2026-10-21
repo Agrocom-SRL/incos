@@ -9,10 +9,10 @@ export class DisabilityType extends BaseEntity {
     super(data);
     // Solo inicializar campos si fueron proporcionados explícitamente
     // Esto permite usar attributes limitados sin inicializar campos no solicitados
-    if (data.hasOwnProperty('name')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'name')) {
       this.name = data.name;
     }
-    if (data.hasOwnProperty('description')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'description')) {
       this.description = data.description;
     }
   }
@@ -24,12 +24,12 @@ export class DisabilityType extends BaseEntity {
    */
   toPlainObject() {
     const plainObject = super.toPlainObject();
-    
+
     // Solo incluir campos que fueron inicializados (existen en this)
-    if (this.hasOwnProperty('name')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'name')) {
       plainObject.name = this.name;
     }
-    if (this.hasOwnProperty('description')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'description')) {
       plainObject.description = this.description;
     }
 

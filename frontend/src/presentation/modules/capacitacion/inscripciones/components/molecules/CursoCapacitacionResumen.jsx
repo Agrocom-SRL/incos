@@ -1,6 +1,6 @@
 /**
- * Molécula: resumen compacto del curso elegido (costo/cupo/fechas/horarios),
- * paso "Pago inicial" de Inscribir participante (CAP).
+ * Molécula: resumen compacto del curso elegido (costos/cupo/fechas/horarios),
+ * pasos "Grupo y requisitos" y "Pago inicial" de Inscribir participante (CAP).
  *
  * Reusa `InfoLinesCell` (mismo lenguaje icono+texto que ya usa la tarjeta del
  * paso "Curso") en vez de las cajas de ancho fijo de `fin-pago-reg-resumen`
@@ -14,6 +14,7 @@
 import { CalendarOutlined, ClockCircleOutlined, DollarOutlined, TeamOutlined } from '@ant-design/icons';
 import { InfoLinesCell } from '@atoms';
 import CostoCursoLabel from '@capacitacion/components/atoms/CostoCursoLabel';
+import CursoGratuitoPill from '@capacitacion/components/atoms/CursoGratuitoPill';
 import '../../styles/inscribir-participante.css';
 
 const CursoCapacitacionResumen = ({ curso }) => {
@@ -24,7 +25,27 @@ const CursoCapacitacionResumen = ({ curso }) => {
       <div className="curso-cap-resumen__title">{curso.titulo}</div>
       <InfoLinesCell
         lines={[
-          { icon: <DollarOutlined />, label: <CostoCursoLabel costo={curso.costo} /> },
+          curso.esGratuito ? { icon: <DollarOutlined />, label: <CursoGratuitoPill /> } : null,
+          curso.tieneCosto
+            ? {
+                icon: <DollarOutlined />,
+                label: (
+                  <>
+                    Curso: <CostoCursoLabel costo={curso.costo} />
+                  </>
+                ),
+              }
+            : null,
+          curso.cobraMatricula
+            ? {
+                icon: <DollarOutlined />,
+                label: (
+                  <>
+                    Matrícula: <CostoCursoLabel costo={curso.costoMatricula} />
+                  </>
+                ),
+              }
+            : null,
           {
             icon: <TeamOutlined />,
             label:
@@ -33,7 +54,7 @@ const CursoCapacitacionResumen = ({ curso }) => {
                 : `${curso.inscritosCount} inscritos`,
           },
           curso.fechasLabel ? { icon: <CalendarOutlined />, label: curso.fechasLabel } : null,
-          { icon: <ClockCircleOutlined />, label: curso.horariosDetalle || 'Horario por definir' },
+          { icon: <ClockCircleOutlined />, label: curso.horariosDetalle || 'Grupos por definir' },
         ].filter(Boolean)}
       />
     </div>

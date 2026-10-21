@@ -1,6 +1,6 @@
 /**
  * Tokens del Módulo Inscripciones
- * 
+ *
  * Convenciones:
  * - Use Cases: {modulo}_list{Entity}UseCase (ej: 'inscripciones.listEnrollmentsUseCase')
  * - Controllers: {modulo}_list{Entity}Controller (ej: 'inscripciones.listEnrollmentsController')

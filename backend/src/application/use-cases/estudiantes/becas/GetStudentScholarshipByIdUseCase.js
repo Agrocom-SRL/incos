@@ -4,8 +4,7 @@
  * y, si existe, la cabecera de pago de aporte (pago_aporte) vinculada por estudiante_beca_id.
  */
 
-import { StudentMapper } from '../../../mappers/estudiantes/index.js';
-import { BecaDescuentoMapper } from '../../../mappers/estudiantes/index.js';
+import { StudentMapper, BecaDescuentoMapper } from '../../../mappers/estudiantes/index.js';
 import { ManagementMapper } from '../../../mappers/academico/index.js';
 
 export class GetStudentScholarshipByIdUseCase {
@@ -126,13 +125,13 @@ export class GetStudentScholarshipByIdUseCase {
       studentId: scholarshipPlain.studentId,
       scholarshipId: scholarshipPlain.scholarshipId,
       managementId: scholarshipPlain.managementId,
-      requestDate: scholarshipPlain.requestDate || scholarshipPlain.fechaSolicitud,
-      state: scholarshipPlain.state || scholarshipPlain.estado,
-      documentsComplete: scholarshipPlain.documentsComplete || scholarshipPlain.documentosCompletos,
+      requestDate: scholarshipPlain.requestDate ?? scholarshipPlain.fechaSolicitud,
+      state: scholarshipPlain.state ?? scholarshipPlain.estado,
+      documentsComplete: scholarshipPlain.documentsComplete ?? scholarshipPlain.documentosCompletos,
       documentDeliveryStartDate:
-        scholarshipPlain.documentDeliveryStartDate || scholarshipPlain.fechaInicioEntregaDocumentos,
+        scholarshipPlain.documentDeliveryStartDate ?? scholarshipPlain.fechaInicioEntregaDocumentos,
       documentDeliveryEndDate:
-        scholarshipPlain.documentDeliveryEndDate || scholarshipPlain.fechaFinEntregaDocumentos,
+        scholarshipPlain.documentDeliveryEndDate ?? scholarshipPlain.fechaFinEntregaDocumentos,
       observations: scholarshipPlain.observations,
       createdAt: scholarshipPlain.createdAt,
       updatedAt: scholarshipPlain.updatedAt,

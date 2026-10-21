@@ -8,7 +8,14 @@ import {
 } from '../../mappers/configuracion/index.js';
 
 export class GetPlanEstudiosMatrizUseCase {
-  constructor({ studyPlanRepository, careerRepository, periodRepository, planSubjectRepository, subjectRepository, logger }) {
+  constructor({
+    studyPlanRepository,
+    careerRepository,
+    periodRepository,
+    planSubjectRepository,
+    subjectRepository,
+    logger,
+  }) {
     this.studyPlanRepository = studyPlanRepository;
     this.careerRepository = careerRepository;
     this.periodRepository = periodRepository;
@@ -103,4 +110,3 @@ export class GetPlanEstudiosMatrizUseCase {
     };
   }
 }
-

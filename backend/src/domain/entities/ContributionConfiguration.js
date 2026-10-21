@@ -8,23 +8,23 @@ export class ContributionConfiguration extends BaseEntity {
   constructor(data = {}) {
     super(data);
     // Solo inicializar campos si fueron proporcionados explícitamente
-    if (data.hasOwnProperty('managementId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'managementId')) {
       this.managementId = data.managementId;
     }
-    if (data.hasOwnProperty('baseAmount')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'baseAmount')) {
       this.baseAmount = parseFloat(data.baseAmount) || 400.00;
-    } else if (!data.hasOwnProperty('managementId')) {
+    } else if (!Object.prototype.hasOwnProperty.call(data, 'managementId')) {
       this.baseAmount = 400.00;
     }
-    if (data.hasOwnProperty('contributionActive')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'contributionActive')) {
       this.contributionActive = data.contributionActive;
-    } else if (!data.hasOwnProperty('managementId')) {
+    } else if (!Object.prototype.hasOwnProperty.call(data, 'managementId')) {
       this.contributionActive = true;
     }
-    if (data.hasOwnProperty('startDate')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'startDate')) {
       this.startDate = data.startDate;
     }
-    if (data.hasOwnProperty('endDate')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'endDate')) {
       this.endDate = data.endDate;
     }
   }
@@ -52,20 +52,20 @@ export class ContributionConfiguration extends BaseEntity {
 
   toPlainObject() {
     const plainObject = super.toPlainObject();
-    
-    if (this.hasOwnProperty('managementId')) {
+
+    if (Object.prototype.hasOwnProperty.call(this, 'managementId')) {
       plainObject.managementId = this.managementId;
     }
-    if (this.hasOwnProperty('baseAmount')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'baseAmount')) {
       plainObject.baseAmount = this.baseAmount;
     }
-    if (this.hasOwnProperty('contributionActive')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'contributionActive')) {
       plainObject.contributionActive = this.contributionActive;
     }
-    if (this.hasOwnProperty('startDate')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'startDate')) {
       plainObject.startDate = this.startDate;
     }
-    if (this.hasOwnProperty('endDate')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'endDate')) {
       plainObject.endDate = this.endDate;
     }
 

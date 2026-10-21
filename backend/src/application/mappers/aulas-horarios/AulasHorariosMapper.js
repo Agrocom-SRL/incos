@@ -3,4 +3,3 @@ export class AulasHorariosMapper {
     return items;
   }
 }
-

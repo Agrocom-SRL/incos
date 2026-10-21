@@ -16,7 +16,6 @@ export function buildPlanesEstudiosRouter({ controllers, middlewares }) {
   const permisoPlan = 'configuracion.plan-estudio';
   const permisoPeriodos = 'configuracion.plan-estudio.periodos';
   const permisoAsignaturas = 'configuracion.plan-estudio.asignaturas';
-  const permisoPrerrequisitos = 'configuracion.plan-estudio.prerrequisitos';
 
   // -----------------------------
   // Planes de estudio
@@ -146,4 +145,3 @@ export function buildPlanesEstudiosRouter({ controllers, middlewares }) {
 
   return router;
 }
-

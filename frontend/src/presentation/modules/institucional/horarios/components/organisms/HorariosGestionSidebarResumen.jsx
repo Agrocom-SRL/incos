@@ -7,7 +7,6 @@ import { allSpacing, allColors, componentConfig, shadows, typography, gradients 
 import { resolveCarreraDashboardColor } from '@application-institucional/horarios/utils/carreraDashboardColor';
 import { BOARD_COLUMN_LABELS } from '@application-institucional/horarios/config/dashboardConstants';
 import {
-    buildHorariosArmadoUrl,
     buildOfertaParaleloDetalleFromHorarios,
     buildResolverConflictoDocenteNavTarget,
     docenteSoloConflictoAula,

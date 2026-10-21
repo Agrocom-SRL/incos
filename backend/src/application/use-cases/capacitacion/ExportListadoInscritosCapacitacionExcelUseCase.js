@@ -12,14 +12,16 @@ const LIMITE_FILAS = 10000;
 
 /**
  * Exporta el Listado de Inscritos de un curso de capacitación a Excel (.xlsx,
- * una hoja): cabecera con datos del curso (título, costo, aula, horario,
+ * una hoja): cabecera con datos del curso (título, costo, horario,
  * fechas) + institucional, y una fila por participante VIGENTE (PENDIENTE o
  * INSCRITO — se excluyen RETIRADO/ANULADO, ya no forman parte del curso) con
- * cédula, nombre completo, correo, saldo pendiente y fecha de inscripción.
+ * cédula, nombre completo, correo, saldo pendiente, grupo, estado de pago de matrícula y
+ * de curso, requisitos obligatorios pendientes y fecha de inscripción. La cabecera
+ * incluye modalidad y costos del curso y de la matrícula.
  *
  * Reutiliza los mismos repositorios de lectura que alimentan las pantallas
  * (paridad pantalla↔Excel): `cursoCapacitacionFichaViewRepository` (vista 155,
- * ya trae aula y horarios formateados) e
+ * ya trae los horarios formateados por grupo) e
  * `inscripcionCapacitacionRepository.findListadoRows` (mismo cálculo de saldo
  * contra `monto_obligatorio` que usa el listado y la ficha).
  */
@@ -70,7 +72,11 @@ export class ExportListadoInscritosCapacitacionExcelUseCase {
           .filter(Boolean)
           .join(' '),
         correo: row.participante_email ?? null,
+        grupo: row.grupo_nombre ?? null,
         saldo: Number(row.saldo) || 0,
+        estadoPagoMatricula: row.estado_pago_matricula ?? null,
+        estadoPagoCurso: row.estado_pago_curso ?? null,
+        requisitosPendientes: Number(row.requisitos_pendientes) || 0,
         fechaInscripcion: row.fecha_inscripcion,
       }));
 
@@ -78,7 +84,8 @@ export class ExportListadoInscritosCapacitacionExcelUseCase {
       curso: {
         titulo: cursoRow.titulo,
         costo: cursoRow.costo,
-        aulaNombre: cursoRow.aula_nombre,
+        costoMatricula: cursoRow.costo_matricula,
+        modalidad: cursoRow.modalidad,
         horariosDetalle: cursoRow.horarios_detalle,
         fechaInicio: cursoRow.fecha_inicio,
         fechaFin: cursoRow.fecha_fin,

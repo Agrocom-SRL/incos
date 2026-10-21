@@ -4,6 +4,7 @@
  * `esCursoGratuito` (capacitacionPills.js). Un solo lugar para este criterio
  * visual, reusado en fichas, tablas y tarjetas de cursos e inscripciones —
  * evita repetir la misma condición `costo > 0 ? ... : ...` en cada pantalla.
+ * `aplica=false` rotula un concepto no cobrado («No aplica»).
  */
 
 import { StatusPill } from '@atoms';
@@ -13,7 +14,9 @@ import {
   esCursoGratuito,
 } from '@application-capacitacion/utils/capacitacionPills';
 
-const CostoCursoLabel = ({ costo }) => {
+const CostoCursoLabel = ({ costo, aplica = true }) => {
+  // Concepto no cobrado (interruptor apagado): no se muestra como «Gratis».
+  if (!aplica) return <>No aplica</>;
   if (esCursoGratuito(costo)) {
     return <StatusPill label="Gratis" className={COSTO_GRATUITO_PILL_CLASS} />;
   }

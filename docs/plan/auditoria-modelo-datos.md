@@ -1,5 +1,8 @@
 # Auditoría del modelo de datos — fundamentación documental y coherencia
 
+> **Estado: implementado — verificado 2026-10-20.** Comprobado contra el código: informe de auditoría cerrado: la renumeración a 27 schemas está vigente en `01-schemas/` y los hallazgos §3-§4 figuran como RESUELTOS. Falta: las decisiones de §6 (la §6.7, dueño de menú, quedó resuelta en `titulacion-y-dominios-pendientes.md`).
+
+
 **Fecha:** 2026-07-27 / 2026-07-28 · **Alcance:** `backend/database/01-schemas` (27 archivos), `02-seeders`, `03-views`, contrastados contra la documentación real del instituto (`/Users/miguel/Documents/incos/`, fuera del repo).
 
 Propósito: dejar respaldo de (1) la renumeración de schemas por orden de dependencias, (2) la fundamentación documental de los dominios de titulación/pasantías/libros/supervisión, y (3) los hallazgos de las auditorías de coherencia, para poder acudir a este documento en el futuro sin re-derivar el análisis.

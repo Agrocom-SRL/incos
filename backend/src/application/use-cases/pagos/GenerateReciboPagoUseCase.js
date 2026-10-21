@@ -1,4 +1,4 @@
-import { NotFoundError } from '../../../domain/errors/AppError.js';
+import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
 import { UploadsStorageHelper } from '../../../infrastructure/external/storage/UploadsStorageHelper.js';
 import path from 'path';
 import fs from 'fs';
@@ -8,17 +8,17 @@ import { serverConfig } from '../../../infrastructure/config/server.config.js';
  * Use Case: GenerateReciboPagoUseCase
  * Módulo: Pagos Académicos
  * Genera o obtiene el recibo de pago de un aporte académico
- * 
+ *
  * Responsabilidades:
  * - Verificar si el recibo ya existe en documentos_estudiante
  * - Si existe, retornar la información del archivo existente
  * - Si no existe, generarlo usando la misma lógica que RegisterAporteVoluntarioUseCase
  * - Guardar el recibo generado en documentos_estudiante
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja la generación/obtención del recibo de pago
  * - Dependency Inversion: Depende de abstracciones (repositorios)
- * 
+ *
  * Clean Architecture:
  * - Application Layer: Orquesta la lógica de negocio
  * - Depende de Repositories (Infrastructure) a través de abstracciones
@@ -63,21 +63,21 @@ export class GenerateReciboPagoUseCase {
 
     /**
      * Ejecuta el caso de uso de generación/obtención del recibo de pago
-     * 
+     *
      * Flujo:
      * 1. Validar que el pago exista
      * 2. Verificar si el recibo ya existe en documentos_estudiante
      * 3. Si existe, retornar la información del archivo
      * 4. Si no existe, generar el recibo usando la misma lógica que RegisterAporteVoluntarioUseCase
      * 5. Guardar el recibo generado en documentos_estudiante
-     * 
+     *
      * @param {number|string} paymentId - ID de cuota (numérico), número de recibo (string, ej. "REC-1-1", "000004") o ID de cabecera (numérico)
      * @param {Object} options - Opciones adicionales (por defecto vacío)
      * @returns {Promise<{filePath: string, fileName: string, absolutePath: string}>} Rutas del recibo
      * @throws {NotFoundError} Si no existe cuota ni cabecera con ese id/numero de recibo
      * @throws {Error} Si falla la generación del recibo
      */
-    async execute(paymentId, options = {}) {
+    async execute(paymentId, _options = {}) {
         this.logger.info('[Pagos] Iniciando generación/obtención de recibo de pago', {
             paymentId,
         });
@@ -93,7 +93,9 @@ export class GenerateReciboPagoUseCase {
                     }
                 }
                 if (paymentId != null && String(paymentId).trim() !== '') {
-                    const installmentByRecibo = await this.contributionPaymentInstallmentRepository.findBy({ receiptNumber: String(paymentId).trim() });
+                    const installmentByRecibo = await this.contributionPaymentInstallmentRepository.findBy(
+                      { receiptNumber: String(paymentId).trim() },
+                    );
                     if (installmentByRecibo) {
                         return await this._executeReciboPorCuota(installmentByRecibo);
                     }
@@ -148,11 +150,11 @@ export class GenerateReciboPagoUseCase {
                         : path.resolve(serverConfig.backendRoot, uploadDir, relativePath);
 
                     return {
-                        filePath: filePath,
+                        filePath,
                         fileName: existingRecibo.fileName,
-                        absolutePath: absolutePath,
+                        absolutePath,
                     };
-                } else {
+                }
                     // El registro existe en BD pero el archivo físico NO existe, debe regenerarse
                     this.logger.warn('[Pagos] Recibo existe en BD pero archivo físico no encontrado en el sistema de archivos, regenerando PDF', {
                         paymentId,
@@ -162,7 +164,6 @@ export class GenerateReciboPagoUseCase {
                     });
                     existingDocumentId = existingRecibo.id;
                     shouldRegenerate = true;
-                }
             } else {
                 // No existe registro en BD, debe generarse desde cero
                 this.logger.info('[Pagos] Recibo no existe en BD, generando nuevo recibo', {
@@ -181,14 +182,16 @@ export class GenerateReciboPagoUseCase {
                 });
 
                 // 4. Obtener datos necesarios para generar el recibo
-                const [student, management, paymentMethod, studentScholarship, scholarship] = await Promise.all([
+                const [student, management, paymentMethod, studentScholarship] = await Promise.all([
                     this.studentRepository.findById(studentId),
                     this.managementRepository.findById(paymentPlain.managementId || paymentPlain.management_id),
                     paymentPlain.paymentMethodId || paymentPlain.payment_method_id
-                        ? this.paymentMethodRepository.findById(paymentPlain.paymentMethodId || paymentPlain.payment_method_id)
+                        ? this.paymentMethodRepository.findById(paymentPlain.paymentMethodId
+                          || paymentPlain.payment_method_id)
                         : null,
                     paymentPlain.studentScholarshipId || paymentPlain.student_scholarship_id
-                        ? this.studentScholarshipRepository.findById(paymentPlain.studentScholarshipId || paymentPlain.student_scholarship_id)
+                        ? this.studentScholarshipRepository.findById(paymentPlain.studentScholarshipId
+                          || paymentPlain.student_scholarship_id)
                         : null,
                     null, // Se obtendrá después si hay studentScholarship
                 ]);
@@ -204,7 +207,8 @@ export class GenerateReciboPagoUseCase {
                 // Obtener beca si hay studentScholarship
                 let scholarshipInfo = null;
                 if (studentScholarship) {
-                    const scholarshipId = studentScholarship.scholarshipId || studentScholarship.becaDescuentoId || studentScholarship.beca_descuento_id;
+                    const scholarshipId = studentScholarship.scholarshipId || studentScholarship.becaDescuentoId
+                      || studentScholarship.beca_descuento_id;
                     if (scholarshipId) {
                         scholarshipInfo = await this.scholarshipRepository.findById(scholarshipId);
                     }
@@ -218,12 +222,22 @@ export class GenerateReciboPagoUseCase {
                         1,
                         100
                     );
-                    const cuotas = resultCuotas.contributionPaymentInstallments ?? resultCuotas.contributionPaymentInstallment ?? [];
+                    const cuotas = resultCuotas.contributionPaymentInstallments
+                      ?? resultCuotas.contributionPaymentInstallment ?? [];
                     if (cuotas.length > 0) {
                         const ultima = cuotas[cuotas.length - 1];
                         const plain = ultima.toPlainObject ? ultima.toPlainObject() : ultima;
                         observacionCabecera = (plain.description ?? plain.descripcion ?? '').toString().trim() || '';
                     }
+                }
+
+                // El total debe venir del registro: no se inventa un monto si falta (0 es válido).
+                const totalRecibo = this._primerMonto([
+                  paymentPlain.totalAmount, paymentPlain.total_amount, paymentPlain.montoTotal,
+                  paymentPlain.monto_total, paymentPlain.baseAmount, paymentPlain.montoBase,
+                ]);
+                if (totalRecibo == null) {
+                    throw new ValidationError(`El aporte ${paymentId} no tiene monto total registrado`);
                 }
 
                 // 5. Generar el recibo PDF usando la misma lógica que RegisterAporteVoluntarioUseCase
@@ -233,9 +247,15 @@ export class GenerateReciboPagoUseCase {
                     management,
                     paymentMethod,
                     scholarshipInfo,
-                    paymentPlain.totalAmount || paymentPlain.total_amount || paymentPlain.montoTotal || paymentPlain.monto_total || 400.00,
-                    paymentPlain.scholarshipDiscount || paymentPlain.scholarship_discount || paymentPlain.descuentoBeca || paymentPlain.descuento_beca || 0.00,
-                    paymentPlain.amountPaid || paymentPlain.amount_paid || paymentPlain.montoPagado || paymentPlain.monto_pagado || (paymentPlain.totalAmount || paymentPlain.total_amount || 400.00),
+                    totalRecibo,
+                    this._primerMonto([
+                      paymentPlain.scholarshipDiscount, paymentPlain.scholarship_discount,
+                      paymentPlain.descuentoBeca, paymentPlain.descuento_beca,
+                    ]) ?? 0,
+                    this._primerMonto([
+                      paymentPlain.amountPaid, paymentPlain.amount_paid, paymentPlain.montoPagado,
+                      paymentPlain.monto_pagado,
+                    ]) ?? totalRecibo,
                     observacionCabecera
                 );
 
@@ -306,6 +326,21 @@ export class GenerateReciboPagoUseCase {
     }
 
     /**
+     * Primer candidato numérico finito (null/undefined/''/NaN se saltan; 0 cuenta como valor real).
+     * @private
+     * @param {Array<*>} candidatos
+     * @returns {number|null}
+     */
+    _primerMonto(candidatos) {
+        for (const c of candidatos) {
+            if (c === undefined || c === null || (typeof c === 'string' && c.trim() === '')) continue;
+            const n = Number(c);
+            if (Number.isFinite(n)) return n;
+        }
+        return null;
+    }
+
+    /**
      * Genera el recibo de pago para una cuota (pago_cuotas).
      * Usado cuando el id recibido en execute() corresponde a una cuota.
      * @private
@@ -326,7 +361,10 @@ export class GenerateReciboPagoUseCase {
         const cabeceraPlain = cabecera.toPlainObject ? cabecera.toPlainObject() : cabecera;
         const studentId = cabeceraPlain.studentId ?? cabeceraPlain.estudianteId ?? cabeceraPlain.student_id;
         const montoObligatorio = Number(cabeceraPlain.mandatoryAmount ?? cabeceraPlain.montoObligatorio ?? 0);
-        const montoBase = Number(cabeceraPlain.baseAmount ?? cabeceraPlain.montoBase ?? 0);
+        const montoBase = this._primerMonto([cabeceraPlain.baseAmount, cabeceraPlain.montoBase]);
+        if (montoBase == null) {
+            throw new ValidationError(`La cabecera de aporte ${cabeceraId} no tiene monto base registrado`);
+        }
         const descuentoBeca = Number(cabeceraPlain.scholarshipDiscount ?? cabeceraPlain.descuentoBeca ?? 0);
 
         const resultCuotas = await this.contributionPaymentInstallmentRepository.findAll(
@@ -354,9 +392,12 @@ export class GenerateReciboPagoUseCase {
 
         const [student, management, paymentMethod] = await Promise.all([
             this.studentRepository.findById(studentId),
-            this.managementRepository.findById(cabeceraPlain.managementId ?? cabeceraPlain.gestionId ?? cabeceraPlain.management_id),
+            this.managementRepository.findById(
+              cabeceraPlain.managementId ?? cabeceraPlain.gestionId ?? cabeceraPlain.management_id,
+            ),
             (cuotaPlain.paymentMethodId ?? cuotaPlain.metodoPagoId ?? cuotaPlain.metodo_pago_id)
-                ? this.paymentMethodRepository.findById(cuotaPlain.paymentMethodId ?? cuotaPlain.metodoPagoId ?? cuotaPlain.metodo_pago_id)
+                ? this.paymentMethodRepository.findById(cuotaPlain.paymentMethodId ?? cuotaPlain.metodoPagoId
+                  ?? cuotaPlain.metodo_pago_id)
                 : null,
         ]);
 
@@ -368,11 +409,13 @@ export class GenerateReciboPagoUseCase {
         }
 
         let scholarshipInfo = null;
-        const studentScholarshipId = cabeceraPlain.studentScholarshipId ?? cabeceraPlain.estudianteBecaId ?? cabeceraPlain.estudiante_beca_id;
+        const studentScholarshipId = cabeceraPlain.studentScholarshipId ?? cabeceraPlain.estudianteBecaId
+          ?? cabeceraPlain.estudiante_beca_id;
         if (studentScholarshipId) {
             const studentScholarship = await this.studentScholarshipRepository.findById(studentScholarshipId);
             if (studentScholarship) {
-                const plainSs = studentScholarship.toPlainObject ? studentScholarship.toPlainObject() : studentScholarship;
+                const plainSs = studentScholarship.toPlainObject ? studentScholarship.toPlainObject()
+                  : studentScholarship;
                 const scholarshipId = plainSs.scholarshipId ?? plainSs.becaDescuentoId ?? plainSs.beca_descuento_id;
                 if (scholarshipId) {
                     scholarshipInfo = await this.scholarshipRepository.findById(scholarshipId);
@@ -397,7 +440,7 @@ export class GenerateReciboPagoUseCase {
             carrera: null,
             cursoParalelo: null,
             anio: null,
-            montoTotal: montoBase || 400,
+            montoTotal: montoBase,
             descuentoBeca,
             montoObligatorio,
             totalPagadoAntes,
@@ -405,8 +448,14 @@ export class GenerateReciboPagoUseCase {
             saldoPendiente,
             concepto: 'Aporte académico',
             metodoPago: paymentMethod?.nombre ?? paymentMethod?.name ?? 'N/A',
-            numeroTransaccion: cuotaPlain.transactionNumber ?? cuotaPlain.numeroTransaccion ?? cuotaPlain.numero_transaccion ?? null,
-            becaInfo: scholarshipInfo ? { nombre: scholarshipInfo.nombre ?? scholarshipInfo.name, porcentaje: scholarshipInfo.porcentaje ?? scholarshipInfo.percentage } : null,
+            numeroTransaccion: cuotaPlain.transactionNumber ?? cuotaPlain.numeroTransaccion
+              ?? cuotaPlain.numero_transaccion ?? null,
+            becaInfo: scholarshipInfo
+              ? {
+                nombre: scholarshipInfo.nombre ?? scholarshipInfo.name,
+                porcentaje: scholarshipInfo.porcentaje ?? scholarshipInfo.percentage,
+              }
+              : null,
             observacion: observacionCuota,
         };
 
@@ -459,7 +508,7 @@ export class GenerateReciboPagoUseCase {
                 this.logger.warn('[Pagos] Archivo físico del recibo no encontrado', {
                     documentId: plain.id,
                     filePath: plain.filePath,
-                    absolutePath: absolutePath,
+                    absolutePath,
                 });
             }
 
@@ -567,7 +616,8 @@ export class GenerateReciboPagoUseCase {
             const reciboData = {
                 // Datos del recibo
                 numeroRecibo: paymentPlain.receiptNumber || paymentPlain.numeroRecibo || paymentPlain.numero_recibo || String(paymentPlain.id).padStart(6, '0'),
-                fechaPago: paymentPlain.fechaPago || paymentPlain.fecha_pago || paymentPlain.paymentDate || paymentPlain.payment_date,
+                fechaPago: paymentPlain.fechaPago || paymentPlain.fecha_pago || paymentPlain.paymentDate
+                  || paymentPlain.payment_date,
 
                 // Datos del estudiante
                 nombreCompleto: `${studentPlain.lastName || studentPlain.apellido_paterno || ''} ${studentPlain.motherLastName || studentPlain.apellido_materno || ''} ${studentPlain.firstName || studentPlain.nombres || ''}`.trim().toUpperCase(),
@@ -578,12 +628,13 @@ export class GenerateReciboPagoUseCase {
                 anio: null, // No mostrar si no existe
 
                 // Datos del pago
-                montoTotal: totalAmount || 400.00,
-                descuentoBeca: scholarshipDiscount || 0,
-                montoPagado: amountToPay || totalAmount || 400.00,
+                montoTotal: totalAmount,
+                descuentoBeca: scholarshipDiscount ?? 0,
+                montoPagado: amountToPay ?? totalAmount,
                 concepto: paymentPlain.concepto || paymentPlain.concept || 'Aporte voluntario anual',
                 metodoPago: paymentMethod?.nombre || paymentMethod?.name || 'N/A',
-                numeroTransaccion: paymentPlain.numeroTransaccion || paymentPlain.numero_transaccion || paymentPlain.transactionNumber || paymentPlain.transaction_number || null,
+                numeroTransaccion: paymentPlain.numeroTransaccion || paymentPlain.numero_transaccion
+                  || paymentPlain.transactionNumber || paymentPlain.transaction_number || null,
 
                 // Observación (pago_cuotas.descripcion): plazo, datos adicionales; en UI se llama "Observación"
                 observacion,
@@ -621,7 +672,7 @@ export class GenerateReciboPagoUseCase {
                 filePath: result.filePath,
                 fileName: result.fileName,
                 absolutePath: result.absolutePath,
-                relativePath: relativeScope + '/' + fileName, // Para compatibilidad
+                relativePath: `${relativeScope}/${fileName}`, // Para compatibilidad
             };
         } catch (error) {
             this.logger.error('[Pagos] Error al generar recibo PDF', {
@@ -661,7 +712,7 @@ export class GenerateReciboPagoUseCase {
                 studentId,
                 tipoDocumento: 'PAGO', // El recibo es parte del proceso de pago
                 documentacionId: null, // No hay documento específico en catálogo para "Recibo de Pago"
-                fileName: fileName,
+                fileName,
                 filePath: relativePath, // Guardar sin prefijo /uploads/
                 extension: 'pdf',
                 tipoMime: 'application/pdf',
@@ -676,7 +727,7 @@ export class GenerateReciboPagoUseCase {
             this.logger.info('[Pagos] Recibo PDF guardado como documento', {
                 studentId,
                 documentId: document.id,
-                fileName: fileName,
+                fileName,
                 filePath: relativePath,
             });
 

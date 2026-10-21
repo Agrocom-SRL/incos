@@ -41,12 +41,13 @@ export const useFormFieldOptions = ({
   form,
 }) => {
   // Observar cambios en el campo excluido si existe
-  const excludeFieldValue = excludeFrom && form ? Form.useWatch(excludeFrom, form) : null;
+  const watchedExclude = Form.useWatch(excludeFrom && form ? excludeFrom : [], form);
+  const excludeFieldValue = excludeFrom && form ? watchedExclude : null;
   
   // Observar tipo de admisión si el campo es 'gestiones' para recargar opciones dinámicamente
-  const tipoAdmision = form && typeof fieldOptions === 'string' && fieldOptions === 'gestiones' 
-    ? Form.useWatch('tipoAdmision', form) 
-    : null;
+  const observaTipoAdmision = Boolean(form) && fieldOptions === 'gestiones';
+  const watchedTipoAdmision = Form.useWatch(observaTipoAdmision ? 'tipoAdmision' : [], form);
+  const tipoAdmision = observaTipoAdmision ? watchedTipoAdmision : null;
 
   // Resolver y filtrar opciones
   const selectOptions = useMemo(() => {
@@ -86,6 +87,7 @@ export const useFormFieldOptions = ({
     }
 
     return options;
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- tipoAdmision fuerza re-resolver opciones (p. ej. gestiones) al cambiar
   }, [fieldType, fieldOptions, excludeFrom, resolveOptions, excludeFieldValue, tipoAdmision, form]);
 
   return selectOptions;

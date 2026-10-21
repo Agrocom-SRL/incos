@@ -1,5 +1,4 @@
 import { Op } from 'sequelize';
-import { IEstudianteRepository } from '../../domain/interfaces/repositories/IEstudianteRepository.js';
 import { Estudiante as EstudianteModel } from '../database/models/estudiante.js';
 import { BaseRepository } from './BaseRepository.js';
 import { StudentMapper } from '../mappers/StudentMapper.js';
@@ -8,21 +7,21 @@ import { sequelize } from '../database/sequelize.js';
 /**
  * Implementación del repositorio de estudiantes usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
- * 
+ *
  * Responsabilidades:
  * - Acceso a datos (consultas, persistencia)
  * - Delegar conversión ORM ↔ Entidad a StudentMapper
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja acceso a datos
  * - Dependency Inversion: Usa StudentMapper para conversiones (depende de abstracción)
- * 
+ *
  * Clean Architecture:
  * - Infrastructure Layer: Implementación concreta de IEstudianteRepository
  * - Usa StudentMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
- * 
+ *
  * @implements {IEstudianteRepository}
- * 
+ *
  * Esta clase cumple con el contrato IEstudianteRepository:
  * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
  * - La especialización está en buildWhereClause(), no en métodos adicionales
@@ -40,7 +39,7 @@ export class StudentRepository extends BaseRepository {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Delega la responsabilidad de mapeo a StudentMapper
-   * 
+   *
    * @param {Object} model - Modelo Sequelize
    * @returns {Student|null} Entidad de dominio
    */
@@ -51,16 +50,16 @@ export class StudentRepository extends BaseRepository {
   /**
    * Construye la cláusula WHERE para filtros específicos
    * Maneja todos los criterios de búsqueda de la entidad Student
-   * 
+   *
    * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
    * sin necesidad de crear métodos adicionales en el repositorio.
-   * 
+   *
    * Ejemplos de uso:
    * - findBy({ ci: '1234567', expedition: 'LP' }) → Busca por CI y expedición
    * - findBy({ studentCode: '2025-001' }) → Busca por código de estudiante
    * - findAll({ userId: 1 }) → Busca estudiantes de un usuario
    * - findAll({ gender: 'M' }) → Busca por género
-   * 
+   *
    * @param {Object} filters - Filtros de búsqueda
    *   - ci: Cédula de identidad
    *   - expedition: Expedición del CI (se convierte a mayúsculas)
@@ -117,7 +116,7 @@ export class StudentRepository extends BaseRepository {
   /**
    * Retorna los campos que se usarán para búsqueda de texto
    * Estos campos se usan en el método search() para búsqueda por término
-   * 
+   *
    * @returns {string[]} Array de nombres de campos del modelo Sequelize
    */
   getSearchFields() {
@@ -127,7 +126,7 @@ export class StudentRepository extends BaseRepository {
   /**
    * Retorna el orden por defecto para las consultas
    * Delega el orden al BaseRepository que ordena por ID ASC
-   * 
+   *
    * @returns {Array} Array vacío para usar el orden por defecto del BaseRepository (id ASC)
    */
   getDefaultSort() {
@@ -137,30 +136,30 @@ export class StudentRepository extends BaseRepository {
   /**
    * Mapea datos de dominio a formato del modelo Sequelize (para creación)
    * Delega la responsabilidad de mapeo a StudentMapper
-   * 
+   *
    * @param {Student|Object} data - Entidad Student o objeto con datos de dominio
    * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return StudentMapper.toModel(data);
   }
 
   /**
    * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
    * Delega la responsabilidad de mapeo a StudentMapper
-   * 
+   *
    * @param {Student|Object} data - Entidad Student o objeto con datos de dominio
    * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return StudentMapper.toModelForUpdate(data);
   }
 
   /**
    * Retorna el nombre de la colección en la respuesta JSON
-   * 
+   *
    * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
@@ -324,7 +323,7 @@ export class StudentRepository extends BaseRepository {
       .filter((t) => t.length >= 2)
       .slice(0, 6);
     const tokenClauses = tokens.map(
-      () => `(COALESCE(b.nombres, '') LIKE ? OR COALESCE(b.apellido_paterno, '') LIKE ? OR COALESCE(b.apellido_materno, '') LIKE ? OR CONCAT_WS(' ', b.nombres, b.apellido_paterno, b.apellido_materno) LIKE ? OR CONCAT_WS(' ', b.apellido_paterno, b.apellido_materno, b.nombres) LIKE ? OR COALESCE(b.carrera_nombre, '') LIKE ? OR COALESCE(b.carrera_codigo, '') LIKE ? OR COALESCE(b.codigo_estudiante, '') LIKE ? OR COALESCE(b.ci, '') LIKE ?)`
+      () => '(COALESCE(b.nombres, \'\') LIKE ? OR COALESCE(b.apellido_paterno, \'\') LIKE ? OR COALESCE(b.apellido_materno, \'\') LIKE ? OR CONCAT_WS(\' \', b.nombres, b.apellido_paterno, b.apellido_materno) LIKE ? OR CONCAT_WS(\' \', b.apellido_paterno, b.apellido_materno, b.nombres) LIKE ? OR COALESCE(b.carrera_nombre, \'\') LIKE ? OR COALESCE(b.carrera_codigo, \'\') LIKE ? OR COALESCE(b.codigo_estudiante, \'\') LIKE ? OR COALESCE(b.ci, \'\') LIKE ?)'
     );
     const tokenSql = tokenClauses.length > 0 ? ` AND ${tokenClauses.join(' AND ')}` : '';
 
@@ -413,7 +412,7 @@ export class StudentRepository extends BaseRepository {
       .slice(0, 6);
     const tokenClauses = tokens.map(
       () =>
-        `(COALESCE(b.nombres, '') LIKE ? OR COALESCE(b.apellido_paterno, '') LIKE ? OR COALESCE(b.apellido_materno, '') LIKE ? OR CONCAT_WS(' ', b.nombres, b.apellido_paterno, b.apellido_materno) LIKE ? OR CONCAT_WS(' ', b.apellido_paterno, b.apellido_materno, b.nombres) LIKE ? OR COALESCE(b.carrera_nombre, '') LIKE ? OR COALESCE(b.carrera_codigo, '') LIKE ? OR COALESCE(b.codigo_estudiante, '') LIKE ? OR COALESCE(b.ci, '') LIKE ?)`
+        '(COALESCE(b.nombres, \'\') LIKE ? OR COALESCE(b.apellido_paterno, \'\') LIKE ? OR COALESCE(b.apellido_materno, \'\') LIKE ? OR CONCAT_WS(\' \', b.nombres, b.apellido_paterno, b.apellido_materno) LIKE ? OR CONCAT_WS(\' \', b.apellido_paterno, b.apellido_materno, b.nombres) LIKE ? OR COALESCE(b.carrera_nombre, \'\') LIKE ? OR COALESCE(b.carrera_codigo, \'\') LIKE ? OR COALESCE(b.codigo_estudiante, \'\') LIKE ? OR COALESCE(b.ci, \'\') LIKE ?)'
     );
     const tokenSql = tokenClauses.length > 0 ? ` AND ${tokenClauses.join(' AND ')}` : '';
 
@@ -518,7 +517,7 @@ export class StudentRepository extends BaseRepository {
       .slice(0, 6);
     const tokenClauses = tokens.map(
       () =>
-        `(COALESCE(b.nombres, '') LIKE ? OR COALESCE(b.apellido_paterno, '') LIKE ? OR COALESCE(b.apellido_materno, '') LIKE ? OR CONCAT_WS(' ', b.nombres, b.apellido_paterno, b.apellido_materno) LIKE ? OR CONCAT_WS(' ', b.apellido_paterno, b.apellido_materno, b.nombres) LIKE ? OR COALESCE(b.carrera_nombre, '') LIKE ? OR COALESCE(b.carrera_codigo, '') LIKE ? OR COALESCE(b.codigo_estudiante, '') LIKE ? OR COALESCE(b.ci, '') LIKE ?)`
+        '(COALESCE(b.nombres, \'\') LIKE ? OR COALESCE(b.apellido_paterno, \'\') LIKE ? OR COALESCE(b.apellido_materno, \'\') LIKE ? OR CONCAT_WS(\' \', b.nombres, b.apellido_paterno, b.apellido_materno) LIKE ? OR CONCAT_WS(\' \', b.apellido_paterno, b.apellido_materno, b.nombres) LIKE ? OR COALESCE(b.carrera_nombre, \'\') LIKE ? OR COALESCE(b.carrera_codigo, \'\') LIKE ? OR COALESCE(b.codigo_estudiante, \'\') LIKE ? OR COALESCE(b.ci, \'\') LIKE ?)'
     );
     const tokenSql = tokenClauses.length > 0 ? ` AND ${tokenClauses.join(' AND ')}` : '';
 
@@ -615,4 +614,3 @@ export class StudentRepository extends BaseRepository {
     });
   }
 }
-

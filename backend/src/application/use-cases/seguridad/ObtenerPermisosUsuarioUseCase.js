@@ -1,4 +1,5 @@
 import { NotFoundError } from '../../../domain/errors/AppError.js';
+import { PERMISO_CATALOGO_REFERENCIA_CODIGO } from '../../../domain/constants/usuarios.constants.js';
 import {
   agruparPermisosEfectivos,
 } from './permisos-agrupar.helper.js';
@@ -40,7 +41,9 @@ export class ObtenerPermisosUsuarioUseCase {
       const flat = esAdminSistema
         ? await this.permissionRepository.findAllAccionesValidasFlat()
         : await this.rolePermissionRepository.findFlatByRolId(user.rol_id);
-      permisosRol = flat.map((r) => ({
+      permisosRol = flat
+        .filter((r) => r.codigo !== PERMISO_CATALOGO_REFERENCIA_CODIGO)
+        .map((r) => ({
         permiso_id: r.permiso_id,
         codigo: r.codigo,
         nombre: r.nombre ?? null,
@@ -61,7 +64,9 @@ export class ObtenerPermisosUsuarioUseCase {
     }));
 
     const efectivosFilas = await this.authRepository.findPermisosEfectivos(usuarioId);
-    const efectivos = agruparPermisosEfectivos(efectivosFilas);
+    const efectivos = agruparPermisosEfectivos(
+      efectivosFilas.filter((f) => f.permiso_codigo !== PERMISO_CATALOGO_REFERENCIA_CODIGO)
+    );
 
     return {
       usuario: {

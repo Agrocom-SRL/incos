@@ -9,13 +9,13 @@ export class Province extends BaseEntity {
     super(data);
     // Solo inicializar campos si fueron proporcionados explícitamente
     // Esto permite usar attributes limitados sin inicializar campos no solicitados
-    if (data.hasOwnProperty('departmentId')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'departmentId')) {
       this.departmentId = data.departmentId;
     }
-    if (data.hasOwnProperty('name')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'name')) {
       this.name = data.name;
     }
-    if (data.hasOwnProperty('code')) {
+    if (Object.prototype.hasOwnProperty.call(data, 'code')) {
       this.code = data.code;
     }
   }
@@ -27,15 +27,15 @@ export class Province extends BaseEntity {
    */
   toPlainObject() {
     const plainObject = super.toPlainObject();
-    
+
     // Solo incluir campos que fueron inicializados (existen en this)
-    if (this.hasOwnProperty('departmentId')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'departmentId')) {
       plainObject.departmentId = this.departmentId;
     }
-    if (this.hasOwnProperty('name')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'name')) {
       plainObject.name = this.name;
     }
-    if (this.hasOwnProperty('code')) {
+    if (Object.prototype.hasOwnProperty.call(this, 'code')) {
       plainObject.code = this.code;
     }
 

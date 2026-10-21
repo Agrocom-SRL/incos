@@ -2,14 +2,20 @@
  * Columnas del historial de pagos de una inscripción (ficha CAP).
  *
  * Tabla embebida en `InscripcionPagosSection` (gemela de las cuotas de la
- * ficha de pago de Finanzas). Sin acciones de fila: los pagos de capacitación
- * no se editan ni eliminan por separado (el recibo PDF se difiere, §6.5).
+ * ficha de pago de Finanzas). Sin editar/eliminar por fila: los pagos de capacitación
+ * no se modifican por separado (solo el comprobante, opcional) (el recibo PDF se difiere, §6.5).
  * Montos Bs SIN decimales (formatBs).
  */
 
 import { formatBs } from '@application/utils/formatters';
+import { formatConceptoPago } from '@application-capacitacion/utils/capacitacionCatalogos';
+import PagoComprobanteCell from '@capacitacion/inscripciones/components/molecules/PagoComprobanteCell';
 
-export const createPagosCapacitacionTableColumns = () => [
+/**
+ * @param {Object} [comprobante] - permisos y handlers del comprobante (opcional)
+ *   `{ puedeDescargar, puedeAdjuntar, subiendo, onDescargar, onAdjuntar }`
+ */
+export const createPagosCapacitacionTableColumns = (comprobante = {}) => [
   {
     title: '#',
     key: 'nro',
@@ -28,6 +34,12 @@ export const createPagosCapacitacionTableColumns = () => [
     dataIndex: 'fechaPagoLabel',
     width: 120,
     render: (v) => v || '—',
+  },
+  {
+    title: 'Concepto',
+    dataIndex: 'concepto',
+    width: 200,
+    render: (concepto) => formatConceptoPago(concepto),
   },
   {
     title: 'Monto',
@@ -52,5 +64,11 @@ export const createPagosCapacitacionTableColumns = () => [
     title: 'Observaciones',
     dataIndex: 'observaciones',
     render: (v) => v || '—',
+  },
+  {
+    title: 'Comprobante',
+    key: 'comprobante',
+    width: 240,
+    render: (_, pago) => <PagoComprobanteCell pago={pago} {...comprobante} />,
   },
 ];

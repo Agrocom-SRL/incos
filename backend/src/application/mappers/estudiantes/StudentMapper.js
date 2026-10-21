@@ -1,12 +1,12 @@
 /**
  * Mapper de aplicación: Student
  * Convierte entidades de dominio (Student) a formato de presentación (API/Spanish)
- * 
+ *
  * Clean Architecture:
  * - Application Layer: Convierte Domain Entities → Presentation Format
  * - Depende de Domain Layer (Student entity)
  * - Usa BaseMapper para campos comunes
- * 
+ *
  * Responsabilidades:
  * - Mapear propiedades de dominio (English/camelCase) a presentación (Spanish/snake_case)
  * - Formatear datos para consumo por el frontend
@@ -18,7 +18,7 @@ import { BaseMapper } from '../base/index.js';
 /**
  * Convierte una entidad Student a formato de presentación
  * Solo incluye campos que existen en la entidad (útil cuando se usan attributes limitados)
- * 
+ *
  * @param {Student} student - Entidad de dominio Student
  * @returns {Object|null} Objeto en formato de presentación o null si student es null/undefined
  */
@@ -100,9 +100,15 @@ export function viewRowToPresentation(row) {
   map('empresa_institucion', 'empresaInstitucion');
   map('cargo', 'cargo');
   map('observaciones', 'observaciones');
-  if (row.residencia_municipio_nombre !== undefined) presentation.residenciaMunicipioNombre = row.residencia_municipio_nombre;
-  if (row.residencia_provincia_nombre !== undefined) presentation.residenciaProvinciaNombre = row.residencia_provincia_nombre;
-  if (row.residencia_departamento_nombre !== undefined) presentation.residenciaDepartamentoNombre = row.residencia_departamento_nombre;
+  if (row.residencia_municipio_nombre !== undefined) {
+    presentation.residenciaMunicipioNombre = row.residencia_municipio_nombre;
+  }
+  if (row.residencia_provincia_nombre !== undefined) {
+    presentation.residenciaProvinciaNombre = row.residencia_provincia_nombre;
+  }
+  if (row.residencia_departamento_nombre !== undefined) {
+    presentation.residenciaDepartamentoNombre = row.residencia_departamento_nombre;
+  }
   if (row.estado_civil_nombre !== undefined) presentation.estadoCivilNombre = row.estado_civil_nombre;
 
   return presentation;
@@ -148,4 +154,3 @@ export class StudentMapper {
     return viewRowsToPresentation(rows);
   }
 }
-

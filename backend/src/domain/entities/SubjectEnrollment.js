@@ -12,37 +12,37 @@ export class SubjectEnrollment extends BaseEntity {
     constructor(data = {}) {
         super(data);
 
-        if (data.hasOwnProperty('enrollmentId')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'enrollmentId')) {
             this.enrollmentId = data.enrollmentId;
         }
 
-        if (data.hasOwnProperty('offerCourseId')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'offerCourseId')) {
             this.offerCourseId = data.offerCourseId;
         }
 
-        if (data.hasOwnProperty('teacherAssignmentId')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'teacherAssignmentId')) {
             this.teacherAssignmentId = data.teacherAssignmentId;
         }
 
-        if (data.hasOwnProperty('curriculumSubjectId')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'curriculumSubjectId')) {
             this.curriculumSubjectId = data.curriculumSubjectId;
         }
 
-        if (data.hasOwnProperty('finalGrade')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'finalGrade')) {
             this.finalGrade = data.finalGrade;
         }
 
-        if (data.hasOwnProperty('status')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'status')) {
             this.status = data.status;
-        } else if (!data.hasOwnProperty('enrollmentId')) {
+        } else if (!Object.prototype.hasOwnProperty.call(data, 'enrollmentId')) {
             this.status = ESTADOS_MATERIA_INSCRITA.INSCRITO;
         }
 
-        if (data.hasOwnProperty('statusHistory')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'statusHistory')) {
             this.statusHistory = data.statusHistory;
         }
 
-        if (data.hasOwnProperty('observations')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'observations')) {
             this.observations = data.observations;
         }
     }
@@ -109,35 +109,35 @@ export class SubjectEnrollment extends BaseEntity {
     toPlainObject() {
         const plainObject = super.toPlainObject();
 
-        if (this.hasOwnProperty('enrollmentId')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'enrollmentId')) {
             plainObject.enrollmentId = this.enrollmentId;
         }
 
-        if (this.hasOwnProperty('offerCourseId')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'offerCourseId')) {
             plainObject.offerCourseId = this.offerCourseId;
         }
 
-        if (this.hasOwnProperty('teacherAssignmentId')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'teacherAssignmentId')) {
             plainObject.teacherAssignmentId = this.teacherAssignmentId;
         }
 
-        if (this.hasOwnProperty('curriculumSubjectId')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'curriculumSubjectId')) {
             plainObject.curriculumSubjectId = this.curriculumSubjectId;
         }
 
-        if (this.hasOwnProperty('finalGrade')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'finalGrade')) {
             plainObject.finalGrade = this.finalGrade;
         }
 
-        if (this.hasOwnProperty('status')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'status')) {
             plainObject.status = this.status;
         }
 
-        if (this.hasOwnProperty('statusHistory')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'statusHistory')) {
             plainObject.statusHistory = this.statusHistory;
         }
 
-        if (this.hasOwnProperty('observations')) {
+        if (Object.prototype.hasOwnProperty.call(this, 'observations')) {
             plainObject.observations = this.observations;
         }
 

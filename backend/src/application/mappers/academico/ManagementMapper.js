@@ -1,12 +1,12 @@
 /**
  * Mapper de aplicación: Management
  * Convierte entidades de dominio (Management) a formato de presentación (API/Spanish)
- * 
+ *
  * Clean Architecture:
  * - Application Layer: Convierte Domain Entities → Presentation Format
  * - Depende de Domain Layer (Management entity)
  * - Usa BaseMapper para campos comunes
- * 
+ *
  * Responsabilidades:
  * - Mapear propiedades de dominio (English/camelCase) a presentación (Spanish/snake_case)
  * - Formatear datos para consumo por el frontend
@@ -18,7 +18,7 @@ import { BaseMapper } from '../base/index.js';
 /**
  * Convierte una entidad Management a formato de presentación
  * Solo incluye campos que existen en la entidad (útil cuando se usan attributes limitados)
- * 
+ *
  * @param {Management} management - Entidad de dominio Management
  * @returns {Object|null} Objeto en formato de presentación o null si management es null/undefined
  */
@@ -26,10 +26,10 @@ export function entityToPresentation(management) {
   if (!management) return null;
 
   const presentation = {};
-  
+
   // Mapear campos base comunes (id, active, createdAt, updatedAt)
   BaseMapper.mapBaseFields(management, presentation);
-  
+
   // Mapear campos específicos de Management
   // Solo incluir campos que existen en la entidad (usando mapFieldIfExists)
   // Esto es importante cuando se usan attributes limitados en las consultas

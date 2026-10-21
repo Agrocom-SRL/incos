@@ -73,6 +73,7 @@ export const useCursoCapacitacionDetailPage = () => {
       } else {
         notification.error({
           title: 'No se pudo abrir el curso',
+          duration: 10,
           description: result?.error || 'Intente nuevamente en unos instantes.',
         });
       }

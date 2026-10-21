@@ -14,7 +14,7 @@ const projectRoot = join(__dirname, '../../../../');
 /**
  * Configuración de Swagger/OpenAPI
  * Genera documentación automática desde comentarios JSDoc
- * 
+ *
  * Usa variables de entorno para configuración dinámica según el entorno
  */
 
@@ -76,4 +76,3 @@ const options = {
 const swaggerSpec = swaggerJsdoc(options);
 
 export default swaggerSpec;
-

@@ -4,18 +4,18 @@ import { ESTADOS_GESTION_PLAN } from '../../domain/constants/cursos.constants.js
 
 /**
  * Mapper: ManagementPlanMapper
- * 
+ *
  * Responsabilidad única: Conversión entre Modelo ORM (Sequelize) ↔ Entidad de Dominio (ManagementPlan)
- * 
+ *
  * Patrón: Usa BaseMapper para campos comunes, solo maneja campos específicos de ManagementPlan
- * 
+ *
  * Ubicación: Infrastructure Layer (es un detalle de implementación específico de Sequelize)
- * 
+ *
  * Principios SOLID aplicados:
  * - Single Responsibility: Solo se encarga de mapear campos específicos de ManagementPlan
  * - Open/Closed: Extiende funcionalidad de BaseMapper sin modificarlo
  * - Dependency Inversion: Depende de la entidad de dominio, no de implementaciones concretas
- * 
+ *
  * Clean Architecture:
  * - Domain Layer: ManagementPlan (entidad pura)
  * - Infrastructure Layer: BaseMapper (campos comunes) + ManagementPlanMapper (campos específicos)
@@ -26,9 +26,9 @@ export class ManagementPlanMapper {
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de ManagementPlan
    * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
-   * 
+   *
    * Flujo: Base de Datos → ORM Model → Domain Entity
-   * 
+   *
    * @param {Object|null} model - Modelo Sequelize de GestionPlan
    * @returns {ManagementPlan|null} Entidad de dominio ManagementPlan
    */
@@ -65,12 +65,12 @@ export class ManagementPlanMapper {
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
-   * 
+   *
    * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
-   * 
+   *
    * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
    * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
-   * 
+   *
    * @param {ManagementPlan|Object} entity - Entidad ManagementPlan o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
@@ -92,9 +92,9 @@ export class ManagementPlanMapper {
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
    * Solo incluye los campos que están definidos (que existen en la entidad)
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de ManagementPlan
-   * 
+   *
    * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
-   * 
+   *
    * @param {ManagementPlan|Object} entity - Entidad ManagementPlan o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
@@ -131,7 +131,7 @@ export class ManagementPlanMapper {
 
   /**
    * Convierte un array de modelos Sequelize a array de entidades de dominio
-   * 
+   *
    * @param {Array} models - Array de modelos Sequelize
    * @returns {ManagementPlan[]} Array de entidades ManagementPlan
    */

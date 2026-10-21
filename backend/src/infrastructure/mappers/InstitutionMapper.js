@@ -110,4 +110,3 @@ export class InstitutionMapper {
     return models.map((m) => this.toEntity(m)).filter((e) => e !== null);
   }
 }
-

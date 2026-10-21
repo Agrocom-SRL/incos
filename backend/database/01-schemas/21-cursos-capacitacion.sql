@@ -29,10 +29,13 @@ USE instituto_incos;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- Eliminar todas las tablas (orden no importa con foreign key checks deshabilitado)
+DROP TABLE IF EXISTS capacitacion_inscrito_requisitos;
+DROP TABLE IF EXISTS capacitacion_requisitos;
 DROP TABLE IF EXISTS capacitacion_pagos;
 DROP TABLE IF EXISTS capacitacion_compromisos;
 DROP TABLE IF EXISTS capacitacion_inscritos;
 DROP TABLE IF EXISTS capacitacion_horarios;
+DROP TABLE IF EXISTS capacitacion_grupos;
 DROP TABLE IF EXISTS capacitaciones;
 DROP TABLE IF EXISTS participantes;
 
@@ -90,11 +93,19 @@ CREATE TABLE capacitaciones (
     id INT AUTO_INCREMENT PRIMARY KEY,
     titulo VARCHAR(200) NOT NULL COMMENT 'Título del curso (ej: Word avanzado)',
     descripcion TEXT NULL COMMENT 'Descripción/temario del curso',
-    costo DECIMAL(10,2) NOT NULL DEFAULT 0.00 COMMENT 'Costo de matrícula/inscripción en Bs',
+    tiene_costo BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'Interruptor: el curso NO es gratuito (habilita costo). FALSE = costo vale 0',
+    cobra_matricula BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'Interruptor: el curso cobra matrícula (habilita costo_matricula). FALSE = costo_matricula vale 0',
+    costo DECIMAL(10,2) NOT NULL DEFAULT 0.00 COMMENT 'Costo del CURSO en Bs (se deposita a la entidad certificadora, p. ej. IPELC)',
+    costo_matricula DECIMAL(10,2) NOT NULL DEFAULT 0.00 COMMENT 'Matrícula en Bs (se paga en secretaría del instituto; institución distinta a la que cobra el curso)',
+    entidad_certificadora VARCHAR(150) NULL COMMENT 'Entidad que emite el certificado y cobra el costo del curso (ej: IPELC)',
+    modalidad ENUM('VIRTUAL', 'PRESENCIAL', 'SEMIPRESENCIAL') NOT NULL DEFAULT 'PRESENCIAL'
+        COMMENT 'VIRTUAL | PRESENCIAL | SEMIPRESENCIAL (parte virtual + parte presencial)',
+    nivel VARCHAR(60) NULL COMMENT 'Nivel del curso (ej: Básico, Intermedio, Avanzado)',
+    dirigido_a VARCHAR(255) NULL COMMENT 'A quién está dirigido el curso (público objetivo)',
+    duracion VARCHAR(60) NULL COMMENT 'Duración en texto libre (ej: 2 meses); la fecha de fin es opcional',
     cupo_maximo INT NOT NULL DEFAULT 30 COMMENT 'Cupo máximo de participantes',
-    aula_id INT NULL COMMENT 'Aula asignada (catálogo aulas, reutilizado)',
     fecha_inicio DATE NOT NULL COMMENT 'Fecha de inicio del curso',
-    fecha_fin DATE NOT NULL COMMENT 'Fecha de fin del curso',
+    fecha_fin DATE NULL COMMENT 'Fecha de fin del curso (opcional: el curso puede definirse solo por duración/rango)',
     estado ENUM('PROPUESTO', 'ABIERTO', 'EN_CURSO', 'CERRADO', 'CANCELADO') NOT NULL DEFAULT 'PROPUESTO'
         COMMENT 'PROPUESTO: en definición | ABIERTO: acepta inscripciones | EN_CURSO: ya iniciado | CERRADO: finalizado | CANCELADO',
 
@@ -110,10 +121,8 @@ CREATE TABLE capacitaciones (
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
 
-    FOREIGN KEY (aula_id) REFERENCES aulas(id) ON DELETE SET NULL,
 
     INDEX idx_titulo (titulo) COMMENT 'Búsqueda por título',
-    INDEX idx_aula_id (aula_id) COMMENT 'Búsqueda por aula',
     INDEX idx_estado (estado) COMMENT 'Filtrado por estado del curso',
     INDEX idx_fechas (fecha_inicio, fecha_fin) COMMENT 'Búsqueda por rango de fechas',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
@@ -121,6 +130,41 @@ CREATE TABLE capacitaciones (
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Cursos cortos de capacitación, independientes de la oferta académica formal del instituto.';
+
+-- ============================================
+-- TABLA: capacitacion_grupos
+-- Grupos (tipo «paralelo») de un curso: «Grupo 1 – Mañana», «Grupo 2 – Tarde».
+-- El curso es conceptual: los GRUPOS son el curso físico y llevan horarios
+-- (capacitacion_horarios.grupo_id) y aula opcional. El participante elige GRUPO.
+-- ============================================
+
+CREATE TABLE capacitacion_grupos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    capacitacion_id INT NULL COMMENT 'Curso de capacitación',
+    nombre VARCHAR(60) NOT NULL COMMENT 'Nombre del grupo (ej: Grupo 1 – Mañana)',
+    cupo_maximo INT NULL COMMENT 'Cupo del grupo; NULL = usa el cupo del curso',
+    aula_id INT NULL COMMENT 'Aula del grupo (catálogo aulas, opcional)',
+    orden INT NOT NULL DEFAULT 1 COMMENT 'Orden de presentación',
+
+    -- Campos de auditoría y control (ESTÁNDAR)
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
+
+    FOREIGN KEY (capacitacion_id) REFERENCES capacitaciones(id) ON DELETE SET NULL,
+    FOREIGN KEY (aula_id) REFERENCES aulas(id) ON DELETE SET NULL,
+
+    INDEX idx_capacitacion_id (capacitacion_id) COMMENT 'Grupos por curso',
+    INDEX idx_aula_id (aula_id) COMMENT 'Búsqueda por aula',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete'
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Grupos (tipo paralelo) de un curso de capacitación; el participante elige grupo.';
 
 -- ============================================
 -- TABLA: capacitacion_horarios
@@ -131,6 +175,7 @@ COMMENT='Cursos cortos de capacitación, independientes de la oferta académica 
 CREATE TABLE capacitacion_horarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
     capacitacion_id INT NULL COMMENT 'Curso de capacitación',
+    grupo_id INT NULL COMMENT 'Grupo al que pertenece el bloque (capacitacion_grupos.id); NULL = común a todos los grupos',
     horario_id INT NULL COMMENT 'Bloque día/hora (horarios.id, tipo_horario=CAPACITACION)',
     orden_secuencia INT NOT NULL DEFAULT 1 COMMENT 'Orden cronológico durante la semana',
 
@@ -147,9 +192,11 @@ CREATE TABLE capacitacion_horarios (
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
 
     FOREIGN KEY (capacitacion_id) REFERENCES capacitaciones(id) ON DELETE SET NULL,
+    FOREIGN KEY (grupo_id) REFERENCES capacitacion_grupos(id) ON DELETE SET NULL,
     FOREIGN KEY (horario_id) REFERENCES horarios(id) ON DELETE SET NULL,
 
     INDEX idx_capacitacion_id (capacitacion_id) COMMENT 'Búsqueda por curso',
+    INDEX idx_grupo_id (grupo_id) COMMENT 'Bloques por grupo',
     INDEX idx_horario_id (horario_id) COMMENT 'Búsqueda por bloque horario',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
@@ -177,9 +224,15 @@ CREATE TABLE capacitacion_inscritos (
     -- Pago por cuotas: el detalle de cada pago vive en capacitacion_pagos
     -- (historial, sin límite de filas); aquí solo se cachea el objetivo y
     -- el estado para no tener que sumar capacitacion_pagos en cada listado
-    monto_obligatorio DECIMAL(10,2) NOT NULL COMMENT 'Snapshot de capacitaciones.costo al momento de inscribirse (protege de cambios de precio posteriores)',
+    monto_obligatorio DECIMAL(10,2) NOT NULL COMMENT 'Snapshot de capacitaciones.costo (costo del CURSO) al momento de inscribirse (protege de cambios de precio posteriores)',
+    monto_matricula DECIMAL(10,2) NOT NULL DEFAULT 0.00 COMMENT 'Snapshot de capacitaciones.costo_matricula al momento de inscribirse',
+    estado_pago_matricula ENUM('PARCIAL', 'CANCELADO') NOT NULL DEFAULT 'PARCIAL'
+        COMMENT 'CANCELADO: SUM(pagos concepto MATRICULA) >= monto_matricula (o la matrícula es 0)',
+    estado_pago_curso ENUM('PARCIAL', 'CANCELADO') NOT NULL DEFAULT 'PARCIAL'
+        COMMENT 'CANCELADO: SUM(pagos concepto CURSO) >= monto_obligatorio',
+    capacitacion_grupo_id INT NULL COMMENT 'Grupo elegido de entre los del curso (capacitacion_grupos.id); NULL = curso sin grupos',
     estado_pago ENUM('PARCIAL', 'CANCELADO') NOT NULL DEFAULT 'PARCIAL'
-        COMMENT 'PARCIAL: aun debe saldo (siempre existe al menos el primer pago al crear la fila) | CANCELADO: SUM(capacitacion_pagos.monto) >= monto_obligatorio',
+        COMMENT 'Global: CANCELADO solo si matrícula y curso están cancelados; PARCIAL en otro caso',
 
     -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
@@ -195,6 +248,7 @@ CREATE TABLE capacitacion_inscritos (
 
     FOREIGN KEY (participante_id) REFERENCES participantes(id) ON DELETE SET NULL,
     FOREIGN KEY (capacitacion_id) REFERENCES capacitaciones(id) ON DELETE SET NULL,
+    FOREIGN KEY (capacitacion_grupo_id) REFERENCES capacitacion_grupos(id) ON DELETE SET NULL,
 
     -- Sin UNIQUE en (participante_id, capacitacion_id): con soft delete puede
     -- haber una fila eliminada y otra nueva; la "una inscripción activa" se
@@ -273,10 +327,14 @@ CREATE TABLE capacitacion_pagos (
     capacitacion_inscrito_id INT NULL COMMENT 'Inscripción a la que corresponde el pago',
     metodo_pago_id INT NULL COMMENT 'Método de pago utilizado (catálogo metodos_pago)',
     cuenta_pago_id INT NULL COMMENT 'Cuenta utilizada (catálogo cuentas_pago, para TRANSFERENCIA/DEPOSITO/QR/TIGO_MONEY)',
+    concepto ENUM('MATRICULA', 'CURSO') NOT NULL DEFAULT 'CURSO'
+        COMMENT 'MATRICULA: se paga al instituto (secretaría) | CURSO: costo del curso, se deposita a la entidad certificadora. Son instituciones distintas y se pagan por separado',
     monto DECIMAL(10,2) NOT NULL COMMENT 'Monto pagado en Bs',
     fecha_pago DATE NOT NULL COMMENT 'Fecha del pago',
     numero_recibo VARCHAR(50) NOT NULL COMMENT 'Número de recibo (generado por lógica de negocio)',
     observaciones TEXT NULL COMMENT 'Observaciones del pago',
+    comprobante_ruta VARCHAR(500) NULL COMMENT 'Ruta del comprobante/depósito escaneado (opcional, nunca obligatorio)',
+    comprobante_nombre VARCHAR(255) NULL COMMENT 'Nombre original del archivo del comprobante',
 
     -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
@@ -304,6 +362,75 @@ CREATE TABLE capacitacion_pagos (
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Historial de pagos (cuotas) de una inscripción a capacitación. Sin límite de filas: SUM(monto) WHERE activo=1 AND deleted_at IS NULL se compara contra capacitacion_inscritos.monto_obligatorio.';
+
+-- ============================================
+-- TABLA: capacitacion_requisitos
+-- Requisitos de inscripción de un curso (lista configurable por curso, ej.:
+-- «Dos fotocopias de cédula de identidad vigente», «Formulario de
+-- inscripción», «Dos fotocopias del depósito bancario»). Equivale a los
+-- documentos de la matrícula formal, pero sin acoplarse a estudiantes.
+-- ============================================
+
+CREATE TABLE capacitacion_requisitos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    capacitacion_id INT NULL COMMENT 'Curso de capacitación',
+    descripcion VARCHAR(255) NOT NULL COMMENT 'Texto del requisito',
+    obligatorio BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'Obligatorio para pasar a INSCRITO',
+    orden INT NOT NULL DEFAULT 1 COMMENT 'Orden de presentación',
+
+    -- Campos de auditoría y control (ESTÁNDAR)
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
+
+    FOREIGN KEY (capacitacion_id) REFERENCES capacitaciones(id) ON DELETE SET NULL,
+
+    INDEX idx_capacitacion_id (capacitacion_id) COMMENT 'Requisitos por curso',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete'
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Requisitos de inscripción configurables por curso de capacitación.';
+
+-- ============================================
+-- TABLA: capacitacion_inscrito_requisitos
+-- Entrega de cada requisito por inscripción (checklist del participante).
+-- La inscripción solo pasa a INSCRITO cuando están pagados matrícula y curso
+-- Y entregados todos los requisitos obligatorios; mientras tanto queda
+-- PENDIENTE (la inscripción puede registrarse y completarse después).
+-- ============================================
+
+CREATE TABLE capacitacion_inscrito_requisitos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    capacitacion_inscrito_id INT NULL COMMENT 'Inscripción',
+    capacitacion_requisito_id INT NULL COMMENT 'Requisito del curso',
+    entregado BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'El participante entregó el requisito',
+    fecha_entrega DATE NULL COMMENT 'Fecha de entrega',
+    observacion VARCHAR(255) NULL COMMENT 'Nota (ej: falta una fotocopia)',
+
+    -- Campos de auditoría y control (ESTÁNDAR)
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
+
+    FOREIGN KEY (capacitacion_inscrito_id) REFERENCES capacitacion_inscritos(id) ON DELETE SET NULL,
+    FOREIGN KEY (capacitacion_requisito_id) REFERENCES capacitacion_requisitos(id) ON DELETE SET NULL,
+
+    INDEX idx_inscrito_id (capacitacion_inscrito_id) COMMENT 'Requisitos por inscripción',
+    INDEX idx_requisito_id (capacitacion_requisito_id) COMMENT 'Entregas por requisito',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete'
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Checklist de requisitos entregados por inscripción a capacitación.';
 
 -- ============================================
 -- FASE 3: REHABILITAR FOREIGN KEY CHECKS

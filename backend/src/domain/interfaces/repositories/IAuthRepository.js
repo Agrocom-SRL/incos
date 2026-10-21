@@ -28,6 +28,10 @@ export class IAuthRepository {
     throw new Error('Method createSesion must be implemented');
   }
 
+  async invalidarSesionesUsuario(usuarioId, opciones) {
+    throw new Error('Method invalidarSesionesUsuario must be implemented');
+  }
+
   async invalidarSesion(token) {
     throw new Error('Method invalidarSesion must be implemented');
   }

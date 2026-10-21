@@ -1,4 +1,3 @@
-import { IAsignacionDocenteRepository } from '../../domain/interfaces/repositories/IAsignacionDocenteRepository.js';
 import { AsignacionDocente as AsignacionDocenteModel } from '../database/models/asignacion_docente.js';
 import { sequelize } from '../database/sequelize.js';
 import { QueryTypes } from 'sequelize';
@@ -8,21 +7,21 @@ import { TeacherAssignmentMapper } from '../mappers/TeacherAssignmentMapper.js';
 /**
  * Implementación del repositorio de asignaciones de docentes usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
- * 
+ *
  * Responsabilidades:
  * - Acceso a datos (consultas, persistencia)
  * - Delegar conversión ORM ↔ Entidad a TeacherAssignmentMapper
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja acceso a datos
  * - Dependency Inversion: Usa TeacherAssignmentMapper para conversiones (depende de abstracción)
- * 
+ *
  * Clean Architecture:
  * - Infrastructure Layer: Implementación concreta de IAsignacionDocenteRepository
  * - Usa TeacherAssignmentMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
- * 
+ *
  * @implements {IAsignacionDocenteRepository}
- * 
+ *
  * Esta clase cumple con el contrato IAsignacionDocenteRepository:
  * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
  * - La especialización está en buildWhereClause(), no en métodos adicionales
@@ -40,7 +39,7 @@ export class TeacherAssignmentRepository extends BaseRepository {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Delega la responsabilidad de mapeo a TeacherAssignmentMapper
-   * 
+   *
    * @param {Object} model - Modelo Sequelize
    * @returns {TeacherAssignment|null} Entidad de dominio
    */
@@ -51,15 +50,15 @@ export class TeacherAssignmentRepository extends BaseRepository {
   /**
    * Construye la cláusula WHERE para filtros específicos
    * Maneja todos los criterios de búsqueda de la entidad TeacherAssignment
-   * 
+   *
    * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
    * sin necesidad de crear métodos adicionales en el repositorio.
-   * 
+   *
    * Ejemplos de uso:
    * - findAll({ teacherId: 1 }) → Busca asignaciones de un docente
    * - findAll({ courseId: 2, active: true }) → Busca asignaciones activas de un curso
    * - findBy({ managementPlanId: 1, courseId: 2, teacherId: 3 }) → Busca asignación específica
-   * 
+   *
    * @param {Object} filters - Filtros de búsqueda
    *   - managementPlanId: ID del plan habilitado
    *   - courseId: ID del curso
@@ -105,7 +104,7 @@ export class TeacherAssignmentRepository extends BaseRepository {
   /**
    * Retorna los campos que se usarán para búsqueda de texto
    * Estos campos se usan en el método search() para búsqueda por término
-   * 
+   *
    * @returns {string[]} Array de nombres de campos del modelo Sequelize
    */
   getSearchFields() {
@@ -115,7 +114,7 @@ export class TeacherAssignmentRepository extends BaseRepository {
   /**
    * Retorna el orden por defecto para las consultas
    * Delega el orden al BaseRepository que ordena por ID ASC
-   * 
+   *
    * @returns {Array} Array vacío para usar el orden por defecto del BaseRepository (id ASC)
    */
   getDefaultSort() {
@@ -125,30 +124,30 @@ export class TeacherAssignmentRepository extends BaseRepository {
   /**
    * Mapea datos de dominio a formato del modelo Sequelize (para creación)
    * Delega la responsabilidad de mapeo a TeacherAssignmentMapper
-   * 
+   *
    * @param {TeacherAssignment|Object} data - Entidad TeacherAssignment o objeto con datos de dominio
    * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
-  mapDataToModel(data, userId = null) {
+  mapDataToModel(data, _userId = null) {
     return TeacherAssignmentMapper.toModel(data);
   }
 
   /**
    * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
    * Delega la responsabilidad de mapeo a TeacherAssignmentMapper
-   * 
+   *
    * @param {TeacherAssignment|Object} data - Entidad TeacherAssignment o objeto con datos de dominio
    * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
-  mapDataToUpdate(data, userId = null) {
+  mapDataToUpdate(data, _userId = null) {
     return TeacherAssignmentMapper.toModelForUpdate(data);
   }
 
   /**
    * Retorna el nombre de la colección en la respuesta JSON
-   * 
+   *
    * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
@@ -498,4 +497,3 @@ export class TeacherAssignmentRepository extends BaseRepository {
     return result[0] ?? null;
   }
 }
-

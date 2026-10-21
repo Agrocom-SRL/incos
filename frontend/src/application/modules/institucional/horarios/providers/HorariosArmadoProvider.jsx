@@ -65,6 +65,7 @@ export const HorariosArmadoProvider = ({ children }) => {
             if (courseSchedulesSignature(prev) === sig) return prev;
             return merged;
         });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- se usan solo propiedades puntuales de armadoState (objeto nuevo en cada render)
     }, [
         armadoState.serverSchedules,
         ofertaLectura.filasOferta,

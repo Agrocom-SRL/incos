@@ -1,13 +1,13 @@
 /**
  * IncosPDFBase - Constantes y configuración para generación de PDFs del Instituto INCOS
- * 
+ *
  * Este archivo contiene SOLO constantes estáticas y configuración compartida.
  * NO contiene lógica de generación de PDFs.
- * 
+ *
  * Para generar PDFs:
  * - Usa IncosPDFLibBase (pdf-lib) para editar plantillas o crear desde cero
  * - Las constantes aquí definidas son usadas por todos los generadores
- * 
+ *
  * Contenido:
  * - Configuración institucional (INSTITUTE)
  * - Títulos de documentos (DOCUMENT_TITLES)
@@ -15,15 +15,15 @@
  * - Fuentes y tamaños (FONTS)
  * - Márgenes y espaciado (LAYOUT)
  * - Rutas de recursos (TEMPLATES_DIR, FONTS_DIR)
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo contiene constantes de configuración
  * - Dependency Inversion: Proporciona abstracción de configuración
- * 
+ *
  * Clean Architecture:
  * - Infrastructure Layer: Configuración compartida
  * - Usado por IncosPDFLibBase y otros generadores
- * 
+ *
  * NOTA: Este archivo NO es una clase base para extender.
  * Solo contiene constantes estáticas que pueden ser usadas por cualquier generador.
  */
@@ -37,7 +37,7 @@ const __dirname = path.dirname(__filename);
 
 /**
  * Clase estática con constantes y configuración para generación de PDFs
- * 
+ *
  * NO es una clase base para extender. Solo contiene constantes estáticas.
  * Para generar PDFs, usa IncosPDFLibBase (pdf-lib).
  */
@@ -174,12 +174,12 @@ export class IncosPDFBase {
     // ============================================
 
     static COLORS = {
-        primary: '#196b45',      // Verde primario institucional
-        secondary: '#8b5cf6',    // Púrpura accent
-        text: '#000000',         // Negro texto principal
-        textLight: '#666666',    // Gris texto secundario
-        border: '#000000',       // Gris bordes
-        background: '#f5f5f5',   // Fondo claro
+        primary: '#196b45', // Verde primario institucional
+        secondary: '#8b5cf6', // Púrpura accent
+        text: '#000000', // Negro texto principal
+        textLight: '#666666', // Gris texto secundario
+        border: '#000000', // Gris bordes
+        background: '#f5f5f5', // Fondo claro
     };
 
     // ============================================
@@ -205,33 +205,33 @@ export class IncosPDFBase {
     static LAYOUT = {
         margins: { top: 50, bottom: 50, left: 50, right: 50 },
         spacing: {
-            section: 16,      // Entre secciones
-            subsection: 8,   // Entre subsecciones
-            paragraph: 12,    // Entre párrafos
-            line: 4,          // Entre líneas
-            bullet: 6,        // Entre viñetas y texto
+            section: 16, // Entre secciones
+            subsection: 8, // Entre subsecciones
+            paragraph: 12, // Entre párrafos
+            line: 4, // Entre líneas
+            bullet: 6, // Entre viñetas y texto
         },
         pageSize: 'LETTER',
         lineHeight: 15,
-        labelWidth: 150,    // Ancho por defecto para etiquetas en campos de formulario
+        labelWidth: 150, // Ancho por defecto para etiquetas en campos de formulario
         // Posicionamiento para documentos con plantilla (encabezado)
-        headerHeight: 90,  // Altura del encabezado desde arriba (para plantillas)
+        headerHeight: 90, // Altura del encabezado desde arriba (para plantillas)
         spacingAfterHeader: 15, // Espacio después del encabezado antes del contenido
         // Configuración de viñetas
-        bulletIndent: 12,   // Indentación adicional para viñetas (más a la derecha que las secciones)
-        bulletDiameter: 3,  // Diámetro del círculo de la viñeta (en puntos)
-        bulletSpacing: 6,  // Espacio entre el círculo y el texto de la viñeta (en puntos)
+        bulletIndent: 12, // Indentación adicional para viñetas (más a la derecha que las secciones)
+        bulletDiameter: 3, // Diámetro del círculo de la viñeta (en puntos)
+        bulletSpacing: 6, // Espacio entre el círculo y el texto de la viñeta (en puntos)
         // Label + valor en misma línea y grid (formularios)
-        labelValueGap: 3,   // Espacio entre label (bold) y valor (normal) en la misma línea
-        gridColGap: 16,     // Espacio entre columnas en _addLabelValueGrid
-        gridRowSpacing: 6,  // Espacio entre filas del grid
+        labelValueGap: 3, // Espacio entre label (bold) y valor (normal) en la misma línea
+        gridColGap: 16, // Espacio entre columnas en _addLabelValueGrid
+        gridRowSpacing: 6, // Espacio entre filas del grid
         // Bloque de firma en footer (posición fija al final de página)
-        signatureLineWidth: 150,         // Ancho de la línea de firma (puntos), centrada
-        signatureLineThickness: 1,       // Grosor de la línea (puntos)
-        signatureFooterPadding: 10,      // Espacio entre el pie de plantilla y el bloque de firma
+        signatureLineWidth: 150, // Ancho de la línea de firma (puntos), centrada
+        signatureLineThickness: 1, // Grosor de la línea (puntos)
+        signatureFooterPadding: 10, // Espacio entre el pie de plantilla y el bloque de firma
         /** Altura del pie de página de la plantilla (franja verde, contacto, etc.). El bloque de firma se dibuja por encima. */
         signatureTemplateFooterHeight: 45,
-        signatureSpacingLineToFirstText: 8,  // Espacio entre línea y primera línea de texto
+        signatureSpacingLineToFirstText: 8, // Espacio entre línea y primera línea de texto
         signatureSpacingBetweenTextLines: 4, // Espacio entre líneas de texto bajo la firma
         // Recuadro "No. Registro" en esquina superior derecha (Formulario de Inscripción)
         registrationBox: {
@@ -292,9 +292,9 @@ export class IncosPDFBase {
      * Usado por generadores que crean documentos desde cero
      */
     static PAGE_SIZES = {
-        'LETTER': [612, 792],  // 8.5" x 11" en puntos
-        'A4': [595, 842],
-        'LEGAL': [612, 1008],
+        LETTER: [612, 792], // 8.5" x 11" en puntos
+        A4: [595, 842],
+        LEGAL: [612, 1008],
     };
 
     // ============================================

@@ -8,4 +8,3 @@ export const patchAulaHorarioValidator = [
     return Number.isFinite(n) && n > 0;
   }).withMessage('aulaId debe ser un entero positivo, null u omitirse para quitar la aula'),
 ];
-

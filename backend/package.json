@@ -8,11 +8,11 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "dev:debug": "nodemon --inspect src/server.js",
-    "test": "jest --coverage",
-    "test:watch": "jest --watch",
-    "test:unit": "jest tests/unit",
-    "test:integration": "jest tests/integration",
-    "test:e2e": "jest tests/e2e",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage tests/unit",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "test:unit": "node --experimental-vm-modules node_modules/jest/bin/jest.js tests/unit",
+    "test:integration": "node --experimental-vm-modules node_modules/jest/bin/jest.js tests/integration --runInBand --silent",
+    "test:e2e": "node --experimental-vm-modules node_modules/jest/bin/jest.js tests/e2e",
     "lint": "eslint src/**/*.js",
     "lint:fix": "eslint src/**/*.js --fix",
     "format": "prettier --write \"src/**/*.js\"",
@@ -71,6 +71,7 @@
     "winston-daily-rotate-file": "^4.7.1"
   },
   "devDependencies": {
+    "@jest/globals": "^29.7.0",
     "@types/jest": "^29.5.11",
     "eslint": "^8.55.0",
     "eslint-config-airbnb-base": "^15.0.0",
@@ -79,6 +80,7 @@
     "nodemon": "^3.0.2",
     "prettier": "^3.1.1",
     "sequelize-cli": "^6.6.2",
-    "supertest": "^6.3.3"
+    "supertest": "^6.3.3",
+    "winston-transport": "^4.9.0"
   }
 }

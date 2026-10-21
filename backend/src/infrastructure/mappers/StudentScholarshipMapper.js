@@ -3,18 +3,18 @@ import { BaseMapper } from './BaseMapper.js';
 
 /**
  * Mapper: StudentScholarshipMapper
- * 
+ *
  * Responsabilidad única: Conversión entre Modelo ORM (Sequelize) ↔ Entidad de Dominio (StudentScholarship)
- * 
+ *
  * Patrón: Usa BaseMapper para campos comunes, solo maneja campos específicos de StudentScholarship
- * 
+ *
  * Ubicación: Infrastructure Layer (es un detalle de implementación específico de Sequelize)
- * 
+ *
  * Principios SOLID aplicados:
  * - Single Responsibility: Solo se encarga de mapear campos específicos de StudentScholarship
  * - Open/Closed: Extiende funcionalidad de BaseMapper sin modificarlo
  * - Dependency Inversion: Depende de la entidad de dominio, no de implementaciones concretas
- * 
+ *
  * Clean Architecture:
  * - Domain Layer: StudentScholarship (entidad pura)
  * - Infrastructure Layer: BaseMapper (campos comunes) + StudentScholarshipMapper (campos específicos)
@@ -25,9 +25,9 @@ export class StudentScholarshipMapper {
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de StudentScholarship
    * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
-   * 
+   *
    * Flujo: Base de Datos → ORM Model → Domain Entity
-   * 
+   *
    * @param {Object|null} model - Modelo Sequelize de EstudianteBeca
    * @returns {StudentScholarship|null} Entidad de dominio StudentScholarship
    */
@@ -57,7 +57,8 @@ export class StudentScholarshipMapper {
       specificFields.state = dataValues.estado;
     }
     if ('documentosCompletos' in dataValues && dataValues.documentosCompletos !== undefined) {
-      specificFields.documentsComplete = dataValues.documentosCompletos === 1 || dataValues.documentosCompletos === true;
+      specificFields.documentsComplete = dataValues.documentosCompletos === 1
+        || dataValues.documentosCompletos === true;
     }
     if ('fechaInicioEntregaDocumentos' in dataValues && dataValues.fechaInicioEntregaDocumentos !== undefined) {
       specificFields.documentDeliveryStartDate = dataValues.fechaInicioEntregaDocumentos;
@@ -79,18 +80,18 @@ export class StudentScholarshipMapper {
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
    * Solo incluye los campos que están definidos (que existen en la entidad)
    * Esto permite que los campos con DEFAULT en el schema se manejen automáticamente por la BD
-   * 
+   *
    * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
-   * 
+   *
    * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
    * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
-   * 
+   *
    * NOTA: Solo incluir campos que NO tienen DEFAULT en el schema:
    * - estado: DEFAULT 'PENDIENTE' → NO incluir si no está en la entidad
    * - documentos_completos: DEFAULT FALSE → NO incluir si no está en la entidad
    * - fecha_inicio_entrega_documentos: NULL por defecto → NO incluir si no está en la entidad
    * - fecha_fin_entrega_documentos: NULL por defecto → NO incluir si no está en la entidad
-   * 
+   *
    * @param {StudentScholarship|Object} entity - Entidad StudentScholarship o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
@@ -142,9 +143,9 @@ export class StudentScholarshipMapper {
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
    * Solo incluye los campos que están definidos (que existen en la entidad)
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de StudentScholarship
-   * 
+   *
    * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
-   * 
+   *
    * @param {StudentScholarship|Object} entity - Entidad StudentScholarship o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
@@ -193,7 +194,7 @@ export class StudentScholarshipMapper {
 
   /**
    * Convierte un array de modelos Sequelize a array de entidades de dominio
-   * 
+   *
    * @param {Array} models - Array de modelos Sequelize
    * @returns {StudentScholarship[]} Array de entidades StudentScholarship
    */
@@ -202,4 +203,3 @@ export class StudentScholarshipMapper {
     return models.map((model) => this.toEntity(model)).filter((entity) => entity !== null);
   }
 }
-

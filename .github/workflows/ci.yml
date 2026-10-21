@@ -2,9 +2,10 @@ name: CI
 
 on:
   pull_request:
-    branches: [master, develop, studio]
+    branches: [master, develop, design]
+    types: [opened, synchronize, reopened, ready_for_review]
   push:
-    branches: [master, develop, studio]
+    branches: [master, develop, design]
 
 permissions:
   contents: read
@@ -16,36 +17,34 @@ concurrency:
 jobs:
   frontend:
     name: Frontend (lint + build)
-    runs-on: ubuntu-latest
-    if: ${{ hashFiles('frontend/package.json') != '' }}
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
-      # Informativo: hay deuda de lint previa. Quitar continue-on-error al limpiarla.
       - name: Lint
         run: npm run lint
-        continue-on-error: true
+      - name: Pruebas unitarias
+        run: npm test
       - name: Build
         run: npm run build
 
   backend:
-    name: Backend (lint + sintaxis)
-    runs-on: ubuntu-latest
-    if: ${{ hashFiles('backend/package.json') != '' }}
+    name: Backend (lint + sintaxis + unitarias)
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: backend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -53,27 +52,133 @@ jobs:
       - run: npm ci
       - name: Lint
         run: npm run lint
-        continue-on-error: true
       - name: Sintaxis de src
         run: find src -name '*.js' -print0 | xargs -0 -n1 node --check
+      # Sin BD: los repositorios van simulados (tests/unit).
+      - name: Pruebas unitarias
+        run: npm run test:unit
+
+  integracion:
+    name: Sistema (integración con MariaDB)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      matrix:
+        # Única fuente de la versión del servidor de BD del job.
+        # Alinear con el servidor (versión de MariaDB/MySQL que corre en producción).
+        mariadb: ['10.11']
+    # BD efímera solo de este job: se crea vacía, se carga con los SQL del repo + el seed
+    # de pruebas (backend/database/04-test-seeds) y se destruye al terminar. Sin datos reales;
+    # las claves son literales de prueba, no secretos.
+    services:
+      mariadb:
+        image: mariadb:${{ matrix.mariadb }}
+        env:
+          MARIADB_ROOT_PASSWORD: ci-solo-pruebas
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: ci-solo-pruebas
+      DB_NAME: incos_ci_test
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - name: Cliente de BD
+        run: command -v mysql || command -v mariadb || (sudo apt-get update && sudo apt-get install -y mariadb-client)
+      - name: Cargar BD de pruebas (esquema + seeders + vistas + seed de pruebas)
+        run: bash scripts/ci-cargar-bd.sh
+      - name: Pruebas de integración
+        run: npm run test:integration
+      # Diagnóstico solo si falla: versión y collations del servidor y de las columnas de las vistas.
+      - name: Diagnóstico de collations
+        if: failure()
+        run: |
+          mysql --host=127.0.0.1 --user=root --password=ci-solo-pruebas -e "SELECT VERSION(); SHOW VARIABLES LIKE 'collation%'; SHOW VARIABLES LIKE 'character_set%'; SELECT table_name, column_name, collation_name FROM information_schema.columns WHERE table_schema='incos_ci_test' AND table_name='vista_catalogos_finanzas_usos';" || true
 
   studio:
     name: Studio (lint + build)
-    runs-on: ubuntu-latest
-    if: ${{ hashFiles('studio/package.json') != '' }}
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: studio
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      # `studio/` solo existe en la rama design; en las demás el job termina en verde sin hacer nada.
+      - name: Detectar studio
+        id: detectar
+        working-directory: .
+        run: |
+          if [ -f studio/package.json ]; then echo "existe=true" >> "$GITHUB_OUTPUT"; fi
+      - if: steps.detectar.outputs.existe == 'true'
+        uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: studio/package-lock.json
-      - run: npm ci
+      - if: steps.detectar.outputs.existe == 'true'
+        run: npm ci
       - name: Lint
+        if: steps.detectar.outputs.existe == 'true'
         run: npm run lint
         continue-on-error: true
       - name: Build
+        if: steps.detectar.outputs.existe == 'true'
         run: npm run build
+
+  # Fusiona el PR hacia develop cuando todos los jobs anteriores pasaron. No usa el
+  # auto-merge nativo (requiere plan de pago en repos privados de organización).
+  # Solo corre para PR del propio repo (los forks no reciben token de escritura),
+  # no borradores, y del autor autorizado. No ejecuta código del PR.
+  automerge:
+    name: Auto-merge a develop
+    runs-on: ubuntu-24.04
+    needs: [frontend, backend, integracion, studio]
+    # Los jobs omitidos (sin carpeta) cuentan como éxito; un fallo o cancelación lo impide.
+    if: >-
+      ${{ !cancelled() &&
+      !contains(needs.*.result, 'failure') &&
+      !contains(needs.*.result, 'cancelled') &&
+      github.event_name == 'pull_request' &&
+      github.base_ref == 'develop' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.draft == false &&
+      github.event.pull_request.user.login == 'Angello-27' }}
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      # GITHUB_TOKEN no puede fusionar PRs que modifican .github/workflows (requiere permiso `workflows`).
+      # En ese caso se omite el auto-merge y el PR se fusiona a mano.
+      - name: Detectar cambios en workflows
+        id: workflows
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          if gh pr diff "$PR_URL" --name-only | grep -q '^\.github/workflows/'; then
+            echo "toca=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::El PR modifica .github/workflows: fusionar manualmente."
+          fi
+
+      - name: Fusionar PR (merge commit)
+        if: steps.workflows.outputs.toca != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr merge --merge --delete-branch "$PR_URL"

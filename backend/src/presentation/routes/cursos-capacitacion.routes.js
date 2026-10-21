@@ -1,10 +1,14 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
-import { verificarPermiso } from '../middleware/permisos.middleware.js';
+import { verificarPermiso, verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
 import { idValidator } from '../validators/common/index.js';
 import {
     listCursosCapacitacionValidator,
     listHorariosDisponiblesCapacitacionValidator,
+    listHorariosCapacitacionValidator,
+    listGruposCapacitacionValidator,
+    createHorarioCapacitacionValidator,
+    updateHorarioCapacitacionValidator,
     createCursoCapacitacionValidator,
     updateCursoCapacitacionValidator,
     setEstadoCatalogoValidator,
@@ -36,6 +40,20 @@ export function buildCursosCapacitacionRouter({ controllers, middlewares }) {
     const editar = [authenticate, verificarPermiso('capacitacion.curso', 'EDITAR')];
     const eliminar = [authenticate, verificarPermiso('capacitacion.curso', 'ELIMINAR')];
     const activar = [authenticate, verificarPermiso('capacitacion.curso', 'ACTIVAR')];
+    const horarioListar = [
+        authenticate,
+        // El formulario de curso necesita el catálogo para su selector de horarios
+        verificarPermisoCualquiera([
+            ['capacitacion.grupo', 'LISTAR'],
+            ['capacitacion.curso', 'CREAR'],
+            ['capacitacion.curso', 'EDITAR'],
+        ]),
+    ];
+    const grupoListar = [authenticate, verificarPermiso('capacitacion.grupo', 'LISTAR')];
+    const horarioDetalle = [authenticate, verificarPermiso('capacitacion.grupo', 'DETALLE')];
+    const horarioCrear = [authenticate, verificarPermiso('capacitacion.grupo', 'CREAR')];
+    const horarioEditar = [authenticate, verificarPermiso('capacitacion.grupo', 'EDITAR')];
+    const horarioEliminar = [authenticate, verificarPermiso('capacitacion.grupo', 'ELIMINAR')];
     const exportarInscritos = [authenticate, verificarPermiso('capacitacion.inscripcion', 'EXPORTAR')];
 
     /**
@@ -51,7 +69,7 @@ export function buildCursosCapacitacionRouter({ controllers, middlewares }) {
         (req, res, next) => controllers.listCursosCapacitacionController.handle(req, res, next)
     );
 
-    // POST / - Crear curso (+ horarioIds para la junction capacitacion_horarios)
+    // POST / - Crear curso (+ grupos con sus horarios y requisitos)
     router.post(
         '/',
         ...crear,
@@ -73,6 +91,71 @@ export function buildCursosCapacitacionRouter({ controllers, middlewares }) {
         validateRequest,
         (req, res, next) =>
             controllers.listHorariosDisponiblesCapacitacionController.handle(req, res, next)
+    );
+
+    /**
+     * GET /api/v1/cursos-capacitacion/grupos
+     * Grupos de TODAS las capacitaciones (curso, aula, cupo, inscritos y
+     * horarios) desde la vista 190. Estática: ANTES de GET /:id.
+     * Query: page/limit/search + cursoId + estado.
+     */
+    router.get(
+        '/grupos',
+        ...grupoListar,
+        listGruposCapacitacionValidator,
+        validateRequest,
+        (req, res, next) => controllers.listGruposCapacitacionController.handle(req, res, next)
+    );
+
+    /**
+     * CRUD de horarios de capacitación (tipo_horario='CAPACITACION'), permiso
+     * `capacitacion.grupo`. Estáticas: ANTES de GET /:id.
+     * GET /horarios[?aulaId&excludeCursoId&search&sort] incluye `cursosEnUso`;
+     * `ocupado` solo se calcula con aulaId.
+     */
+    router.get(
+        '/horarios',
+        ...horarioListar,
+        listHorariosCapacitacionValidator,
+        validateRequest,
+        (req, res, next) => controllers.listHorariosCapacitacionController.handle(req, res, next)
+    );
+
+    // POST /horarios - Find-or-create de un horario (día + hora inicio/fin)
+    router.post(
+        '/horarios',
+        ...horarioCrear,
+        createHorarioCapacitacionValidator,
+        validateRequest,
+        (req, res, next) => controllers.createHorarioCapacitacionController.handle(req, res, next)
+    );
+
+    // GET /horarios/:id - Ficha del horario con los cursos que lo usan
+    router.get(
+        '/horarios/:id',
+        ...horarioDetalle,
+        idValidator,
+        validateRequest,
+        (req, res, next) => controllers.getHorarioCapacitacionController.handle(req, res, next)
+    );
+
+    // PUT /horarios/:id - Editar día, horas y nombre (evita duplicado exacto)
+    router.put(
+        '/horarios/:id',
+        ...horarioEditar,
+        idValidator,
+        updateHorarioCapacitacionValidator,
+        validateRequest,
+        (req, res, next) => controllers.updateHorarioCapacitacionController.handle(req, res, next)
+    );
+
+    // DELETE /horarios/:id - Soft delete; 409 con detalle si lo usa algún curso activo
+    router.delete(
+        '/horarios/:id',
+        ...horarioEliminar,
+        idValidator,
+        validateRequest,
+        (req, res, next) => controllers.deleteHorarioCapacitacionController.handle(req, res, next)
     );
 
     // GET /:id - Ficha del curso (vista 155 + bloques de la vista 154)
@@ -112,7 +195,7 @@ export function buildCursosCapacitacionRouter({ controllers, middlewares }) {
         (req, res, next) => controllers.cancelarCursoCapacitacionController.handle(req, res, next)
     );
 
-    // PUT /:id - Actualizar curso; si trae horarioIds REEMPLAZA la junction
+    // PUT /:id - Actualizar curso; si trae grupos/requisitos los SINCRONIZA
     router.put(
         '/:id',
         ...editar,
