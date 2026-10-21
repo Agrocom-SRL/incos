@@ -1,13 +1,18 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
-import { ESTADOS_CAPACITACION_VALUES, ESTADOS_CAPACITACION } from '../../../domain/constants/capacitacion.constants.js';
+import {
+  ESTADOS_CAPACITACION_VALUES,
+  ESTADOS_CAPACITACION,
+  MODALIDADES_CAPACITACION,
+  MODALIDADES_CAPACITACION_VALUES,
+} from '../../../domain/constants/capacitacion.constants.js';
 
 /**
  * Curso de capacitación (módulo CAP) — tabla raíz `capacitaciones`.
  * Curso corto abierto a público externo, independiente de la cadena formal
- * paralelos_gestion → oferta_cursos. El aula se referencia por FK de lectura
- * al catálogo `aulas` (igual que paralelos_gestion.aula_id).
+ * paralelos_gestion → oferta_cursos. El curso es conceptual: el aula (opcional)
+ * y los horarios viven en sus grupos (`capacitacion_grupos`).
  */
 export const CursoCapacitacion = sequelize.define(
   'CursoCapacitacion',
@@ -23,11 +28,60 @@ export const CursoCapacitacion = sequelize.define(
       allowNull: true,
       comment: 'Descripción/temario del curso',
     },
+    tieneCosto: {
+      type: DataTypes.BOOLEAN,
+      field: 'tiene_costo',
+      allowNull: false,
+      defaultValue: false,
+      comment: 'Interruptor: el curso NO es gratuito (habilita costo)',
+    },
+    cobraMatricula: {
+      type: DataTypes.BOOLEAN,
+      field: 'cobra_matricula',
+      allowNull: false,
+      defaultValue: false,
+      comment: 'Interruptor: el curso cobra matrícula (habilita costo_matricula)',
+    },
     costo: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
       defaultValue: 0,
-      comment: 'Costo de matrícula/inscripción en Bs',
+      comment: 'Costo del CURSO en Bs (se deposita a la entidad certificadora, p. ej. IPELC)',
+    },
+    costoMatricula: {
+      type: DataTypes.DECIMAL(10, 2),
+      field: 'costo_matricula',
+      allowNull: false,
+      defaultValue: 0,
+      comment: 'Matrícula en Bs (se paga en secretaría del instituto)',
+    },
+    entidadCertificadora: {
+      type: DataTypes.STRING(150),
+      field: 'entidad_certificadora',
+      allowNull: true,
+      comment: 'Entidad que emite el certificado y cobra el costo del curso (ej: IPELC)',
+    },
+    modalidad: {
+      type: DataTypes.ENUM(...MODALIDADES_CAPACITACION_VALUES),
+      allowNull: false,
+      defaultValue: MODALIDADES_CAPACITACION.PRESENCIAL,
+      comment: 'VIRTUAL | PRESENCIAL | SEMIPRESENCIAL',
+    },
+    nivel: {
+      type: DataTypes.STRING(60),
+      allowNull: true,
+      comment: 'Nivel del curso (ej: Básico)',
+    },
+    dirigidoA: {
+      type: DataTypes.STRING(255),
+      field: 'dirigido_a',
+      allowNull: true,
+      comment: 'Público objetivo del curso',
+    },
+    duracion: {
+      type: DataTypes.STRING(60),
+      allowNull: true,
+      comment: 'Duración en texto libre (ej: 2 meses)',
     },
     cupoMaximo: {
       type: DataTypes.INTEGER,
@@ -35,12 +89,6 @@ export const CursoCapacitacion = sequelize.define(
       allowNull: false,
       defaultValue: 30,
       comment: 'Cupo máximo de participantes (informativo en el MVP)',
-    },
-    aulaId: {
-      type: DataTypes.INTEGER,
-      field: 'aula_id',
-      allowNull: true,
-      comment: 'Aula asignada (catálogo aulas, reutilizado)',
     },
     fechaInicio: {
       type: DataTypes.DATEONLY,
@@ -51,8 +99,8 @@ export const CursoCapacitacion = sequelize.define(
     fechaFin: {
       type: DataTypes.DATEONLY,
       field: 'fecha_fin',
-      allowNull: false,
-      comment: 'Fecha de fin del curso',
+      allowNull: true,
+      comment: 'Fecha de fin del curso (opcional)',
     },
     estado: {
       type: DataTypes.ENUM(...ESTADOS_CAPACITACION_VALUES),

@@ -1,6 +1,10 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
+import {
+  CONCEPTOS_PAGO_CAPACITACION,
+  CONCEPTOS_PAGO_CAPACITACION_VALUES,
+} from '../../../domain/constants/capacitacion.constants.js';
 
 /**
  * Pago de inscripción a una capacitación (módulo CAP) — tabla
@@ -31,6 +35,12 @@ export const PagoCapacitacion = sequelize.define(
       allowNull: true,
       comment: 'Cuenta utilizada (catálogo cuentas_pago, para TRANSFERENCIA/DEPOSITO/QR/TIGO_MONEY)',
     },
+    concepto: {
+      type: DataTypes.ENUM(...CONCEPTOS_PAGO_CAPACITACION_VALUES),
+      allowNull: false,
+      defaultValue: CONCEPTOS_PAGO_CAPACITACION.CURSO,
+      comment: 'MATRICULA (secretaría del instituto) | CURSO (entidad certificadora)',
+    },
     monto: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
@@ -52,6 +62,18 @@ export const PagoCapacitacion = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: true,
       comment: 'Observaciones del pago',
+    },
+    comprobanteRuta: {
+      type: DataTypes.STRING(500),
+      field: 'comprobante_ruta',
+      allowNull: true,
+      comment: 'Ruta del comprobante/depósito escaneado (opcional)',
+    },
+    comprobanteNombre: {
+      type: DataTypes.STRING(255),
+      field: 'comprobante_nombre',
+      allowNull: true,
+      comment: 'Nombre original del archivo del comprobante',
     },
   },
   {
