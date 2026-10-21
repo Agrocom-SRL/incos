@@ -8,6 +8,42 @@ description: Arquitectura de módulos backend INCOS — Express + Sequelize + My
 Clean Architecture + SOLID. Para permisos ver `incos-rbac`. Para el contrato con
 el frontend ver `incos-frontend-module` §5.
 
+## 0. Regla previa: reutilizar y espejar (antes de crear nada)
+
+Un endpoint nuevo **se copia del módulo de referencia**, no se inventa. Antes de
+crear un archivo:
+
+1. **Busca lo existente** y reutilízalo: bases (`BaseListUseCase`, `BaseSearchUseCase`,
+   `BaseRepository`, `Base*Controller`), helpers de `application/utils/`
+   (`validacionEntrada.js`, `passwordPolicy.js`, …), mappers, validators comunes
+   (`validators/common`), middleware de permisos/subida (`upload.middleware.js`),
+   servicios de storage/PDF/Excel y vistas SQL de `03-views/`. No dupliques un
+   helper, una vista ni una validación que ya existe.
+2. **Misma ubicación y mismos nombres que sus hermanos:** un archivo por
+   responsabilidad en su capa (`routes/`, `controllers/<modulo>/<verbo>-<recurso>
+   .controller.js`, `use-cases/<modulo>/<Verbo><Recurso>UseCase.js`,
+   `repositories/`, `validators/<modulo>/`, `mappers/<modulo>/`), registro en el
+   contenedor DI y en `tokens/` igual que los demás, y exports en el `index.js`
+   de la carpeta. Mismo estilo de código (ESM, comentarios y mensajes en español,
+   errores de dominio de `AppError`), mismo contrato de respuesta.
+3. **Código limpio y SOLID, siempre** (no es opcional):
+   - **S** — un use case = una acción de negocio; un controller solo adapta HTTP;
+     un repositorio solo accede a datos; un archivo, una responsabilidad.
+   - **O** — extiende (herencia de `Base*`, hooks `buildSpecificFilters`/`enrichData`,
+     constantes de dominio) en vez de modificar bases o ramificar con `if` por caso.
+   - **L** — una subclase de `Base*` o una implementación de repositorio cumple el
+     contrato de su interfaz sin sorpresas.
+   - **I** — interfaces de repositorio pequeñas y por necesidad (arquetipo A/B).
+   - **D** — el use case depende de abstracciones inyectadas (repositorios,
+     servicios), nunca de Sequelize, `sequelize.query` ni de `req/res`.
+   - **Limpio:** nombres que revelan intención; funciones cortas y de un solo nivel
+     de abstracción; retornos tempranos en vez de anidar; sin strings/números
+     mágicos (constantes en `domain/constants`); sin duplicación (DRY); sin código
+     muerto ni comentarios que repiten el código (comenta el *por qué*); errores
+     de dominio explícitos, no `Error` genérico.
+4. **Una prueba por cambio de lógica** en `tests/unit/<modulo>/` (skill `incos-testing`).
+5. **Al terminar, informa** qué reutilizaste y qué creaste (y por qué).
+
 ## 1. Flujo de una petición (las capas y su única responsabilidad)
 
 ```
