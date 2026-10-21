@@ -16,7 +16,7 @@
  * se devuelve; solo se ofrece si la inscripción sigue PENDIENTE o INSCRITA.
  */
 
-import { Alert, Empty, Flex, Popconfirm, Spin } from 'antd';
+import { Alert, Empty, Flex, Popconfirm, Spin, Tabs } from 'antd';
 import { ArrowLeftOutlined, DollarOutlined, StopOutlined } from '@ant-design/icons';
 import { allSpacing } from '@theme/tokens';
 import { PageTemplate } from '@templates';
@@ -26,6 +26,7 @@ import { useInscripcionCapacitacionDetailPage } from '@application-capacitacion/
 import { CAPACITACION_PERMISOS } from '@application-capacitacion/utils/capacitacionPermisos';
 import { usePermiso } from '@application-auth';
 import InscripcionFichaHeader from '@capacitacion/inscripciones/components/organisms/InscripcionFichaHeader';
+import InscripcionDatosSection from '@capacitacion/inscripciones/components/organisms/InscripcionDatosSection';
 import InscripcionResumenPagosSection from '@capacitacion/inscripciones/components/organisms/InscripcionResumenPagosSection';
 import InscripcionRequisitosSection from '@capacitacion/inscripciones/components/organisms/InscripcionRequisitosSection';
 import InscripcionPagosSection from '@capacitacion/inscripciones/components/organisms/InscripcionPagosSection';
@@ -61,6 +62,47 @@ const InscripcionCapacitacionDetail = () => {
     onDescargar: handleDescargarComprobante,
     onAdjuntar: handleAdjuntarComprobante,
   };
+
+  const tabItems = inscripcion
+    ? [
+        {
+          key: 'informacion',
+          label: 'Información',
+          children: (
+            <div className="sd-tab-body">
+              <InscripcionDatosSection inscripcion={inscripcion} />
+            </div>
+          ),
+        },
+        {
+          key: 'requisitos',
+          label: `Requisitos (${requisitosDraft.length})`,
+          children: (
+            <div className="sd-tab-body">
+              <InscripcionRequisitosSection
+                requisitos={requisitosDraft}
+                dirty={requisitosDirty}
+                saving={guardandoRequisitos}
+                editable={puedeEditarInscripcion}
+                onToggle={handleToggleRequisito}
+                onGuardar={handleGuardarRequisitos}
+                onDescartar={handleDescartarRequisitos}
+              />
+            </div>
+          ),
+        },
+        {
+          key: 'pagos',
+          label: 'Pagos',
+          children: (
+            <div className="sd-tab-body">
+              <InscripcionResumenPagosSection inscripcion={inscripcion} />
+              <InscripcionPagosSection inscripcion={inscripcion} comprobante={comprobante} />
+            </div>
+          ),
+        },
+      ]
+    : [];
 
   const headerActions = (
     <Flex gap="small" wrap>
@@ -150,19 +192,7 @@ const InscripcionCapacitacionDetail = () => {
                     style={{ marginBottom: allSpacing.margin }}
                   />
                 ) : null}
-                <div className="sd-tab-body">
-                  <InscripcionResumenPagosSection inscripcion={inscripcion} />
-                  <InscripcionRequisitosSection
-                    requisitos={requisitosDraft}
-                    dirty={requisitosDirty}
-                    saving={guardandoRequisitos}
-                    editable={puedeEditarInscripcion}
-                    onToggle={handleToggleRequisito}
-                    onGuardar={handleGuardarRequisitos}
-                    onDescartar={handleDescartarRequisitos}
-                  />
-                </div>
-                <InscripcionPagosSection inscripcion={inscripcion} comprobante={comprobante} />
+                <Tabs defaultActiveKey="informacion" items={tabItems} className="sd-tabs" />
               </div>
             </>
           )}
