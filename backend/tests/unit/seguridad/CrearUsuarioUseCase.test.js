@@ -1,7 +1,7 @@
 import { describe, it, expect, jest } from '@jest/globals';
 import bcrypt from 'bcryptjs';
 import { CrearUsuarioUseCase } from '../../../src/application/use-cases/seguridad/CrearUsuarioUseCase.js';
-import { ConflictError, NotFoundError, UnprocessableEntityError } from '../../../src/domain/errors/AppError.js';
+import { ConflictError, ForbiddenError, NotFoundError, UnprocessableEntityError } from '../../../src/domain/errors/AppError.js';
 
 describe('CrearUsuarioUseCase', () => {
   const crear = ({ rol = { id: 1, code: 'ADMIN_SISTEMA' }, existe = false } = {}) => {
@@ -10,7 +10,7 @@ describe('CrearUsuarioUseCase', () => {
         existsUsername: jest.fn().mockResolvedValue(existe),
         create: jest.fn().mockResolvedValue({ id: 50 }),
         delete: jest.fn().mockResolvedValue(true),
-        findByIdWithRoleForAdmin: jest.fn().mockResolvedValue({ id: 50, username: 'nuevo', rol_id: 1 }),
+        findByIdWithRoleForAdmin: jest.fn().mockResolvedValue({ id: 50, username: 'nuevo', rol_id: 1, rol_codigo: 'ADMIN_SISTEMA' }),
       },
       roleRepository: { findById: jest.fn().mockResolvedValue(rol) },
       staffRepository: {
@@ -24,10 +24,35 @@ describe('CrearUsuarioUseCase', () => {
       directorRepository: { create: jest.fn().mockResolvedValue({ id: 2 }), delete: jest.fn() },
       secretaryRepository: { create: jest.fn().mockResolvedValue({ id: 3 }), delete: jest.fn() },
     };
-    return { deps, useCase: new CrearUsuarioUseCase(deps) };
+    const useCase = new CrearUsuarioUseCase(deps);
+    // Por defecto actúa un ADMIN_SISTEMA (actorId 1: el mock lo resuelve con rol_codigo ADMIN_SISTEMA).
+    const ejecutar = useCase.execute.bind(useCase);
+    useCase.execute = (input, actorId = 1) => ejecutar(input, actorId);
+    return { deps, useCase };
   };
   const personal = { ci: '123', nombres: 'Ana', apellido_paterno: 'Perez', email_personal: 'A@X.bo' };
   const entrada = (extra = {}) => ({ username: ' nuevo ', password: 'clave-segura-1', rol_id: 1, ...extra });
+
+  describe('seguridad del alta', () => {
+    it.each([['   '], [''], [undefined]])('username %p vacío: 422 antes de tocar repos', async (username) => {
+      const { deps, useCase } = crear();
+      await expect(useCase.execute(entrada({ username }))).rejects.toBeInstanceOf(UnprocessableEntityError);
+      expect(deps.userRepository.create).not.toHaveBeenCalled();
+    });
+
+    it('tipo_referencia fuera del catálogo: 422', async () => {
+      const { deps, useCase } = crear({ rol: { id: 2, code: 'DOCENTE' } });
+      await expect(useCase.execute(entrada({ rol_id: 2, tipo_referencia: 'HACKER', referencia_id: 3 }))).rejects.toBeInstanceOf(UnprocessableEntityError);
+      expect(deps.userRepository.create).not.toHaveBeenCalled();
+    });
+
+    it.each([[null], [undefined], [99]])('solo un ADMIN_SISTEMA crea otro ADMIN_SISTEMA (actor %p): 403', async (actor) => {
+      const { deps, useCase } = crear();
+      deps.userRepository.findByIdWithRoleForAdmin.mockResolvedValue(actor === 99 ? { id: 99, rol_codigo: 'SEC_ADMIN' } : null);
+      await expect(useCase.execute(entrada(), actor)).rejects.toBeInstanceOf(ForbiddenError);
+      expect(deps.userRepository.create).not.toHaveBeenCalled();
+    });
+  });
 
   describe('validación común', () => {
     it.each([[undefined], [null], [''], ['1234567']])('password %p inválida: 422 antes de tocar repos', async (password) => {

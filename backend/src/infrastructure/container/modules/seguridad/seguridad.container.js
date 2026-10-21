@@ -93,6 +93,7 @@ export function registerSeguridadModule(container) {
         userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
         roleRepository: c.resolve(REPOSITORIOS_TOKENS.roleRepository),
         staffRepository: c.resolve(REPOSITORIOS_TOKENS.staffRepository),
+        authRepository: c.resolve(REPOSITORIOS_TOKENS.authRepository),
       })
   );
 
@@ -102,6 +103,7 @@ export function registerSeguridadModule(container) {
     (c) =>
       new CambiarEstadoUsuarioUseCase({
         userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
+        authRepository: c.resolve(REPOSITORIOS_TOKENS.authRepository),
       })
   );
 
@@ -111,6 +113,7 @@ export function registerSeguridadModule(container) {
     (c) =>
       new CambiarPasswordUsuarioUseCase({
         userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
+        authRepository: c.resolve(REPOSITORIOS_TOKENS.authRepository),
       })
   );
 

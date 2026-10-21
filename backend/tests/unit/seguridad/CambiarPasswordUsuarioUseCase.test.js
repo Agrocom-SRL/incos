@@ -10,7 +10,8 @@ describe('CambiarPasswordUsuarioUseCase', () => {
       findByIdWithRoleForAdmin: jest.fn().mockResolvedValue(actual),
       update: jest.fn().mockResolvedValue(undefined),
     };
-    return { userRepository, useCase: new CambiarPasswordUsuarioUseCase({ userRepository }) };
+    const authRepository = { invalidarSesionesUsuario: jest.fn().mockResolvedValue(undefined) };
+    return { userRepository, authRepository, useCase: new CambiarPasswordUsuarioUseCase({ userRepository, authRepository }) };
   };
 
   it('guarda solo el hash bcrypt, nunca la clave en claro, y no devuelve password', async () => {
@@ -23,6 +24,18 @@ describe('CambiarPasswordUsuarioUseCase', () => {
     expect(await bcrypt.compare('clave-nueva-1', patch.passwordHash)).toBe(true);
     expect(JSON.stringify(res)).not.toMatch(/password|clave-nueva-1|viejo/);
     expect(res).toMatchObject({ id: 5, username: 'ana' });
+  });
+
+  it('cierra todas las sesiones del usuario al resetear la clave', async () => {
+    const { authRepository, useCase } = crear();
+    await useCase.execute(5, 'clave-nueva-1');
+    expect(authRepository.invalidarSesionesUsuario).toHaveBeenCalledWith(5);
+  });
+
+  it('clave rechazada: no cierra sesiones', async () => {
+    const { authRepository, useCase } = crear();
+    await expect(useCase.execute(5, '123')).rejects.toBeInstanceOf(UnprocessableEntityError);
+    expect(authRepository.invalidarSesionesUsuario).not.toHaveBeenCalled();
   });
 
   it('usuario inexistente: NotFoundError sin actualizar', async () => {

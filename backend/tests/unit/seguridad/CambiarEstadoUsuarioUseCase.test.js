@@ -1,6 +1,6 @@
 import { describe, it, expect, jest } from '@jest/globals';
 import { CambiarEstadoUsuarioUseCase } from '../../../src/application/use-cases/seguridad/CambiarEstadoUsuarioUseCase.js';
-import { NotFoundError, UnprocessableEntityError } from '../../../src/domain/errors/AppError.js';
+import { ConflictError, NotFoundError, UnprocessableEntityError } from '../../../src/domain/errors/AppError.js';
 
 describe('CambiarEstadoUsuarioUseCase', () => {
   const crear = (actual = { id: 5, username: 'ana' }) => {
@@ -8,7 +8,8 @@ describe('CambiarEstadoUsuarioUseCase', () => {
       findByIdWithRoleForAdmin: jest.fn().mockResolvedValue(actual),
       update: jest.fn().mockResolvedValue(undefined),
     };
-    return { userRepository, useCase: new CambiarEstadoUsuarioUseCase({ userRepository }) };
+    const authRepository = { invalidarSesionesUsuario: jest.fn().mockResolvedValue(undefined) };
+    return { userRepository, authRepository, useCase: new CambiarEstadoUsuarioUseCase({ userRepository, authRepository }) };
   };
 
   it.each(['BLOQUEADO', 'SUSPENDIDO', 'RETIRADO'])('estado %s con motivo', async (estado) => {
@@ -21,6 +22,25 @@ describe('CambiarEstadoUsuarioUseCase', () => {
     });
     expect(res.id).toBe(5);
     expect(JSON.stringify(res)).not.toMatch(/password/);
+  });
+
+  it.each(['BLOQUEADO', 'SUSPENDIDO', 'RETIRADO'])('estado %s cierra las sesiones del usuario', async (estado) => {
+    const { authRepository, useCase } = crear();
+    await useCase.execute(5, { estado }, 1);
+    expect(authRepository.invalidarSesionesUsuario).toHaveBeenCalledWith(5);
+  });
+
+  it('reactivar no cierra sesiones', async () => {
+    const { authRepository, useCase } = crear();
+    await useCase.execute(5, { estado: null }, 1);
+    expect(authRepository.invalidarSesionesUsuario).not.toHaveBeenCalled();
+  });
+
+  it('no puede bloquearse a sí mismo: 409 sin escribir', async () => {
+    const { userRepository, authRepository, useCase } = crear();
+    await expect(useCase.execute(5, { estado: 'BLOQUEADO' }, 5)).rejects.toBeInstanceOf(ConflictError);
+    expect(userRepository.update).not.toHaveBeenCalled();
+    expect(authRepository.invalidarSesionesUsuario).not.toHaveBeenCalled();
   });
 
   it('estado sin motivo guarda motivo null', async () => {

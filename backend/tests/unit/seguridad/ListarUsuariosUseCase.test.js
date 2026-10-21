@@ -40,6 +40,12 @@ describe('ListarUsuariosUseCase', () => {
     expect(userRepository.countAllWithRoleSearch.mock.calls[0][0].rolCodigos).toBeNull();
   });
 
+  it.each([['constructor'], ['__proto__'], ['toString']])('categoría heredada de Object (%s) no filtra ni falla', async (categoria) => {
+    const { userRepository, useCase } = crear();
+    await useCase.execute({ categoria });
+    expect(userRepository.countAllWithRoleSearch.mock.calls[0][0].rolCodigos).toBeNull();
+  });
+
   it('page/limit: NaN, negativos y excesos se normalizan', async () => {
     const { userRepository, useCase } = crear([], 250);
     const res = await useCase.execute({ page: 'abc', limit: 5000 });

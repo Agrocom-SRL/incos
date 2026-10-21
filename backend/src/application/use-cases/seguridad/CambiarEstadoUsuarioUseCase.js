@@ -1,4 +1,5 @@
 import {
+  ConflictError,
   NotFoundError,
   UnprocessableEntityError,
 } from '../../../domain/errors/AppError.js';
@@ -9,16 +10,19 @@ export class CambiarEstadoUsuarioUseCase {
   /**
    * @param {Object} deps
    * @param {import('../../../infrastructure/repositories/UserRepository.js').UserRepository} deps.userRepository
+   * @param {import('../../../domain/interfaces/repositories/IAuthRepository.js').IAuthRepository} deps.authRepository
    */
-  constructor({ userRepository }) {
+  constructor({ userRepository, authRepository }) {
     this.userRepository = userRepository;
+    this.authRepository = authRepository;
   }
 
   /**
    * @param {number} usuarioId
    * @param {{ estado: string|null, motivo?: string|null }} body
+   * @param {number|null} actorId usuario autenticado que ejecuta el cambio
    */
-  async execute(usuarioId, body) {
+  async execute(usuarioId, body, actorId = null) {
     const current = await this.userRepository.findByIdWithRoleForAdmin(usuarioId);
     if (!current) {
       throw new NotFoundError('Usuario');
@@ -40,6 +44,10 @@ export class CambiarEstadoUsuarioUseCase {
       ]);
     }
 
+    if (estado !== null && actorId != null && Number(actorId) === Number(usuarioId)) {
+      throw new ConflictError('No puede bloquear ni suspender su propia cuenta');
+    }
+
     const state = estado;
     const motivo = state === null ? null : body.motivo ?? null;
 
@@ -48,6 +56,10 @@ export class CambiarEstadoUsuarioUseCase {
       stateChangeDate: new Date(),
       stateChangeReason: motivo,
     });
+
+    if (state !== null) {
+      await this.authRepository.invalidarSesionesUsuario(usuarioId);
+    }
 
     const row = await this.userRepository.findByIdWithRoleForAdmin(usuarioId);
     return mapUsuarioAdminRow(row);

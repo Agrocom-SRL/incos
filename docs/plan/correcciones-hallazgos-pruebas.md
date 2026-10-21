@@ -14,6 +14,10 @@ folioFinal (Abrir/EditarLibro), horasRequeridas (pasantías), ids de ValidarConf
 ## Corregido en `fix/pagos-bloque-1`
 Bloque 1 completo (recibo sin 400 inventado —el recibo por cabecera nunca leía `baseAmount`—, cuota con monto `''`, `monto_base` `''`/`Infinity`, cuentas por cobrar con `monto_total_deuda` nulo, booleanos `activo`, fechas de compromiso `2026-02-31`, `metodo_pago_id`/`banco_id` no numéricos, edición parcial de cuota en el controller, mensaje de capacitación). Se crea el helper `application/utils/validacionEntrada.js` para los bloques siguientes. Decisiones: recibo y cuota con monto 0 son válidos (generan compromiso de pago); `monto_base` 0 es válido.
 
+## Corregido en `fix/seguridad-bloque-2`
+Bloque 2 salvo lo indicado como pendiente: `CambiarEstadoUsuario` recibe `actorId` (no se bloquea a sí mismo) y, junto con `CambiarPasswordUsuario`, `CambiarMiPassword` (conserva la sesión actual) y el cambio de clave en `ActualizarUsuario`, cierra las sesiones del usuario (`AuthRepository.invalidarSesionesUsuario`). Nadie cambia su propio rol; asignar o retirar ADMIN_SISTEMA (también en `CrearUsuario`) exige un actor ADMIN_SISTEMA (`rol-admin-sistema.guard.js`, falla cerrado). `username` vacío rechazado en alta y edición; `tipo_referencia` validado contra el catálogo; `Object.hasOwn` en `ListarUsuarios`; `ValidationError` (400) sin `dominio` en la grilla; permiso 105 filtrado en `ObtenerPermisosUsuario`; `ActualizarPermisosRol` comprueba existencia antes de `rolId===1`; `CambiarMiPassword` cota el `usuarioId` con el usuario del token y rechaza claves de solo espacios.
+**Pendiente del Bloque 2:** `BaseSearchUseCase`/`BaseListUseCase` (`searchTerm` nulo, cotas de `page`/`limit`) y el truncado de bcrypt a 72 bytes.
+
 ## Decisiones y preguntas (actualizado 2026-10-20)
 Respondidas por el dueño del proyecto:
 - **Integrantes de proyecto de grado (pregunta 2):** no se pueden agregar integrantes a un proyecto en estado final (CANCELADO/APROBADO/REPROBADO). → `AddIntegranteProyecto` debe rechazarlo.
