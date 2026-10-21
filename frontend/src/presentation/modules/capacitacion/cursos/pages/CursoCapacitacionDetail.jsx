@@ -1,6 +1,6 @@
 /**
  * Ficha de curso de capacitación (Capacitación · CAP · DETALLE) — cabecera con
- * resumen + tabs "Información" y "Horarios".
+ * resumen + tabs "Información" y "Grupos y horarios".
  *
  * Página "dumb": compone template + organismos y consume el hook de pantalla
  * (espejo de `PagosDetail`). Shell de detalle `sd-*` compartido.
@@ -17,7 +17,7 @@ import { useCursoCapacitacionDetailPage } from '@application-capacitacion/cursos
 import { CAPACITACION_PERMISOS } from '@application-capacitacion/utils/capacitacionPermisos';
 import CursoCapacitacionFichaHeader from '@capacitacion/cursos/components/organisms/CursoCapacitacionFichaHeader';
 import CursoInformacionSection from '@capacitacion/cursos/components/organisms/CursoInformacionSection';
-import CursoHorariosSection from '@capacitacion/cursos/components/organisms/CursoHorariosSection';
+import CursoGruposSection from '@capacitacion/cursos/components/organisms/CursoGruposSection';
 import '@presentation/styles/pages/detail-page.css';
 
 const CursoCapacitacionDetail = () => {
@@ -76,9 +76,9 @@ const CursoCapacitacionDetail = () => {
           children: <CursoInformacionSection curso={curso} />,
         },
         {
-          key: 'horarios',
-          label: `Horarios (${curso.horarios.length})`,
-          children: <CursoHorariosSection horarios={curso.horarios} />,
+          key: 'grupos',
+          label: `Grupos y horarios (${curso.grupos.length})`,
+          children: <CursoGruposSection grupos={curso.grupos} />,
         },
       ]
     : [];

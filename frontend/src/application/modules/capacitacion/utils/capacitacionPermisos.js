@@ -9,10 +9,12 @@
  * - participante: LISTAR, DETALLE, CREAR, EDITAR
  * - inscripcion:  LISTAR, DETALLE, CREAR, ELIMINAR
  * - pago:         CREAR, EXPORTAR
+ * - grupo:        LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR
  */
 export const CAPACITACION_PERMISOS = {
   curso: 'capacitacion.curso',
   participante: 'capacitacion.participante',
   inscripcion: 'capacitacion.inscripcion',
   pago: 'capacitacion.pago',
+  grupo: 'capacitacion.grupo',
 };
