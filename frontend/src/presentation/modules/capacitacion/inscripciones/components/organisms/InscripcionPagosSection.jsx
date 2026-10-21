@@ -1,10 +1,11 @@
 /**
  * Organismo: sección de la ficha de inscripción (CAP) — datos + historial de
- * pagos. Gemelo de `PagoCuotasSection` (Finanzas): DetailInfoCard + tabla.
+ * pagos (con concepto y comprobante). Gemelo de `PagoCuotasSection` (Finanzas): DetailInfoCard + tabla.
  * Estados vacíos cubiertos. Recibe props ya mapeadas; no llama hooks.
  */
 
-import { Empty, Table } from 'antd';
+import { Empty, Flex, Table } from 'antd';
+import { allSpacing } from '@theme/tokens';
 import {
   BookOutlined,
   DollarOutlined,
@@ -13,18 +14,15 @@ import {
 } from '@ant-design/icons';
 import { DetailInfoCard } from '@molecules';
 import { DetailField, StatusPill } from '@atoms';
-import { formatBs } from '@application/utils/formatters';
 import {
   formatEstadoCurso,
   formatEstadoInscripcionCap,
   getEstadoInscripcionCapPillClass,
-  getSaldoCapPillClass,
 } from '@application-capacitacion/utils/capacitacionPills';
 import { createPagosCapacitacionTableColumns } from '@capacitacion/inscripciones/config/pagosCapacitacionTableColumns';
-import CostoCursoLabel from '@capacitacion/components/atoms/CostoCursoLabel';
 
-const InscripcionPagosSection = ({ inscripcion }) => {
-  const columns = createPagosCapacitacionTableColumns();
+const InscripcionPagosSection = ({ inscripcion, comprobante }) => {
+  const columns = createPagosCapacitacionTableColumns(comprobante);
   const pagos = inscripcion.pagos ?? [];
 
   return (
@@ -53,24 +51,18 @@ const InscripcionPagosSection = ({ inscripcion }) => {
           {formatEstadoCurso(inscripcion.capacitacionEstado)}
         </DetailField>
         <DetailField label="Fechas">{inscripcion.capacitacionFechasLabel || '—'}</DetailField>
-        <DetailField label="Costo">
-          <CostoCursoLabel costo={inscripcion.costo} />
-        </DetailField>
-        <DetailField label="Total pagado">Bs {formatBs(inscripcion.totalPagado)}</DetailField>
-        <DetailField label="Saldo">
-          <StatusPill
-            label={inscripcion.saldo > 0 ? `Bs ${formatBs(inscripcion.saldo)}` : 'Saldado'}
-            className={getSaldoCapPillClass(inscripcion.saldo)}
-          />
+        <DetailField label="Grupo">{inscripcion.grupoNombre || 'Sin grupo elegido'}</DetailField>
+        <DetailField label="Horarios del grupo">
+          {inscripcion.grupoHorariosEtiqueta || '—'}
         </DetailField>
         {inscripcion.fechaCompromisoLabel ? (
           <DetailField label="Compromiso de pago">
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <Flex align="center" gap={allSpacing.marginSM}>
               {inscripcion.fechaCompromisoLabel}
               {inscripcion.pagoVencido ? (
                 <StatusPill label="Vencido" className="cfg-materia-pill cfg-materia-pill--danger" />
               ) : null}
-            </span>
+            </Flex>
           </DetailField>
         ) : null}
       </DetailInfoCard>

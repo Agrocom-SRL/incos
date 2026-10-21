@@ -28,7 +28,6 @@ import { TableActions } from '@molecules';
 import { formatBs } from '@application/utils/formatters';
 import { CAPACITACION_PERMISOS } from '@application-capacitacion/utils/capacitacionPermisos';
 import {
-  esCursoGratuito,
   formatEstadoCurso,
   formatEstadoInscripcionCap,
   formatEstadoPagoCap,
@@ -85,6 +84,7 @@ export const createInscripcionesCapTableColumns = ({
         <InfoLinesCell
           lines={[
             { icon: <BookOutlined />, label: record.capacitacionTitulo },
+            record.grupoNombre ? { icon: <TeamOutlined />, label: record.grupoNombre } : null,
             record.capacitacionFechasLabel
               ? { icon: <CalendarOutlined />, label: record.capacitacionFechasLabel }
               : null,
@@ -123,11 +123,12 @@ export const createInscripcionesCapTableColumns = ({
           lines={[
             {
               icon: <DollarOutlined />,
-              label: esCursoGratuito(record.costo) ? (
-                <CostoCursoLabel costo={record.costo} />
-              ) : (
-                `Bs ${formatBs(record.totalPagado)} de Bs ${formatBs(record.costo)}`
-              ),
+              label:
+                record.montoTotal <= 0 ? (
+                  <CostoCursoLabel costo={0} />
+                ) : (
+                  `Bs ${formatBs(record.totalPagado)} de Bs ${formatBs(record.montoTotal)}`
+                ),
             },
             {
               icon: <NumberOutlined />,
@@ -147,8 +148,8 @@ export const createInscripcionesCapTableColumns = ({
       render: (_, record) => (
         <Flex vertical gap={2} align="center">
           <StatusPill
-            label={record.saldo > 0 ? `Bs ${formatBs(record.saldo)}` : 'Saldado'}
-            className={getSaldoCapPillClass(record.saldo)}
+            label={record.saldoTotal > 0 ? `Bs ${formatBs(record.saldoTotal)}` : 'Saldado'}
+            className={getSaldoCapPillClass(record.saldoTotal)}
           />
           {record.pagoVencido ? (
             <StatusPill label="Vencido" className="cfg-materia-pill cfg-materia-pill--danger" />
@@ -156,7 +157,7 @@ export const createInscripcionesCapTableColumns = ({
         </Flex>
       ),
       sorter: true,
-      sortCompare: (a, b) => (Number(a.saldo) || 0) - (Number(b.saldo) || 0),
+      sortCompare: (a, b) => (Number(a.saldoTotal) || 0) - (Number(b.saldoTotal) || 0),
     },
     {
       title: 'Estado de pago',
@@ -198,8 +199,7 @@ export const createInscripcionesCapTableColumns = ({
         ].filter((d) => d.value != null && d.value !== '');
 
         const puedeIrAPagar =
-          !esCursoGratuito(record.costo) &&
-          Number(record.saldo) > 0 &&
+          Number(record.saldoTotal) > 0 &&
           ESTADOS_INSCRIPCION_CAP_VIGENTES.includes(record.estado);
         const extraActions = puedeIrAPagar
           ? [

@@ -18,8 +18,10 @@ import {
   getSaldoCapPillClass,
 } from '@application-capacitacion/utils/capacitacionPills';
 import CostoCursoLabel from '@capacitacion/components/atoms/CostoCursoLabel';
+import CursoGratuitoPill from '@capacitacion/components/atoms/CursoGratuitoPill';
 
 const InscripcionFichaHeader = ({ inscripcion }) => {
+  const { saldoTotal } = inscripcion;
   const subtitleParts = [
     inscripcion.participanteCiCompleto ? `CI ${inscripcion.participanteCiCompleto}` : null,
     inscripcion.capacitacionTitulo,
@@ -54,22 +56,40 @@ const InscripcionFichaHeader = ({ inscripcion }) => {
       <div className="sd-profile__divider" />
 
       <div className="sd-profile__stats">
-        <div className="sd-stat">
-          <span className="sd-stat__label">Costo del curso</span>
-          <span className="sd-stat__value sd-stat__value--primary">
-            <CostoCursoLabel costo={inscripcion.costo} />
-          </span>
-        </div>
+        {inscripcion.montoMatricula > 0 ? (
+          <div className="sd-stat">
+            <span className="sd-stat__label">Matrícula</span>
+            <span className="sd-stat__value sd-stat__value--primary">
+              <CostoCursoLabel costo={inscripcion.montoMatricula} />
+            </span>
+          </div>
+        ) : null}
+        {inscripcion.montoObligatorio > 0 ? (
+          <div className="sd-stat">
+            <span className="sd-stat__label">Costo del curso</span>
+            <span className="sd-stat__value sd-stat__value--primary">
+              <CostoCursoLabel costo={inscripcion.montoObligatorio} />
+            </span>
+          </div>
+        ) : null}
+        {inscripcion.montoTotal <= 0 ? (
+          <div className="sd-stat">
+            <span className="sd-stat__label">Costo</span>
+            <span className="sd-stat__value">
+              <CursoGratuitoPill />
+            </span>
+          </div>
+        ) : null}
         <div className="sd-stat">
           <span className="sd-stat__label">Total pagado</span>
           <span className="sd-stat__value">Bs {formatBs(inscripcion.totalPagado)}</span>
         </div>
         <div className="sd-stat">
-          <span className="sd-stat__label">Saldo</span>
+          <span className="sd-stat__label">Saldo total</span>
           <span className="sd-stat__value">
             <StatusPill
-              label={inscripcion.saldo > 0 ? `Bs ${formatBs(inscripcion.saldo)}` : 'Saldado'}
-              className={getSaldoCapPillClass(inscripcion.saldo)}
+              label={saldoTotal > 0 ? `Bs ${formatBs(saldoTotal)}` : 'Saldado'}
+              className={getSaldoCapPillClass(saldoTotal)}
             />
           </span>
         </div>
