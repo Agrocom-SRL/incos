@@ -1,4 +1,5 @@
 import { describe, it, expect, jest } from '@jest/globals';
+import { ValidationError } from '../../../src/domain/errors/AppError.js';
 import { BaseSearchUseCase } from '../../../src/application/use-cases/base/BaseSearchUseCase.js';
 
 describe('BaseSearchUseCase', () => {
@@ -30,6 +31,27 @@ describe('BaseSearchUseCase', () => {
     expect(cfg.repository.search).toHaveBeenCalledWith('ana', { limit: 10 });
     expect(res).toEqual([{ id: 1, mapped: true }, { id: 2, mapped: true }]);
   });
+
+  it.each([[null], [undefined]])('término %p: ValidationError (400), no TypeError, sin consultar', async (termino) => {
+    const cfg = config();
+    await expect(new Buscador(cfg).execute(termino)).rejects.toBeInstanceOf(ValidationError);
+    expect(cfg.repository.search).not.toHaveBeenCalled();
+  });
+
+  it('término numérico se convierte a texto', async () => {
+    const cfg = config();
+    await new Buscador(cfg).execute(123);
+    expect(cfg.repository.search).toHaveBeenCalledWith('123', { limit: 50 });
+  });
+
+  it.each([[NaN, 50], ['abc', 50], ['5abc', 50], [0, 50], [-4, 50], [1.5, 50], [null, 50], ['7', 7], [100000, 100]])(
+    'limit %p se normaliza a %p',
+    async (limit, esperado) => {
+      const cfg = config();
+      await new Buscador(cfg).execute('ana', limit);
+      expect(cfg.repository.search).toHaveBeenCalledWith('ana', { limit: esperado });
+    }
+  );
 
   it('limit por defecto 50', async () => {
     const cfg = config();

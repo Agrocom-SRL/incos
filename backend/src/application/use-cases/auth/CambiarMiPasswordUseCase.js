@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import { validarPasswordNueva } from '../../utils/passwordPolicy.js';
 import {
   NotFoundError,
   UnauthorizedError,
@@ -40,11 +41,7 @@ export class CambiarMiPasswordUseCase {
       throw new UnauthorizedError('La contraseña actual es incorrecta');
     }
 
-    if (!passwordNuevo || String(passwordNuevo).trim().length < 8) {
-      throw new UnprocessableEntityError('Los datos proporcionados son inválidos', [
-        { field: 'password_nuevo', message: 'password_nuevo debe tener al menos 8 caracteres' },
-      ]);
-    }
+    validarPasswordNueva(passwordNuevo, 'password_nuevo');
 
     const esIgual = await bcrypt.compare(String(passwordNuevo), usuario.password_hash);
     if (esIgual) {

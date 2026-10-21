@@ -47,6 +47,24 @@
  * }
  */
 export class BaseListUseCase {
+    /** Mismo tope que `listValidator` en las rutas. */
+    static LIMIT_MAXIMO = 10000;
+
+    /**
+     * Entero dentro de [min, max]. Valores no numéricos o con basura ('5abc', 1.5, NaN, null)
+     * y los menores que `min` caen al `defecto`; los mayores que `max` se acotan a `max`.
+     * @param {*} valor
+     * @param {number} defecto
+     * @param {number} min
+     * @param {number} max
+     * @returns {number}
+     */
+    static normalizarEntero(valor, defecto, min, max) {
+        const n = typeof valor === 'number' ? valor : /^\d+$/.test(String(valor).trim()) ? Number(valor) : NaN;
+        if (!Number.isInteger(n) || n < min) return defecto;
+        return Math.min(n, max);
+    }
+
     /**
      * @param {Object} params - Parámetros de configuración
      * @param {Object} params.repository - Repositorio a usar (debe tener método findAll(filters, page, limit))
@@ -191,8 +209,8 @@ export class BaseListUseCase {
         const filters = await this.prepareFilters(initialFilters, queryParams);
 
         // Parsear y validar parámetros
-        const pageNum = parseInt(page, 10) || 1;
-        const limitNum = parseInt(limit, 10) || 50;
+        const pageNum = BaseListUseCase.normalizarEntero(page, 1, 1, Number.MAX_SAFE_INTEGER);
+        const limitNum = BaseListUseCase.normalizarEntero(limit, 50, 1, BaseListUseCase.LIMIT_MAXIMO);
 
         // Logging inicial
         this.logger.info(`[${this.moduleName}] Iniciando listado de ${this.resourceName}`, {

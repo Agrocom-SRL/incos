@@ -38,6 +38,13 @@ describe('CambiarPasswordUsuarioUseCase', () => {
     expect(authRepository.invalidarSesionesUsuario).not.toHaveBeenCalled();
   });
 
+  it.each([['x'.repeat(73)], ['ñ'.repeat(40)], ['        ']])('clave %p no válida: 422 sin actualizar ni cerrar sesiones', async (clave) => {
+    const { userRepository, authRepository, useCase } = crear();
+    await expect(useCase.execute(5, clave)).rejects.toBeInstanceOf(UnprocessableEntityError);
+    expect(userRepository.update).not.toHaveBeenCalled();
+    expect(authRepository.invalidarSesionesUsuario).not.toHaveBeenCalled();
+  });
+
   it('usuario inexistente: NotFoundError sin actualizar', async () => {
     const { userRepository, useCase } = crear(null);
     await expect(useCase.execute(5, 'clave-nueva-1')).rejects.toBeInstanceOf(NotFoundError);
