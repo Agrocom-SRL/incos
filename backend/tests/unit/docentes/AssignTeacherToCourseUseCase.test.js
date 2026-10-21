@@ -56,6 +56,25 @@ describe('AssignTeacherToCourseUseCase', () => {
       .toHaveBeenCalledWith({ managementPlanId: 3, offerCourseId: 5, active: true });
   });
 
+  it.each([['abc'], [-3], [201], [NaN]])('carga_horaria %p inválida: 422 sin crear ni actualizar', async (carga) => {
+    const { useCase, deps } = crear();
+    await expect(useCase.execute({ oferta_curso_id: 5, docente_id: 1, carga_horaria: carga })).rejects.toBeInstanceOf(UnprocessableEntityError);
+    expect(deps.createTeacherAssignmentUseCase.execute).not.toHaveBeenCalled();
+    expect(deps.teacherAssignmentRepository.update).not.toHaveBeenCalled();
+  });
+
+  it('carga_horaria en texto numérico se convierte a número', async () => {
+    const { useCase, deps } = crear();
+    await useCase.execute({ oferta_curso_id: 5, docente_id: 1, carga_horaria: '6' });
+    expect(deps.createTeacherAssignmentUseCase.execute).toHaveBeenCalledWith(expect.objectContaining({ carga_horaria: 6 }), null);
+  });
+
+  it('con asignación existente y carga inválida no actualiza', async () => {
+    const { useCase, deps } = crear({ existing: { id: 11, teacherId: 1, hours: 4 } });
+    await expect(useCase.execute({ oferta_curso_id: 5, docente_id: 1, carga_horaria: 'abc' })).rejects.toBeInstanceOf(UnprocessableEntityError);
+    expect(deps.teacherAssignmentRepository.update).not.toHaveBeenCalled();
+  });
+
   it('usa gestion_plan_id del body sin consultar la oferta para resolverlo', async () => {
     const { useCase, deps } = crear();
     await useCase.execute({ oferta_curso_id: 5, docente_id: 1, gestion_plan_id: 3 });

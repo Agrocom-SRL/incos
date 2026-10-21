@@ -5,11 +5,12 @@ import { DeleteOfertaCursoUseCase } from '../../../src/application/use-cases/ofe
 
 const logger = () => ({ info: jest.fn(), warn: jest.fn(), error: jest.fn() });
 
-const crear = ({ offer = { id: 4 }, matriculas = 0 } = {}) => {
+const crear = ({ offer = { id: 4 }, matriculas = 0, deps: dependencias = { asignaciones: 0, bloques: 0 } } = {}) => {
   const deps = {
     courseOfferRepository: {
       findById: jest.fn().mockResolvedValue(offer),
       countActiveEnrollmentsByOfferId: jest.fn().mockResolvedValue(matriculas),
+      countDependenciasByOfferId: jest.fn().mockResolvedValue(dependencias),
       delete: jest.fn().mockResolvedValue(true),
     },
     logger: logger(),
@@ -31,6 +32,15 @@ describe('DeleteOfertaCursoUseCase', () => {
     await expect(useCase.execute(NaN)).rejects.toBeInstanceOf(NotFoundError);
     expect(deps.courseOfferRepository.delete).not.toHaveBeenCalled();
   });
+
+  it.each([[{ asignaciones: 1, bloques: 0 }], [{ asignaciones: 2, bloques: 5 }]])(
+    'rechaza eliminar con asignaciones docentes o bloques (%j) y no borra',
+    async (dependencias) => {
+      const { deps, useCase } = crear({ deps: dependencias });
+      await expect(useCase.execute(4)).rejects.toBeInstanceOf(ValidationError);
+      expect(deps.courseOfferRepository.delete).not.toHaveBeenCalled();
+    }
+  );
 
   it('rechaza eliminar si hay matrículas activas', async () => {
     const { deps, useCase } = crear({ matriculas: 3 });

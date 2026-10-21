@@ -4,8 +4,9 @@ import { TURNOS_EDITABLES_PARALELO_GESTION } from '../../../domain/constants/ofe
 import { entityToPresentation } from '../../mappers/oferta/ParallelManagementPresentationMapper.js';
 
 export class CambiarTurnoParaleloGestionUseCase {
-  constructor({ parallelManagementRepository, logger }) {
+  constructor({ parallelManagementRepository, grillaBloqueViewRepository, logger }) {
     this.parallelManagementRepository = parallelManagementRepository;
+    this.grillaBloqueViewRepository = grillaBloqueViewRepository;
     this.logger = logger;
   }
 
@@ -23,8 +24,17 @@ export class CambiarTurnoParaleloGestionUseCase {
       );
     }
 
-    // TODO Sprint 5: si existen bloques en asignacion_horarios, re-mapear al rango del nuevo turno
-    // en la misma transacción antes de persistir el cambio de turno.
+    // Este flujo no reubica bloques: con bloques armados cambiar el turno los dejaría en el
+    // turno equivocado. Para eso existe `cambiar-turno-con-bloques`.
+    if (pg.shift !== turno && this.grillaBloqueViewRepository) {
+      const bloques = await this.grillaBloqueViewRepository.findByParaleloGestionId(Number(id));
+      if ((bloques?.length ?? 0) > 0) {
+        throw new ValidationError(
+          'El paralelo ya tiene bloques de horario: use cambiar-turno-con-bloques para reubicarlos',
+          { bloques: bloques.length }
+        );
+      }
+    }
 
     const updated = await this.parallelManagementRepository.update(
       id,

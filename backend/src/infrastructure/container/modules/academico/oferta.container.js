@@ -138,6 +138,9 @@ function registerOfertaUseCases(container) {
   registerComponent(container, ACADEMICO_TOKENS.cambiarTurnoParaleloGestionUseCase, (c) =>
     new CambiarTurnoParaleloGestionUseCase({
       parallelManagementRepository: c.resolve(REPOSITORIOS_TOKENS.parallelManagementRepository),
+      grillaBloqueViewRepository: c.resolve(
+        REPOSITORIOS_TOKENS.paraleloGestionGrillaBloqueViewRepository
+      ),
       logger: c.resolve(SERVICIOS_TOKENS.logger),
     })
   );

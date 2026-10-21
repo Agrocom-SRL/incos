@@ -156,6 +156,28 @@ describe('UpdateTeacherAssignmentUseCase', () => {
     expect(deps.teacherAssignmentRepository.retireVigenteForOffer).toHaveBeenCalledWith(5, 11, 99);
   });
 
+  it('reactivar una asignación inactiva retira a las demás vigentes de la oferta', async () => {
+    const { useCase, deps } = crear({
+      existing: { id: 11, managementPlanId: 3, offerCourseId: 5, teacherId: 1, hours: 4, active: false },
+    });
+    await useCase.execute(11, { vigente: true }, 99);
+    expect(deps.teacherAssignmentRepository.retireVigenteForOffer).toHaveBeenCalledWith(5, 11, 99);
+  });
+
+  it('editar otros campos de una asignación inactiva no la reactiva ni retira a nadie', async () => {
+    const { useCase, deps } = crear({
+      existing: { id: 11, managementPlanId: 3, offerCourseId: 5, teacherId: 1, hours: 4, active: false },
+    });
+    await useCase.execute(11, { motivo: 'nota' }, 99);
+    expect(deps.teacherAssignmentRepository.retireVigenteForOffer).not.toHaveBeenCalled();
+  });
+
+  it('editar solo la carga de una asignación vigente no retira a nadie', async () => {
+    const { useCase, deps } = crear();
+    await useCase.execute(11, { carga_horaria: 6 }, 99);
+    expect(deps.teacherAssignmentRepository.retireVigenteForOffer).not.toHaveBeenCalled();
+  });
+
   it('lanza NotFoundError si update no devuelve la asignación', async () => {
     const { useCase, deps } = crear();
     deps.teacherAssignmentRepository.update.mockResolvedValue(null);

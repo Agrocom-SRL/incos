@@ -2,6 +2,7 @@ import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.
 import {
   ESTADOS_PARALELO_GESTION,
   ESTADOS_PARALELO_GESTION_VALUES,
+  TRANSICIONES_PARALELO_GESTION,
 } from '../../../domain/constants/oferta.constants.js';
 import { entityToPresentation } from '../../mappers/oferta/ParallelManagementPresentationMapper.js';
 
@@ -24,7 +25,18 @@ export class UpdateParaleloGestionEstadoUseCase {
     const pg = await this.parallelManagementRepository.findById(id);
     if (!pg) throw new NotFoundError('paralelo de gestión');
 
-    if (estado === ESTADOS_PARALELO_GESTION.OFERTADO) {
+    const actual = pg.state ?? pg.estado ?? null;
+    if (actual !== null && actual !== estado) {
+      const permitidos = TRANSICIONES_PARALELO_GESTION[actual] ?? [];
+      if (!permitidos.includes(estado)) {
+        throw new ValidationError(
+          `Transición no permitida: un paralelo ${actual} no puede pasar a ${estado}`,
+          { estadoActual: actual, estadoSolicitado: estado, permitidos }
+        );
+      }
+    }
+
+    if (estado === ESTADOS_PARALELO_GESTION.OFERTADO && actual !== ESTADOS_PARALELO_GESTION.PUBLICADO) {
       if (!pg.classroomId) {
         throw new ValidationError('Debe asignar un aula antes de pasar a OFERTADO');
       }

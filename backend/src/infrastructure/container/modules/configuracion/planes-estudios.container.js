@@ -209,6 +209,7 @@ export function registerPlanesEstudiosResource(container) {
 
   registerComponent(container, CONFIGURACION_TOKENS.createPrerrequisitoUseCase, (c) => new CreatePrerrequisitoUseCase({
     prerequisiteRepository: c.resolve(REPOSITORIOS_TOKENS.prerequisiteRepository),
+    planSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.planSubjectRepository),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
   }));
 

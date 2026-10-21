@@ -27,20 +27,25 @@ export class ListTeachersUseCase extends BaseListUseCase {
     return TeacherListMapper;
   }
 
-  buildSpecificFilters(queryParams = {}, baseFilters = {}) {
-    const incluir = queryParams.incluir_estadisticas;
-    this._skipTeachingStats =
+  /**
+   * Las estadísticas de carga/conflictos se añaden DESPUÉS del listado base y la decisión
+   * de incluirlas vive en una variable local: guardarla en la instancia se contagiaría entre
+   * peticiones concurrentes si el use case es singleton.
+   */
+  async execute(baseFilters = {}, page = 1, limit = 50, queryParams = {}) {
+    const incluir = queryParams?.incluir_estadisticas;
+    const omitirEstadisticas =
       incluir === 'false' ||
       incluir === false ||
       incluir === '0' ||
       incluir === 0;
-    return baseFilters;
+
+    const resultado = await super.execute(baseFilters, page, limit, queryParams);
+    if (omitirEstadisticas) return resultado;
+    return { ...resultado, docentes: await this._conEstadisticas(resultado.docentes) };
   }
 
-  async enrichData(data) {
-    if (this._skipTeachingStats) {
-      return data;
-    }
+  async _conEstadisticas(data) {
     const teacherIds = (data || [])
       .map((row) => Number(row?.id))
       .filter((id) => Number.isFinite(id) && id > 0);

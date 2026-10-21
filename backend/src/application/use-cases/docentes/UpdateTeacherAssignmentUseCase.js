@@ -159,8 +159,13 @@ export class UpdateTeacherAssignmentUseCase {
     }
 
     const targetOfferId = updateData.offerCourseId ?? existingPlain.offerCourseId;
-    const willBeVigente = updateData.active !== false && existingPlain.active !== false;
-    if (willBeVigente && updateData.active === true && targetOfferId) {
+    // Vigencia FINAL (lo pedido o lo que ya tenía): reactivar una asignación inactiva, o
+    // moverla a otra oferta, también debe retirar a las demás vigentes de esa oferta.
+    const vigenciaFinal = updateData.active !== undefined ? updateData.active : existingPlain.active;
+    const willBeVigente = vigenciaFinal !== false;
+    const reactiva = existingPlain.active === false || updateData.active === true;
+    const cambiaOferta = updateData.offerCourseId !== undefined;
+    if (willBeVigente && (reactiva || cambiaOferta) && targetOfferId) {
       await this.teacherAssignmentRepository.retireVigenteForOffer(targetOfferId, id, userId);
     }
 

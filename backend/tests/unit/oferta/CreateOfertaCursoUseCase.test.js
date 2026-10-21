@@ -5,9 +5,12 @@ import { CreateOfertaCursoUseCase } from '../../../src/application/use-cases/ofe
 
 const logger = () => ({ info: jest.fn(), warn: jest.fn(), error: jest.fn() });
 
-const crear = ({ pg = { id: 1 }, asignatura = { id: 2 }, dup = null } = {}) => {
+const crear = ({ pg = { id: 1, state: 'BORRADOR' }, asignatura = { id: 2, studyPlanId: 5, periodId: 1 }, dup = null, ctx = { studyPlanId: 5, periodId: 1 } } = {}) => {
   const deps = {
-    parallelManagementRepository: { findById: jest.fn().mockResolvedValue(pg) },
+    parallelManagementRepository: {
+      findById: jest.fn().mockResolvedValue(pg),
+      findGenerationContext: jest.fn().mockResolvedValue(ctx),
+    },
     planSubjectRepository: { findById: jest.fn().mockResolvedValue(asignatura) },
     courseOfferRepository: {
       findBy: jest.fn().mockResolvedValue(dup),
@@ -60,6 +63,36 @@ describe('CreateOfertaCursoUseCase', () => {
     const { deps, useCase } = crear({ asignatura: null });
     await expect(useCase.execute({ paralelo_gestion_id: 1, asignatura_plan_id: 2 })).rejects.toBeInstanceOf(NotFoundError);
     expect(deps.courseOfferRepository.create).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    [{ asignatura: { id: 2, studyPlanId: 99, periodId: 1 } }],
+    [{ asignatura: { id: 2, studyPlanId: 5, periodId: 7 } }],
+  ])('rechaza una asignatura de otro plan o periodo (%j)', async (over) => {
+    const { deps, useCase } = crear(over);
+    await expect(useCase.execute({ paralelo_gestion_id: 1, asignatura_plan_id: 2 })).rejects.toBeInstanceOf(ValidationError);
+    expect(deps.courseOfferRepository.create).not.toHaveBeenCalled();
+  });
+
+  it('rechaza agregar oferta a un paralelo CERRADO', async () => {
+    const { deps, useCase } = crear({ pg: { id: 1, state: 'CERRADO' } });
+    await expect(useCase.execute({ paralelo_gestion_id: 1, asignatura_plan_id: 2 })).rejects.toBeInstanceOf(ValidationError);
+    expect(deps.courseOfferRepository.create).not.toHaveBeenCalled();
+  });
+
+  it.each([['abc'], ['1x'], [-2], [1.5]])('id %p no numérico: ValidationError sin consultar', async (id) => {
+    const { deps, useCase } = crear();
+    await expect(useCase.execute({ paralelo_gestion_id: id, asignatura_plan_id: 2 })).rejects.toBeInstanceOf(ValidationError);
+    expect(deps.parallelManagementRepository.findById).not.toHaveBeenCalled();
+  });
+
+  it('convierte ids numéricos en texto a número', async () => {
+    const { deps, useCase } = crear();
+    await useCase.execute({ paralelo_gestion_id: '1', asignatura_plan_id: '2' });
+    expect(deps.courseOfferRepository.create).toHaveBeenCalledWith(
+      expect.objectContaining({ parallelManagementId: 1, planSubjectId: 2 }),
+      null
+    );
   });
 
   it('rechaza una asignatura ya ofertada en el paralelo', async () => {

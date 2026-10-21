@@ -85,6 +85,24 @@ describe('PutParaleloScheduleUseCase', () => {
     expect(mockTransaction).not.toHaveBeenCalled();
   });
 
+  it('422 si el mismo cursoId viene repetido (no se sobrescribe en silencio)', async () => {
+    const { useCase } = crear();
+    const err = await useCase.execute(input([
+      { cursoId: 100, bloques: [bloque()] },
+      { cursoId: '100', bloques: [bloque({ dia: 'MARTES' })] },
+    ])).catch((e) => e);
+    expect(err.statusCode).toBe(422);
+    expect(mockTransaction).not.toHaveBeenCalled();
+  });
+
+  it('422 si un curso repite el mismo bloque (mismo día y hora)', async () => {
+    const { useCase } = crear();
+    const err = await useCase.execute(input([{ cursoId: 100, bloques: [bloque(), bloque()] }])).catch((e) => e);
+    expect(err.statusCode).toBe(422);
+    expect(JSON.stringify(err.details)).toContain('BLOQUE_DUPLICADO');
+    expect(mockTransaction).not.toHaveBeenCalled();
+  });
+
   it('422 si el horario no existe en el catálogo', async () => {
     const { useCase } = crear({ horario: null });
     const err = await useCase.execute(input([{ cursoId: 100, bloques: [bloque()] }])).catch((e) => e);

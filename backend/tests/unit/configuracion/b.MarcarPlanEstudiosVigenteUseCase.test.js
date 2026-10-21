@@ -1,8 +1,18 @@
-import { describe, it, expect, jest } from '@jest/globals';
-import { MarcarPlanEstudiosVigenteUseCase } from '../../../src/application/use-cases/configuracion/MarcarPlanEstudiosVigenteUseCase.js';
+import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { NotFoundError } from '../../../src/domain/errors/AppError.js';
 
+const mockTransaction = jest.fn(async (fn) => fn('TX'));
+jest.unstable_mockModule('../../../src/infrastructure/database/sequelize.js', () => ({
+  sequelize: { transaction: mockTransaction },
+}));
+
+const { MarcarPlanEstudiosVigenteUseCase } = await import(
+  '../../../src/application/use-cases/configuracion/MarcarPlanEstudiosVigenteUseCase.js'
+);
+
 describe('MarcarPlanEstudiosVigenteUseCase', () => {
+  beforeEach(() => mockTransaction.mockClear());
+
   const crear = ({ plan = { id: 5, careerId: 2 } } = {}) => {
     const Model = { update: jest.fn().mockResolvedValue([3]) };
     const studyPlanRepository = {
@@ -17,8 +27,8 @@ describe('MarcarPlanEstudiosVigenteUseCase', () => {
   it('desmarca los planes de la carrera y marca el plan como vigente', async () => {
     const { useCase, Model, studyPlanRepository, logger } = crear();
     const res = await useCase.execute(5, 8);
-    expect(Model.update).toHaveBeenCalledWith({ vigente: false, updatedBy: 8 }, { where: { carreraId: 2 } });
-    expect(studyPlanRepository.update).toHaveBeenCalledWith(5, { isActive: true }, 8);
+    expect(Model.update).toHaveBeenCalledWith({ vigente: false, updatedBy: 8 }, { where: { carreraId: 2 }, transaction: 'TX' });
+    expect(studyPlanRepository.update).toHaveBeenCalledWith(5, { isActive: true }, 8, { transaction: 'TX' });
     expect(res).toEqual({ plan_estudio: { id: 5, isActive: true } });
     expect(logger.info).toHaveBeenCalledWith(expect.any(String), { id: 5, carreraId: 2 });
   });
@@ -27,7 +37,14 @@ describe('MarcarPlanEstudiosVigenteUseCase', () => {
     const { useCase, Model, studyPlanRepository } = crear();
     await useCase.execute(5);
     expect(Model.update.mock.invocationCallOrder[0]).toBeLessThan(studyPlanRepository.update.mock.invocationCallOrder[0]);
-    expect(Model.update).toHaveBeenCalledWith({ vigente: false, updatedBy: null }, { where: { carreraId: 2 } });
+    expect(Model.update).toHaveBeenCalledWith({ vigente: false, updatedBy: null }, { where: { carreraId: 2 }, transaction: 'TX' });
+  });
+
+  it('si falla el segundo paso el error se propaga desde la misma transacción (rollback)', async () => {
+    const { useCase, studyPlanRepository } = crear();
+    studyPlanRepository.update.mockRejectedValue(new Error('boom'));
+    await expect(useCase.execute(5)).rejects.toThrow('boom');
+    expect(mockTransaction).toHaveBeenCalledTimes(1);
   });
 
   it('lanza NotFoundError si el plan no existe y no modifica nada', async () => {

@@ -21,6 +21,17 @@ describe('ListTeachersUseCase', () => {
     return { deps, useCase: new ListTeachersUseCase(deps) };
   };
 
+  it('peticiones concurrentes con distinto incluir_estadisticas no se contagian (use case singleton)', async () => {
+    const { useCase, deps } = crear();
+    const [sin, con] = await Promise.all([
+      useCase.execute({}, 1, 10, { incluir_estadisticas: 'false' }),
+      useCase.execute({}, 1, 10, { incluir_estadisticas: 'true' }),
+    ]);
+    expect(sin.docentes[0].teachingStats).toBeUndefined();
+    expect(con.docentes[0].teachingStats).toBeDefined();
+    expect(deps.teacherRepository.getTeachingLoadAndConflictStats).toHaveBeenCalledTimes(1);
+  });
+
   it('lista con paginación, nombre completo y estadísticas de carga', async () => {
     const { useCase, deps } = crear();
     const res = await useCase.execute({ search: 'a' }, 2, 2, { page: 2 });
