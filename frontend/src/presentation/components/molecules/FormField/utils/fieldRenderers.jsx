@@ -19,6 +19,7 @@ import { Form, Typography, InputNumber } from 'antd';
 import FormHexColorPicker from '../components/FormHexColorPicker';
 import RenderDisplay from '../components/RenderDisplay';
 import FormColorPopoverPicker from '../components/FormColorPopoverPicker';
+import FormCustomControl from '../components/FormCustomControl';
 import FormImageUploadDragger from '../components/FormImageUploadDragger';
 import FormPillSelect from '../components/FormPillSelect';
 import FormIconPicker from '../components/FormIconPicker';
@@ -38,6 +39,7 @@ import {
 } from '@atoms';
 
 const { Paragraph, Text } = Typography;
+
 
 const renderColor = (field, disabled, readOnly) => {
   if (field.pickerMode === 'popover' || field.pickerMode === 'modal') {
@@ -145,6 +147,14 @@ const renderSelect = (field, disabled, readOnly, selectOptions, form) => {
     />
   );
 };
+
+/**
+ * Renderer para campo `custom`: control propio del módulo (`field.render(props)`), que recibe
+ * `value`/`onChange` del Form.Item. Evita crear un tipo nuevo por cada widget de un solo uso.
+ */
+const renderCustom = (field, disabled, readOnly) => (
+  <FormCustomControl field={field} disabled={disabled} readOnly={readOnly} />
+);
 
 /**
  * Renderer para campo de tipo date
@@ -366,6 +376,7 @@ export const fieldRenderers = {
   input: renderInput,
   number: renderNumber,
   color: renderColor,
+  custom: renderCustom,
   imageUpload: renderImageUpload,
   iconPicker: renderIconPicker,
   slider: renderSlider,
@@ -392,6 +403,7 @@ const fieldRendererParams = {
   input: ['field', 'disabled', 'readOnly'],
   number: ['field', 'disabled', 'readOnly'],
   color: ['field', 'disabled', 'readOnly'],
+  custom: ['field', 'disabled', 'readOnly'],
   iconPicker: ['field', 'disabled', 'readOnly'],
   slider: ['field', 'disabled', 'readOnly'],
   search: ['field', 'disabled', 'readOnly'],

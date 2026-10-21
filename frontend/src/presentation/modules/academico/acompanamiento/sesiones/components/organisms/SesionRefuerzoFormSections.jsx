@@ -1,7 +1,7 @@
 /**
  * Formulario de sesión de refuerzo — workspace alineado a CFG Académico.
  * Tres sectores dentro de UNA misma tarjeta (prop `sections` de
- * `CfgFormWorkspace`, mismo patrón que `CursoCapacitacionFormSections`):
+ * `CfgFormWorkspace`, mismo patrón que `PlanFormSections`):
  * "Programación" da título a la tarjeta, "Modalidad y lugar" y "Estudiantes
  * convocados" quedan como secciones internas.
  *
