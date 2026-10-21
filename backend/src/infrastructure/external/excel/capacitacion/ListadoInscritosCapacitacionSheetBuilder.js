@@ -1,7 +1,7 @@
 /**
  * ListadoInscritosCapacitacionSheetBuilder — construye la ÚNICA hoja del Listado
  * de Inscritos de un curso de capacitación: cabecera institucional + datos del
- * curso (título, costo, aula, horario, fechas), tabla de participantes vigentes
+ * curso (título, costo, horario por grupo, fechas), tabla de participantes vigentes
  * (cédula, nombre completo, correo, saldo, fecha de inscripción) y un resumen de
  * totales al pie.
  *
@@ -35,12 +35,17 @@ export class ListadoInscritosCapacitacionSheetBuilder {
     const colCedula = 2;
     const colNombre = 3;
     const colCorreo = 4;
-    const colSaldo = 5;
-    const colFechaInscripcion = 6;
+    const colGrupo = 5;
+    const colSaldo = 6;
+    const colEstadoMatricula = 7;
+    const colEstadoCurso = 8;
+    const colRequisitos = 9;
+    const colFechaInscripcion = 10;
     const lastCol = colFechaInscripcion;
 
     c.colWidths({ 1: 3, [colCedula]: 16, [colNombre]: 42, [colCorreo]: 30 });
-    c.colWidths({ [colSaldo]: 16, [colFechaInscripcion]: 20 });
+    c.colWidths({ [colGrupo]: 24, [colSaldo]: 16, [colEstadoMatricula]: 16, [colEstadoCurso]: 16 });
+    c.colWidths({ [colRequisitos]: 16, [colFechaInscripcion]: 20 });
 
     // ---- Banda de título + cabecera institucional + datos del curso ----
     c.bandTitle(
@@ -54,18 +59,18 @@ export class ListadoInscritosCapacitacionSheetBuilder {
       border: false,
     });
     c.infoField('B3:B3', 'CURSO:', `C3:${L(lastCol)}3`, curso.titulo ?? '—');
-    c.infoField('B4:B4', 'COSTO:', 'C4:C4', fmtMoneda(curso.costo));
-    c.infoField('D4:D4', 'AULA:', `E4:${L(lastCol)}4`, curso.aulaNombre ?? '—');
+    c.infoField('B4:B4', 'COSTO CURSO:', 'C4:C4', fmtMoneda(curso.costo));
+    c.infoField('D4:D4', 'MATRÍCULA:', `E4:${L(lastCol)}4`, fmtMoneda(curso.costoMatricula));
     c.infoField('B5:B5', 'HORARIO:', `C5:${L(lastCol)}5`, curso.horariosDetalle || '—');
-    const fechasLabel =
-      curso.fechaInicio && curso.fechaFin
-        ? `${fmtFecha(curso.fechaInicio)} – ${fmtFecha(curso.fechaFin)}`
-        : '—';
-    c.infoField('B6:B6', 'FECHAS:', 'C6:C6', fechasLabel);
-    c.infoField('D6:D6', 'EMISIÓN:', `E6:${L(lastCol)}6`, fmtFecha(datos.fechaEmision));
+    const fechasLabel = curso.fechaFin
+      ? `${fmtFecha(curso.fechaInicio)} – ${fmtFecha(curso.fechaFin)}`
+      : fmtFecha(curso.fechaInicio);
+    c.infoField('B6:B6', 'INICIO / FIN:', 'C6:C6', fechasLabel);
+    c.infoField('D6:D6', 'MODALIDAD:', `E6:${L(lastCol)}6`, curso.modalidad ?? '—');
+    c.infoField('B7:B7', 'EMISIÓN:', `C7:${L(lastCol)}7`, fmtFecha(datos.fechaEmision));
 
     // ---- Cabecera de columnas ----
-    const headRow = 8;
+    const headRow = 9;
     const headStyle = {
       bold: true,
       size: label,
@@ -78,7 +83,11 @@ export class ListadoInscritosCapacitacionSheetBuilder {
       [colCedula, 'CÉDULA'],
       [colNombre, 'NOMBRE COMPLETO'],
       [colCorreo, 'CORREO'],
+      [colGrupo, 'GRUPO'],
       [colSaldo, 'SALDO (Bs)'],
+      [colEstadoMatricula, 'MATRÍCULA'],
+      [colEstadoCurso, 'CURSO'],
+      [colRequisitos, 'REQ. PENDIENTES'],
       [colFechaInscripcion, 'FECHA DE INSCRIPCIÓN'],
     ];
     headers.forEach(([col, text]) => c.cell(headRow, col, text, headStyle));
@@ -99,8 +108,12 @@ export class ListadoInscritosCapacitacionSheetBuilder {
         size: label,
       });
       c.cell(row, colCorreo, p.correo ?? '—', { fill: zebra, align: 'left', size: label });
+      c.cell(row, colGrupo, p.grupo ?? '—', { fill: zebra, align: 'left', size: label });
       const saldoCell = c.cell(row, colSaldo, saldo, { fill: zebra, bold: saldo > 0, size: label });
       saldoCell.numFmt = '#,##0.00';
+      c.cell(row, colEstadoMatricula, p.estadoPagoMatricula ?? '—', { fill: zebra, size: label });
+      c.cell(row, colEstadoCurso, p.estadoPagoCurso ?? '—', { fill: zebra, size: label });
+      c.cell(row, colRequisitos, Number(p.requisitosPendientes) || 0, { fill: zebra, size: label });
       c.cell(row, colFechaInscripcion, fmtFecha(p.fechaInscripcion), { fill: zebra, size: label });
       row += 1;
     });

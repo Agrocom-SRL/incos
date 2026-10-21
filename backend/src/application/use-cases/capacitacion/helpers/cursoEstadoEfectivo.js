@@ -57,7 +57,9 @@ export const ESTADOS_DERIVADOS_POR_FECHA = [
  *
  * - PROPUESTO / CANCELADO: se devuelven tal cual (terminales/manuales).
  * - ABIERTO: si `hoy > fechaFin` → CERRADO; si `hoy >= fechaInicio` → EN_CURSO;
- *   si no, sigue ABIERTO.
+ *   si no, sigue ABIERTO. `fechaFin` es OPCIONAL (el curso puede definirse solo
+ *   por `duracion`): sin fecha de fin el curso nunca pasa a CERRADO por fecha y
+ *   permanece EN_CURSO hasta que se cancele manualmente.
  *
  * @param {string} estadoCrudo - Valor crudo de `capacitaciones.estado`
  * @param {Date|string|null} fechaInicio

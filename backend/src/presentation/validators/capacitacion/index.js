@@ -5,6 +5,10 @@
 export {
   listCursosCapacitacionValidator,
   listHorariosDisponiblesCapacitacionValidator,
+  listGruposCapacitacionValidator,
+  listHorariosCapacitacionValidator,
+  createHorarioCapacitacionValidator,
+  updateHorarioCapacitacionValidator,
   createCursoCapacitacionValidator,
   updateCursoCapacitacionValidator,
 } from './cursos-capacitacion.validator.js';
@@ -21,6 +25,8 @@ export {
   createInscripcionCapacitacionValidator,
   registerPagoCapacitacionValidator,
   anularInscripcionCapacitacionValidator,
+  updateRequisitosInscripcionValidator,
+  pagoIdValidator,
 } from './inscripciones-capacitacion.validator.js';
 
 export { setEstadoCatalogoValidator } from './set-estado.validator.js';

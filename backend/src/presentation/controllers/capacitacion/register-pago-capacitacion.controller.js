@@ -1,7 +1,8 @@
 /**
  * POST /api/v1/inscripciones-capacitacion/:id/pagos
  * Registra un pago de una inscripción (permiso capacitacion.pago CREAR).
- * numero_recibo generado por lógica de negocio (ID a 6 dígitos).
+ * numero_recibo generado por lógica de negocio (ID a 6 dígitos). Acepta JSON o
+ * multipart/form-data con el archivo opcional `comprobante` (imagen/PDF).
  */
 export class RegisterPagoCapacitacionController {
   constructor({ registerPagoCapacitacionUseCase, logger, responseFormatter }) {
@@ -18,12 +19,14 @@ export class RegisterPagoCapacitacionController {
 
       this.logger.info('Request de registro de pago de capacitación', {
         capacitacionInscritoId,
+        conComprobante: Boolean(req.file),
       });
 
       const result = await this.registerPagoCapacitacionUseCase.execute(
         capacitacionInscritoId,
         body,
-        userId
+        userId,
+        { file: req.file ?? null }
       );
       const { pagoCapacitacion } = result;
       return this.responseFormatter.created(

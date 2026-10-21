@@ -1,14 +1,31 @@
-import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
+import { NotFoundError } from '../../../domain/errors/AppError.js';
 import { sequelize } from '../../../infrastructure/database/sequelize.js';
 import { CursoCapacitacionMapper } from '../../mappers/capacitacion/index.js';
+import {
+  construirDatosCurso,
+  normalizarRequisitos,
+  sincronizarRequisitos,
+} from './helpers/cursoCapacitacionInput.js';
+import {
+  normalizarGrupos,
+  sincronizarGrupos,
+  validarAulasGrupos,
+  validarHorariosGrupos,
+} from './helpers/gruposCurso.js';
 
 /**
  * Use Case: UpdateCursoCapacitacionUseCase
  * Módulo: Capacitación (CAP)
  *
- * Actualiza un curso de capacitación. Si el payload trae `horarioIds`,
- * REEMPLAZA la junction `capacitacion_horarios` (soft-delete de los bloques
- * vigentes + alta de los nuevos), todo en UNA transacción.
+ * Actualiza un curso de capacitación. Si el payload trae `grupos`, SINCRONIZA
+ * los grupos y sus horarios por diferencia (conserva los ids que siguen, da de
+ * baja los ausentes y crea los nuevos; quitar un grupo con inscripciones
+ * vigentes lanza 409); si trae `requisitos`,
+ * sincroniza la lista de requisitos (actualiza los que traen `id`, crea los
+ * nuevos y da de baja lógica los ausentes). Todo en UNA transacción.
+ *
+ * `fechaFin: null` (o '') la deja sin fecha de fin (es opcional). El aula
+ * (opcional) se indica por grupo en `grupos[].aulaId`.
  *
  * `estado` (máquina de estados de negocio) NO se puede mutar por este endpoint
  * bajo ninguna circunstancia: cualquier `estado` recibido en el body se
@@ -20,12 +37,29 @@ export class UpdateCursoCapacitacionUseCase {
   /**
    * @param {Object} params - Dependencias inyectadas
    * @param {Object} params.cursoCapacitacionRepository - Repo CRUD del curso + junction
+   * @param {Object} params.capacitacionRequisitoRepository - Repo de requisitos del curso
+   * @param {Object} params.grupoCapacitacionRepository - Repo de grupos del curso
+   * @param {Object} params.bloqueCapacitacionRepository - Repo de horarios por grupo
+   * @param {Object} params.inscripcionCapacitacionRepository - Para validar la baja de grupos
    * @param {Object} params.scheduleRepository - Catálogo `horarios` (validación de bloques)
    * @param {Object} params.classroomRepository - Catálogo `aulas` (validación de aula)
    * @param {ILogger} params.logger
    */
-  constructor({ cursoCapacitacionRepository, scheduleRepository, classroomRepository, logger }) {
+  constructor({
+    cursoCapacitacionRepository,
+    capacitacionRequisitoRepository,
+    grupoCapacitacionRepository,
+    bloqueCapacitacionRepository,
+    inscripcionCapacitacionRepository,
+    scheduleRepository,
+    classroomRepository,
+    logger,
+  }) {
     this.cursoCapacitacionRepository = cursoCapacitacionRepository;
+    this.capacitacionRequisitoRepository = capacitacionRequisitoRepository;
+    this.grupoCapacitacionRepository = grupoCapacitacionRepository;
+    this.bloqueCapacitacionRepository = bloqueCapacitacionRepository;
+    this.inscripcionCapacitacionRepository = inscripcionCapacitacionRepository;
     this.scheduleRepository = scheduleRepository;
     this.classroomRepository = classroomRepository;
     this.logger = logger;
@@ -33,7 +67,7 @@ export class UpdateCursoCapacitacionUseCase {
 
   /**
    * @param {number} id - ID del curso
-   * @param {Object} body - Campos a actualizar (+ horarioIds opcional)
+   * @param {Object} body - Campos a actualizar (+ grupos y requisitos opcionales)
    * @param {number|null} userId - Usuario que edita (auditoría)
    * @returns {Promise<{cursoCapacitacion: Object}>}
    */
@@ -41,27 +75,41 @@ export class UpdateCursoCapacitacionUseCase {
     const existing = await this.cursoCapacitacionRepository.findById(id, { paranoid: false });
     if (!existing) throw new NotFoundError('curso de capacitación');
 
-    const updateData = this._buildUpdateData(body, existing);
-    const replaceJunction = body.horarioIds !== undefined;
-    const horarioIds = replaceJunction ? this._normalizeHorarioIds(body.horarioIds) : null;
+    const updateData = construirDatosCurso(body, existing);
+    const grupos = normalizarGrupos(body.grupos);
+    const requisitos = normalizarRequisitos(body.requisitos);
 
-    if ('aulaId' in updateData && updateData.aulaId !== null) {
-      const aula = await this.classroomRepository.findById(updateData.aulaId);
-      if (!aula) throw new NotFoundError(`aula con ID ${updateData.aulaId}`);
-    }
-    if (replaceJunction) {
-      await this._validateHorarios(horarioIds);
+    if (grupos !== null) {
+      await validarAulasGrupos(this.classroomRepository, grupos);
+      await validarHorariosGrupos(this.scheduleRepository, grupos);
     }
 
     let updated = existing;
+    let requisitosFinales = null;
+    let gruposFinales = null;
     await sequelize.transaction(async (transaction) => {
       if (Object.keys(updateData).length > 0) {
         updated = await this.cursoCapacitacionRepository.update(id, updateData, userId, {
           transaction,
         });
       }
-      if (replaceJunction) {
-        await this.cursoCapacitacionRepository.replaceHorarios(id, horarioIds, userId, {
+      if (grupos !== null) {
+        gruposFinales = await sincronizarGrupos({
+          grupoCapacitacionRepository: this.grupoCapacitacionRepository,
+          bloqueCapacitacionRepository: this.bloqueCapacitacionRepository,
+          inscripcionCapacitacionRepository: this.inscripcionCapacitacionRepository,
+          capacitacionId: id,
+          grupos,
+          userId,
+          transaction,
+        });
+      }
+      if (requisitos !== null) {
+        requisitosFinales = await sincronizarRequisitos({
+          capacitacionRequisitoRepository: this.capacitacionRequisitoRepository,
+          capacitacionId: id,
+          requisitos,
+          userId,
           transaction,
         });
       }
@@ -69,84 +117,23 @@ export class UpdateCursoCapacitacionUseCase {
 
     this.logger.info('[Capacitación] Curso de capacitación actualizado', {
       id,
-      junctionReemplazada: replaceJunction,
+      gruposSincronizados: grupos !== null,
+      requisitosSincronizados: requisitos !== null,
     });
 
     const presentation = CursoCapacitacionMapper.entityToPresentation(updated);
-    presentation.horarioIds = replaceJunction
-      ? horarioIds
-      : await this.cursoCapacitacionRepository.findHorarioIdsByCapacitacionId(id);
+    gruposFinales ??= {
+      grupos: await this.grupoCapacitacionRepository.findByCapacitacionId(id),
+      bloques: await this.bloqueCapacitacionRepository.findByCapacitacionId(id),
+    };
+    presentation.grupos = CursoCapacitacionMapper.gruposDeCursoToPresentation(
+      gruposFinales.grupos,
+      gruposFinales.bloques
+    );
+    presentation.requisitos = CursoCapacitacionMapper.requisitosToPresentation(
+      requisitosFinales ?? (await this.capacitacionRequisitoRepository.findByCapacitacionId(id))
+    );
 
     return { cursoCapacitacion: presentation };
-  }
-
-  /**
-   * Construye el objeto de actualización solo con campos presentes.
-   * @private
-   */
-  _buildUpdateData(body, existing) {
-    const data = {};
-
-    if ('titulo' in body) {
-      if (!body.titulo || String(body.titulo).trim() === '') {
-        throw new ValidationError('titulo no puede estar vacío');
-      }
-      data.titulo = String(body.titulo).trim();
-    }
-    if ('descripcion' in body) data.descripcion = body.descripcion ?? null;
-    if ('costo' in body) {
-      const costo = Number(body.costo);
-      if (Number.isNaN(costo) || costo < 0) {
-        throw new ValidationError('costo debe ser un número mayor o igual a 0');
-      }
-      data.costo = costo;
-    }
-    if ('cupoMaximo' in body) data.cupoMaximo = Number(body.cupoMaximo);
-    if ('aulaId' in body) data.aulaId = body.aulaId ?? null;
-    if ('fechaInicio' in body) data.fechaInicio = body.fechaInicio;
-    if ('fechaFin' in body) data.fechaFin = body.fechaFin;
-    // `estado` NUNCA se muta por PUT/:id (ver máquina de estados de negocio en
-    // el docblock de la clase); se ignora silenciosamente si llega en el body.
-    if ('activo' in body) data.activo = body.activo;
-
-    // Coherencia de fechas usando los valores finales (payload o existentes)
-    const fechaInicio = data.fechaInicio ?? existing.fechaInicio;
-    const fechaFin = data.fechaFin ?? existing.fechaFin;
-    if (fechaInicio && fechaFin && new Date(fechaFin) < new Date(fechaInicio)) {
-      throw new ValidationError('fechaFin no puede ser anterior a fechaInicio');
-    }
-
-    return data;
-  }
-
-  /**
-   * Normaliza el array de IDs de bloques (sin duplicados, enteros positivos).
-   * @private
-   */
-  _normalizeHorarioIds(horarioIds) {
-    if (horarioIds === null) return [];
-    if (!Array.isArray(horarioIds)) {
-      throw new ValidationError('horarioIds debe ser un array de IDs del catálogo de horarios');
-    }
-    const ids = horarioIds.map((id) => Number(id));
-    if (ids.some((id) => !Number.isInteger(id) || id <= 0)) {
-      throw new ValidationError('horarioIds debe contener solo enteros positivos');
-    }
-    return [...new Set(ids)];
-  }
-
-  /**
-   * Valida que cada bloque exista en el catálogo `horarios`. Los bloques de
-   * capacitación reutilizan los mismos bloques `tipo_horario='CLASES'` que
-   * usa el sistema académico (el picker del frontend solo ofrece esos).
-   * @private
-   */
-  async _validateHorarios(horarioIds) {
-    await Promise.all(
-      horarioIds.map(async (horarioId) => {
-        const horario = await this.scheduleRepository.findById(horarioId);
-        if (!horario) throw new NotFoundError(`horario con ID ${horarioId}`);
-      })
-    );
   }
 }

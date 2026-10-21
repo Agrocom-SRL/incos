@@ -14,10 +14,21 @@ export const CAPACITACION_TOKENS = {
   pagoCapacitacionRepository: 'capacitacion.pagoCapacitacionRepository',
   capacitacionCompromisoRepository: 'capacitacion.capacitacionCompromisoRepository',
   cursoCapacitacionFichaViewRepository: 'capacitacion.cursoCapacitacionFichaViewRepository',
+  capacitacionRequisitoRepository: 'capacitacion.capacitacionRequisitoRepository',
+  grupoCapacitacionRepository: 'capacitacion.grupoCapacitacionRepository',
+  grupoCapacitacionListadoViewRepository: 'capacitacion.grupoCapacitacionListadoViewRepository',
+  bloqueCapacitacionRepository: 'capacitacion.bloqueCapacitacionRepository',
+  capacitacionInscritoRequisitoRepository: 'capacitacion.capacitacionInscritoRequisitoRepository',
 
   // Use Cases — Cursos de capacitación
   listCursosCapacitacionUseCase: 'capacitacion.listCursosCapacitacionUseCase',
   listHorariosDisponiblesCapacitacionUseCase: 'capacitacion.listHorariosDisponiblesCapacitacionUseCase',
+  listGruposCapacitacionUseCase: 'capacitacion.listGruposCapacitacionUseCase',
+  listHorariosCapacitacionUseCase: 'capacitacion.listHorariosCapacitacionUseCase',
+  createHorarioCapacitacionUseCase: 'capacitacion.createHorarioCapacitacionUseCase',
+  getHorarioCapacitacionUseCase: 'capacitacion.getHorarioCapacitacionUseCase',
+  updateHorarioCapacitacionUseCase: 'capacitacion.updateHorarioCapacitacionUseCase',
+  deleteHorarioCapacitacionUseCase: 'capacitacion.deleteHorarioCapacitacionUseCase',
   getCursoCapacitacionByIdUseCase: 'capacitacion.getCursoCapacitacionByIdUseCase',
   createCursoCapacitacionUseCase: 'capacitacion.createCursoCapacitacionUseCase',
   updateCursoCapacitacionUseCase: 'capacitacion.updateCursoCapacitacionUseCase',
@@ -40,11 +51,20 @@ export const CAPACITACION_TOKENS = {
   deleteInscripcionCapacitacionUseCase: 'capacitacion.deleteInscripcionCapacitacionUseCase',
   anularInscripcionCapacitacionUseCase: 'capacitacion.anularInscripcionCapacitacionUseCase',
   registerPagoCapacitacionUseCase: 'capacitacion.registerPagoCapacitacionUseCase',
+  updateRequisitosInscripcionUseCase: 'capacitacion.updateRequisitosInscripcionUseCase',
+  adjuntarComprobantePagoCapacitacionUseCase: 'capacitacion.adjuntarComprobantePagoCapacitacionUseCase',
+  descargarComprobantePagoCapacitacionUseCase: 'capacitacion.descargarComprobantePagoCapacitacionUseCase',
 
   // Controllers — Cursos de capacitación
   listCursosCapacitacionController: 'capacitacion.listCursosCapacitacionController',
   listHorariosDisponiblesCapacitacionController:
     'capacitacion.listHorariosDisponiblesCapacitacionController',
+  listGruposCapacitacionController: 'capacitacion.listGruposCapacitacionController',
+  listHorariosCapacitacionController: 'capacitacion.listHorariosCapacitacionController',
+  createHorarioCapacitacionController: 'capacitacion.createHorarioCapacitacionController',
+  getHorarioCapacitacionController: 'capacitacion.getHorarioCapacitacionController',
+  updateHorarioCapacitacionController: 'capacitacion.updateHorarioCapacitacionController',
+  deleteHorarioCapacitacionController: 'capacitacion.deleteHorarioCapacitacionController',
   getCursoCapacitacionByIdController: 'capacitacion.getCursoCapacitacionByIdController',
   createCursoCapacitacionController: 'capacitacion.createCursoCapacitacionController',
   updateCursoCapacitacionController: 'capacitacion.updateCursoCapacitacionController',
@@ -67,6 +87,11 @@ export const CAPACITACION_TOKENS = {
   deleteInscripcionCapacitacionController: 'capacitacion.deleteInscripcionCapacitacionController',
   anularInscripcionCapacitacionController: 'capacitacion.anularInscripcionCapacitacionController',
   registerPagoCapacitacionController: 'capacitacion.registerPagoCapacitacionController',
+  updateRequisitosInscripcionController: 'capacitacion.updateRequisitosInscripcionController',
+  adjuntarComprobantePagoCapacitacionController:
+    'capacitacion.adjuntarComprobantePagoCapacitacionController',
+  descargarComprobantePagoCapacitacionController:
+    'capacitacion.descargarComprobantePagoCapacitacionController',
 
   // Routers
   cursosCapacitacionRouter: 'capacitacion.cursosCapacitacionRouter',

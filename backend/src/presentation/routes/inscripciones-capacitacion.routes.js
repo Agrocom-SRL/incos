@@ -2,11 +2,14 @@ import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { verificarPermiso } from '../middleware/permisos.middleware.js';
 import { idValidator } from '../validators/common/index.js';
+import { uploadComprobanteCapacitacion } from '../middleware/upload.middleware.js';
 import {
     listInscripcionesCapacitacionValidator,
     createInscripcionCapacitacionValidator,
     registerPagoCapacitacionValidator,
     anularInscripcionCapacitacionValidator,
+    updateRequisitosInscripcionValidator,
+    pagoIdValidator,
 } from '../validators/capacitacion/index.js';
 
 /**
@@ -36,6 +39,7 @@ export function buildInscripcionesCapacitacionRouter({ controllers, middlewares 
     const detalle = [authenticate, verificarPermiso('capacitacion.inscripcion', 'DETALLE')];
     const crear = [authenticate, verificarPermiso('capacitacion.inscripcion', 'CREAR')];
     const eliminar = [authenticate, verificarPermiso('capacitacion.inscripcion', 'ELIMINAR')];
+    const editar = [authenticate, verificarPermiso('capacitacion.inscripcion', 'EDITAR')];
     const anular = [authenticate, verificarPermiso('capacitacion.inscripcion', 'EDITAR')];
     const registrarPago = [authenticate, verificarPermiso('capacitacion.pago', 'CREAR')];
 
@@ -79,14 +83,50 @@ export function buildInscripcionesCapacitacionRouter({ controllers, middlewares 
             controllers.getInscripcionCapacitacionByIdController.handle(req, res, next)
     );
 
-    // POST /:id/pagos - Registrar pago (permiso capacitacion.pago CREAR)
+    // PUT /:id/requisitos - Checklist de requisitos entregados (recalcula el estado)
+    router.put(
+        '/:id/requisitos',
+        ...editar,
+        idValidator,
+        updateRequisitosInscripcionValidator,
+        validateRequest,
+        (req, res, next) =>
+            controllers.updateRequisitosInscripcionController.handle(req, res, next)
+    );
+
+    // POST /:id/pagos - Registrar pago (permiso capacitacion.pago CREAR).
+    // JSON o multipart con comprobante opcional (campo `comprobante`, imagen/PDF).
     router.post(
         '/:id/pagos',
         ...registrarPago,
         idValidator,
+        uploadComprobanteCapacitacion,
         registerPagoCapacitacionValidator,
         validateRequest,
         (req, res, next) => controllers.registerPagoCapacitacionController.handle(req, res, next)
+    );
+
+    // POST /:id/pagos/:pagoId/comprobante - Adjuntar o reemplazar el comprobante de un pago
+    router.post(
+        '/:id/pagos/:pagoId/comprobante',
+        ...registrarPago,
+        idValidator,
+        pagoIdValidator,
+        validateRequest,
+        uploadComprobanteCapacitacion,
+        (req, res, next) =>
+            controllers.adjuntarComprobantePagoCapacitacionController.handle(req, res, next)
+    );
+
+    // GET /:id/pagos/:pagoId/comprobante - Descarga autenticada del comprobante
+    router.get(
+        '/:id/pagos/:pagoId/comprobante',
+        ...detalle,
+        idValidator,
+        pagoIdValidator,
+        validateRequest,
+        (req, res, next) =>
+            controllers.descargarComprobantePagoCapacitacionController.handle(req, res, next)
     );
 
     // DELETE /:id - Eliminar inscripción (soft delete + pagos en cascada, queda RETIRADO)

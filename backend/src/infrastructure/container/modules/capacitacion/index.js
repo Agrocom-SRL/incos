@@ -19,7 +19,12 @@ import { ParticipanteRepository } from '../../../repositories/ParticipanteReposi
 import { CursoCapacitacionRepository } from '../../../repositories/CursoCapacitacionRepository.js';
 import { InscripcionCapacitacionRepository } from '../../../repositories/InscripcionCapacitacionRepository.js';
 import { PagoCapacitacionRepository } from '../../../repositories/PagoCapacitacionRepository.js';
+import { GrupoCapacitacionRepository } from '../../../repositories/GrupoCapacitacionRepository.js';
+import { BloqueCapacitacionRepository } from '../../../repositories/BloqueCapacitacionRepository.js';
+import { CapacitacionRequisitoRepository } from '../../../repositories/CapacitacionRequisitoRepository.js';
+import { CapacitacionInscritoRequisitoRepository } from '../../../repositories/CapacitacionInscritoRequisitoRepository.js';
 import { CapacitacionCompromisoRepository } from '../../../repositories/CapacitacionCompromisoRepository.js';
+import { GrupoCapacitacionListadoViewRepository } from '../../../repositories/views/GrupoCapacitacionListadoViewRepository.js';
 import { CursoCapacitacionFichaViewRepository } from '../../../repositories/views/CursoCapacitacionFichaViewRepository.js';
 import { registerCursosCapacitacionResource } from './cursos-capacitacion.container.js';
 import { registerParticipantesResource } from './participantes.container.js';
@@ -54,6 +59,31 @@ export function registerCapacitacionModule(container) {
         container,
         CAPACITACION_TOKENS.capacitacionCompromisoRepository,
         CapacitacionCompromisoRepository
+    );
+    registerRepository(
+        container,
+        CAPACITACION_TOKENS.grupoCapacitacionRepository,
+        GrupoCapacitacionRepository
+    );
+    registerRepository(
+        container,
+        CAPACITACION_TOKENS.bloqueCapacitacionRepository,
+        BloqueCapacitacionRepository
+    );
+    registerRepository(
+        container,
+        CAPACITACION_TOKENS.capacitacionRequisitoRepository,
+        CapacitacionRequisitoRepository
+    );
+    registerRepository(
+        container,
+        CAPACITACION_TOKENS.capacitacionInscritoRequisitoRepository,
+        CapacitacionInscritoRequisitoRepository
+    );
+    registerRepository(
+        container,
+        CAPACITACION_TOKENS.grupoCapacitacionListadoViewRepository,
+        GrupoCapacitacionListadoViewRepository
     );
     registerRepository(
         container,

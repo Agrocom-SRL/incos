@@ -5,6 +5,12 @@
 // Cursos de capacitación
 export { ListCursosCapacitacionController } from './list-cursos-capacitacion.controller.js';
 export { ListHorariosDisponiblesCapacitacionController } from './list-horarios-disponibles-capacitacion.controller.js';
+export { ListGruposCapacitacionController } from './list-grupos-capacitacion.controller.js';
+export { ListHorariosCapacitacionController } from './list-horarios-capacitacion.controller.js';
+export { CreateHorarioCapacitacionController } from './create-horario-capacitacion.controller.js';
+export { GetHorarioCapacitacionController } from './get-horario-capacitacion.controller.js';
+export { UpdateHorarioCapacitacionController } from './update-horario-capacitacion.controller.js';
+export { DeleteHorarioCapacitacionController } from './delete-horario-capacitacion.controller.js';
 export { GetCursoCapacitacionByIdController } from './get-curso-capacitacion-by-id.controller.js';
 export { CreateCursoCapacitacionController } from './create-curso-capacitacion.controller.js';
 export { UpdateCursoCapacitacionController } from './update-curso-capacitacion.controller.js';
@@ -27,3 +33,6 @@ export { CreateInscripcionCapacitacionController } from './create-inscripcion-ca
 export { DeleteInscripcionCapacitacionController } from './delete-inscripcion-capacitacion.controller.js';
 export { AnularInscripcionCapacitacionController } from './anular-inscripcion-capacitacion.controller.js';
 export { RegisterPagoCapacitacionController } from './register-pago-capacitacion.controller.js';
+export { UpdateRequisitosInscripcionController } from './update-requisitos-inscripcion.controller.js';
+export { AdjuntarComprobantePagoCapacitacionController } from './adjuntar-comprobante-pago-capacitacion.controller.js';
+export { DescargarComprobantePagoCapacitacionController } from './descargar-comprobante-pago-capacitacion.controller.js';

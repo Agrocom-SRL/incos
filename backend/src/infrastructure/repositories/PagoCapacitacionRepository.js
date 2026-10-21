@@ -1,3 +1,4 @@
+import { fn, col } from 'sequelize';
 import { BaseRepository } from './BaseRepository.js';
 import { sequelize } from '../database/sequelize.js';
 import { PagoCapacitacion as PagoCapacitacionModel } from '../database/models/pago_capacitacion.js';
@@ -29,10 +30,13 @@ export class PagoCapacitacionRepository extends BaseRepository {
       capacitacionInscritoId: v.capacitacionInscritoId ?? null,
       metodoPagoId: v.metodoPagoId ?? null,
       cuentaPagoId: v.cuentaPagoId ?? null,
+      concepto: v.concepto ?? null,
       monto: v.monto !== undefined && v.monto !== null ? Number(v.monto) : null,
       fechaPago: v.fechaPago ?? null,
       numeroRecibo: v.numeroRecibo ?? null,
       observaciones: v.observaciones ?? null,
+      comprobanteRuta: v.comprobanteRuta ?? null,
+      comprobanteNombre: v.comprobanteNombre ?? null,
       activo: v.activo ?? null,
       createdAt: v.createdAt ?? null,
       updatedAt: v.updatedAt ?? null,
@@ -66,10 +70,13 @@ export class PagoCapacitacionRepository extends BaseRepository {
     if ('capacitacionInscritoId' in data) model.capacitacionInscritoId = data.capacitacionInscritoId;
     if ('metodoPagoId' in data) model.metodoPagoId = data.metodoPagoId ?? null;
     if ('cuentaPagoId' in data) model.cuentaPagoId = data.cuentaPagoId ?? null;
+    if ('concepto' in data) model.concepto = data.concepto;
     if ('monto' in data) model.monto = data.monto;
     if ('fechaPago' in data) model.fechaPago = data.fechaPago;
     if ('numeroRecibo' in data) model.numeroRecibo = data.numeroRecibo;
     if ('observaciones' in data) model.observaciones = data.observaciones ?? null;
+    if ('comprobanteRuta' in data) model.comprobanteRuta = data.comprobanteRuta ?? null;
+    if ('comprobanteNombre' in data) model.comprobanteNombre = data.comprobanteNombre ?? null;
     return model;
   }
 
@@ -97,6 +104,29 @@ export class PagoCapacitacionRepository extends BaseRepository {
   }
 
   /**
+   * Suma de pagos vigentes de una inscripción agrupada por concepto
+   * (`MATRICULA` / `CURSO`); ambos conceptos siempre presentes (0 si no hay pagos).
+   *
+   * @param {number} capacitacionInscritoId
+   * @param {Object} options - Opciones opcionales (ej: `{ transaction }`)
+   * @returns {Promise<{MATRICULA: number, CURSO: number}>}
+   */
+  async sumMontosPorConcepto(capacitacionInscritoId, options = {}) {
+    const filas = await PagoCapacitacionModel.findAll({
+      attributes: ['concepto', [fn('SUM', col('monto')), 'total']],
+      where: { capacitacionInscritoId, activo: true },
+      group: ['concepto'],
+      raw: true,
+      transaction: options.transaction,
+    });
+    const totales = { MATRICULA: 0, CURSO: 0 };
+    filas.forEach((fila) => {
+      totales[fila.concepto] = Number(fila.total ?? 0);
+    });
+    return totales;
+  }
+
+  /**
    * Historial de pagos de una inscripción con nombre del método de pago y
    * datos mínimos de la cuenta (filas crudas snake_case, orden cronológico).
    *
@@ -111,6 +141,9 @@ export class PagoCapacitacionRepository extends BaseRepository {
         cp.fecha_pago,
         cp.numero_recibo,
         cp.observaciones,
+        cp.concepto,
+        cp.comprobante_nombre,
+        CASE WHEN cp.comprobante_ruta IS NULL THEN 0 ELSE 1 END AS tiene_comprobante,
         cp.metodo_pago_id,
         mp.nombre AS metodo_pago_nombre,
         cp.cuenta_pago_id,

@@ -1,7 +1,7 @@
 /**
  * PUT /api/v1/cursos-capacitacion/:id
- * Actualiza un curso de capacitación; si el body trae `horarioIds`, reemplaza
- * la junction `capacitacion_horarios`.
+ * Actualiza un curso de capacitación; si el body trae `grupos`, sincroniza
+ * los grupos y sus horarios (`capacitacion_grupos` + `capacitacion_horarios`).
  */
 export class UpdateCursoCapacitacionController {
   constructor({ updateCursoCapacitacionUseCase, logger, responseFormatter }) {

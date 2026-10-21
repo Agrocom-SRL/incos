@@ -5,7 +5,7 @@ import { ICursoCapacitacionFichaViewRepository } from '../../../domain/interface
  * Lecturas de listado y ficha de cursos de capacitación (módulo CAP).
  *
  * Consume las vistas SQL:
- * - `vista_cursos_capacitacion_listado` (155): 1 fila por curso + aula +
+ * - `vista_cursos_capacitacion_listado` (155): 1 fila por curso + resumen de aulas de sus grupos +
  *   inscritos_count + cupo_disponible + horarios_count + horarios_detalle.
  *   Incluye `activo` (soporta incluirInactivos); solo excluye soft-deleted.
  * - `vista_base_cursos_capacitacion_horarios` (154): 1 fila por bloque del

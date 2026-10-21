@@ -33,7 +33,7 @@ export class ListIngresosUseCase {
    * @param {Object} baseFilters - { search } normalizados por ListRequestDTO
    * @param {number} page
    * @param {number} limit
-   * @param {Object} queryParams - origen ('APORTE'|'CAPACITACION'), sort ("campo:DIRECCION")
+   * @param {Object} queryParams - origen ('APORTE'|'CAPACITACION'), soloInstituto (solo cobra_instituto=1), sort ("campo:DIRECCION")
    * @returns {Promise<{ingresos: Array, total: number, page: number, limit: number, totalPages: number}>}
    */
   async execute(baseFilters = {}, page = 1, limit = 50, queryParams = {}) {
@@ -58,6 +58,7 @@ export class ListIngresosUseCase {
       limit: limitNum,
       search: baseFilters.search,
       origen,
+      soloInstituto: queryParams.soloInstituto === 'true' || queryParams.soloInstituto === true,
       sortField,
       sortOrder,
     });
