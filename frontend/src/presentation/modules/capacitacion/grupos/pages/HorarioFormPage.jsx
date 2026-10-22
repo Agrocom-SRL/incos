@@ -31,6 +31,7 @@ const HorarioFormPage = ({ mode = 'create' }) => {
     handleVolver,
     handleSubmit,
     isInvalidEditId,
+    isEditMode,
   } = useHorarioFormPage(mode);
 
   const backAction = <BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver} />;
@@ -88,7 +89,9 @@ const HorarioFormPage = ({ mode = 'create' }) => {
                   fields={[]}
                   form={form}
                   footer={saveButton}
-                  beforeFields={<HorarioFormFields disabled={loading || submitLoading} />}
+                  beforeFields={
+                    <HorarioFormFields disabled={loading || submitLoading} multipleDias={!isEditMode} />
+                  }
                 />
               </Form>
             </Flex>

@@ -297,6 +297,14 @@
   flex-wrap: wrap;
 }
 
+/* Métricas en columnas de igual ancho, alineadas por arriba (sin que un valor alto descuadre a los demás). */
+.sd-profile__stats--grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  align-items: start;
+  gap: 16px 32px;
+}
+
 .sd-stat {
   display: flex;
   flex-direction: column;
@@ -610,7 +618,29 @@
   grid-template-columns: repeat(3, 1fr);
 }
 
+.sd-card__body--cols-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* Título de un bloque dentro de una tarjeta con varias secciones (ocupa toda la fila). */
+.sd-card__subtitle {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-soft, #e5e7eb);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  color: var(--primary-dark);
+}
+
+.sd-card__subtitle:not(:first-child) {
+  margin-top: 14px;
+}
+
 @media (max-width: 900px) {
+  .sd-card__body--cols-4,
   .sd-card__body--cols-3 {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -619,7 +649,8 @@
 @media (max-width: 600px) {
 
   .sd-card__body--cols-2,
-  .sd-card__body--cols-3 {
+  .sd-card__body--cols-3,
+  .sd-card__body--cols-4 {
     grid-template-columns: 1fr;
   }
 }

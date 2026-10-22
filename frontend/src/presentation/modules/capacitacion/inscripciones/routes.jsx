@@ -3,7 +3,8 @@
  * Capacitación → Inscripciones (ítem de menú CAP, order 3).
  *
  * Permisos `capacitacion.inscripcion` (listado/ficha/alta/baja) y
- * `capacitacion.pago` (registrar pago, validado en los controles de la ficha).
+ * `capacitacion.pago` (registrar pago, validado en los controles de la ficha);
+ * editar un pago usa `capacitacion.inscripcion EDITAR`.
  * Rutas estáticas ANTES de `/:id`; la ruta con menú va al final.
  */
 
@@ -22,6 +23,14 @@ const InscripcionCapRegistrarPagoConnector = lazy(
   () => import('./connectors/InscripcionCapRegistrarPagoConnector.jsx'),
 );
 
+const InscripcionCapEditarPagoConnector = lazy(
+  () => import('./connectors/InscripcionCapEditarPagoConnector.jsx'),
+);
+
+const InscripcionCapEditarConnector = lazy(
+  () => import('./connectors/InscripcionCapEditarConnector.jsx'),
+);
+
 export const capacitacionInscripcionesRoutes = [
   {
     path: '/capacitacion/inscripciones/inscribir',
@@ -34,12 +43,32 @@ export const capacitacionInscripcionesRoutes = [
     breadcrumbParent: 'CAP-INSCRIPCIONES',
   },
   {
+    path: '/capacitacion/inscripciones/:id/editar',
+    element: <InscripcionCapEditarConnector />,
+    key: 'CAP-INSCRIPCIONES-EDITAR',
+    breadcrumbLabel: 'Editar inscripción',
+    permiso: 'capacitacion.inscripcion',
+    accion: 'EDITAR',
+    menu: null,
+    breadcrumbParent: 'CAP-INSCRIPCIONES-DETALLE',
+  },
+  {
     path: '/capacitacion/inscripciones/:id/pagos/registrar',
     element: <InscripcionCapRegistrarPagoConnector />,
     key: 'CAP-INSCRIPCIONES-PAGO-REGISTRAR',
     breadcrumbLabel: 'Registrar pago',
     permiso: 'capacitacion.pago',
     accion: 'CREAR',
+    menu: null,
+    breadcrumbParent: 'CAP-INSCRIPCIONES-DETALLE',
+  },
+  {
+    path: '/capacitacion/inscripciones/:id/pagos/:pagoId/editar',
+    element: <InscripcionCapEditarPagoConnector />,
+    key: 'CAP-INSCRIPCIONES-PAGO-EDITAR',
+    breadcrumbLabel: 'Editar pago',
+    permiso: 'capacitacion.inscripcion',
+    accion: 'EDITAR',
     menu: null,
     breadcrumbParent: 'CAP-INSCRIPCIONES-DETALLE',
   },

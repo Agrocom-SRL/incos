@@ -3,17 +3,16 @@ import { renderHook, act } from '@testing-library/react';
 
 const ctx = vi.hoisted(() => ({ value: {} }));
 const msg = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn(), info: vi.fn() }));
-const forms = vi.hoisted(() => ({ editar: null, anular: null, llamadas: 0 }));
+const forms = vi.hoisted(() => ({ anular: null }));
+const nav = vi.hoisted(() => ({ navigate: vi.fn() }));
 
 vi.mock('antd', () => ({
   App: { useApp: () => ({ message: msg }) },
-  Form: {
-    // 1ª llamada = formulario de editar; 2ª = anular (orden de declaración del hook)
-    useForm: () => {
-      forms.llamadas += 1;
-      return [forms.llamadas % 2 === 1 ? forms.editar : forms.anular];
-    },
-  },
+  Form: { useForm: () => [forms.anular] },
+}));
+vi.mock('react-router-dom', () => ({
+  useNavigate: () => nav.navigate,
+  useLocation: () => ({ state: { returnListPath: '/capacitacion/inscripciones' } }),
 }));
 vi.mock(
   '@application-capacitacion/inscripciones/hooks/context/useInscripcionCapacitacionDetailContext',
@@ -22,39 +21,17 @@ vi.mock(
 
 import { useInscripcionPagoAcciones } from '../useInscripcionPagoAcciones';
 
-const inscripcion = {
-  estado: 'PENDIENTE',
-  pagoCursoExterno: false,
-  saldoMatricula: 50,
-  saldoCurso: 300,
-};
-const pago = {
-  id: 9,
-  concepto: 'MATRICULA',
-  monto: 100,
-  fechaPago: '2026-10-20',
-  metodoPagoId: 1,
-  cuentaPagoId: null,
-  observaciones: null,
-  anulado: false,
-};
+const inscripcion = { id: 2, estado: 'PENDIENTE', pagoCursoExterno: false };
+const pago = { id: 9, concepto: 'MATRICULA', monto: 100, anulado: false };
 
 describe('useInscripcionPagoAcciones', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    forms.llamadas = 0;
-    forms.editar = { validateFields: vi.fn(), setFieldsValue: vi.fn() };
     forms.anular = { validateFields: vi.fn() };
     ctx.value = {
       inscripcion,
-      actualizarPago: vi.fn().mockResolvedValue({ success: true }),
-      actualizandoPago: false,
       anularPago: vi.fn().mockResolvedValue({ success: true }),
       anulandoPago: false,
-      metodosPago: [{ id: 1, nombre: 'Efectivo', codigo: 'EFECTIVO' }],
-      cuentasPago: [],
-      loadingCatalogos: false,
-      errorCatalogos: null,
     };
   });
 
@@ -64,75 +41,20 @@ describe('useInscripcionPagoAcciones', () => {
     expect(result.current.evaluarPago({ ...pago, anulado: true }).permitido).toBe(false);
   });
 
-  it('no abre el modal de un pago anulado', () => {
+  it('editar navega a la página «Editar pago» conservando el estado de navegación', () => {
     const { result } = renderHook(() => useInscripcionPagoAcciones());
-    act(() => result.current.abrirEditar({ ...pago, anulado: true }));
+    act(() => result.current.irAEditar(pago));
+    expect(nav.navigate).toHaveBeenCalledWith('/capacitacion/inscripciones/2/pagos/9/editar', {
+      state: { returnListPath: '/capacitacion/inscripciones' },
+    });
+  });
+
+  it('no edita ni anula un pago anulado', () => {
+    const { result } = renderHook(() => useInscripcionPagoAcciones());
+    act(() => result.current.irAEditar({ ...pago, anulado: true }));
     act(() => result.current.abrirAnular({ ...pago, anulado: true }));
-    expect(result.current.pagoEditando).toBeNull();
+    expect(nav.navigate).not.toHaveBeenCalled();
     expect(result.current.pagoAnulando).toBeNull();
-  });
-
-  it('editar: el saldo del concepto descuenta el propio pago', () => {
-    const { result } = renderHook(() => useInscripcionPagoAcciones());
-    act(() => result.current.abrirEditar(pago));
-    expect(result.current.saldosPorConcepto).toEqual({ MATRICULA: 150, CURSO: 300 });
-    expect(result.current.conceptoOptions).toHaveLength(2);
-  });
-
-  it('editar en curso externo: solo se ofrece matrícula', () => {
-    ctx.value.inscripcion = { ...inscripcion, pagoCursoExterno: true };
-    const { result } = renderHook(() => useInscripcionPagoAcciones());
-    act(() => result.current.abrirEditar(pago));
-    expect(result.current.conceptoOptions.map((o) => o.value)).toEqual(['MATRICULA']);
-    expect(result.current.cursoExterno).toBe(true);
-  });
-
-  it('editar envía solo lo que cambió y cierra', async () => {
-    forms.editar.validateFields.mockResolvedValue({
-      concepto: 'MATRICULA',
-      monto: 80,
-      fechaPago: '2026-10-20',
-      metodoPagoId: 1,
-      cuentaPagoId: undefined,
-      observaciones: '',
-    });
-    const { result } = renderHook(() => useInscripcionPagoAcciones());
-    act(() => result.current.abrirEditar(pago));
-    await act(async () => {
-      await result.current.guardarEdicion();
-    });
-    expect(ctx.value.actualizarPago).toHaveBeenCalledWith(9, { monto: 80 });
-    expect(msg.success).toHaveBeenCalledWith('Pago corregido');
-    expect(result.current.pagoEditando).toBeNull();
-  });
-
-  it('editar sin cambios no llama al backend', async () => {
-    forms.editar.validateFields.mockResolvedValue({
-      concepto: 'MATRICULA',
-      monto: 100,
-      fechaPago: '2026-10-20',
-      metodoPagoId: 1,
-      observaciones: '',
-    });
-    const { result } = renderHook(() => useInscripcionPagoAcciones());
-    act(() => result.current.abrirEditar(pago));
-    await act(async () => {
-      await result.current.guardarEdicion();
-    });
-    expect(ctx.value.actualizarPago).not.toHaveBeenCalled();
-    expect(msg.info).toHaveBeenCalled();
-  });
-
-  it('editar con error del servidor conserva el modal y muestra el mensaje', async () => {
-    ctx.value.actualizarPago.mockResolvedValue({ success: false, error: 'El pago está anulado' });
-    forms.editar.validateFields.mockResolvedValue({ ...pago, monto: 10, fechaPago: '2026-10-20' });
-    const { result } = renderHook(() => useInscripcionPagoAcciones());
-    act(() => result.current.abrirEditar(pago));
-    await act(async () => {
-      await result.current.guardarEdicion();
-    });
-    expect(result.current.pagoEditando).not.toBeNull();
-    expect(result.current.errorEditar).toBe('El pago está anulado');
   });
 
   it('anular envía el motivo recortado y cierra', async () => {
@@ -144,7 +66,7 @@ describe('useInscripcionPagoAcciones', () => {
       await result.current.confirmarAnulacion();
     });
     expect(ctx.value.anularPago).toHaveBeenCalledWith(9, 'Monto equivocado');
-    expect(msg.success).toHaveBeenCalledWith('Pago anulado');
+    expect(msg.success).toHaveBeenCalledWith('Pago eliminado');
     expect(result.current.pagoAnulando).toBeNull();
   });
 

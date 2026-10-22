@@ -17,8 +17,8 @@
  * Curso con costo EXTERNO (entidad certificadora): "Pagado" y "Saldo" cuentan
  * solo la matrícula (lo que cobra el instituto) y el curso se rotula «Pagado a
  * la entidad» / «Pendiente de acreditar con depósito» (columna Pagado). La
- * acción «Editar» (capacitacion.inscripcion EDITAR) abre la ficha con el modal
- * de edición ya desplegado (`state.abrirEditar`).
+ * acción «Editar» (capacitacion.inscripcion EDITAR) abre la página de edición
+ * de la inscripción (`/:id/editar`).
  */
 
 import { Flex } from 'antd';
@@ -48,6 +48,7 @@ import {
 } from '@application-capacitacion/utils/capacitacionPills';
 import {
   inscripcionCapDetallePath,
+  inscripcionCapEditarPath,
   inscripcionCapRegistrarPagoPath,
 } from '@application-capacitacion/config/paths';
 import CostoCursoLabel from '@capacitacion/components/atoms/CostoCursoLabel';
@@ -265,11 +266,7 @@ export const createInscripcionesCapTableColumns = ({
             onView={() =>
               navigate(inscripcionCapDetallePath(record.id), { state: listNavState })
             }
-            onEdit={() =>
-              navigate(inscripcionCapDetallePath(record.id), {
-                state: { ...listNavState, abrirEditar: true },
-              })
-            }
+            onEdit={() => navigate(inscripcionCapEditarPath(record.id), { state: listNavState })}
             editTitle="Editar inscripción"
             extraActions={extraActions}
             permisos={{
