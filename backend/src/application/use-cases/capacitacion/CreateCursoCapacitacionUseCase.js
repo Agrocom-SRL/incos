@@ -5,6 +5,7 @@ import {
   construirDatosCurso,
   normalizarRequisitos,
   sincronizarRequisitos,
+  validarRequisitoAcreditaPago,
 } from './helpers/cursoCapacitacionInput.js';
 import {
   normalizarGrupos,
@@ -81,6 +82,7 @@ export class CreateCursoCapacitacionUseCase {
     };
     const grupos = normalizarGrupos(body.grupos) ?? [];
     const requisitos = normalizarRequisitos(body.requisitos) ?? [];
+    validarRequisitoAcreditaPago(requisitos, data.entidadCertificadora);
 
     await validarAulasGrupos(this.classroomRepository, grupos);
     await validarHorariosGrupos(this.scheduleRepository, grupos);
@@ -124,6 +126,9 @@ export class CreateCursoCapacitacionUseCase {
       gruposCreados.bloques
     );
     presentation.requisitos = CursoCapacitacionMapper.requisitosToPresentation(requisitosCreados);
+    presentation.requisitoAcreditaPagoCurso = CursoCapacitacionMapper.requisitoAcreditaPagoCurso(
+      presentation.requisitos
+    );
     return { cursoCapacitacion: presentation };
   }
 }

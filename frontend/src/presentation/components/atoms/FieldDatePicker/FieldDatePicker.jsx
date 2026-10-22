@@ -19,6 +19,7 @@
  * @param {any} value - Valor controlado
  * @param {Function} onChange - Callback cuando cambia el valor
  * @param {Function} disabledDate - (opcional) Restricción extra de negocio; se combina con la de edad
+ * @param {boolean} emptyByDefault - Si true, sin valor queda vacío en vez de mostrar la fecha actual
  * @param {any} ...props - Otras props de DatePicker de Ant Design
  */
 
@@ -37,6 +38,7 @@ const FieldDatePicker = ({
   defaultValue,
   className = '',
   disabledDate: disabledDateProp,
+  emptyByDefault = false,
   ...props
 }) => {
   const datePickerClassName = className ? `field-date-picker ${className}`.trim() : 'field-date-picker';
@@ -46,7 +48,7 @@ const FieldDatePicker = ({
     disabledDate: disabledDateAge,
     value: dayjsValue,
     defaultValue: dayjsDefaultValue
-  } = useFieldDatePicker(minAge, value, defaultValue);
+  } = useFieldDatePicker(minAge, value, defaultValue, emptyByDefault);
 
   // Restricción de fecha: la de edad (si hay minAge) combinada con la del consumidor
   // (rango de negocio, p. ej. acotar a la gestión vigente). Cualquiera deshabilita el día.

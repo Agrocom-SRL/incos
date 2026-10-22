@@ -13,6 +13,12 @@
  * se queda `INCUMPLIDO` para siempre aunque la deuda esté saldada. Por eso acá
  * se cruza SIEMPRE `estadoPago === 'PARCIAL'` (todavía debe, dato real) con la
  * fecha de compromiso vencida, sin mirar `compromisoEstado`.
+ *
+ * Curso EXTERNO (`pagoCursoExterno`, curso con entidad certificadora): el costo
+ * del curso se deposita a la entidad y no se cobra en el instituto. Su estado
+ * (`estadoPagoCurso`: CANCELADO = pagado a la entidad, PARCIAL = pendiente de
+ * acreditar con depósito) lo da el requisito `acreditaPagoCurso`; el saldo del
+ * curso es informativo y NO suma al «Saldo total» (solo matrícula).
  */
 
 import dayjs from 'dayjs';
@@ -36,6 +42,24 @@ const formatFecha = (value) => {
   return d.isValid() ? d.format('DD/MM/YYYY') : null;
 };
 
+const formatFechaHora = (value) => {
+  if (!value) return null;
+  const d = dayjs(value);
+  return d.isValid() ? d.format('DD/MM/YYYY HH:mm') : null;
+};
+
+const toBool = (value) => value === true || value === 1 || value === '1';
+
+/** Requisito que acredita el depósito del curso externo ({requisitoId, descripcion, entregado}) o null. */
+const mapRequisitoAcredita = (raw) => {
+  if (!raw || typeof raw !== 'object') return null;
+  return {
+    requisitoId: raw.requisitoId ?? null,
+    descripcion: cleanText(raw.descripcion),
+    entregado: toBool(raw.entregado),
+  };
+};
+
 /**
  * Mapea una fila del listado (o la base de la ficha).
  * @param {Object} raw
@@ -47,6 +71,9 @@ export const mapInscripcionCapacitacion = (raw) => {
   const expedicion = cleanText(raw.participanteExpedicion)?.toUpperCase() ?? null;
   const fechaInicioLabel = formatFecha(raw.capacitacionFechaInicio);
   const fechaFinLabel = formatFecha(raw.capacitacionFechaFin);
+  const pagoCursoExterno = toBool(raw.pagoCursoExterno);
+  const saldoCurso = toNumber(raw.saldoCurso ?? raw.saldo);
+  const saldoMatricula = toNumber(raw.saldoMatricula);
 
   return {
     id: raw.id,
@@ -67,12 +94,16 @@ export const mapInscripcionCapacitacion = (raw) => {
       raw.participanteApellidoMaterno,
       raw.participanteNombreCompleto || 'Sin nombre',
     ),
+    participanteNombres: cleanText(raw.participanteNombres),
+    participanteApellidoPaterno: cleanText(raw.participanteApellidoPaterno),
+    participanteApellidoMaterno: cleanText(raw.participanteApellidoMaterno),
     participanteCelular: cleanText(raw.participanteCelular),
     participanteEmail: cleanText(raw.participanteEmail),
     // Curso
     capacitacionId: raw.capacitacionId ?? null,
     capacitacionTitulo: cleanText(raw.capacitacionTitulo) || 'Sin curso',
     capacitacionEstado: raw.capacitacionEstado ?? null,
+    capacitacionEntidadCertificadora: cleanText(raw.capacitacionEntidadCertificadora),
     capacitacionFechasLabel: fechaInicioLabel
       ? fechaFinLabel
         ? `${fechaInicioLabel} – ${fechaFinLabel}`
@@ -88,11 +119,16 @@ export const mapInscripcionCapacitacion = (raw) => {
     montoObligatorio: toNumber(raw.montoObligatorio),
     montoMatricula: toNumber(raw.montoMatricula),
     montoTotal: toNumber(raw.montoObligatorio) + toNumber(raw.montoMatricula),
+    // Lo que cobra el instituto: matrícula (+ curso solo si NO es externo).
+    montoCobrable:
+      toNumber(raw.montoMatricula) + (pagoCursoExterno ? 0 : toNumber(raw.montoObligatorio)),
     totalPagado: toNumber(raw.totalPagado),
     saldo: toNumber(raw.saldo),
-    saldoCurso: toNumber(raw.saldoCurso ?? raw.saldo),
-    saldoMatricula: toNumber(raw.saldoMatricula),
-    saldoTotal: toNumber(raw.saldoCurso ?? raw.saldo) + toNumber(raw.saldoMatricula),
+    saldoCurso,
+    saldoMatricula,
+    saldoTotal: saldoMatricula + (pagoCursoExterno ? 0 : saldoCurso),
+    pagoCursoExterno,
+    requisitoAcreditaPagoCurso: mapRequisitoAcredita(raw.requisitoAcreditaPagoCurso),
     estadoPago: raw.estadoPago ?? null,
     estadoPagoCurso: raw.estadoPagoCurso ?? null,
     estadoPagoMatricula: raw.estadoPagoMatricula ?? null,
@@ -120,7 +156,7 @@ export const mapInscripcionesCapacitacionList = (rawList) =>
  * @param {Object} raw
  * @returns {Object|null}
  */
-const mapPagoCapacitacion = (raw) => {
+export const mapPagoCapacitacion = (raw) => {
   if (!raw || typeof raw !== 'object') return null;
   return {
     id: raw.id,
@@ -133,6 +169,11 @@ const mapPagoCapacitacion = (raw) => {
     conceptoLabel: raw.concepto ? formatConceptoPago(raw.concepto) : null,
     tieneComprobante: raw.tieneComprobante === true || raw.tieneComprobante === 1,
     comprobanteNombre: cleanText(raw.comprobanteNombre),
+    // Un pago anulado se conserva como historial: no cuenta en totales ni se puede tocar.
+    anulado: toBool(raw.anulado),
+    motivoAnulacion: cleanText(raw.motivoAnulacion),
+    fechaAnulacion: raw.fechaAnulacion ?? null,
+    fechaAnulacionLabel: formatFechaHora(raw.fechaAnulacion),
     metodoPagoId: raw.metodoPagoId ?? null,
     metodoPagoNombre: cleanText(raw.metodoPagoNombre),
     cuentaPagoId: raw.cuentaPagoId ?? null,
@@ -157,6 +198,8 @@ export const mapRequisitoInscripcion = (raw) => {
     requisitoId,
     descripcion: cleanText(raw.descripcion) || 'Requisito',
     obligatorio: raw.obligatorio !== false && raw.obligatorio !== 0,
+    // Requisito que prueba el depósito del costo del curso a la entidad certificadora.
+    acreditaPagoCurso: toBool(raw.acreditaPagoCurso),
     entregado: raw.entregado === true || raw.entregado === 1,
     fechaEntrega: raw.fechaEntrega ?? null,
     observacion: cleanText(raw.observacion),
@@ -247,6 +290,9 @@ export const mapRequisitosToPayload = (requisitos = []) =>
     ...(r.entregado && r.fechaEntrega ? { fechaEntrega: r.fechaEntrega } : {}),
     ...(r.observacion ? { observacion: r.observacion } : {}),
   }));
+
+/** Pagos vigentes (no anulados) de una ficha mapeada. */
+export const pagosVigentes = (inscripcion) => (inscripcion?.pagos ?? []).filter((p) => !p.anulado);
 
 /** Concepto → clave del saldo/monto en la inscripción mapeada. */
 export const saldoPorConcepto = (inscripcion, concepto) =>

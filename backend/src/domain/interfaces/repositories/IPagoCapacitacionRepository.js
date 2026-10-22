@@ -13,7 +13,7 @@ import { IRepository } from './IRepository.js';
  */
 export class IPagoCapacitacionRepository extends IRepository {
   /**
-   * Suma de montos de pagos vigentes (activo, no eliminados) de una inscripción.
+   * Suma de montos de pagos vigentes (activo, no eliminados, no anulados) de una inscripción.
    *
    * @param {number} capacitacionInscritoId
    * @param {Object} options - Opciones opcionales (ej: `{ transaction }`)
@@ -35,7 +35,7 @@ export class IPagoCapacitacionRepository extends IRepository {
   }
 
   /**
-   * Suma de pagos vigentes de una inscripción por concepto (`MATRICULA`/`CURSO`).
+   * Suma de pagos vigentes (no anulados) de una inscripción por concepto (`MATRICULA`/`CURSO`).
    *
    * @param {number} capacitacionInscritoId
    * @param {Object} options - Opciones opcionales (ej: `{ transaction }`)

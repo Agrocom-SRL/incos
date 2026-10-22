@@ -42,6 +42,7 @@ import {
   validarGrupoElegido,
 } from '@application-capacitacion/utils/inscripcionGrupos';
 import { mapFormValuesToParticipantePayload } from '@application-capacitacion/participantes/mappers/participanteMapper';
+import { createInscribirParticipanteWizardSteps } from '@capacitacion/inscripciones/config/inscribirParticipanteWizardSteps';
 import {
   buildReglasMetodo,
   findMetodoCodigo,
@@ -182,6 +183,11 @@ export const useInscribirParticipantePage = () => {
   const cursoFicha = cursoDetalle?.id === cursoSeleccionadoId ? cursoDetalle : null;
   const gruposCurso = useMemo(() => cursoFicha?.grupos ?? [], [cursoFicha]);
   const requisitosCurso = useMemo(() => cursoFicha?.requisitos ?? [], [cursoFicha]);
+  /** Grupo elegido (para el resumen de cierre); `null` si aún no se eligió. */
+  const grupoSeleccionado = useMemo(
+    () => gruposCurso.find((g) => g.id === capacitacionGrupoId) ?? null,
+    [gruposCurso, capacitacionGrupoId],
+  );
 
   /**
    * Cambiar de curso reinicia lo que depende de él (grupo, requisitos, pago) y
@@ -203,7 +209,10 @@ export const useInscribirParticipantePage = () => {
     [form, cargarCursoDetalle],
   );
 
-  /** Saldo máximo por concepto: solo los conceptos que el curso cobra (los demás valen 0). */
+  /**
+   * Saldo máximo por concepto: solo los conceptos que el curso cobra (los demás valen 0).
+   * Con costo del curso externo (entidad certificadora) solo se cobra la matrícula.
+   */
   const saldosPorConcepto = useMemo(() => montosCobradosCurso(cursoSeleccionado), [cursoSeleccionado]);
   const conceptoOptions = useMemo(() => buildConceptoOptions(saldosPorConcepto), [saldosPorConcepto]);
 
@@ -241,57 +250,19 @@ export const useInscribirParticipantePage = () => {
   const reglasMetodo = useMemo(() => buildReglasMetodo(metodoCodigo), [metodoCodigo]);
 
   /**
-   * Pasos del wizard (un `sectionKey` por paso; contenido 100% custom, ver
-   * página). `description` es texto plano (dato), no JSX — la página arma el
-   * `headerActions` (botón "Crear nuevo participante" / "Buscar participante")
-   * y lo inyecta sobre el paso 1 antes de pasarlo a `WizardForm`, para no
-   * mezclar JSX en este hook de estado.
+   * Pasos del wizard: los arma `createInscribirParticipanteWizardSteps` (config
+   * de presentación, gemelo de `createInscripcionNuevaWizardSteps` de
+   * Matrícula). El botón "Crear nuevo participante" (JSX) lo inyecta la página
+   * como `headerActions` del paso 1 para no mezclar JSX en este hook.
    *
    * El paso "Pago inicial" SOLO se incluye si el curso elegido cobra algo
-   * (`ofrecePago`); el paso 3 «Horario y requisitos» siempre existe (muestra
+   * (`ofrecePago`); el paso 3 «Grupo y requisitos» siempre existe (muestra
    * estados vacíos si el curso no define grupos ni requisitos).
    */
-  const wizardSteps = useMemo(() => {
-    const steps = [
-      {
-        title: 'Participante',
-        formTitle: 'Inscribir participante',
-        description:
-          modoParticipante === MODO_PARTICIPANTE.NUEVO
-            ? 'Registre los datos mínimos del participante nuevo; se guardará junto con la inscripción.'
-            : 'Busque un participante ya registrado por CI, nombre o celular. Si no existe, podrá registrarlo desde aquí.',
-        sections: ['participante'],
-        config: { participante: {} },
-      },
-      {
-        title: 'Curso',
-        formTitle: 'Inscribir participante',
-        description:
-          'Elija el curso de capacitación al que se inscribe. El cupo es informativo: no bloquea la inscripción.',
-        sections: ['curso'],
-        config: { curso: {} },
-      },
-      {
-        title: 'Grupo y requisitos',
-        formTitle: 'Inscribir participante',
-        description:
-          'Elija el grupo del participante (con sus horarios) y marque los requisitos que ya entrega. Puede inscribirlo con requisitos pendientes: quedará en estado «Pendiente».',
-        sections: ['inscripcion'],
-        config: { inscripcion: {} },
-      },
-    ];
-    if (ofrecePago) {
-      steps.push({
-        title: 'Pago inicial',
-        formTitle: 'Inscribir participante',
-        description:
-          'Opcional. La matrícula se paga en secretaría del instituto y el costo del curso a la entidad certificadora; puede registrar un pago ahora o hacerlo después desde la ficha de la inscripción.',
-        sections: ['pago'],
-        config: { pago: {} },
-      });
-    }
-    return steps;
-  }, [modoParticipante, ofrecePago]);
+  const wizardSteps = useMemo(
+    () => createInscribirParticipanteWizardSteps({ modoParticipante, ofrecePago }),
+    [modoParticipante, ofrecePago],
+  );
 
   /**
    * Validación al avanzar de paso (`WizardForm` la invoca antes de "Siguiente").
@@ -332,15 +303,46 @@ export const useInscribirParticipantePage = () => {
         }
         return Promise.resolve();
       }
+      if (stepNumber === 4 && ofrecePago && registrarPagoInicial) {
+        return form
+          .validateFields(['concepto', 'monto', 'fechaPago', 'metodoPagoId', 'cuentaPagoId'])
+          .then(() => {
+            const { monto } = mapFormValuesToPagoInicialPayload(form.getFieldsValue(true));
+            if (!Number.isFinite(monto) || monto <= 0) {
+              return Promise.reject(new Error('Indique un monto válido para el pago inicial'));
+            }
+            return undefined;
+          });
+      }
       return Promise.resolve();
     },
-    [form, modoParticipante, participanteSeleccionado, cursoSeleccionadoId, gruposCurso, capacitacionGrupoId],
+    [
+      form,
+      modoParticipante,
+      participanteSeleccionado,
+      cursoSeleccionadoId,
+      gruposCurso,
+      capacitacionGrupoId,
+      ofrecePago,
+      registrarPagoInicial,
+    ],
   );
 
-  /** `WizardForm` la llama cuando `onValidateBeforeNext` rechaza; expone el mensaje en el footer del paso. */
-  const handleValidationError = useCallback((err) => {
-    setStepError(err?.message || 'Revise los datos del paso actual');
-  }, []);
+  /**
+   * `WizardForm` la llama cuando `onValidateBeforeNext` rechaza: expone el
+   * mensaje junto al footer del paso (no como toast) y, si el rechazo trae
+   * campos de `Form` con error, desplaza la vista al primero.
+   */
+  const handleValidationError = useCallback(
+    (err) => {
+      setStepError(err?.message || 'Revise los datos del paso actual');
+      const primerCampo = err?.errorFields?.[0]?.name;
+      if (primerCampo) {
+        form.scrollToField(primerCampo, { behavior: 'smooth', block: 'center' });
+      }
+    },
+    [form],
+  );
 
   /**
    * Submit: arma el payload EXACTO del backend y ejecuta la inscripción.
@@ -351,29 +353,33 @@ export const useInscribirParticipantePage = () => {
    * argumentos NO lo revalida ni lo incluye. Se usa `form.getFieldsValue(true)`
    * para leer TODOS los valores (incluidos los de pasos ya desmontados), y se
    * valida explícitamente solo el paso de pago (campos actualmente montados).
+   *
+   * Los errores de validación van a `stepError` (junto al footer); los toasts
+   * quedan solo para el resultado del servidor.
    */
   const handleFinish = useCallback(async () => {
     setStepError('');
     if (!cursoSeleccionadoId) {
-      message.error('Seleccione el curso al que se inscribe el participante');
+      setStepError('Seleccione el curso al que se inscribe el participante');
       return;
     }
     if (modoParticipante === MODO_PARTICIPANTE.EXISTENTE && !participanteSeleccionado?.id) {
-      message.error('Busque y seleccione al participante, o regístrelo como nuevo');
+      setStepError('Busque y seleccione al participante, o regístrelo como nuevo');
       return;
     }
 
     const mensajeGrupo = validarGrupoElegido(gruposCurso, capacitacionGrupoId);
     if (mensajeGrupo) {
-      message.error(mensajeGrupo);
+      setStepError(mensajeGrupo);
       return;
     }
 
     if (ofrecePago && registrarPagoInicial) {
       try {
         await form.validateFields(['concepto', 'monto', 'fechaPago', 'metodoPagoId', 'cuentaPagoId']);
-      } catch {
-        message.error('Revise los campos obligatorios del pago inicial');
+      } catch (err) {
+        handleValidationError(err);
+        setStepError('Revise los campos obligatorios del pago inicial');
         return;
       }
     }
@@ -384,7 +390,7 @@ export const useInscribirParticipantePage = () => {
     if (ofrecePago && registrarPagoInicial) {
       pagoInicial = mapFormValuesToPagoInicialPayload(values);
       if (!Number.isFinite(pagoInicial.monto) || pagoInicial.monto <= 0) {
-        message.error('Indique un monto válido para el pago inicial');
+        setStepError('Indique un monto válido para el pago inicial');
         return;
       }
     }
@@ -436,6 +442,7 @@ export const useInscribirParticipantePage = () => {
     form,
     inscribir,
     message,
+    handleValidationError,
     navigate,
     returnListPath,
     menuSidebarKey,
@@ -480,6 +487,7 @@ export const useInscribirParticipantePage = () => {
     errorCursoDetalle,
     gruposCurso,
     requisitosCurso,
+    grupoSeleccionado,
     capacitacionGrupoId,
     setCapacitacionGrupoId,
     requisitosEntregados,
@@ -490,6 +498,7 @@ export const useInscribirParticipantePage = () => {
     handleTogglePagoInicial,
     saldosPorConcepto,
     conceptoOptions,
+    cursoExterno: Boolean(cursoSeleccionado?.pagoCursoExterno),
     metodosPago,
     cuentasPago,
     loadingCatalogos,

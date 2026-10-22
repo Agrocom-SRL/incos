@@ -75,6 +75,30 @@ export const PagoCapacitacion = sequelize.define(
       allowNull: true,
       comment: 'Nombre original del archivo del comprobante',
     },
+    anulado: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+      comment: 'Pago anulado por error: conserva el historial pero no cuenta en totales, saldos ni ingresos',
+    },
+    motivoAnulacion: {
+      type: DataTypes.STRING(500),
+      field: 'motivo_anulacion',
+      allowNull: true,
+      comment: 'Motivo obligatorio de la anulación',
+    },
+    fechaAnulacion: {
+      type: DataTypes.DATE,
+      field: 'fecha_anulacion',
+      allowNull: true,
+      comment: 'Momento en que se anuló el pago',
+    },
+    anuladoPor: {
+      type: DataTypes.INTEGER,
+      field: 'anulado_por',
+      allowNull: true,
+      comment: 'Usuario que anuló el pago',
+    },
   },
   {
     ...baseModelOptions,

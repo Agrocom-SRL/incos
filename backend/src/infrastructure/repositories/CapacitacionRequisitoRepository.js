@@ -24,6 +24,7 @@ export class CapacitacionRequisitoRepository extends BaseRepository {
       capacitacionId: v.capacitacionId ?? null,
       descripcion: v.descripcion ?? null,
       obligatorio: v.obligatorio !== undefined && v.obligatorio !== null ? Boolean(v.obligatorio) : true,
+      acreditaPagoCurso: Boolean(v.acreditaPagoCurso),
       orden: v.orden ?? 1,
       activo: v.activo ?? null,
     };
@@ -51,6 +52,7 @@ export class CapacitacionRequisitoRepository extends BaseRepository {
     if ('capacitacionId' in data) model.capacitacionId = data.capacitacionId;
     if ('descripcion' in data) model.descripcion = data.descripcion;
     if ('obligatorio' in data) model.obligatorio = data.obligatorio;
+    if ('acreditaPagoCurso' in data) model.acreditaPagoCurso = Boolean(data.acreditaPagoCurso);
     if ('orden' in data) model.orden = data.orden;
     return model;
   }

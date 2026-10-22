@@ -51,9 +51,15 @@ export const CAPACITACION_TOKENS = {
   deleteInscripcionCapacitacionUseCase: 'capacitacion.deleteInscripcionCapacitacionUseCase',
   anularInscripcionCapacitacionUseCase: 'capacitacion.anularInscripcionCapacitacionUseCase',
   registerPagoCapacitacionUseCase: 'capacitacion.registerPagoCapacitacionUseCase',
+  updateInscripcionCapacitacionUseCase: 'capacitacion.updateInscripcionCapacitacionUseCase',
+  updatePagoCapacitacionUseCase: 'capacitacion.updatePagoCapacitacionUseCase',
+  anularPagoCapacitacionUseCase: 'capacitacion.anularPagoCapacitacionUseCase',
   updateRequisitosInscripcionUseCase: 'capacitacion.updateRequisitosInscripcionUseCase',
   adjuntarComprobantePagoCapacitacionUseCase: 'capacitacion.adjuntarComprobantePagoCapacitacionUseCase',
   descargarComprobantePagoCapacitacionUseCase: 'capacitacion.descargarComprobantePagoCapacitacionUseCase',
+  exportFormularioInscripcionCapacitacionPdfUseCase:
+    'capacitacion.exportFormularioInscripcionCapacitacionPdfUseCase',
+  exportReciboPagoCapacitacionPdfUseCase: 'capacitacion.exportReciboPagoCapacitacionPdfUseCase',
 
   // Controllers — Cursos de capacitación
   listCursosCapacitacionController: 'capacitacion.listCursosCapacitacionController',
@@ -87,11 +93,17 @@ export const CAPACITACION_TOKENS = {
   deleteInscripcionCapacitacionController: 'capacitacion.deleteInscripcionCapacitacionController',
   anularInscripcionCapacitacionController: 'capacitacion.anularInscripcionCapacitacionController',
   registerPagoCapacitacionController: 'capacitacion.registerPagoCapacitacionController',
+  updateInscripcionCapacitacionController: 'capacitacion.updateInscripcionCapacitacionController',
+  updatePagoCapacitacionController: 'capacitacion.updatePagoCapacitacionController',
+  anularPagoCapacitacionController: 'capacitacion.anularPagoCapacitacionController',
   updateRequisitosInscripcionController: 'capacitacion.updateRequisitosInscripcionController',
   adjuntarComprobantePagoCapacitacionController:
     'capacitacion.adjuntarComprobantePagoCapacitacionController',
   descargarComprobantePagoCapacitacionController:
     'capacitacion.descargarComprobantePagoCapacitacionController',
+  exportFormularioInscripcionCapacitacionController:
+    'capacitacion.exportFormularioInscripcionCapacitacionController',
+  exportReciboPagoCapacitacionController: 'capacitacion.exportReciboPagoCapacitacionController',
 
   // Routers
   cursosCapacitacionRouter: 'capacitacion.cursosCapacitacionRouter',

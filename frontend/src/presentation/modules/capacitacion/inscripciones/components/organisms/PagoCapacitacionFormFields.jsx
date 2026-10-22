@@ -10,15 +10,22 @@
  * inicial" del wizard de inscribir (`permiteComprobante` en `false`: el
  * comprobante se adjunta después desde la ficha).
  *
- * `conceptoOptions` limita los conceptos ofrecidos a los que se cobran.
+ * `conceptoOptions` limita los conceptos ofrecidos a los que se cobran. Con UNA sola
+ * opción no hay selector: se muestra el concepto como texto y el valor viaja en un
+ * campo oculto (lo fija el hook de pantalla). En cursos con costo externo
+ * (`cursoExterno`, entidad certificadora) solo se cobra la matrícula y se añade
+ * la nota «El costo del curso se deposita a la entidad certificadora».
+ * `fechaPorDefecto=false` evita el valor inicial «hoy» al editar un pago (la
+ * fecha original llega en los `initialValues` del Form).
  * El sobrepago se valida contra el saldo DEL CONCEPTO elegido
  * (`saldosPorConcepto`); matrícula (instituto) y curso (entidad certificadora)
  * se saldan por separado.
  */
 
-import { Col, DatePicker, Form, Input, InputNumber, Row, Select, Upload } from 'antd';
+import { Col, DatePicker, Form, Input, InputNumber, Row, Select, Typography, Upload } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import { allSpacing } from '@theme/tokens';
 import { formatBs } from '@application/utils/formatters';
 import {
   COMPROBANTE_ACCEPT,
@@ -26,6 +33,7 @@ import {
   normFileFromUpload,
 } from '@finanzas/pagos/config/registrarFormConfig';
 import { CONCEPTO_PAGO_OPTIONS } from '@application-capacitacion/utils/capacitacionCatalogos';
+import { NOTA_CURSO_EXTERNO } from '@application-capacitacion/utils/capacitacionPills';
 
 const { TextArea } = Input;
 const { Dragger } = Upload;
@@ -43,21 +51,33 @@ const PagoCapacitacionFormFields = ({
   onMetodoPagoChange,
   disabled = false,
   permiteComprobante = false,
+  cursoExterno = false,
+  fechaPorDefecto = true,
 }) => {
   const metodoOptions = metodosPago.map((metodo) => ({ value: metodo.id, label: metodo.nombre }));
   const cuentaOptions = cuentasPago.map((cuenta) => ({ value: cuenta.id, label: cuenta.label }));
 
   return (
     <>
-      <Row gutter={[24, 0]}>
+      <Row gutter={[allSpacing.marginLG, 0]}>
         <Col xs={24}>
-          <Form.Item
-            name="concepto"
-            label="Concepto del pago"
-            rules={[{ required: true, message: 'Seleccione el concepto del pago' }]}
-          >
-            <Select options={conceptoOptions} disabled={disabled} />
-          </Form.Item>
+          {conceptoOptions.length === 1 ? (
+            <Form.Item label="Concepto del pago" extra={cursoExterno ? NOTA_CURSO_EXTERNO : undefined}>
+              <Form.Item name="concepto" noStyle>
+                <Input type="hidden" />
+              </Form.Item>
+              <Typography.Text strong>{conceptoOptions[0].label}</Typography.Text>
+            </Form.Item>
+          ) : (
+            <Form.Item
+              name="concepto"
+              label="Concepto del pago"
+              extra={cursoExterno ? NOTA_CURSO_EXTERNO : undefined}
+              rules={[{ required: true, message: 'Seleccione el concepto del pago' }]}
+            >
+              <Select options={conceptoOptions} disabled={disabled} />
+            </Form.Item>
+          )}
         </Col>
 
         <Col xs={24} sm={12}>
@@ -109,7 +129,7 @@ const PagoCapacitacionFormFields = ({
           <Form.Item
             name="fechaPago"
             label="Fecha de pago"
-            initialValue={dayjs()}
+            initialValue={fechaPorDefecto ? dayjs() : undefined}
             rules={[{ required: true, message: 'Seleccione la fecha del pago' }]}
           >
             <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} disabled={disabled} />

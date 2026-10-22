@@ -101,6 +101,9 @@ export class InscripcionCapacitacionRepository extends BaseRepository {
     if ('estadoPago' in data) model.estadoPago = data.estadoPago;
     if ('estadoPagoCurso' in data) model.estadoPagoCurso = data.estadoPagoCurso;
     if ('estadoPagoMatricula' in data) model.estadoPagoMatricula = data.estadoPagoMatricula;
+    if ('capacitacionGrupoId' in data) {
+      model.capacitacionGrupoId = data.capacitacionGrupoId ?? null;
+    }
     return model;
   }
 
@@ -175,10 +178,12 @@ export class InscripcionCapacitacionRepository extends BaseRepository {
    * agregado de pagos vigentes + compromiso "abierto" (VIGENTE/INCUMPLIDO) más
    * reciente. Filas crudas snake_case.
    *
-   * Los saldos se calculan por concepto contra los snapshots
+   * Los saldos se calculan en el mapper por concepto contra los snapshots
    * `ci.monto_obligatorio` (curso) y `ci.monto_matricula`, NO contra los costos
    * actuales del curso (pueden cambiar después y no deben afectar inscripciones
-   * ya creadas).
+   * ya creadas). Los pagos ANULADOS no cuentan. Para un curso con entidad
+   * certificadora (`pago_curso_externo`) el costo del curso lo acredita el
+   * requisito `acredita_pago_curso` (`requisito_acredita_*`), no los pagos.
    * @private
    */
   _buildListadoSelect() {
@@ -220,9 +225,11 @@ export class InscripcionCapacitacionRepository extends BaseRepository {
         COALESCE(pg.total_pagado, 0) AS total_pagado,
         COALESCE(pg.pagado_curso, 0) AS pagado_curso,
         COALESCE(pg.pagado_matricula, 0) AS pagado_matricula,
-        GREATEST(0, ci.monto_obligatorio - COALESCE(pg.pagado_curso, 0)) AS saldo_curso,
-        GREATEST(0, ci.monto_matricula - COALESCE(pg.pagado_matricula, 0)) AS saldo_matricula,
         COALESCE(pg.pagos_count, 0) AS pagos_count,
+        (c.entidad_certificadora IS NOT NULL AND TRIM(c.entidad_certificadora) <> '') AS pago_curso_externo,
+        ra.requisito_id AS requisito_acredita_id,
+        rad.descripcion AS requisito_acredita_descripcion,
+        COALESCE(rai.entregado, FALSE) AS requisito_acredita_entregado,
         (
           SELECT COUNT(*)
           FROM capacitacion_requisitos r
@@ -259,9 +266,25 @@ export class InscripcionCapacitacionRepository extends BaseRepository {
           COUNT(*) AS pagos_count
         FROM capacitacion_pagos cp
         WHERE cp.activo = TRUE
+          AND cp.anulado = FALSE
           AND cp.deleted_at IS NULL
         GROUP BY cp.capacitacion_inscrito_id
       ) pg ON pg.capacitacion_inscrito_id = ci.id
+      LEFT JOIN (
+        SELECT r.capacitacion_id, MIN(r.id) AS requisito_id
+        FROM capacitacion_requisitos r
+        WHERE r.acredita_pago_curso = TRUE
+          AND r.activo = TRUE
+          AND r.deleted_at IS NULL
+        GROUP BY r.capacitacion_id
+      ) ra ON ra.capacitacion_id = c.id
+      LEFT JOIN capacitacion_requisitos rad
+        ON rad.id = ra.requisito_id
+      LEFT JOIN capacitacion_inscrito_requisitos rai
+        ON rai.capacitacion_requisito_id = ra.requisito_id
+        AND rai.capacitacion_inscrito_id = ci.id
+        AND rai.activo = TRUE
+        AND rai.deleted_at IS NULL
       LEFT JOIN capacitacion_compromisos cc
         ON cc.capacitacion_inscrito_id = ci.id
         AND cc.estado IN ('VIGENTE', 'INCUMPLIDO')

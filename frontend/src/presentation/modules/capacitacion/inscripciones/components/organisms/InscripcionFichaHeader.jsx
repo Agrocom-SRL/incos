@@ -11,6 +11,8 @@ import { DollarOutlined } from '@ant-design/icons';
 import { StatusPill } from '@atoms';
 import { formatBs } from '@application/utils/formatters';
 import {
+  formatEstadoCursoExterno,
+  getEstadoCursoExternoPillClass,
   formatEstadoInscripcionCap,
   formatEstadoPagoCap,
   getEstadoInscripcionCapPillClass,
@@ -70,6 +72,12 @@ const InscripcionFichaHeader = ({ inscripcion }) => {
             <span className="sd-stat__value sd-stat__value--primary">
               <CostoCursoLabel costo={inscripcion.montoObligatorio} />
             </span>
+            {inscripcion.pagoCursoExterno ? (
+              <StatusPill
+                label={formatEstadoCursoExterno(inscripcion.estadoPagoCurso)}
+                className={getEstadoCursoExternoPillClass(inscripcion.estadoPagoCurso)}
+              />
+            ) : null}
           </div>
         ) : null}
         {inscripcion.montoTotal <= 0 ? (

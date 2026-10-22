@@ -10,6 +10,13 @@ const { RegisterPagoCapacitacionUseCase } = await import(
   '../../../src/application/use-cases/capacitacion/RegisterPagoCapacitacionUseCase.js'
 );
 
+const NO_EXTERNO = {
+  pagoCursoExterno: false,
+  requisitoId: null,
+  requisitoDescripcion: null,
+  acreditado: false,
+};
+
 describe('RegisterPagoCapacitacionUseCase', () => {
   const inscripcionBase = {
     id: 7,
@@ -50,6 +57,7 @@ describe('RegisterPagoCapacitacionUseCase', () => {
       },
       capacitacionInscritoRequisitoRepository: {
         contarObligatoriosPendientes: jest.fn().mockResolvedValue(pendientes),
+        resolverPagoCursoExterno: jest.fn().mockResolvedValue(NO_EXTERNO),
       },
       paymentMethodRepository: { findById: jest.fn().mockResolvedValue(metodo) },
       paymentAccountRepository: { findById: jest.fn().mockResolvedValue(cuenta) },
@@ -256,4 +264,26 @@ describe('RegisterPagoCapacitacionUseCase', () => {
       crear({ cuenta: null }).useCase.execute(7, { ...body, cuentaPagoId: 9 })
     ).rejects.toBeInstanceOf(NotFoundError);
   });
+
+  describe('curso con entidad certificadora (costo del curso externo)', () => {
+    const externo = { pagoCursoExterno: true, requisitoId: 5, requisitoDescripcion: 'Depósito', acreditado: false };
+
+    it('rechaza el concepto CURSO con 400 y un mensaje claro, sin crear nada', async () => {
+      const { deps, useCase } = crear();
+      deps.capacitacionInscritoRequisitoRepository.resolverPagoCursoExterno.mockResolvedValue(externo);
+      const error = await useCase.execute(7, body, 3, { transaction: 'TX' }).catch((e) => e);
+      expect(error).toBeInstanceOf(ValidationError);
+      expect(error.message).toMatch(/entidad certificadora/);
+      expect(error.message).toMatch(/solo se registra la matrícula/);
+      expect(deps.pagoCapacitacionRepository.create).not.toHaveBeenCalled();
+    });
+
+    it('sigue aceptando la MATRÍCULA', async () => {
+      const { deps, useCase } = crear();
+      deps.capacitacionInscritoRequisitoRepository.resolverPagoCursoExterno.mockResolvedValue(externo);
+      await useCase.execute(7, { ...body, concepto: 'MATRICULA', monto: 150 }, 3, { transaction: 'TX' });
+      expect(deps.pagoCapacitacionRepository.create).toHaveBeenCalledTimes(1);
+    });
+  });
+
 });

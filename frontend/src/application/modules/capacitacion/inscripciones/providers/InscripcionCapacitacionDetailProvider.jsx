@@ -5,9 +5,15 @@
  * registro de pagos y los catálogos de pago COMPARTIDOS de Finanzas
  * (`usePaymentCatalogsApi` — métodos/cuentas, lectura transparente por
  * `sistema.catalogo.referencia`; no se reimplementa el fetch).
+ *
+ * Correcciones (capacitacion.inscripcion EDITAR): editar la inscripción
+ * (participante y/o grupo), corregir y anular pagos. Todas refrescan la ficha
+ * al terminar con éxito (el backend recalcula estados y saldos). La ficha del
+ * curso (`cursoDetalle`) aporta los grupos con cupo del selector de grupo.
  */
 
 import { useCallback, useEffect, useMemo } from 'react';
+import { useGetCursoCapacitacion } from '@application-capacitacion/cursos/hooks/api/useGetCursoCapacitacion';
 import { useGetInscripcionCapacitacion } from '@application-capacitacion/inscripciones/hooks/api/useGetInscripcionCapacitacion';
 import { useInscripcionCapacitacionMutations } from '@application-capacitacion/inscripciones/hooks/api/useInscripcionCapacitacionMutations';
 import { usePaymentCatalogsApi } from '@application-finanzas/hooks/api/usePaymentCatalogsApi';
@@ -15,9 +21,16 @@ import { InscripcionCapacitacionDetailContext } from '@application-capacitacion/
 
 export const InscripcionCapacitacionDetailProvider = ({ children, inscripcionId }) => {
   const { inscripcion, loading, error, cargar } = useGetInscripcionCapacitacion();
+  const cursoApi = useGetCursoCapacitacion();
   const {
     registrandoPago,
     registrarPago,
+    actualizandoInscripcion,
+    actualizarInscripcion,
+    actualizandoPago,
+    actualizarPago,
+    anulandoPago,
+    anularPago,
     anulando,
     anularInscripcion,
     guardandoRequisitos,
@@ -25,6 +38,8 @@ export const InscripcionCapacitacionDetailProvider = ({ children, inscripcionId 
     actualizarRequisitos,
     adjuntarComprobante,
     descargarComprobante,
+    descargarFormularioPdf,
+    descargarReciboPdf,
   } = useInscripcionCapacitacionMutations();
   const {
     metodosPago,
@@ -85,6 +100,52 @@ export const InscripcionCapacitacionDetailProvider = ({ children, inscripcionId 
     [idValido, id, descargarComprobante],
   );
 
+  const descargarFormularioPdfActual = useCallback(() => {
+    if (!idValido) return Promise.resolve({ success: false, error: 'Inscripción inválida' });
+    return descargarFormularioPdf(id);
+  }, [idValido, id, descargarFormularioPdf]);
+
+  const descargarReciboPdfPago = useCallback(
+    (pagoId) => {
+      if (!idValido) return Promise.resolve({ success: false, error: 'Inscripción inválida' });
+      return descargarReciboPdf(id, pagoId);
+    },
+    [idValido, id, descargarReciboPdf],
+  );
+
+  /** Corrige participante y/o grupo; en éxito refresca la ficha. */
+  const actualizarInscripcionActual = useCallback(
+    async (payload) => {
+      if (!idValido) return { success: false, error: 'Inscripción inválida' };
+      const result = await actualizarInscripcion(id, payload);
+      if (result?.success) await cargar(id);
+      return result;
+    },
+    [idValido, id, actualizarInscripcion, cargar],
+  );
+
+  /** Corrige un pago; en éxito refresca la ficha (estados y saldos recalculados). */
+  const actualizarPagoInscripcion = useCallback(
+    async (pagoId, payload) => {
+      if (!idValido) return { success: false, error: 'Inscripción inválida' };
+      const result = await actualizarPago(id, pagoId, payload);
+      if (result?.success) await cargar(id);
+      return result;
+    },
+    [idValido, id, actualizarPago, cargar],
+  );
+
+  /** Anula un pago (definitivo); en éxito refresca la ficha. */
+  const anularPagoInscripcion = useCallback(
+    async (pagoId, motivo) => {
+      if (!idValido) return { success: false, error: 'Inscripción inválida' };
+      const result = await anularPago(id, pagoId, motivo);
+      if (result?.success) await cargar(id);
+      return result;
+    },
+    [idValido, id, anularPago, cargar],
+  );
+
   /** Anular (decisión administrativa manual): refetch de la ficha en éxito. */
   const anularInscripcionActual = useCallback(
     async (payload) => {
@@ -112,6 +173,20 @@ export const InscripcionCapacitacionDetailProvider = ({ children, inscripcionId 
       adjuntarComprobantePago,
       subiendoComprobante,
       descargarComprobantePago,
+      descargarFormularioPdf: descargarFormularioPdfActual,
+      descargarReciboPdfPago,
+      // Correcciones (EDITAR): inscripción y pagos
+      actualizarInscripcion: actualizarInscripcionActual,
+      actualizandoInscripcion,
+      actualizarPago: actualizarPagoInscripcion,
+      actualizandoPago,
+      anularPago: anularPagoInscripcion,
+      anulandoPago,
+      // Ficha del curso (grupos con cupo) para el selector de grupo
+      cursoDetalle: cursoApi.curso,
+      loadingCursoDetalle: cursoApi.loading,
+      errorCursoDetalle: cursoApi.error,
+      cargarCursoDetalle: cursoApi.cargar,
       // Anular inscripción (decisión administrativa manual)
       anularInscripcion: anularInscripcionActual,
       anulando,
@@ -135,8 +210,17 @@ export const InscripcionCapacitacionDetailProvider = ({ children, inscripcionId 
       adjuntarComprobantePago,
       subiendoComprobante,
       descargarComprobantePago,
+      descargarFormularioPdfActual,
+      descargarReciboPdfPago,
       anularInscripcionActual,
       anulando,
+      actualizarInscripcionActual,
+      actualizandoInscripcion,
+      actualizarPagoInscripcion,
+      actualizandoPago,
+      anularPagoInscripcion,
+      anulandoPago,
+      cursoApi,
       metodosPago,
       cuentasPago,
       loadingCatalogos,

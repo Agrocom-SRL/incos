@@ -10,9 +10,11 @@ import {
   InscripcionCapacitacionMapper,
   ParticipanteMapper,
 } from '../../mappers/capacitacion/index.js';
-import { parseFechaISO, parseIdOpcional, parseIdPositivo } from '../../utils/validacionEntrada.js';
+import { parseFechaISO, parseIdPositivo } from '../../utils/validacionEntrada.js';
 import { resolveEstadoEfectivoCurso } from './helpers/cursoEstadoEfectivo.js';
-import { esCursoGratuito } from './helpers/cursoCapacitacionInput.js';
+import { esCursoGratuito, tienePagoCursoExterno } from './helpers/cursoCapacitacionInput.js';
+import { resolverGrupoInscripcion } from './helpers/grupoInscripcion.js';
+import { validarConceptoPermitido } from './helpers/pagoCapacitacionInput.js';
 import {
   calcularEstadosInscripcion,
   recalcularEstadoInscripcion,
@@ -42,7 +44,9 @@ const esVacio = (valor) =>
  *    `capacitacion_requisitos` del curso).
  * 5. Pago inicial OPCIONAL (`pagoInicial: { concepto, monto, ... }`, delega en
  *    RegisterPagoCapacitacionUseCase, misma transacción). Matrícula y curso se
- *    saldan por separado y en cualquier orden.
+ *    saldan por separado y en cualquier orden. Con entidad certificadora el
+ *    concepto CURSO se rechaza (400, antes de crear nada): ese costo se deposita
+ *    a la entidad y se acredita con el requisito `acreditaPagoCurso`.
  *
  * La inscripción SIEMPRE se puede registrar: queda INSCRITO solo si matrícula
  * y curso están CANCELADOS y los requisitos obligatorios entregados
@@ -131,7 +135,12 @@ export class CreateInscripcionCapacitacionUseCase {
       ? new Date().toISOString().slice(0, 10)
       : parseFechaISO(body.fechaInscripcion, 'fechaInscripcion');
     const fechaCompromiso = this._parseFechaCompromiso(body);
-    const grupo = await this._resolverGrupo(body.capacitacionGrupoId, curso);
+    const grupo = await resolverGrupoInscripcion({
+      grupoCapacitacionRepository: this.grupoCapacitacionRepository,
+      inscripcionCapacitacionRepository: this.inscripcionCapacitacionRepository,
+      curso,
+      valor: body.capacitacionGrupoId,
+    });
     const requisitosEntregados = await this._validarRequisitosEntregados(
       body.requisitosEntregados,
       capacitacionId
@@ -166,6 +175,13 @@ export class CreateInscripcionCapacitacionUseCase {
       throw new ValidationError('pagoInicial debe ser un objeto { concepto, monto, metodoPagoId, ... }');
     }
     const registrarPagoInicial = pagoInicialBody !== null && !esGratuito;
+    // Costo externo: el pago inicial de concepto CURSO se rechaza antes de crear nada
+    if (registrarPagoInicial) {
+      validarConceptoPermitido(
+        String(pagoInicialBody.concepto ?? '').trim().toUpperCase(),
+        tienePagoCursoExterno(curso)
+      );
+    }
     if (pagoInicialBody !== null && esGratuito) {
       this.logger.warn(
         '[Capacitación] Se recibió pagoInicial para un curso gratuito; se ignora (curso gratuito no registra pagos)',
@@ -322,50 +338,6 @@ export class CreateInscripcionCapacitacionUseCase {
   _parseFechaCompromiso(body) {
     const valor = body.pagoInicial?.fechaCompromiso ?? body.fechaCompromiso;
     return esVacio(valor) ? null : parseFechaISO(valor, 'fechaCompromiso');
-  }
-
-  /**
-   * Resuelve el grupo elegido: obligatorio con 2 o más grupos, automático con
-   * uno y null sin grupos. Valida pertenencia al curso y el cupo propio del grupo.
-   * @private
-   */
-  async _resolverGrupo(valor, curso) {
-    const grupos = await this.grupoCapacitacionRepository.findByCapacitacionId(curso.id);
-    const elegido = parseIdOpcional(valor, 'capacitacionGrupoId');
-
-    if (grupos.length === 0) {
-      if (elegido !== null) throw new ValidationError('El curso no tiene grupos');
-      return null;
-    }
-    if (grupos.length === 1 && elegido === null) {
-      return this._validarCupoGrupo(grupos[0]);
-    }
-    if (elegido === null) {
-      throw new ValidationError(
-        `capacitacionGrupoId es requerido: el curso tiene ${grupos.length} grupos`
-      );
-    }
-    const grupo = grupos.find((g) => g.id === elegido);
-    if (!grupo) {
-      throw new ValidationError('capacitacionGrupoId no pertenece a los grupos del curso');
-    }
-    return this._validarCupoGrupo(grupo);
-  }
-
-  /**
-   * Un grupo con `cupoMaximo` propio bloquea al alcanzarlo; sin cupo propio rige
-   * el cupo informativo del curso.
-   * @private
-   */
-  async _validarCupoGrupo(grupo) {
-    if (grupo.cupoMaximo === null || grupo.cupoMaximo === undefined) return grupo;
-    const conteos = await this.inscripcionCapacitacionRepository.countVigentesByGrupoIds([grupo.id]);
-    if (conteos[grupo.id] >= grupo.cupoMaximo) {
-      throw new ConflictError(
-        `El grupo "${grupo.nombre}" alcanzó su cupo máximo (${grupo.cupoMaximo})`
-      );
-    }
-    return grupo;
   }
 
   /**

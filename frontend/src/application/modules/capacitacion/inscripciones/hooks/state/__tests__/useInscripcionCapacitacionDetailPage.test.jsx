@@ -40,6 +40,8 @@ describe('useInscripcionCapacitacionDetailPage · requisitos y comprobantes', ()
       adjuntarComprobantePago: vi.fn().mockResolvedValue({ success: true }),
       subiendoComprobante: false,
       descargarComprobantePago: vi.fn().mockResolvedValue({ success: true }),
+      descargarFormularioPdf: vi.fn().mockResolvedValue({ success: true }),
+      descargarReciboPdfPago: vi.fn().mockResolvedValue({ success: true }),
     };
   });
 
@@ -103,5 +105,25 @@ describe('useInscripcionCapacitacionDetailPage · requisitos y comprobantes', ()
       await result.current.handleDescargarComprobante(7);
     });
     expect(msg.error).toHaveBeenCalledWith('No existe');
+  });
+
+  it('descargar formulario PDF muestra el error y libera el loading', async () => {
+    ctx.value.descargarFormularioPdf.mockResolvedValue({ success: false, error: 'Sin datos' });
+    const { result } = renderHook(() => useInscripcionCapacitacionDetailPage());
+    await act(async () => {
+      await result.current.handleDescargarFormulario();
+    });
+    expect(msg.error).toHaveBeenCalledWith('Sin datos');
+    expect(result.current.descargandoFormulario).toBe(false);
+  });
+
+  it('descargar recibo PDF llama con el pago y limpia el loading por pago', async () => {
+    const { result } = renderHook(() => useInscripcionCapacitacionDetailPage());
+    await act(async () => {
+      await result.current.handleDescargarRecibo(7);
+    });
+    expect(ctx.value.descargarReciboPdfPago).toHaveBeenCalledWith(7);
+    expect(result.current.reciboDescargandoId).toBeNull();
+    expect(msg.error).not.toHaveBeenCalled();
   });
 });

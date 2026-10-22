@@ -20,7 +20,7 @@ describe('UpdateCursoCapacitacionUseCase', () => {
 
   const crear = ({
     found = existing, aula = { id: 1 }, horario = { id: 1 },
-    grupos = [grupoA, grupoB], bloques = [], inscritos = {},
+    grupos = [grupoA, grupoB], bloques = [], inscritos = {}, inscripciones = [],
   } = {}) => {
     const deps = {
       cursoCapacitacionRepository: {
@@ -46,9 +46,19 @@ describe('UpdateCursoCapacitacionUseCase', () => {
         softDeleteByIds: jest.fn(),
       },
       inscripcionCapacitacionRepository: {
+        findAll: jest.fn().mockResolvedValue({ inscripcionesCapacitacion: inscripciones }),
+        update: jest.fn().mockResolvedValue({}),
         countVigentesByGrupoIds: jest.fn().mockImplementation(async (ids) =>
           Object.fromEntries(ids.map((id) => [id, inscritos[id] ?? 0]))),
       },
+      pagoCapacitacionRepository: { sumMontosPorConcepto: jest.fn().mockResolvedValue({ MATRICULA: 0, CURSO: 0 }) },
+      capacitacionInscritoRequisitoRepository: {
+        contarObligatoriosPendientes: jest.fn().mockResolvedValue(0),
+        resolverPagoCursoExterno: jest.fn().mockResolvedValue({
+          pagoCursoExterno: true, requisitoId: 1, requisitoDescripcion: 'Depósito', acreditado: true,
+        }),
+      },
+      capacitacionCompromisoRepository: { findVigenteByInscripcionId: jest.fn().mockResolvedValue(null), update: jest.fn() },
       scheduleRepository: { findById: jest.fn().mockResolvedValue(horario) },
       classroomRepository: { findById: jest.fn().mockResolvedValue(aula) },
       logger: { info: jest.fn() },
@@ -66,7 +76,7 @@ describe('UpdateCursoCapacitacionUseCase', () => {
     expect(deps.grupoCapacitacionRepository.create).not.toHaveBeenCalled();
     expect(res.cursoCapacitacion).toMatchObject({ titulo: 'Nuevo', estado: 'PROPUESTO' });
     expect(res.cursoCapacitacion.grupos[0]).toMatchObject({ id: 10, horarios: [{ capacitacionHorarioId: 1, horarioId: 7 }] });
-    expect(res.cursoCapacitacion.requisitos).toEqual([{ id: 1, descripcion: 'Cédula', obligatorio: true, orden: 1 }]);
+    expect(res.cursoCapacitacion.requisitos).toEqual([{ id: 1, descripcion: 'Cédula', obligatorio: true, acreditaPagoCurso: false, orden: 1 }]);
   });
 
   it('body vacío no actualiza nada', async () => {
@@ -253,8 +263,8 @@ describe('UpdateCursoCapacitacionUseCase', () => {
     ]);
     await useCase.execute(2, { requisitos: [{ id: 1, descripcion: ' A2 ', obligatorio: false }, { descripcion: 'C' }] }, 3);
     const repo = deps.capacitacionRequisitoRepository;
-    expect(repo.update).toHaveBeenCalledWith(1, { descripcion: 'A2', obligatorio: false, orden: 1 }, 3, { transaction: 'TX' });
-    expect(repo.create).toHaveBeenCalledWith({ capacitacionId: 2, descripcion: 'C', obligatorio: true, orden: 2 }, 3, { transaction: 'TX' });
+    expect(repo.update).toHaveBeenCalledWith(1, { descripcion: 'A2', obligatorio: false, acreditaPagoCurso: false, orden: 1 }, 3, { transaction: 'TX' });
+    expect(repo.create).toHaveBeenCalledWith({ capacitacionId: 2, descripcion: 'C', obligatorio: true, acreditaPagoCurso: false, orden: 2 }, 3, { transaction: 'TX' });
     expect(repo.softDeleteByIds).toHaveBeenCalledWith([2], 3, { transaction: 'TX' });
   });
 
@@ -279,4 +289,72 @@ describe('UpdateCursoCapacitacionUseCase', () => {
     await expect(useCase.execute(2, { titulo })).rejects.toBeInstanceOf(ValidationError);
     expect(deps.cursoCapacitacionRepository.update).not.toHaveBeenCalled();
   });
+
+  describe('requisito que acredita el pago del curso (entidad certificadora)', () => {
+    const conEntidad = { ...existing, entidadCertificadora: 'IPELC' };
+
+    it('rechaza acreditaPagoCurso si el curso no tiene entidad certificadora', async () => {
+      const { deps, useCase } = crear();
+      await expect(
+        useCase.execute(2, { requisitos: [{ descripcion: 'Depósito', acreditaPagoCurso: true }] })
+      ).rejects.toBeInstanceOf(ValidationError);
+      expect(deps.cursoCapacitacionRepository.update).not.toHaveBeenCalled();
+    });
+
+    it('acepta acreditaPagoCurso si el mismo PUT define la entidad', async () => {
+      const { deps, useCase } = crear();
+      const res = await useCase.execute(2, {
+        entidadCertificadora: 'IPELC',
+        requisitos: [{ descripcion: 'Depósito', acreditaPagoCurso: true }],
+      });
+      expect(deps.capacitacionRequisitoRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({ descripcion: 'Depósito', acreditaPagoCurso: true }),
+        null,
+        { transaction: 'TX' }
+      );
+      expect(res.cursoCapacitacion.pagoCursoExterno).toBe(true);
+    });
+
+    it('rechaza más de un requisito que acredite el pago', async () => {
+      const { useCase } = crear({ found: conEntidad });
+      await expect(
+        useCase.execute(2, {
+          requisitos: [
+            { descripcion: 'A', acreditaPagoCurso: true },
+            { descripcion: 'B', acreditaPagoCurso: true },
+          ],
+        })
+      ).rejects.toThrow(/Solo un requisito/);
+    });
+
+    it('rechaza quitar la entidad mientras un requisito acredita el pago', async () => {
+      const { deps, useCase } = crear({ found: conEntidad });
+      deps.capacitacionRequisitoRepository.findByCapacitacionId.mockResolvedValue([
+        { id: 1, descripcion: 'Depósito', obligatorio: true, acreditaPagoCurso: true, orden: 1 },
+      ]);
+      await expect(useCase.execute(2, { entidadCertificadora: null })).rejects.toBeInstanceOf(ValidationError);
+      expect(deps.cursoCapacitacionRepository.update).not.toHaveBeenCalled();
+    });
+
+    it('al definir la entidad recalcula los estados de las inscripciones del curso', async () => {
+      const inscripcion = { id: 70, capacitacionId: 2, estado: 'PENDIENTE', montoObligatorio: 440, montoMatricula: 0 };
+      const { deps, useCase } = crear({ inscripciones: [inscripcion] });
+      await useCase.execute(2, { entidadCertificadora: 'IPELC' });
+      expect(deps.inscripcionCapacitacionRepository.findAll).toHaveBeenCalledWith({ capacitacionId: 2 }, null, null);
+      expect(deps.capacitacionInscritoRequisitoRepository.resolverPagoCursoExterno).toHaveBeenCalledWith(
+        70, 2, { transaction: 'TX' }
+      );
+      // con el depósito acreditado (según el mock) el curso pasa a CANCELADO
+      expect(deps.inscripcionCapacitacionRepository.update).toHaveBeenCalledWith(
+        70, expect.objectContaining({ estadoPagoCurso: 'CANCELADO' }), null, { transaction: 'TX' }
+      );
+    });
+
+    it('no recalcula si ni la entidad ni el requisito acreditador cambian', async () => {
+      const { deps, useCase } = crear({ inscripciones: [{ id: 70, capacitacionId: 2 }] });
+      await useCase.execute(2, { titulo: 'Otro' });
+      expect(deps.inscripcionCapacitacionRepository.findAll).not.toHaveBeenCalled();
+    });
+  });
+
 });

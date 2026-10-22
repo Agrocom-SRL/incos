@@ -23,6 +23,9 @@ export function rowToPresentation(row) {
     observaciones: row.observaciones ?? null,
     tieneComprobante: Boolean(Number(row.tiene_comprobante ?? 0)),
     comprobanteNombre: row.comprobante_nombre ?? null,
+    anulado: Boolean(Number(row.anulado ?? 0)),
+    motivoAnulacion: row.motivo_anulacion ?? null,
+    fechaAnulacion: row.fecha_anulacion ?? null,
     metodoPagoId: row.metodo_pago_id ?? null,
     metodoPagoNombre: row.metodo_pago_nombre ?? null,
     cuentaPagoId: row.cuenta_pago_id ?? null,
@@ -62,6 +65,9 @@ export function entityToPresentation(entity) {
     observaciones: entity.observaciones ?? null,
     tieneComprobante: Boolean(entity.comprobanteRuta),
     comprobanteNombre: entity.comprobanteNombre ?? null,
+    anulado: Boolean(entity.anulado),
+    motivoAnulacion: entity.motivoAnulacion ?? null,
+    fechaAnulacion: entity.fechaAnulacion ?? null,
     createdAt: entity.createdAt,
   };
 }

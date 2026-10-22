@@ -20,6 +20,8 @@ export const SERVICIOS_TOKENS = {
     centralizadorExcelGenerator: 'centralizadorExcelGenerator', // ICentralizadorExcelGenerator (.xlsx)
     historialAcademicoExcelGenerator: 'historialAcademicoExcelGenerator', // IHistorialAcademicoExcelGenerator (.xlsx)
     boletinPdfGenerator: 'boletinPdfGenerator', // IBoletinPdfGenerator (.pdf)
+    formularioInscripcionCapacitacionPdfGenerator: 'formularioInscripcionCapacitacionPdfGenerator', // IFormularioInscripcionCapacitacionPdfGenerator (.pdf)
+    reciboPagoCapacitacionPdfGenerator: 'reciboPagoCapacitacionPdfGenerator', // IReciboPagoCapacitacionPdfGenerator (.pdf)
     historialAcademicoPdfGenerator: 'historialAcademicoPdfGenerator', // IHistorialAcademicoPdfGenerator (.pdf)
     becasReporteExcelGenerator: 'becasReporteExcelGenerator', // IBecasReporteExcelGenerator (.xlsx)
     cuentasPorCobrarReporteExcelGenerator: 'cuentasPorCobrarReporteExcelGenerator', // ICuentasPorCobrarReporteExcelGenerator (.xlsx)

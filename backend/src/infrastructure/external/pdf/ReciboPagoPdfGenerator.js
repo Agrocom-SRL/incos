@@ -299,10 +299,11 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
             color: titleRgb,
         });
 
-        // Subtítulo: BOLETA DE APORTE VOLUNTARIO
+        // Subtítulo (por defecto: BOLETA DE APORTE VOLUNTARIO)
         const subtitleFont = await this._loadCustomFont(this._pdfDoc, IncosPDFBase.FONTS.defaultTitleFont);
         const subtitleFontSize = IncosPDFBase.FONTS.subtitle.size;
-        const subtitleText = 'BOLETA DE APORTE VOLUNTARIO';
+        // `data.subtitulo` permite a los recibos de otros módulos (p. ej. Capacitación) reusar el diseño.
+        const subtitleText = data?.subtitulo || 'BOLETA DE APORTE VOLUNTARIO';
         let subtitleTextWidth = 0;
         try {
             subtitleTextWidth = subtitleFont.widthOfTextAtSize(subtitleText, subtitleFontSize);
@@ -358,7 +359,7 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
         // CÓDIGO FAV-{GESTIÓN} (arriba del número de recibo)
         // =========================
         const gestion = data?.gestion || data?.gestionYear || new Date().getFullYear();
-        const favText = `FAV-${gestion}`;
+        const favText = data?.codigoRecibo || `FAV-${gestion}`;
         const favFontSize = 16; // Mismo tamaño que el número del registro
 
         // Cargar fuente bold para el FAV
@@ -476,32 +477,33 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
     }
 
     /**
-     * Construye la sección de datos personales del estudiante
+     * Dibuja el banner verde de título de sección (texto blanco en negrita) a todo
+     * el ancho útil, dejando un espacio previo, y avanza `_currentY` bajo el banner.
+     * Lo reutilizan las subclases que heredan el diseño del recibo.
      *
-     * @private
-     * @param {Object} data - Datos del recibo
+     * @protected
+     * @param {string} title - Título de la sección
      * @returns {Promise<void>}
      */
-    async _buildDatosPersonales(data) {
+    async _addBannerSection(title) {
         const margins = IncosPDFBase.LAYOUT.margins;
         const { width: pageWidth } = this._currentPage.getSize();
         const sectionHeight = 20;
+
         // Espaciado antes de la sección
         this._currentY -= IncosPDFBase.LAYOUT.spacing.section;
 
-        // Título de la sección
-        const sectionRgb = this._hexToRgb(IncosPDFBase.COLORS.primary);
         this._currentPage.drawRectangle({
             x: margins.left,
             y: this._currentY - sectionHeight,
             width: pageWidth - margins.left - margins.right,
             height: sectionHeight,
-            color: sectionRgb,
+            color: this._hexToRgb(IncosPDFBase.COLORS.primary),
         });
 
         const boldFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
         const boldFont = await this._pdfDoc.embedFont(boldFontName);
-        this._currentPage.drawText('DATOS PERSONALES DEL ESTUDIANTE', {
+        this._currentPage.drawText(title, {
             x: margins.left + 5,
             y: this._currentY - sectionHeight + 6,
             size: IncosPDFBase.FONTS.section.size,
@@ -510,6 +512,17 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
         });
 
         this._currentY -= sectionHeight;
+    }
+
+    /**
+     * Construye la sección de datos personales del estudiante
+     *
+     * @private
+     * @param {Object} data - Datos del recibo
+     * @returns {Promise<void>}
+     */
+    async _buildDatosPersonales(data) {
+        await this._addBannerSection('DATOS PERSONALES DEL ESTUDIANTE');
 
         // Fila 1: APELLIDOS Y NOMBRES
         if (data.nombreCompleto) {
@@ -837,31 +850,7 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
         const margins = IncosPDFBase.LAYOUT.margins;
         const { width: pageWidth } = this._currentPage.getSize();
 
-        // Espaciado antes de la sección
-        this._currentY -= IncosPDFBase.LAYOUT.spacing.section;
-
-        // Título de la sección
-        const sectionHeight = 20;
-        const sectionRgb = this._hexToRgb(IncosPDFBase.COLORS.primary);
-        this._currentPage.drawRectangle({
-            x: margins.left,
-            y: this._currentY - sectionHeight,
-            width: pageWidth - margins.left - margins.right,
-            height: sectionHeight,
-            color: sectionRgb,
-        });
-
-        const boldFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
-        const boldFont = await this._pdfDoc.embedFont(boldFontName);
-        this._currentPage.drawText('DECLARACIÓN JURADA', {
-            x: margins.left + 5,
-            y: this._currentY - sectionHeight + 6,
-            size: IncosPDFBase.FONTS.section.size,
-            font: boldFont,
-            color: rgb(1, 1, 1), // Blanco
-        });
-
-        this._currentY -= sectionHeight;
+        await this._addBannerSection('DECLARACIÓN JURADA');
 
         // Contenido de la declaración
         const declaracionTexto = this._getDeclaracionTexto(data);

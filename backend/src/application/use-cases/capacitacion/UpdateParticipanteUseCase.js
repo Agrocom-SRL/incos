@@ -23,10 +23,17 @@ export class UpdateParticipanteUseCase {
    * @param {number} id - ID del participante
    * @param {Object} body - Campos a actualizar
    * @param {number|null} userId - Usuario que edita (auditoría)
+   * @param {Object} [options] - `{ transaction }` cuando se compone dentro de otra
+   *   transacción (p. ej. la edición de una inscripción)
    * @returns {Promise<{participante: Object}>}
    */
-  async execute(id, body = {}, userId = null) {
-    const existing = await this.participanteRepository.findById(id, { paranoid: false });
+  async execute(id, body = {}, userId = null, options = {}) {
+    const { transaction } = options;
+    const repoOptions = transaction ? { transaction } : null;
+    const existing = await this.participanteRepository.findById(id, {
+      paranoid: false,
+      ...(repoOptions ?? {}),
+    });
     if (!existing) throw new NotFoundError('participante');
 
     const data = {};
@@ -70,7 +77,9 @@ export class UpdateParticipanteUseCase {
       }
     }
 
-    const updated = await this.participanteRepository.update(id, data, userId);
+    const updated = repoOptions
+      ? await this.participanteRepository.update(id, data, userId, repoOptions)
+      : await this.participanteRepository.update(id, data, userId);
 
     this.logger.info('[Capacitación] Participante actualizado', { id });
     return { participante: ParticipanteMapper.entityToPresentation(updated) };

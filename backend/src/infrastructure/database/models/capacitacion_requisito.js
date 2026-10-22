@@ -28,6 +28,13 @@ export const CapacitacionRequisito = sequelize.define(
       defaultValue: true,
       comment: 'Obligatorio para pasar a INSCRITO',
     },
+    acreditaPagoCurso: {
+      type: DataTypes.BOOLEAN,
+      field: 'acredita_pago_curso',
+      allowNull: false,
+      defaultValue: false,
+      comment: 'Entregarlo acredita el pago del costo del curso a la entidad certificadora (depósito)',
+    },
     orden: {
       type: DataTypes.INTEGER,
       allowNull: false,

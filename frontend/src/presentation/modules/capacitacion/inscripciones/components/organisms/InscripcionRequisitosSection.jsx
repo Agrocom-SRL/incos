@@ -35,6 +35,7 @@ const InscripcionRequisitosSection = ({
           descripcion: r.descripcion,
           obligatorio: r.obligatorio,
           checked: r.entregado,
+          acreditaPagoCurso: r.acreditaPagoCurso,
         }))}
         onToggle={onToggle}
         disabled={!editable || saving}

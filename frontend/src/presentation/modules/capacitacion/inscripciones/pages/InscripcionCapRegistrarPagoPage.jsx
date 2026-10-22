@@ -38,13 +38,18 @@ const InscripcionCapRegistrarPagoPage = () => {
     handleMetodoPagoChange,
     saldosPorConcepto,
     conceptoOptions,
+    cursoExterno,
     metodosPago,
     cuentasPago,
     loadingCatalogos,
     errorCatalogos,
   } = useInscripcionCapRegistrarPagoPage();
 
-  const backAction = <BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver} />;
+  const backAction = (
+    <BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver}>
+      Volver
+    </BackButton>
+  );
 
   const saveButton = (
     <ActionButton
@@ -92,9 +97,10 @@ const InscripcionCapRegistrarPagoPage = () => {
               ) : null}
 
               {!loading && inscripcion ? (
-                <div className="sd">
+                // `sd` aporta las variables de la ficha (`.sd-profile`); la clase semántica nombra el bloque.
+                <section className="sd inscripcion-cap-ficha" aria-label="Datos de la inscripción">
                   <InscripcionFichaHeader inscripcion={inscripcion} />
-                </div>
+                </section>
               ) : null}
 
               {!loading && inscripcion ? (
@@ -106,7 +112,7 @@ const InscripcionCapRegistrarPagoPage = () => {
                 >
                   <CfgFormWorkspace
                     title="Datos del pago"
-                    description="Elija el concepto (matrícula o costo del curso), el monto, la fecha y el método de pago. El comprobante de depósito es opcional. La cuenta de pago se habilita según el método elegido."
+                    description="Elija el concepto, el monto, la fecha y el método de pago. El comprobante de depósito es opcional. La cuenta de pago se habilita según el método elegido."
                     fields={[]}
                     form={form}
                     footer={saveButton}
@@ -128,6 +134,7 @@ const InscripcionCapRegistrarPagoPage = () => {
                           reglasMetodo={reglasMetodo}
                           saldosPorConcepto={saldosPorConcepto}
                           conceptoOptions={conceptoOptions}
+                          cursoExterno={cursoExterno}
                           permiteComprobante
                           onMetodoPagoChange={handleMetodoPagoChange}
                           disabled={loading || submitLoading}

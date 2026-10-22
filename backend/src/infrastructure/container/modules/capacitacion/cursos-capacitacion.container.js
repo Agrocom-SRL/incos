@@ -218,6 +218,15 @@ export function registerCursosCapacitacionResource(container) {
                 ),
                 scheduleRepository: c.resolve(REPOSITORIOS_TOKENS.scheduleRepository),
                 classroomRepository: c.resolve(REPOSITORIOS_TOKENS.classroomRepository),
+                pagoCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.pagoCapacitacionRepository
+                ),
+                capacitacionInscritoRequisitoRepository: c.resolve(
+                    CAPACITACION_TOKENS.capacitacionInscritoRequisitoRepository
+                ),
+                capacitacionCompromisoRepository: c.resolve(
+                    CAPACITACION_TOKENS.capacitacionCompromisoRepository
+                ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );

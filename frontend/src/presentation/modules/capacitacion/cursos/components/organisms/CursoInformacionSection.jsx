@@ -5,8 +5,7 @@
  * Recibe el curso ya mapeado; no llama hooks de fetch.
  */
 
-import { CheckSquareOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import { Empty } from 'antd';
+import { InfoCircleOutlined } from '@ant-design/icons';
 import { DetailInfoCard } from '@molecules';
 import { DetailField, StatusPill } from '@atoms';
 import {
@@ -50,28 +49,6 @@ const CursoInformacionSection = ({ curso }) => (
         {curso.cupoMaximo != null ? curso.cupoDisponible : '—'}
       </DetailField>
       <DetailField label="Registro activo">{curso.activo ? 'Sí' : 'No'}</DetailField>
-    </DetailInfoCard>
-
-    <DetailInfoCard
-      title={`Requisitos de inscripción (${curso.requisitos?.length ?? 0})`}
-      icon={<CheckSquareOutlined />}
-      cols={1}
-    >
-      {curso.requisitos?.length > 0 ? (
-        curso.requisitos.map((requisito, index) => (
-          <DetailField key={requisito.id ?? index} label={`${index + 1}.`}>
-            {requisito.descripcion}{' '}
-            <StatusPill
-              label={requisito.obligatorio ? 'Obligatorio' : 'Opcional'}
-              className={`cfg-materia-pill ${
-                requisito.obligatorio ? 'cfg-materia-pill--warning' : 'cfg-materia-pill--default'
-              }`}
-            />
-          </DetailField>
-        ))
-      ) : (
-        <Empty description="El curso no exige requisitos de inscripción." />
-      )}
     </DetailInfoCard>
 
     {curso.descripcion ? (

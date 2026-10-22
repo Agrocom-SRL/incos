@@ -8,7 +8,9 @@ import {
   mapFormValuesToPagoPayload,
   mapInscripcionCapacitacion,
   mapInscripcionCapacitacionDetail,
+  mapPagoCapacitacion,
   mapRequisitosToPayload,
+  pagosVigentes,
 } from '../inscripcionCapacitacionMapper';
 
 const rawInscripcion = {
@@ -175,5 +177,94 @@ describe('buildInscripcionPayload', () => {
       requisitosEntregados: [3, 4],
       pagoInicial,
     });
+  });
+});
+
+describe('curso externo (entidad certificadora)', () => {
+  const externa = {
+    ...rawInscripcion,
+    pagoCursoExterno: true,
+    estadoPagoCurso: 'CANCELADO',
+    saldoCurso: 0,
+    saldoMatricula: 50,
+    requisitoAcreditaPagoCurso: { requisitoId: 7, descripcion: 'Depósito', entregado: 1 },
+  };
+
+  it('marca el curso externo y mapea el requisito acreditador', () => {
+    const i = mapInscripcionCapacitacion(externa);
+    expect(i.pagoCursoExterno).toBe(true);
+    expect(i.requisitoAcreditaPagoCurso).toEqual({
+      requisitoId: 7,
+      descripcion: 'Depósito',
+      entregado: true,
+    });
+    expect(mapInscripcionCapacitacion(rawInscripcion)).toMatchObject({
+      pagoCursoExterno: false,
+      requisitoAcreditaPagoCurso: null,
+    });
+  });
+
+  it('el saldo total y el monto cobrable no incluyen el curso', () => {
+    const i = mapInscripcionCapacitacion({ ...externa, estadoPagoCurso: 'PARCIAL', saldoCurso: 440 });
+    expect(i.saldoCurso).toBe(440);
+    expect(i.saldoTotal).toBe(50);
+    expect(i.montoCobrable).toBe(150);
+    expect(i.montoTotal).toBe(590);
+    const normal = mapInscripcionCapacitacion({ ...rawInscripcion, saldoMatricula: 50 });
+    expect(normal.saldoTotal).toBe(390);
+    expect(normal.montoCobrable).toBe(590);
+  });
+
+  it('expone los nombres separados del participante (para editar)', () => {
+    const i = mapInscripcionCapacitacion({
+      ...rawInscripcion,
+      participanteNombres: ' ANA ',
+      participanteApellidoPaterno: 'PEREZ',
+      participanteApellidoMaterno: '',
+    });
+    expect(i).toMatchObject({
+      participanteNombres: 'ANA',
+      participanteApellidoPaterno: 'PEREZ',
+      participanteApellidoMaterno: null,
+    });
+  });
+});
+
+describe('pagos anulados y requisito acreditador en la ficha', () => {
+  it('mapea anulado, motivo y fecha de anulación', () => {
+    const pago = mapPagoCapacitacion({
+      id: 1,
+      monto: '100.00',
+      anulado: 1,
+      motivoAnulacion: ' Monto equivocado ',
+      fechaAnulacion: '2026-10-22T14:30:00',
+    });
+    expect(pago).toMatchObject({
+      anulado: true,
+      motivoAnulacion: 'Monto equivocado',
+      fechaAnulacionLabel: '22/10/2026 14:30',
+    });
+    expect(mapPagoCapacitacion({ id: 2, monto: 5 })).toMatchObject({
+      anulado: false,
+      motivoAnulacion: null,
+      fechaAnulacionLabel: null,
+    });
+  });
+
+  it('la ficha conserva los anulados y pagosVigentes los filtra', () => {
+    const ficha = mapInscripcionCapacitacionDetail({
+      ...rawInscripcion,
+      pagos: [
+        { id: 1, monto: 100, anulado: false },
+        { id: 2, monto: 50, anulado: true },
+      ],
+      requisitos: [
+        { requisitoId: 1, descripcion: 'Depósito', acreditaPagoCurso: true },
+        { requisitoId: 2, descripcion: 'CI' },
+      ],
+    });
+    expect(ficha.pagos).toHaveLength(2);
+    expect(pagosVigentes(ficha).map((p) => p.id)).toEqual([1]);
+    expect(ficha.requisitos.map((r) => r.acreditaPagoCurso)).toEqual([true, false]);
   });
 });

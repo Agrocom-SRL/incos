@@ -36,3 +36,16 @@ describe('calcularPendientesInscripcion', () => {
     expect(pendientes.map((p) => p.key)).toEqual(['curso']);
   });
 });
+
+describe('calcularPendientesInscripcion · curso externo', () => {
+  it('el saldo del curso (informativo) no bloquea: solo matrícula y requisitos', () => {
+    const pendientes = calcularPendientesInscripcion({
+      ...base,
+      pagoCursoExterno: true,
+      saldoMatricula: 150,
+      saldoCurso: 440,
+      requisitos: [{ descripcion: 'Depósito', obligatorio: true, entregado: false }],
+    });
+    expect(pendientes.map((p) => p.key)).toEqual(['matricula', 'requisitos']);
+  });
+});
