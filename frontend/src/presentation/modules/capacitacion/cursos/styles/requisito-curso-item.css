@@ -1,0 +1,74 @@
+/* Fila de requisito de inscripción del curso (CAP): mismo lenguaje visual que la
+   lista de documentos del estudiante (icono + nombre + pills a la derecha). */
+.requisito-curso-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  width: 100%;
+}
+
+.requisito-curso-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--color-bg-container);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--border-radius-md);
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.requisito-curso-item:hover {
+  border-color: var(--color-border);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+
+.requisito-curso-item__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  font-size: var(--font-size-lg);
+  color: var(--color-text-secondary);
+  background: var(--color-fill-quaternary);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--border-radius-sm);
+}
+
+.requisito-curso-item__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.requisito-curso-item__name {
+  margin: 0;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-strong);
+  color: var(--color-text);
+}
+
+.requisito-curso-item__hint {
+  margin: 2px 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}
+
+.requisito-curso-item__pills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--spacing-xs);
+  flex-shrink: 0;
+}
+
+@media (max-width: 500px) {
+  .requisito-curso-item {
+    flex-wrap: wrap;
+  }
+
+  .requisito-curso-item__pills {
+    justify-content: flex-start;
+  }
+}

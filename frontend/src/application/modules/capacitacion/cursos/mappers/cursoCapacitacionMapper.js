@@ -68,6 +68,9 @@ export const mapCursoCapacitacion = (raw) => {
     // Ambos apagados = curso gratuito (se rotula así en ficha y listado).
     esGratuito: !tieneCosto && !cobraMatricula,
     entidadCertificadora: cleanText(raw.entidadCertificadora),
+    // Con entidad certificadora el costo del curso se deposita a la entidad: el instituto
+    // solo cobra la matrícula. Sin dato del backend se deriva de la entidad.
+    pagoCursoExterno: toBool(raw.pagoCursoExterno, Boolean(cleanText(raw.entidadCertificadora))),
     modalidad: raw.modalidad ?? null,
     modalidadLabel: formatModalidadCurso(raw.modalidad),
     nivel: cleanText(raw.nivel),
@@ -163,6 +166,7 @@ export const mapRequisitoCurso = (raw) => {
     id: raw.id ?? null,
     descripcion,
     obligatorio: raw.obligatorio !== false && raw.obligatorio !== 0,
+    acreditaPagoCurso: raw.acreditaPagoCurso === true || raw.acreditaPagoCurso === 1,
     orden: raw.orden != null ? toNumber(raw.orden) : null,
   };
 };
@@ -199,6 +203,7 @@ export const mapRequisitosFormToPayload = (requisitos) =>
       ...(r.id != null ? { id: r.id } : {}),
       descripcion: r.descripcion,
       obligatorio: r.obligatorio !== false,
+      acreditaPagoCurso: r.acreditaPagoCurso === true,
       orden: index + 1,
     }));
 
@@ -292,5 +297,6 @@ export const mapCursoToFormValues = (curso) => ({
     id: r.id ?? null,
     descripcion: r.descripcion,
     obligatorio: r.obligatorio,
+    acreditaPagoCurso: Boolean(r.acreditaPagoCurso),
   })),
 });

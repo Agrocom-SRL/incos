@@ -2,7 +2,8 @@
  * Qué le falta a una inscripción PENDIENTE para pasar a INSCRITO.
  *
  * Regla del negocio: INSCRITO exige matrícula cancelada, costo del curso
- * cancelado Y todos los requisitos obligatorios entregados. Esta función solo
+ * cancelado Y todos los requisitos obligatorios entregados (con curso externo
+ * el costo no bloquea: solo matrícula + requisitos). Esta función solo
  * explica la brecha en la UI; la transición real la decide el backend.
  */
 
@@ -22,7 +23,8 @@ export const calcularPendientesInscripcion = (inscripcion) => {
       label: `Matrícula (instituto): saldo Bs ${formatBs(inscripcion.saldoMatricula)}`,
     });
   }
-  if (Number(inscripcion.saldoCurso) > 0) {
+  // Curso externo: el costo se deposita a la entidad; lo acredita un requisito (ya listado abajo).
+  if (!inscripcion.pagoCursoExterno && Number(inscripcion.saldoCurso) > 0) {
     pendientes.push({
       key: 'curso',
       label: `Costo del curso (entidad certificadora): saldo Bs ${formatBs(inscripcion.saldoCurso)}`,

@@ -10,6 +10,7 @@
  */
 
 import { Col, Form, Input, Row, Select } from 'antd';
+import { allSpacing } from '@theme/tokens';
 
 /** Expediciones de CI (departamentos de Bolivia, catálogo estable). */
 const EXPEDICION_OPTIONS = ['LP', 'CB', 'SC', 'OR', 'PT', 'CH', 'TJ', 'BE', 'PD'].map((sigla) => ({
@@ -17,8 +18,11 @@ const EXPEDICION_OPTIONS = ['LP', 'CB', 'SC', 'OR', 'PT', 'CH', 'TJ', 'BE', 'PD'
   label: sigla,
 }));
 
+/** Normaliza el valor del campo a mayúsculas (nombres y apellidos se guardan en mayúsculas). */
+const aMayusculas = (valor) => (typeof valor === 'string' ? valor.toUpperCase() : valor);
+
 const ParticipanteFormFields = ({ disabled = false }) => (
-  <Row gutter={[24, 0]}>
+  <Row gutter={[allSpacing.marginLG, 0]}>
     <Col xs={24} sm={12}>
       <Form.Item
         name="ci"
@@ -32,7 +36,7 @@ const ParticipanteFormFields = ({ disabled = false }) => (
       </Form.Item>
     </Col>
     <Col xs={24} sm={12}>
-      <Form.Item name="expedicion" label="Expedición (opcional)">
+      <Form.Item name="expedicion" label="Expedición">
         <Select
           disabled={disabled}
           options={EXPEDICION_OPTIONS}
@@ -44,6 +48,7 @@ const ParticipanteFormFields = ({ disabled = false }) => (
     <Col xs={24}>
       <Form.Item
         name="nombres"
+        normalize={aMayusculas}
         label="Nombres"
         rules={[
           { required: true, message: 'Ingrese los nombres del participante' },
@@ -56,7 +61,8 @@ const ParticipanteFormFields = ({ disabled = false }) => (
     <Col xs={24} sm={12}>
       <Form.Item
         name="apellidoPaterno"
-        label="Apellido paterno (opcional)"
+        normalize={aMayusculas}
+        label="Apellido paterno"
         rules={[{ max: 100, message: 'Máximo 100 caracteres' }]}
       >
         <Input disabled={disabled} placeholder="Apellido paterno" maxLength={100} />
@@ -65,7 +71,8 @@ const ParticipanteFormFields = ({ disabled = false }) => (
     <Col xs={24} sm={12}>
       <Form.Item
         name="apellidoMaterno"
-        label="Apellido materno (opcional)"
+        normalize={aMayusculas}
+        label="Apellido materno"
         rules={[{ max: 100, message: 'Máximo 100 caracteres' }]}
       >
         <Input disabled={disabled} placeholder="Apellido materno" maxLength={100} />
@@ -86,7 +93,7 @@ const ParticipanteFormFields = ({ disabled = false }) => (
     <Col xs={24} sm={12}>
       <Form.Item
         name="email"
-        label="Correo electrónico (opcional)"
+        label="Correo electrónico"
         rules={[{ type: 'email', message: 'Ingrese un correo válido' }]}
       >
         <Input disabled={disabled} placeholder="correo@ejemplo.com" maxLength={150} />

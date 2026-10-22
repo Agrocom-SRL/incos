@@ -24,10 +24,11 @@ import {
   extractComprobanteFile,
   mapFormValuesToPagoPayload,
 } from '@application-capacitacion/inscripciones/mappers/inscripcionCapacitacionMapper';
+import { buildConceptoOptions } from '@application-capacitacion/utils/capacitacionCatalogos';
 import {
-  CONCEPTO_PAGO,
-  buildConceptoOptions,
-} from '@application-capacitacion/utils/capacitacionCatalogos';
+  conceptoSugerido,
+  saldosCobrablesInscripcion,
+} from '@application-capacitacion/utils/pagosCapacitacion';
 import {
   buildReglasMetodo,
   findMetodoCodigo,
@@ -97,13 +98,9 @@ export const useInscripcionCapRegistrarPagoPage = () => {
   );
   const reglasMetodo = useMemo(() => buildReglasMetodo(metodoCodigo), [metodoCodigo]);
 
-  const saldosPorConcepto = useMemo(
-    () => ({
-      [CONCEPTO_PAGO.MATRICULA]: inscripcion?.saldoMatricula ?? 0,
-      [CONCEPTO_PAGO.CURSO]: inscripcion?.saldoCurso ?? 0,
-    }),
-    [inscripcion?.saldoMatricula, inscripcion?.saldoCurso],
-  );
+  // Curso externo (entidad certificadora): el curso no se cobra aquí → saldo 0, solo matrícula.
+  const saldosPorConcepto = useMemo(() => saldosCobrablesInscripcion(inscripcion), [inscripcion]);
+  const cursoExterno = Boolean(inscripcion?.pagoCursoExterno);
 
   // Solo se ofrecen los conceptos con saldo (un concepto no cobrado o saldado no se pide).
   const conceptoOptions = useMemo(() => buildConceptoOptions(saldosPorConcepto), [saldosPorConcepto]);
@@ -111,9 +108,8 @@ export const useInscripcionCapRegistrarPagoPage = () => {
   // Concepto sugerido: el primero que aún tiene saldo (matrícula antes que curso).
   useEffect(() => {
     if (!inscripcion || form.getFieldValue('concepto')) return;
-    const sugerido =
-      saldosPorConcepto[CONCEPTO_PAGO.MATRICULA] > 0 ? CONCEPTO_PAGO.MATRICULA : CONCEPTO_PAGO.CURSO;
-    form.setFieldsValue({ concepto: sugerido });
+    const sugerido = conceptoSugerido(saldosPorConcepto);
+    if (sugerido) form.setFieldsValue({ concepto: sugerido });
   }, [inscripcion, saldosPorConcepto, form]);
 
   /** Submit: POST /:id/pagos + feedback + refetch de la ficha + volver al detalle. */
@@ -171,6 +167,7 @@ export const useInscripcionCapRegistrarPagoPage = () => {
     handleMetodoPagoChange,
     saldosPorConcepto,
     conceptoOptions,
+    cursoExterno,
     metodosPago,
     cuentasPago,
     loadingCatalogos,

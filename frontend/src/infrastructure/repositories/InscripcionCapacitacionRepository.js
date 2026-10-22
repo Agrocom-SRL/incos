@@ -111,6 +111,61 @@ export class InscripcionCapacitacionRepository extends IInscripcionCapacitacionR
   }
 
   /**
+   * Corrige la inscripción: datos del participante y/o grupo (permiso
+   * capacitacion.inscripcion EDITAR). Solo viajan los campos que cambiaron.
+   * PUT /v1/inscripciones-capacitacion/:id
+   *
+   * @param {string|number} id
+   * @param {Object} payload - { participante?: {...}, capacitacionGrupoId? } (al menos uno)
+   * @returns {Promise<{success: boolean, data?: {inscripcionCapacitacion: Object}, error?: string}>}
+   */
+  async actualizar(id, payload) {
+    try {
+      const response = await apiClient.put(INSCRIPCIONES_CAPACITACION_ENDPOINTS.BY_ID(id), payload);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al actualizar la inscripción de capacitación');
+    }
+  }
+
+  /**
+   * Corrige un pago (permiso capacitacion.inscripcion EDITAR). Body parcial.
+   * PUT /v1/inscripciones-capacitacion/:id/pagos/:pagoId
+   *
+   * @param {Object} payload - { concepto?, monto?, fechaPago?, metodoPagoId?, cuentaPagoId?, observaciones? }
+   */
+  async actualizarPago(id, pagoId, payload) {
+    try {
+      const response = await apiClient.put(
+        INSCRIPCIONES_CAPACITACION_ENDPOINTS.PAGO(id, pagoId),
+        payload,
+      );
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al corregir el pago de capacitación');
+    }
+  }
+
+  /**
+   * Anula un pago — definitivo, se conserva como historial (permiso
+   * capacitacion.inscripcion EDITAR).
+   * POST /v1/inscripciones-capacitacion/:id/pagos/:pagoId/anular
+   *
+   * @param {string} motivo - 3 a 500 caracteres
+   */
+  async anularPago(id, pagoId, motivo) {
+    try {
+      const response = await apiClient.post(
+        INSCRIPCIONES_CAPACITACION_ENDPOINTS.PAGO_ANULAR(id, pagoId),
+        { motivo },
+      );
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al anular el pago de capacitación');
+    }
+  }
+
+  /**
    * Reemplaza el checklist de requisitos entregados (recalcula el estado).
    * PUT /v1/inscripciones-capacitacion/:id/requisitos
    *

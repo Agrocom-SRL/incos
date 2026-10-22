@@ -5,6 +5,9 @@
  *   participanteId + capacitacionId + pagoInicial opcional, una transacción).
  * - `registrarPago`: POST /inscripciones-capacitacion/:id/pagos (capacitacion.pago CREAR);
  *   JSON, o multipart si se adjunta `comprobante` (opcional, imagen/PDF).
+ * - `actualizarInscripcion`: PUT /:id (corregir participante y/o grupo; EDITAR).
+ * - `actualizarPago` / `anularPago`: PUT /:id/pagos/:pagoId y POST …/anular (EDITAR);
+ *   el pago anulado se conserva como historial y deja de contar.
  * - `actualizarRequisitos`: PUT /:id/requisitos (checklist; capacitacion.inscripcion EDITAR).
  * - `adjuntarComprobante`: POST /:id/pagos/:pagoId/comprobante (adjuntar o reemplazar después).
  * - `descargarComprobante`: GET /:id/pagos/:pagoId/comprobante (descarga el archivo).
@@ -25,6 +28,9 @@ export const useInscripcionCapacitacionMutations = () => {
   const [inscribiendo, setInscribiendo] = useState(false);
   const [registrandoPago, setRegistrandoPago] = useState(false);
   const [anulando, setAnulando] = useState(false);
+  const [actualizandoInscripcion, setActualizandoInscripcion] = useState(false);
+  const [actualizandoPago, setActualizandoPago] = useState(false);
+  const [anulandoPago, setAnulandoPago] = useState(false);
   const [guardandoRequisitos, setGuardandoRequisitos] = useState(false);
   const [subiendoComprobante, setSubiendoComprobante] = useState(false);
 
@@ -46,6 +52,33 @@ export const useInscripcionCapacitacionMutations = () => {
       );
     } finally {
       setRegistrandoPago(false);
+    }
+  }, []);
+
+  const actualizarInscripcion = useCallback(async (inscripcionId, payload) => {
+    setActualizandoInscripcion(true);
+    try {
+      return await inscripcionCapacitacionRepository.actualizar(inscripcionId, payload);
+    } finally {
+      setActualizandoInscripcion(false);
+    }
+  }, []);
+
+  const actualizarPago = useCallback(async (inscripcionId, pagoId, payload) => {
+    setActualizandoPago(true);
+    try {
+      return await inscripcionCapacitacionRepository.actualizarPago(inscripcionId, pagoId, payload);
+    } finally {
+      setActualizandoPago(false);
+    }
+  }, []);
+
+  const anularPago = useCallback(async (inscripcionId, pagoId, motivo) => {
+    setAnulandoPago(true);
+    try {
+      return await inscripcionCapacitacionRepository.anularPago(inscripcionId, pagoId, motivo);
+    } finally {
+      setAnulandoPago(false);
     }
   }, []);
 
@@ -133,10 +166,16 @@ export const useInscripcionCapacitacionMutations = () => {
       inscribiendo,
       registrandoPago,
       anulando,
+      actualizandoInscripcion,
+      actualizandoPago,
+      anulandoPago,
       guardandoRequisitos,
       subiendoComprobante,
       inscribir,
       registrarPago,
+      actualizarInscripcion,
+      actualizarPago,
+      anularPago,
       actualizarRequisitos,
       adjuntarComprobante,
       descargarComprobante,
@@ -149,10 +188,16 @@ export const useInscripcionCapacitacionMutations = () => {
       inscribiendo,
       registrandoPago,
       anulando,
+      actualizandoInscripcion,
+      actualizandoPago,
+      anulandoPago,
       guardandoRequisitos,
       subiendoComprobante,
       inscribir,
       registrarPago,
+      actualizarInscripcion,
+      actualizarPago,
+      anularPago,
       actualizarRequisitos,
       adjuntarComprobante,
       descargarComprobante,

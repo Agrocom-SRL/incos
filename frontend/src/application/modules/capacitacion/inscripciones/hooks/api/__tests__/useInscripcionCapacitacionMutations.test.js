@@ -3,6 +3,9 @@ import { renderHook, act } from '@testing-library/react';
 
 const repo = vi.hoisted(() => ({
   registrarPago: vi.fn(),
+  actualizar: vi.fn(),
+  actualizarPago: vi.fn(),
+  anularPago: vi.fn(),
   descargarComprobante: vi.fn(),
   descargarFormularioPdf: vi.fn(),
   descargarReciboPdf: vi.fn(),
@@ -94,5 +97,35 @@ describe('useInscripcionCapacitacionMutations', () => {
     });
     expect(download).not.toHaveBeenCalled();
     expect(res).toEqual({ success: false, error: 'Pago inexistente' });
+  });
+
+  it('actualizarInscripcion delega en el repositorio y devuelve su resultado', async () => {
+    repo.actualizar.mockResolvedValue({ success: true, data: { inscripcionCapacitacion: { id: 3 } } });
+    const { result } = renderHook(() => useInscripcionCapacitacionMutations());
+    let res;
+    await act(async () => {
+      res = await result.current.actualizarInscripcion(3, { capacitacionGrupoId: 8 });
+    });
+    expect(repo.actualizar).toHaveBeenCalledWith(3, { capacitacionGrupoId: 8 });
+    expect(res.success).toBe(true);
+    expect(result.current.actualizandoInscripcion).toBe(false);
+  });
+
+  it('actualizarPago y anularPago llaman al repositorio con inscripción, pago y datos', async () => {
+    repo.actualizarPago.mockResolvedValue({ success: true });
+    repo.anularPago.mockResolvedValue({ success: false, error: 'Pago ya anulado' });
+    const { result } = renderHook(() => useInscripcionCapacitacionMutations());
+    await act(async () => {
+      await result.current.actualizarPago(3, 9, { monto: 80 });
+    });
+    expect(repo.actualizarPago).toHaveBeenCalledWith(3, 9, { monto: 80 });
+
+    let res;
+    await act(async () => {
+      res = await result.current.anularPago(3, 9, 'Error de monto');
+    });
+    expect(repo.anularPago).toHaveBeenCalledWith(3, 9, 'Error de monto');
+    expect(res).toEqual({ success: false, error: 'Pago ya anulado' });
+    expect(result.current.anulandoPago).toBe(false);
   });
 });

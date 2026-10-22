@@ -13,6 +13,12 @@
  * del backend, que puede quedar en INCUMPLIDO para siempre aunque la deuda ya
  * se haya saldado). El filtro "Solo con pago vencido" del listado
  * (`useInscripcionesCapacitacionListPage`) usa el mismo flag.
+ *
+ * Curso con costo EXTERNO (entidad certificadora): "Pagado" y "Saldo" cuentan
+ * solo la matrícula (lo que cobra el instituto) y el curso se rotula «Pagado a
+ * la entidad» / «Pendiente de acreditar con depósito» (columna Pagado). La
+ * acción «Editar» (capacitacion.inscripcion EDITAR) abre la ficha con el modal
+ * de edición ya desplegado (`state.abrirEditar`).
  */
 
 import { Flex } from 'antd';
@@ -31,8 +37,10 @@ import { formatBs } from '@application/utils/formatters';
 import { CAPACITACION_PERMISOS } from '@application-capacitacion/utils/capacitacionPermisos';
 import {
   formatEstadoCurso,
+  formatEstadoCursoExterno,
   formatEstadoInscripcionCap,
   formatEstadoPagoCap,
+  getEstadoCursoExternoPillClass,
   getEstadoInscripcionCapPillClass,
   getEstadoPagoCapPillClass,
   getSaldoCapPillClass,
@@ -129,15 +137,31 @@ export const createInscripcionesCapTableColumns = ({
               label:
                 record.montoTotal <= 0 ? (
                   <CostoCursoLabel costo={0} />
+                ) : record.montoCobrable <= 0 ? (
+                  'Sin cobro en el instituto'
                 ) : (
-                  `Bs ${formatBs(record.totalPagado)} de Bs ${formatBs(record.montoTotal)}`
+                  `Bs ${formatBs(record.totalPagado)} de Bs ${formatBs(record.montoCobrable)}`
                 ),
             },
+            record.pagoCursoExterno && record.montoObligatorio > 0
+              ? {
+                  icon: <BookOutlined />,
+                  label: (
+                    <>
+                      Curso:{' '}
+                      <StatusPill
+                        label={formatEstadoCursoExterno(record.estadoPagoCurso)}
+                        className={getEstadoCursoExternoPillClass(record.estadoPagoCurso)}
+                      />
+                    </>
+                  ),
+                }
+              : null,
             {
               icon: <NumberOutlined />,
               label: `${record.pagosCount} ${record.pagosCount === 1 ? 'pago' : 'pagos'}`,
             },
-          ]}
+          ].filter(Boolean)}
         />
       ),
       sorter: true,
@@ -179,7 +203,7 @@ export const createInscripcionesCapTableColumns = ({
     {
       title: 'Acciones',
       key: 'acciones',
-      width: 150,
+      width: 190,
       align: 'right',
       render: (_, record) => {
         const itemName = `la inscripción de ${record.participanteNombreCompleto}`;
@@ -241,9 +265,16 @@ export const createInscripcionesCapTableColumns = ({
             onView={() =>
               navigate(inscripcionCapDetallePath(record.id), { state: listNavState })
             }
+            onEdit={() =>
+              navigate(inscripcionCapDetallePath(record.id), {
+                state: { ...listNavState, abrirEditar: true },
+              })
+            }
+            editTitle="Editar inscripción"
             extraActions={extraActions}
             permisos={{
               ver: { codigo: CAPACITACION_PERMISOS.inscripcion, accion: 'DETALLE' },
+              editar: { codigo: CAPACITACION_PERMISOS.inscripcion, accion: 'EDITAR' },
               eliminar: { codigo: CAPACITACION_PERMISOS.inscripcion, accion: 'ELIMINAR' },
             }}
           />

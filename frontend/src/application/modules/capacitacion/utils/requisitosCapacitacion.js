@@ -8,7 +8,18 @@ let contadorFilas = 0;
 /** Fila nueva (obligatoria por defecto) con `key` local única para React. */
 export const crearRequisitoVacio = () => {
   contadorFilas += 1;
-  return { key: `req-local-${contadorFilas}`, id: null, descripcion: '', obligatorio: true };
+  return { key: `req-local-${contadorFilas}`, id: null, descripcion: '', obligatorio: true, acreditaPagoCurso: false };
+};
+
+/**
+ * A lo sumo un requisito acredita el pago del curso: si `lista` tiene varios con
+ * `acreditaPagoCurso`, conserva solo el que acaba de activarse (`previa` = lista anterior).
+ */
+export const dejarUnSoloAcreditaPago = (lista = [], previa = []) => {
+  const activos = lista.map((r, i) => (r?.acreditaPagoCurso ? i : -1)).filter((i) => i >= 0);
+  if (activos.length <= 1) return lista;
+  const nuevo = activos.find((i) => !previa[i]?.acreditaPagoCurso) ?? activos[activos.length - 1];
+  return lista.map((r, i) => (i === nuevo || !r?.acreditaPagoCurso ? r : { ...r, acreditaPagoCurso: false }));
 };
 
 /** Quita la fila `index` (copia). */

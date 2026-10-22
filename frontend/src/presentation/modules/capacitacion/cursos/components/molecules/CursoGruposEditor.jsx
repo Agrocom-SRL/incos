@@ -54,7 +54,7 @@ const camposGrupo = (
   },
   {
     name: ['grupos', index, 'aulaId'],
-    label: 'Aula (opcional)',
+    label: 'Aula',
     type: 'select',
     span: 12,
     options: aulaOptions,

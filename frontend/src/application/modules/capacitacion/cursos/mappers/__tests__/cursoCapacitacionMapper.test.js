@@ -140,8 +140,8 @@ describe('payload de grupos y requisitos', () => {
         { key: 'c', id: null, descripcion: 'Foto', obligatorio: false },
       ]),
     ).toEqual([
-      { id: 4, descripcion: 'CI', obligatorio: true, orden: 1 },
-      { descripcion: 'Foto', obligatorio: false, orden: 2 },
+      { id: 4, descripcion: 'CI', obligatorio: true, acreditaPagoCurso: false, orden: 1 },
+      { descripcion: 'Foto', obligatorio: false, acreditaPagoCurso: false, orden: 2 },
     ]);
   });
 });
@@ -222,6 +222,17 @@ describe('mapCursoToFormValues', () => {
     expect(v.grupos).toEqual([
       { key: 'grupo-7', id: 7, nombre: '1er grupo', cupoMaximo: 20, aulaId: undefined, horarios: [{ horarioId: 70 }] },
     ]);
-    expect(v.requisitos).toEqual([{ key: 'req-7', id: 7, descripcion: 'CI', obligatorio: true }]);
+    expect(v.requisitos).toEqual([
+      { key: 'req-7', id: 7, descripcion: 'CI', obligatorio: true, acreditaPagoCurso: false },
+    ]);
+  });
+});
+
+describe('mapCursoCapacitacion · pagoCursoExterno', () => {
+  it('usa el campo del backend y, si falta, deriva de la entidad certificadora', () => {
+    expect(mapCursoCapacitacion({ ...rawCurso, pagoCursoExterno: 1 }).pagoCursoExterno).toBe(true);
+    expect(mapCursoCapacitacion({ ...rawCurso, pagoCursoExterno: false }).pagoCursoExterno).toBe(false);
+    expect(mapCursoCapacitacion(rawCurso).pagoCursoExterno).toBe(true); // entidad 'IPELC'
+    expect(mapCursoCapacitacion({ ...rawCurso, entidadCertificadora: null }).pagoCursoExterno).toBe(false);
   });
 });

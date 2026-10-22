@@ -3,7 +3,8 @@
  *
  * Muestra el número de recibo y un botón para descargar el recibo en PDF
  * (permiso capacitacion.inscripcion DETALLE, resuelto por props).
- * Presentacional: el loading por pago llega en `descargandoId`.
+ * Un pago anulado no emite recibo (el backend responde 409): el botón queda
+ * deshabilitado con tooltip. Presentacional: el loading por pago llega en `descargandoId`.
  */
 
 import { Flex, Tooltip } from 'antd';
@@ -14,7 +15,7 @@ import { allSpacing } from '@theme/tokens';
 const PagoReciboCell = ({ pago, puedeDescargar = false, descargandoId = null, onDescargar }) => (
   <Flex align="center" gap={allSpacing.marginXS} wrap>
     <span>{pago.numeroRecibo || '—'}</span>
-    <Tooltip title="Descargar recibo de pago (PDF)">
+    <Tooltip title={pago.anulado ? 'Un pago anulado no emite recibo' : 'Descargar recibo de pago (PDF)'}>
       <Button
         variant="view"
         size="small"
