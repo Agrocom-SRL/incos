@@ -20,6 +20,12 @@
  *   no existe si el curso es gratuito.
  *   El comprobante se adjunta después desde la ficha.
  *
+ * EDICIÓN (mismo formulario): si la página se monta dentro de
+ * `InscripcionCapacitacionDetailProvider` (ruta CAP-INSCRIPCIONES-EDITAR) el hook precarga la
+ * inscripción en los mismos pasos: participante y curso quedan elegidos y bloqueados (solo
+ * lectura) y solo se pueden cambiar el grupo (`PUT /:id`) y los requisitos entregados
+ * (`PUT /:id/requisitos`). No hay pago inicial; los pagos se gestionan desde la ficha.
+ *
  * Los pasos comparten un único `Form` de AntD (`WizardForm` lo crea y
  * desmonta del DOM el contenido de los pasos no activos, pero conserva sus
  * valores en el store del form). Por eso el submit final usa
@@ -27,17 +33,20 @@
  * perder los campos del participante nuevo, capturados en el paso 1.
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { App, Form } from 'antd';
 import { useInscribirParticipanteContext } from '@application-capacitacion/inscripciones/hooks/context/useInscribirParticipanteContext';
+import { InscripcionCapacitacionDetailContext } from '@application-capacitacion/inscripciones/context/InscripcionCapacitacionDetailContext';
 import {
   buildInscripcionPayload,
   mapFormValuesToPagoInicialPayload,
+  mapRequisitosToPayload,
 } from '@application-capacitacion/inscripciones/mappers/inscripcionCapacitacionMapper';
 import { buildConceptoOptions } from '@application-capacitacion/utils/capacitacionCatalogos';
 import {
   montosCobradosCurso,
+  motivoGrupoNoEditable,
   resolverGrupoInicial,
   validarGrupoElegido,
 } from '@application-capacitacion/utils/inscripcionGrupos';
@@ -64,15 +73,20 @@ export const useInscribirParticipantePage = () => {
   const { message } = App.useApp();
   const [form] = Form.useForm();
 
+  // Contexto de la ficha: solo existe al EDITAR una inscripción (`null` en el alta).
+  const edicionCtx = useContext(InscripcionCapacitacionDetailContext);
+  const esEdicion = Boolean(edicionCtx);
+  const inscripcionEdit = edicionCtx?.inscripcion ?? null;
+
   const {
-    participantes,
+    participantes: participantesBusqueda,
     loadingBusqueda,
     errorBusqueda,
     buscarParticipantes,
-    sugeridos,
+    sugeridos: sugeridosLanding,
     loadingSugeridos,
     cargarSugeridos,
-    cursos,
+    cursos: cursosCatalogo,
     loadingCursos,
     errorCursos,
     cursoDetalle,
@@ -103,43 +117,93 @@ export const useInscribirParticipantePage = () => {
 
   const returnListPath = location.state?.returnListPath || INSCRIPCIONES_CAP_LIST_PATH;
   const menuSidebarKey = location.state?.menuSidebarKey ?? CAP_INSCRIPCIONES_MENU_KEY;
+  const detallePath = edicionCtx?.inscripcionId
+    ? inscripcionCapDetallePath(edicionCtx.inscripcionId)
+    : returnListPath;
 
   /**
    * Landing del paso 1: se dispara una sola vez al montar el hook (el wizard
    * arranca siempre en modo búsqueda/EXISTENTE), no en cada cambio de modo.
+   * En la edición el participante ya viene elegido: no hay landing.
    */
   useEffect(() => {
-    cargarSugeridos();
+    if (!esEdicion) cargarSugeridos();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const breadcrumbItems = useMemo(
-    () => [
-      { title: 'Inicio', href: '/' },
-      { title: 'Capacitación' },
-      { title: 'Inscripciones', href: returnListPath },
-      { title: 'Inscribir participante' },
-    ],
-    [returnListPath],
+    () =>
+      esEdicion
+        ? [
+            { title: 'Inicio', href: '/' },
+            { title: 'Capacitación' },
+            { title: 'Inscripciones', href: returnListPath },
+            { title: 'Detalle de inscripción', href: detallePath },
+            { title: 'Editar inscripción' },
+          ]
+        : [
+            { title: 'Inicio', href: '/' },
+            { title: 'Capacitación' },
+            { title: 'Inscripciones', href: returnListPath },
+            { title: 'Inscribir participante' },
+          ],
+    [esEdicion, returnListPath, detallePath],
   );
 
   const handleVolver = useCallback(() => {
+    if (esEdicion) {
+      navigate(detallePath, { state: { returnListPath, menuSidebarKey } });
+      return;
+    }
     navigate(returnListPath, { state: { menuSidebarKey } });
-  }, [navigate, returnListPath, menuSidebarKey]);
+  }, [esEdicion, navigate, detallePath, returnListPath, menuSidebarKey]);
+
+  /** Requisitos entregados al abrir la edición (para saber si cambiaron). */
+  const requisitosIniciales = useMemo(
+    () => (inscripcionEdit?.requisitos ?? []).filter((r) => r.entregado).map((r) => r.requisitoId),
+    [inscripcionEdit],
+  );
+
+  /**
+   * Edición: precarga UNA vez la inscripción en los mismos estados del alta (participante, curso,
+   * grupo y requisitos) y pide la ficha del curso para los grupos y requisitos del paso 3.
+   */
+  const hidratadaRef = useRef(null);
+  useEffect(() => {
+    if (!esEdicion || !inscripcionEdit || hidratadaRef.current === inscripcionEdit.id) return;
+    hidratadaRef.current = inscripcionEdit.id;
+    setParticipanteSeleccionado({
+      id: inscripcionEdit.participanteId,
+      nombreCompleto: inscripcionEdit.participanteNombreCompleto,
+      ci: inscripcionEdit.participanteCi,
+      ciCompleto: inscripcionEdit.participanteCiCompleto,
+      celular: inscripcionEdit.participanteCelular,
+      email: inscripcionEdit.participanteEmail,
+      cursoActualId: null,
+    });
+    setCursoSeleccionadoId(inscripcionEdit.capacitacionId);
+    setCapacitacionGrupoId(inscripcionEdit.capacitacionGrupoId);
+    setRequisitosEntregados(requisitosIniciales);
+    if (inscripcionEdit.capacitacionId != null) cargarCursoDetalle(inscripcionEdit.capacitacionId);
+  }, [esEdicion, inscripcionEdit, requisitosIniciales, cargarCursoDetalle]);
 
   /** Búsqueda de participante: envuelve `buscarParticipantes` para saber si ya se intentó buscar. */
   const handleBuscarParticipantes = useCallback(
     (query) => {
+      if (esEdicion) return; // el participante de una inscripción no se cambia
       setSearchText(String(query ?? '').trim());
       buscarParticipantes(query);
     },
-    [buscarParticipantes],
+    [esEdicion, buscarParticipantes],
   );
 
-  const handleSeleccionarParticipante = useCallback((participante) => {
-    if (!participante?.id) return;
-    setParticipanteSeleccionado(participante);
-  }, []);
+  const handleSeleccionarParticipante = useCallback(
+    (participante) => {
+      if (esEdicion || !participante?.id) return;
+      setParticipanteSeleccionado(participante);
+    },
+    [esEdicion],
+  );
 
   /**
    * Sin tabs: el paso "Participante" arranca siempre en búsqueda. Si la
@@ -148,9 +212,10 @@ export const useInscribirParticipantePage = () => {
    * volver a la búsqueda. Ambos casos limpian el estado del otro modo.
    */
   const handleCrearNuevoParticipante = useCallback(() => {
+    if (esEdicion) return;
     setModoParticipante(MODO_PARTICIPANTE.NUEVO);
     setParticipanteSeleccionado(null);
-  }, []);
+  }, [esEdicion]);
 
   const handleVolverABusqueda = useCallback(() => {
     setModoParticipante(MODO_PARTICIPANTE.EXISTENTE);
@@ -171,16 +236,22 @@ export const useInscribirParticipantePage = () => {
     !participanteSeleccionado &&
     !loadingBusqueda &&
     searchText.length >= 2 &&
-    participantes.length === 0;
+    participantesBusqueda.length === 0;
 
-  /** Curso elegido en el Select (para el resumen de costo/cupo/horarios). */
+  /** Ficha del curso elegido (solo si ya cargó la del id actual: evita mostrar la del anterior). */
+  const cursoFicha = cursoDetalle?.id === cursoSeleccionadoId ? cursoDetalle : null;
+
+  /** Cursos del paso 2: el catálogo en el alta; en la edición, solo el curso de la inscripción. */
+  const cursos = useMemo(
+    () => (esEdicion ? (cursoFicha ? [cursoFicha] : []) : cursosCatalogo),
+    [esEdicion, cursoFicha, cursosCatalogo],
+  );
+
+  /** Curso elegido (para el resumen de costo/cupo/horarios). */
   const cursoSeleccionado = useMemo(
     () => cursos.find((c) => c.id === cursoSeleccionadoId) ?? null,
     [cursos, cursoSeleccionadoId],
   );
-
-  /** Ficha del curso elegido (solo si ya cargó la del id actual: evita mostrar la del anterior). */
-  const cursoFicha = cursoDetalle?.id === cursoSeleccionadoId ? cursoDetalle : null;
   const gruposCurso = useMemo(() => cursoFicha?.grupos ?? [], [cursoFicha]);
   const requisitosCurso = useMemo(() => cursoFicha?.requisitos ?? [], [cursoFicha]);
   /** Grupo elegido (para el resumen de cierre); `null` si aún no se eligió. */
@@ -195,6 +266,7 @@ export const useInscribirParticipantePage = () => {
    */
   const handleCursoChange = useCallback(
     async (value) => {
+      if (esEdicion) return; // el curso de una inscripción no se cambia
       setCursoSeleccionadoId(value ?? null);
       setCapacitacionGrupoId(null);
       setRequisitosEntregados([]);
@@ -206,7 +278,7 @@ export const useInscribirParticipantePage = () => {
         setCapacitacionGrupoId(resolverGrupoInicial(result.data?.grupos));
       }
     },
-    [form, cargarCursoDetalle],
+    [esEdicion, form, cargarCursoDetalle],
   );
 
   /**
@@ -220,7 +292,16 @@ export const useInscribirParticipantePage = () => {
    * El paso «Pago inicial» solo existe si el curso cobra algo (no es
    * gratuito). Es siempre opcional: no hace falta pagar para inscribir.
    */
-  const ofrecePago = conceptoOptions.length > 0;
+  const ofrecePago = !esEdicion && conceptoOptions.length > 0;
+
+  /** Edición: por qué el grupo no se puede cambiar (inscripción retirada/anulada o curso sin grupos). */
+  const grupoMotivoDeshabilitado = useMemo(
+    () =>
+      esEdicion && inscripcionEdit && !loadingCursoDetalle && cursoFicha
+        ? motivoGrupoNoEditable(inscripcionEdit, gruposCurso)
+        : null,
+    [esEdicion, inscripcionEdit, loadingCursoDetalle, cursoFicha, gruposCurso],
+  );
 
   /** Activa/desactiva el pago inicial; al activar sugiere el primer concepto con costo. */
   const handleTogglePagoInicial = useCallback(
@@ -260,8 +341,14 @@ export const useInscribirParticipantePage = () => {
    * estados vacíos si el curso no define grupos ni requisitos).
    */
   const wizardSteps = useMemo(
-    () => createInscribirParticipanteWizardSteps({ modoParticipante, ofrecePago }),
-    [modoParticipante, ofrecePago],
+    () =>
+      createInscribirParticipanteWizardSteps({
+        modoParticipante,
+        ofrecePago,
+        edicion: esEdicion,
+        grupoMotivoDeshabilitado,
+      }),
+    [modoParticipante, ofrecePago, esEdicion, grupoMotivoDeshabilitado],
   );
 
   /**
@@ -359,6 +446,51 @@ export const useInscribirParticipantePage = () => {
    */
   const handleFinish = useCallback(async () => {
     setStepError('');
+
+    if (esEdicion) {
+      const mensajeGrupoEdit = validarGrupoElegido(gruposCurso, capacitacionGrupoId);
+      if (mensajeGrupoEdit) {
+        setStepError(mensajeGrupoEdit);
+        return;
+      }
+      const cambiaGrupo =
+        !grupoMotivoDeshabilitado &&
+        capacitacionGrupoId != null &&
+        capacitacionGrupoId !== (inscripcionEdit?.capacitacionGrupoId ?? null);
+      const cambiaRequisitos =
+        requisitosEntregados.length !== requisitosIniciales.length ||
+        requisitosEntregados.some((id) => !requisitosIniciales.includes(id));
+      const irAlDetalle = () =>
+        navigate(detallePath, { replace: true, state: { returnListPath, menuSidebarKey } });
+
+      if (!cambiaGrupo && !cambiaRequisitos) {
+        message.info('No hay cambios que guardar.');
+        irAlDetalle();
+        return;
+      }
+      if (cambiaGrupo) {
+        const result = await edicionCtx.actualizarInscripcion({ capacitacionGrupoId });
+        if (!result?.success) {
+          message.error(result?.error || 'No se pudo cambiar el grupo', DURACION_MENSAJE_ERROR);
+          return;
+        }
+      }
+      if (cambiaRequisitos) {
+        const checklist = (inscripcionEdit?.requisitos ?? []).map((r) => ({
+          ...r,
+          entregado: requisitosEntregados.includes(r.requisitoId),
+        }));
+        const result = await edicionCtx.guardarRequisitos(mapRequisitosToPayload(checklist));
+        if (!result?.success) {
+          message.error(result?.error || 'No se pudieron guardar los requisitos', DURACION_MENSAJE_ERROR);
+          return;
+        }
+      }
+      message.success('Inscripción actualizada correctamente');
+      irAlDetalle();
+      return;
+    }
+
     if (!cursoSeleccionadoId) {
       setStepError('Seleccione el curso al que se inscribe el participante');
       return;
@@ -424,13 +556,20 @@ export const useInscribirParticipantePage = () => {
     const raw = result.data?.inscripcionCapacitacion ?? result.data;
     const inscripcionId = raw?.id ?? null;
     if (inscripcionId) {
+      // `descargarFormulario`: la ficha baja el formulario una sola vez, solo tras crear.
       navigate(inscripcionCapDetallePath(inscripcionId), {
-        state: { returnListPath, menuSidebarKey },
+        state: { returnListPath, menuSidebarKey, descargarFormulario: true },
       });
     } else {
       handleVolver();
     }
   }, [
+    esEdicion,
+    edicionCtx,
+    inscripcionEdit,
+    requisitosIniciales,
+    grupoMotivoDeshabilitado,
+    detallePath,
     cursoSeleccionadoId,
     modoParticipante,
     participanteSeleccionado,
@@ -451,6 +590,12 @@ export const useInscribirParticipantePage = () => {
 
   return {
     // Layout
+    esEdicion,
+    pageTitle: esEdicion ? 'Editar inscripción' : 'Inscribir participante',
+    finishLabel: esEdicion ? 'Guardar cambios' : 'Registrar inscripción',
+    permisoAccion: esEdicion ? 'EDITAR' : 'CREAR',
+    loadingFicha: esEdicion ? Boolean(edicionCtx.loading) : false,
+    errorFicha: esEdicion ? edicionCtx.error || null : null,
     breadcrumbItems,
     handleVolver,
     form,
@@ -464,14 +609,15 @@ export const useInscribirParticipantePage = () => {
     participanteNoEncontrado,
     handleCrearNuevoParticipante,
     handleVolverABusqueda,
-    participantes,
+    participantes: esEdicion ? [] : participantesBusqueda,
     loadingBusqueda,
     errorBusqueda,
     searchText,
     searchAttempted: searchText.length >= 2,
     buscarParticipantes: handleBuscarParticipantes,
-    sugeridos,
-    loadingSugeridos,
+    // En la edición la «lista» es solo el participante de la inscripción (ya elegido y bloqueado).
+    sugeridos: esEdicion ? [participanteSeleccionado].filter(Boolean) : sugeridosLanding,
+    loadingSugeridos: esEdicion ? false : loadingSugeridos,
     participanteSeleccionado,
     handleSeleccionarParticipante,
     // Paso 2: curso
@@ -488,6 +634,7 @@ export const useInscribirParticipantePage = () => {
     gruposCurso,
     requisitosCurso,
     grupoSeleccionado,
+    grupoMotivoDeshabilitado,
     capacitacionGrupoId,
     setCapacitacionGrupoId,
     requisitosEntregados,
@@ -508,6 +655,8 @@ export const useInscribirParticipantePage = () => {
     handleMetodoPagoChange,
     // Submit
     handleFinish,
-    inscribiendo,
+    inscribiendo: esEdicion
+      ? Boolean(edicionCtx.actualizandoInscripcion || edicionCtx.guardandoRequisitos)
+      : inscribiendo,
   };
 };

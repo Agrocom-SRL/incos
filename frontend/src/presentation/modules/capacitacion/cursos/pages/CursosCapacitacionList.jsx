@@ -64,8 +64,8 @@ const CursosCapacitacionList = () => {
               <header className="cfg-academico-workspace__header">
                 <ListPanelHeader title="Lista de cursos" actions={registrarAction} />
                 <Paragraph type="secondary" className="cfg-academico-workspace__desc">
-                  Oferta de cursos cortos a público externo: costo, fechas, bloques de horario y
-                  cupo (informativo). Desactivar un curso lo retira de la inscripción sin borrar
+                  Oferta de cursos cortos a público externo: costo, fechas y cupo
+                  (informativo). Desactivar un curso lo retira de la inscripción sin borrar
                   su historial.
                 </Paragraph>
               </header>
