@@ -49,6 +49,32 @@ describe('capacitacionPdfDatos', () => {
       });
     });
 
+    it('sin ficha de curso, el único grupo disponible es el de la inscripción (marcado)', () => {
+      expect(datos.grupos).toEqual([
+        { nombre: 'Grupo 1 – Mañana', horarios: 'SAB 08:00-12:00', seleccionado: true },
+      ]);
+    });
+
+    it('con los grupos del curso marca solo el elegido y agrupa los días con la misma hora', () => {
+      const gruposCurso = [
+        {
+          id: 5,
+          nombre: 'Regular',
+          horarios: [
+            { dia: 'MARTES', horaInicio: '19:00:00', horaFin: '21:00:00' },
+            { dia: 'JUEVES', horaInicio: '19:00:00', horaFin: '21:00:00' },
+            { dia: 'SABADO', horaInicio: '09:00:00', horaFin: '12:00:00' },
+          ],
+        },
+        { id: 6, nombre: 'Intensivo', horarios: [{ dia: 'LUNES', horaInicio: '19:00:00', horaFin: '21:00:00' }] },
+      ];
+      const conGrupos = construirDatosFormularioInscripcion(crearFicha({ capacitacionGrupoId: 6 }), { gruposCurso });
+      expect(conGrupos.grupos).toEqual([
+        { nombre: 'Regular', horarios: 'Martes, Jueves 19:00-21:00 · Sábado 09:00-12:00', seleccionado: false },
+        { nombre: 'Intensivo', horarios: 'Lunes 19:00-21:00', seleccionado: true },
+      ]);
+    });
+
     it('incluye requisitos, compromiso vigente, pagos y resumen', () => {
       expect(datos.requisitos).toEqual([
         { descripcion: 'Fotocopia de cédula', obligatorio: true, entregado: true, fechaEntrega: '02/03/2026' },

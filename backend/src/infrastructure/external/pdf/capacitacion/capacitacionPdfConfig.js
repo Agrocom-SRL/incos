@@ -11,7 +11,7 @@
 /** Cuerpo del formulario de inscripción. */
 export const FORMULARIO_CAPACITACION_PDF_CONFIG = {
   titulo: 'FORMULARIO DE INSCRIPCIÓN',
-  subtituloPrefijo: 'CAPACITACIÓN - GESTIÓN',
+  subtituloPrefijo: 'CURSO DE CAPACITACIÓN - GESTIÓN',
   registroLabel: 'No. Registro',
   /** Texto cuando un dato opcional no existe. */
   nullPlaceholder: '—',
@@ -19,7 +19,7 @@ export const FORMULARIO_CAPACITACION_PDF_CONFIG = {
     participante: 'I. DATOS DEL PARTICIPANTE',
     curso: 'II. DATOS DEL CURSO Y GRUPO',
     requisitos: 'III. REQUISITOS RECEPCIONADOS',
-    pagos: 'IV. PAGOS Y SALDO'
+    grupos: 'IV. GRUPOS Y HORARIOS'
   },
   etiquetas: {
     nombres: 'Nombres y Apellidos:',
@@ -30,15 +30,14 @@ export const FORMULARIO_CAPACITACION_PDF_CONFIG = {
     modalidad: 'Modalidad:',
     certificadoPor: 'Certifica:',
     inicio: 'Inicio:',
-    fin: 'Fin:',
     grupo: 'Grupo:',
-    horarios: 'Horarios:',
+    grupoDisponible: 'GRUPO:',
+    horario: 'HORARIO:',
     fechaInscripcion: 'Inscripción:',
     estado: 'Estado:',
     sinRequisitos: 'El curso no exige requisitos',
     compromiso: 'Compromiso de entrega hasta:',
-    sinPagos: 'Aún no se registraron pagos',
-    costoCurso: 'Costo del curso:'
+    sinPagos: 'Aún no se registraron pagos'
   },
   /**
    * Tabla de requisitos: anchos como fracciones (< 1, suman 1) —`_addTable` solo
@@ -49,25 +48,12 @@ export const FORMULARIO_CAPACITACION_PDF_CONFIG = {
     widths: [0.52, 0.16, 0.16, 0.16],
     alignments: ['left', 'center', 'center', 'center']
   },
-  /** Tabla de pagos: anchos como fracciones (< 1, suman 1) y alineación por columna. */
-  tablaPagos: {
-    headers: ['FECHA', 'RECIBO', 'CONCEPTO', 'MÉTODO', 'MONTO (Bs)'],
-    widths: [0.16, 0.22, 0.18, 0.24, 0.2],
-    alignments: ['center', 'center', 'center', 'left', 'right']
-  },
-  /** Resumen de saldo bajo la tabla de pagos (concepto → clave del payload). */
-  resumenPagos: [
-    { label: 'Costo del curso', key: 'costoCurso' },
-    { label: 'Matrícula', key: 'costoMatricula' },
-    { label: 'Total pagado', key: 'totalPagado' },
-    { label: 'SALDO PENDIENTE', key: 'saldo', destacado: true }
-  ],
   firmas: [{ label: 'Participante' }, { label: 'Responsable de Inscripción' }]
 };
 
 /** Cuerpo del recibo de pago (hereda el diseño del recibo normal). */
 export const RECIBO_CAPACITACION_PDF_CONFIG = {
-  subtitulo: 'RECIBO DE PAGO - CAPACITACIÓN',
+  subtitulo: 'RECIBO DE PAGO - CURSO DE CAPACITACIÓN',
   secciones: {
     participante: 'DATOS DEL PARTICIPANTE',
     pago: 'DETALLE DEL PAGO',

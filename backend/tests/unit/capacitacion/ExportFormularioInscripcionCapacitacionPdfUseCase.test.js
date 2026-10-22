@@ -7,6 +7,9 @@ describe('ExportFormularioInscripcionCapacitacionPdfUseCase', () => {
   const crear = ({ ficha = crearFicha() } = {}) => {
     const deps = {
       getInscripcionCapacitacionByIdUseCase: { execute: jest.fn().mockResolvedValue(ficha) },
+      getCursoCapacitacionByIdUseCase: {
+        execute: jest.fn().mockResolvedValue({ grupos: [{ id: 6, nombre: 'Regular', horarios: [] }] }),
+      },
       formularioInscripcionCapacitacionPdfGenerator: {
         generarFormularioInscripcion: jest.fn().mockResolvedValue(Buffer.from('%PDF-1.7')),
       },
@@ -22,6 +25,7 @@ describe('ExportFormularioInscripcionCapacitacionPdfUseCase', () => {
     expect(deps.getInscripcionCapacitacionByIdUseCase.execute).toHaveBeenCalledWith(12);
     const datos = deps.formularioInscripcionCapacitacionPdfGenerator.generarFormularioInscripcion.mock.calls[0][0];
     expect(datos).toMatchObject({ codigoInscripcion: 'CAP-00012', curso: { titulo: 'Word avanzado' } });
+    expect(datos.grupos).toHaveLength(1);
     expect(Buffer.isBuffer(res.buffer)).toBe(true);
     expect(res.mimeType).toBe('application/pdf');
     expect(res.fileName).toBe('Formulario_Inscripcion_PEREZ_GOMEZ_JUAN_CARLOS_Word_avanzado.pdf');

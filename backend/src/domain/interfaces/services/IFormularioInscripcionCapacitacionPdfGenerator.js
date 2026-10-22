@@ -24,6 +24,7 @@ export class IFormularioInscripcionCapacitacionPdfGenerator {
    * @param {{ nombreCompleto:string, ci:string, celular:string, email:string }} datos.participante
    * @param {{ titulo:string, modalidad:string, entidadCertificadora:string,
    *           fechaInicio:string, fechaFin:string, grupo:string, horarios:string }} datos.curso
+   * @param {Array<{ nombre:string, horarios:string, seleccionado:boolean }>} datos.grupos - Grupos del curso (el elegido con casilla marcada).
    * @param {Array<{ descripcion:string, obligatorio:boolean, entregado:boolean,
    *                 fechaEntrega:string }>} datos.requisitos
    * @param {{ fechaLimite:string }|null} datos.compromiso - Compromiso de entrega vigente.

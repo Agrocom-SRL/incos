@@ -191,6 +191,9 @@ export function registerInscripcionesCapacitacionResource(container) {
                 getInscripcionCapacitacionByIdUseCase: c.resolve(
                     CAPACITACION_TOKENS.getInscripcionCapacitacionByIdUseCase
                 ),
+                getCursoCapacitacionByIdUseCase: c.resolve(
+                    CAPACITACION_TOKENS.getCursoCapacitacionByIdUseCase
+                ),
                 formularioInscripcionCapacitacionPdfGenerator: c.resolve(
                     SERVICIOS_TOKENS.formularioInscripcionCapacitacionPdfGenerator
                 ),
