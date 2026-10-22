@@ -101,13 +101,51 @@ const SECTIONS_COPY = {
   },
 };
 
+const SOLO_LECTURA = 'No se puede cambiar en la edición.';
+
+/**
+ * Misma lista de pasos con la regla de la EDICIÓN de una inscripción: participante y curso quedan
+ * de solo lectura (su textos lo avisan) y el grupo muestra por qué no se puede cambiar, si aplica.
+ */
+const adaptarPasosParaEdicion = (pasos, grupoMotivoDeshabilitado) =>
+  pasos.map((paso) => {
+    if (paso.sections.includes('participante')) {
+      return {
+        ...paso,
+        description: SOLO_LECTURA,
+        config: { participante: { ...paso.config.participante, description: SOLO_LECTURA } },
+      };
+    }
+    if (paso.sections.includes('curso')) {
+      return {
+        ...paso,
+        description: SOLO_LECTURA,
+        config: { curso: { ...paso.config.curso, description: SOLO_LECTURA } },
+      };
+    }
+    if (paso.sections.includes('grupo') && grupoMotivoDeshabilitado) {
+      return {
+        ...paso,
+        config: { ...paso.config, grupo: { ...paso.config.grupo, description: grupoMotivoDeshabilitado } },
+      };
+    }
+    return paso;
+  });
+
 /**
  * @param {Object} params
  * @param {string} params.modoParticipante - 'existente' | 'nuevo'
  * @param {boolean} params.ofrecePago - el curso elegido cobra algo (existe el paso «Pago inicial»)
+ * @param {boolean} [params.edicion] - edición de una inscripción: participante y curso de solo lectura
+ * @param {string|null} [params.grupoMotivoDeshabilitado] - motivo por el que el grupo no se puede cambiar (edición)
  * @returns {Array} pasos para `WizardForm`
  */
-export const createInscribirParticipanteWizardSteps = ({ modoParticipante, ofrecePago }) => {
+export const createInscribirParticipanteWizardSteps = ({
+  modoParticipante,
+  ofrecePago,
+  edicion = false,
+  grupoMotivoDeshabilitado = null,
+}) => {
   const copyParticipante =
     modoParticipante === MODO_NUEVO ? PARTICIPANTE_COPY.nuevo : PARTICIPANTE_COPY.existente;
 
@@ -134,7 +172,8 @@ export const createInscribirParticipanteWizardSteps = ({ modoParticipante, ofrec
 
   const pasoResumen = { ...STEP_RESUMEN_HEADER, config: { resumen: SECTIONS_COPY.resumen } };
 
-  return ofrecePago
+  const pasos = ofrecePago
     ? [pasoParticipante, pasoCurso, pasoGrupo, pasoPago, pasoResumen]
     : [pasoParticipante, pasoCurso, pasoGrupo, pasoResumen];
+  return edicion ? adaptarPasosParaEdicion(pasos, grupoMotivoDeshabilitado) : pasos;
 };

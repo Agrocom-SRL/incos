@@ -17,7 +17,7 @@ export const FORMULARIO_CAPACITACION_PDF_CONFIG = {
   nullPlaceholder: '—',
   secciones: {
     participante: 'I. DATOS DEL PARTICIPANTE',
-    curso: 'II. DATOS DEL CURSO Y GRUPO',
+    curso: 'II. DATOS DEL CURSO',
     requisitos: 'III. REQUISITOS RECEPCIONADOS',
     grupos: 'IV. GRUPOS Y HORARIOS'
   },
@@ -31,8 +31,6 @@ export const FORMULARIO_CAPACITACION_PDF_CONFIG = {
     certificadoPor: 'Certifica:',
     inicio: 'Inicio:',
     grupo: 'Grupo:',
-    grupoDisponible: 'GRUPO:',
-    horario: 'HORARIO:',
     fechaInscripcion: 'Inscripción:',
     estado: 'Estado:',
     sinRequisitos: 'El curso no exige requisitos',
@@ -47,6 +45,11 @@ export const FORMULARIO_CAPACITACION_PDF_CONFIG = {
     headers: ['REQUISITO', 'OBLIGATORIO', 'ENTREGADO', 'FECHA'],
     widths: [0.52, 0.16, 0.16, 0.16],
     alignments: ['left', 'center', 'center', 'center']
+  },
+  /** Tabla de la sección IV: casilla del grupo elegido, grupo, días y horarios. */
+  tablaGrupos: {
+    headers: ['SELECCIÓN', 'GRUPO', 'DÍAS', 'HORARIOS'],
+    widths: [0.14, 0.3, 0.32, 0.24]
   },
   firmas: [{ label: 'Participante' }, { label: 'Responsable de Inscripción' }]
 };

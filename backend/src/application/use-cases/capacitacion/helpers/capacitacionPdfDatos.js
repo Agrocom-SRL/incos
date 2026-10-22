@@ -62,6 +62,27 @@ export function textoHorariosGrupo(horarios) {
   return [...porRango].map(([rango, dias]) => `${dias.join(', ')} ${rango}`).join(' · ');
 }
 
+/** Une nombres de día: `A y B` con dos, `A, B, C` con más (como en el folleto del curso). */
+const unirDias = (dias) => (dias.length === 2 ? dias.join(' y ') : dias.join(', '));
+
+/**
+ * Horarios de un grupo como bloques `{ dias, horas }` para la tabla del formulario, agrupando
+ * los días que comparten hora: `{ dias: 'Martes y Jueves', horas: '19:00 - 21:00' }`.
+ * Respeta el orden recibido.
+ * @param {Array<{dia:string, horaInicio:string, horaFin:string}>} horarios
+ * @returns {Array<{dias:string, horas:string}>}
+ */
+export function bloquesHorariosGrupo(horarios) {
+  const porRango = new Map();
+  (horarios ?? []).forEach((h) => {
+    const rango = `${horaCorta(h.horaInicio)} - ${horaCorta(h.horaFin)}`;
+    const dias = porRango.get(rango) ?? [];
+    dias.push(ABREVIATURA_DIA[h.dia] ?? textoOVacio(h.dia));
+    porRango.set(rango, dias);
+  });
+  return [...porRango].map(([horas, dias]) => ({ dias: unirDias(dias), horas }));
+}
+
 /**
  * Grupos del curso para el formulario, marcando el elegido por el participante.
  * Sin grupos del curso (o sin ficha de curso) cae al grupo de la inscripción.
@@ -71,6 +92,7 @@ function gruposDelFormulario(ficha, gruposCurso) {
     return gruposCurso.map((grupo) => ({
       nombre: textoOVacio(grupo.nombre),
       horarios: textoHorariosGrupo(grupo.horarios),
+      bloques: bloquesHorariosGrupo(grupo.horarios),
       seleccionado: Number(grupo.id) === Number(ficha.capacitacionGrupoId)
     }));
   }
@@ -79,6 +101,10 @@ function gruposDelFormulario(ficha, gruposCurso) {
         {
           nombre: textoOVacio(ficha.grupoNombre),
           horarios: textoOVacio(ficha.grupoHorariosEtiqueta),
+          // Sin horarios estructurados solo se conoce la etiqueta: va tal cual en la columna Horarios.
+          bloques: ficha.grupoHorariosEtiqueta
+            ? [{ dias: '', horas: textoOVacio(ficha.grupoHorariosEtiqueta) }]
+            : [],
           seleccionado: true
         }
       ]

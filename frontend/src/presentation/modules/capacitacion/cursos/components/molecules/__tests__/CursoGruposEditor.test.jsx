@@ -74,21 +74,21 @@ describe('CursoGruposEditor', () => {
     expect(formRef.current.getFieldValue(['grupos', 0, 'horarios'])).toEqual([]);
   });
 
-  it('un horario tomado por otro grupo no se ofrece en los demás', async () => {
+  it('un horario ya usado por otro grupo se sigue ofreciendo (el aula se asigna después)', async () => {
     render(
       <Contenedor
         inicial={{
           grupos: [
-            { key: 'a', nombre: 'm', horarios: [{ horarioId: 1 }] },
-            { key: 'b', nombre: 't', horarios: [] },
+            { key: 'a', nombre: 'lun-vie', horarios: [{ horarioId: 1 }] },
+            { key: 'b', nombre: 'mar-jue', horarios: [] },
           ],
         }}
       />,
     );
     await screen.findByText('Grupo 2');
     fireEvent.click(screen.getAllByPlaceholderText('Seleccione uno o más horarios')[1]);
-    expect(await screen.findByRole('checkbox', { name: 'SAB 15:00-19:00' })).toBeTruthy();
-    expect(screen.queryByRole('checkbox', { name: 'SAB 08:00-12:00' })).toBeNull();
+    expect(await screen.findByRole('checkbox', { name: 'SAB 08:00-12:00' })).toBeTruthy();
+    expect(screen.getByRole('checkbox', { name: 'SAB 15:00-19:00' })).toBeTruthy();
   });
 
   it('el botón «Agregar horario» abre el modal de creación para ese grupo', async () => {

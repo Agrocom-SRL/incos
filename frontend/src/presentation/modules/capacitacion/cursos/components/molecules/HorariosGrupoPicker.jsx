@@ -6,7 +6,8 @@
  * Al lado, «Agregar horario» abre el modal de creación. Los horarios elegidos se muestran debajo
  * como pills con su ✕ dentro, para verlos y quitarlos sin abrir el popup.
  *
- * `ocupados`: ids que ya usa otro grupo del curso; no se ofrecen en la lista (los propios sí).
+ * `ocupados`: ids que no se ofrecen en la lista (los ya elegidos en el grupo sí). Opcional: el editor de
+ * grupos no lo usa, porque dos grupos pueden repetir horario (el aula se asigna después).
  * Control de `Form.Item`: `value` = `[{ horarioId, ... }]`, `onChange(nuevaLista)`.
  */
 
