@@ -36,3 +36,5 @@ export { RegisterPagoCapacitacionController } from './register-pago-capacitacion
 export { UpdateRequisitosInscripcionController } from './update-requisitos-inscripcion.controller.js';
 export { AdjuntarComprobantePagoCapacitacionController } from './adjuntar-comprobante-pago-capacitacion.controller.js';
 export { DescargarComprobantePagoCapacitacionController } from './descargar-comprobante-pago-capacitacion.controller.js';
+export { ExportFormularioInscripcionCapacitacionController } from './export-formulario-inscripcion-capacitacion.controller.js';
+export { ExportReciboPagoCapacitacionController } from './export-recibo-pago-capacitacion.controller.js';

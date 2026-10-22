@@ -129,6 +129,27 @@ export function buildInscripcionesCapacitacionRouter({ controllers, middlewares 
             controllers.descargarComprobantePagoCapacitacionController.handle(req, res, next)
     );
 
+    // GET /:id/formulario-pdf - Formulario de Inscripción en PDF (permiso DETALLE)
+    router.get(
+        '/:id/formulario-pdf',
+        ...detalle,
+        idValidator,
+        validateRequest,
+        (req, res, next) =>
+            controllers.exportFormularioInscripcionCapacitacionController.handle(req, res, next)
+    );
+
+    // GET /:id/pagos/:pagoId/recibo-pdf - Recibo de Pago en PDF (permiso DETALLE)
+    router.get(
+        '/:id/pagos/:pagoId/recibo-pdf',
+        ...detalle,
+        idValidator,
+        pagoIdValidator,
+        validateRequest,
+        (req, res, next) =>
+            controllers.exportReciboPagoCapacitacionController.handle(req, res, next)
+    );
+
     // DELETE /:id - Eliminar inscripción (soft delete + pagos en cascada, queda RETIRADO)
     router.delete(
         '/:id',

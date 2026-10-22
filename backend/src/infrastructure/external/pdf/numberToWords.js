@@ -12,11 +12,10 @@
  * decenas/unidades (0-99), por lo que el monto en letras de un recibo
  * (siempre < 1000 Bs en la práctica) no cambia de resultado.
  *
- * Limitación conocida (heredada del recibo, no afecta a este documento):
- * las centenas irregulares (500 "quinientos", 700 "setecientos", 900
- * "novecientos") NO se corrigen aquí — el acta de defensa solo necesita
- * 0-100 (calificación) y años tipo 20XX (sin centena propia), donde esta
- * limitación no se manifiesta.
+ * Las centenas irregulares (500 "quinientos", 700 "setecientos", 900
+ * "novecientos") se resuelven aquí; el método privado del recibo normal las
+ * sigue escribiendo mal (cincocientos), por eso los recibos de Capacitación
+ * usan este helper.
  */
 
 const UNIDADES = ['', 'uno', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve'];
@@ -32,6 +31,11 @@ const DECENAS = [
   'ochenta',
   'noventa',
 ];
+// Centenas irregulares del español (500, 700, 900 no siguen "<unidad>cientos").
+const CENTENAS_IRREGULARES = { 5: 'quinientos', 7: 'setecientos', 9: 'novecientos' };
+const nombreCentena = (centena) =>
+  centena === 1 ? 'ciento' : CENTENAS_IRREGULARES[centena] ?? `${UNIDADES[centena]}cientos`;
+
 const ESPECIALES = [
   'diez',
   'once',
@@ -62,9 +66,8 @@ export function numberToWords(num) {
   if (n < 1000) {
     const centena = Math.floor(n / 100);
     const resto = n % 100;
-    if (resto === 0) return centena === 1 ? 'cien' : `${UNIDADES[centena]}cientos`;
-    const prefijo = centena === 1 ? 'ciento' : `${UNIDADES[centena]}cientos`;
-    return `${prefijo} ${numberToWords(resto)}`;
+    if (resto === 0) return centena === 1 ? 'cien' : nombreCentena(centena);
+    return `${nombreCentena(centena)} ${numberToWords(resto)}`;
   }
   const miles = Math.floor(n / 1000);
   const resto = n % 1000;

@@ -54,6 +54,9 @@ export const CAPACITACION_TOKENS = {
   updateRequisitosInscripcionUseCase: 'capacitacion.updateRequisitosInscripcionUseCase',
   adjuntarComprobantePagoCapacitacionUseCase: 'capacitacion.adjuntarComprobantePagoCapacitacionUseCase',
   descargarComprobantePagoCapacitacionUseCase: 'capacitacion.descargarComprobantePagoCapacitacionUseCase',
+  exportFormularioInscripcionCapacitacionPdfUseCase:
+    'capacitacion.exportFormularioInscripcionCapacitacionPdfUseCase',
+  exportReciboPagoCapacitacionPdfUseCase: 'capacitacion.exportReciboPagoCapacitacionPdfUseCase',
 
   // Controllers — Cursos de capacitación
   listCursosCapacitacionController: 'capacitacion.listCursosCapacitacionController',
@@ -92,6 +95,9 @@ export const CAPACITACION_TOKENS = {
     'capacitacion.adjuntarComprobantePagoCapacitacionController',
   descargarComprobantePagoCapacitacionController:
     'capacitacion.descargarComprobantePagoCapacitacionController',
+  exportFormularioInscripcionCapacitacionController:
+    'capacitacion.exportFormularioInscripcionCapacitacionController',
+  exportReciboPagoCapacitacionController: 'capacitacion.exportReciboPagoCapacitacionController',
 
   // Routers
   cursosCapacitacionRouter: 'capacitacion.cursosCapacitacionRouter',
