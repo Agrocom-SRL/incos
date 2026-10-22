@@ -3,17 +3,19 @@
  *
  * Tabla embebida en `InscripcionPagosSection` (gemela de las cuotas de la
  * ficha de pago de Finanzas). Sin editar/eliminar por fila: los pagos de capacitación
- * no se modifican por separado (solo el comprobante, opcional) (el recibo PDF se difiere, §6.5).
+ * no se modifican por separado (solo el comprobante, opcional).
  * Montos Bs SIN decimales (formatBs).
  */
 
 import { formatBs } from '@application/utils/formatters';
 import { formatConceptoPago } from '@application-capacitacion/utils/capacitacionCatalogos';
+import PagoReciboCell from '@capacitacion/inscripciones/components/molecules/PagoReciboCell';
 import PagoComprobanteCell from '@capacitacion/inscripciones/components/molecules/PagoComprobanteCell';
 
 /**
  * @param {Object} [comprobante] - permisos y handlers del comprobante (opcional)
- *   `{ puedeDescargar, puedeAdjuntar, subiendo, onDescargar, onAdjuntar }`
+ *   `{ puedeDescargar, puedeAdjuntar, subiendo, onDescargar, onAdjuntar,
+ *   puedeDescargarRecibo, reciboDescargandoId, onDescargarRecibo }`
  */
 export const createPagosCapacitacionTableColumns = (comprobante = {}) => [
   {
@@ -26,8 +28,15 @@ export const createPagosCapacitacionTableColumns = (comprobante = {}) => [
   {
     title: 'Recibo',
     dataIndex: 'numeroRecibo',
-    width: 110,
-    render: (v) => v || '—',
+    width: 190,
+    render: (v, pago) => (
+      <PagoReciboCell
+        pago={pago}
+        puedeDescargar={comprobante.puedeDescargarRecibo}
+        descargandoId={comprobante.reciboDescargandoId}
+        onDescargar={comprobante.onDescargarRecibo}
+      />
+    ),
   },
   {
     title: 'Fecha',

@@ -4,6 +4,8 @@ import { renderHook, act } from '@testing-library/react';
 const repo = vi.hoisted(() => ({
   registrarPago: vi.fn(),
   descargarComprobante: vi.fn(),
+  descargarFormularioPdf: vi.fn(),
+  descargarReciboPdf: vi.fn(),
 }));
 const download = vi.hoisted(() => vi.fn());
 vi.mock('@implementations/InscripcionCapacitacionRepository', () => ({ default: repo }));
@@ -59,5 +61,38 @@ describe('useInscripcionCapacitacionMutations', () => {
     });
     expect(download).not.toHaveBeenCalled();
     expect(res).toEqual({ success: false, error: 'Sin comprobante' });
+  });
+
+  it('descargarFormularioPdf guarda el PDF con el nombre del servidor', async () => {
+    const blob = new Blob(['pdf']);
+    repo.descargarFormularioPdf.mockResolvedValue({ success: true, blob, fileName: 'form.pdf' });
+    const { result } = renderHook(() => useInscripcionCapacitacionMutations());
+    let res;
+    await act(async () => {
+      res = await result.current.descargarFormularioPdf(3);
+    });
+    expect(repo.descargarFormularioPdf).toHaveBeenCalledWith(3);
+    expect(download).toHaveBeenCalledWith(blob, 'form.pdf');
+    expect(res.success).toBe(true);
+  });
+
+  it('descargarReciboPdf usa un nombre por defecto y propaga el error sin descargar', async () => {
+    const blob = new Blob(['pdf']);
+    repo.descargarReciboPdf.mockResolvedValueOnce({ success: true, blob });
+    const { result } = renderHook(() => useInscripcionCapacitacionMutations());
+    await act(async () => {
+      await result.current.descargarReciboPdf(3, 9);
+    });
+    expect(repo.descargarReciboPdf).toHaveBeenCalledWith(3, 9);
+    expect(download).toHaveBeenCalledWith(blob, 'recibo_pago_9.pdf');
+
+    download.mockClear();
+    repo.descargarReciboPdf.mockResolvedValueOnce({ success: false, error: 'Pago inexistente' });
+    let res;
+    await act(async () => {
+      res = await result.current.descargarReciboPdf(3, 99);
+    });
+    expect(download).not.toHaveBeenCalled();
+    expect(res).toEqual({ success: false, error: 'Pago inexistente' });
   });
 });

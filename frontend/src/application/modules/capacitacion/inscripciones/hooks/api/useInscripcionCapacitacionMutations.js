@@ -8,6 +8,8 @@
  * - `actualizarRequisitos`: PUT /:id/requisitos (checklist; capacitacion.inscripcion EDITAR).
  * - `adjuntarComprobante`: POST /:id/pagos/:pagoId/comprobante (adjuntar o reemplazar después).
  * - `descargarComprobante`: GET /:id/pagos/:pagoId/comprobante (descarga el archivo).
+ * - `descargarFormularioPdf` / `descargarReciboPdf`: GET /:id/formulario-pdf y
+ *   /:id/pagos/:pagoId/recibo-pdf (capacitacion.inscripcion DETALLE).
  * - `eliminarInscripcion`: DELETE /:id (soft delete + pagos en cascada).
  * - `anularInscripcion`: POST /:id/anular (capacitacion.inscripcion EDITAR —
  *   no existe acción ANULAR en el vocabulario cerrado de permisos) —
@@ -82,6 +84,36 @@ export const useInscripcionCapacitacionMutations = () => {
     return { success: true };
   }, []);
 
+  /** Ejecuta una descarga PDF del repositorio y dispara el guardado en el navegador. */
+  const guardarPdf = useCallback(async (descarga, fallbackName, errorMsg) => {
+    const result = await descarga();
+    if (!result?.success || !result.blob) {
+      return { success: false, error: result?.error || errorMsg };
+    }
+    downloadBlob(result.blob, result.fileName || fallbackName);
+    return { success: true };
+  }, []);
+
+  const descargarFormularioPdf = useCallback(
+    (inscripcionId) =>
+      guardarPdf(
+        () => inscripcionCapacitacionRepository.descargarFormularioPdf(inscripcionId),
+        `formulario_inscripcion_${inscripcionId}.pdf`,
+        'No se pudo descargar el formulario de inscripción',
+      ),
+    [guardarPdf],
+  );
+
+  const descargarReciboPdf = useCallback(
+    (inscripcionId, pagoId) =>
+      guardarPdf(
+        () => inscripcionCapacitacionRepository.descargarReciboPdf(inscripcionId, pagoId),
+        `recibo_pago_${pagoId}.pdf`,
+        'No se pudo descargar el recibo de pago',
+      ),
+    [guardarPdf],
+  );
+
   const eliminarInscripcion = useCallback(
     (id) => inscripcionCapacitacionRepository.eliminar(id),
     [],
@@ -108,6 +140,8 @@ export const useInscripcionCapacitacionMutations = () => {
       actualizarRequisitos,
       adjuntarComprobante,
       descargarComprobante,
+      descargarFormularioPdf,
+      descargarReciboPdf,
       eliminarInscripcion,
       anularInscripcion,
     }),
@@ -122,6 +156,8 @@ export const useInscripcionCapacitacionMutations = () => {
       actualizarRequisitos,
       adjuntarComprobante,
       descargarComprobante,
+      descargarFormularioPdf,
+      descargarReciboPdf,
       eliminarInscripcion,
       anularInscripcion,
     ],

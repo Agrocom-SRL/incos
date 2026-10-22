@@ -25,6 +25,8 @@ export const InscripcionCapacitacionDetailProvider = ({ children, inscripcionId 
     actualizarRequisitos,
     adjuntarComprobante,
     descargarComprobante,
+    descargarFormularioPdf,
+    descargarReciboPdf,
   } = useInscripcionCapacitacionMutations();
   const {
     metodosPago,
@@ -85,6 +87,19 @@ export const InscripcionCapacitacionDetailProvider = ({ children, inscripcionId 
     [idValido, id, descargarComprobante],
   );
 
+  const descargarFormularioPdfActual = useCallback(() => {
+    if (!idValido) return Promise.resolve({ success: false, error: 'Inscripción inválida' });
+    return descargarFormularioPdf(id);
+  }, [idValido, id, descargarFormularioPdf]);
+
+  const descargarReciboPdfPago = useCallback(
+    (pagoId) => {
+      if (!idValido) return Promise.resolve({ success: false, error: 'Inscripción inválida' });
+      return descargarReciboPdf(id, pagoId);
+    },
+    [idValido, id, descargarReciboPdf],
+  );
+
   /** Anular (decisión administrativa manual): refetch de la ficha en éxito. */
   const anularInscripcionActual = useCallback(
     async (payload) => {
@@ -112,6 +127,8 @@ export const InscripcionCapacitacionDetailProvider = ({ children, inscripcionId 
       adjuntarComprobantePago,
       subiendoComprobante,
       descargarComprobantePago,
+      descargarFormularioPdf: descargarFormularioPdfActual,
+      descargarReciboPdfPago,
       // Anular inscripción (decisión administrativa manual)
       anularInscripcion: anularInscripcionActual,
       anulando,
@@ -135,6 +152,8 @@ export const InscripcionCapacitacionDetailProvider = ({ children, inscripcionId 
       adjuntarComprobantePago,
       subiendoComprobante,
       descargarComprobantePago,
+      descargarFormularioPdfActual,
+      descargarReciboPdfPago,
       anularInscripcionActual,
       anulando,
       metodosPago,

@@ -729,6 +729,11 @@ export const INSCRIPCIONES_CAPACITACION_ENDPOINTS = {
   /** POST (multipart `comprobante`, adjuntar/reemplazar) y GET (descarga) del comprobante de un pago */
   PAGO_COMPROBANTE: (id, pagoId) =>
     `${API_BASE}/inscripciones-capacitacion/${id}/pagos/${pagoId}/comprobante`,
+  /** GET — formulario de inscripción en PDF (permiso capacitacion.inscripcion DETALLE) */
+  FORMULARIO_PDF: (id) => `${API_BASE}/inscripciones-capacitacion/${id}/formulario-pdf`,
+  /** GET — recibo de pago en PDF (permiso capacitacion.inscripcion DETALLE) */
+  PAGO_RECIBO_PDF: (id, pagoId) =>
+    `${API_BASE}/inscripciones-capacitacion/${id}/pagos/${pagoId}/recibo-pdf`,
 };
 
 // ============================================

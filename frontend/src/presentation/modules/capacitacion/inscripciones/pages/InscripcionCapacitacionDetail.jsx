@@ -17,7 +17,7 @@
  */
 
 import { Alert, Empty, Flex, Popconfirm, Spin, Tabs } from 'antd';
-import { ArrowLeftOutlined, DollarOutlined, StopOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, DollarOutlined, FilePdfOutlined, StopOutlined } from '@ant-design/icons';
 import { allSpacing } from '@theme/tokens';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
@@ -53,6 +53,10 @@ const InscripcionCapacitacionDetail = () => {
     subiendoComprobante,
     handleAdjuntarComprobante,
     handleDescargarComprobante,
+    descargandoFormulario,
+    handleDescargarFormulario,
+    reciboDescargandoId,
+    handleDescargarRecibo,
   } = useInscripcionCapacitacionDetailPage();
   const puedeEditarInscripcion = usePermiso(CAPACITACION_PERMISOS.inscripcion, 'EDITAR');
   const comprobante = {
@@ -61,6 +65,9 @@ const InscripcionCapacitacionDetail = () => {
     subiendo: subiendoComprobante,
     onDescargar: handleDescargarComprobante,
     onAdjuntar: handleAdjuntarComprobante,
+    puedeDescargarRecibo: usePermiso(CAPACITACION_PERMISOS.inscripcion, 'DETALLE'),
+    reciboDescargandoId,
+    onDescargarRecibo: handleDescargarRecibo,
   };
 
   const tabItems = inscripcion
@@ -106,6 +113,17 @@ const InscripcionCapacitacionDetail = () => {
 
   const headerActions = (
     <Flex gap="small" wrap>
+      <ActionButton
+        permiso={CAPACITACION_PERMISOS.inscripcion}
+        accion="DETALLE"
+        variant="view"
+        icon={<FilePdfOutlined />}
+        loading={descargandoFormulario}
+        onClick={handleDescargarFormulario}
+        disabled={!inscripcion}
+      >
+        Formulario PDF
+      </ActionButton>
       {inscripcion?.saldoTotal > 0 ? (
         <ActionButton
           permiso={CAPACITACION_PERMISOS.pago}

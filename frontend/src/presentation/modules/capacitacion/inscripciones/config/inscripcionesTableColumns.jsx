@@ -20,6 +20,7 @@ import {
   BookOutlined,
   CalendarOutlined,
   DollarOutlined,
+  FilePdfOutlined,
   NumberOutlined,
   TeamOutlined,
   UserOutlined,
@@ -48,6 +49,7 @@ export const createInscripcionesCapTableColumns = ({
   listNavState,
   refetch,
   deleteFn,
+  onDescargarFormulario,
 }) => {
   return [
     {
@@ -177,7 +179,7 @@ export const createInscripcionesCapTableColumns = ({
     {
       title: 'Acciones',
       key: 'acciones',
-      width: 120,
+      width: 150,
       align: 'right',
       render: (_, record) => {
         const itemName = `la inscripción de ${record.participanteNombreCompleto}`;
@@ -202,7 +204,17 @@ export const createInscripcionesCapTableColumns = ({
         const puedeIrAPagar =
           Number(record.saldoTotal) > 0 &&
           ESTADOS_INSCRIPCION_CAP_VIGENTES.includes(record.estado);
-        const extraActions = puedeIrAPagar
+        const extraActions = [
+          {
+            key: 'formulario-pdf',
+            icon: <FilePdfOutlined />,
+            variant: 'view',
+            tooltip: 'Descargar formulario de inscripción (PDF)',
+            permiso: CAPACITACION_PERMISOS.inscripcion,
+            accion: 'DETALLE',
+            onClick: () => onDescargarFormulario?.(record.id),
+          },
+          ...(puedeIrAPagar
           ? [
               {
                 key: 'pagar',
@@ -215,7 +227,8 @@ export const createInscripcionesCapTableColumns = ({
                   navigate(inscripcionCapRegistrarPagoPath(record.id), { state: listNavState }),
               },
             ]
-          : [];
+          : []),
+        ];
 
         return (
           <TableActions

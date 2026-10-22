@@ -15,6 +15,23 @@ import apiClient from '@api-client';
 import { IInscripcionCapacitacionRepository } from '@domain/repositories';
 import { INSCRIPCIONES_CAPACITACION_ENDPOINTS } from '@api/endpoints';
 import { handleSuccessResponse, handleErrorResponse } from '@api/responseHandler';
+import { extractFileNameFromDisposition, readBlobErrorMessage } from '@api/binaryDownload';
+
+/** GET binario (PDF): devuelve `{ success, blob, fileName }` o `{ success: false, error }`. */
+const getPdf = async (url, fallbackName, defaultError) => {
+  try {
+    const response = await apiClient.get(url, { responseType: 'blob' });
+    const fileName = extractFileNameFromDisposition(
+      response.headers?.['content-disposition'] || '',
+      fallbackName,
+    );
+    return { success: true, blob: response.data, fileName };
+  } catch (error) {
+    const blobMessage = await readBlobErrorMessage(error, defaultError);
+    if (blobMessage) return { success: false, error: blobMessage };
+    return handleErrorResponse(error, defaultError);
+  }
+};
 
 export class InscripcionCapacitacionRepository extends IInscripcionCapacitacionRepository {
   /**
@@ -172,6 +189,34 @@ export class InscripcionCapacitacionRepository extends IInscripcionCapacitacionR
       }
       return handleErrorResponse(error, 'Error al descargar el comprobante');
     }
+  }
+
+  /**
+   * Descarga el formulario de inscripción en PDF (permiso capacitacion.inscripcion DETALLE).
+   * GET /v1/inscripciones-capacitacion/:id/formulario-pdf
+   *
+   * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
+   */
+  descargarFormularioPdf(id) {
+    return getPdf(
+      INSCRIPCIONES_CAPACITACION_ENDPOINTS.FORMULARIO_PDF(id),
+      `formulario_inscripcion_${id}.pdf`,
+      'Error al descargar el formulario de inscripción',
+    );
+  }
+
+  /**
+   * Descarga el recibo de un pago en PDF (permiso capacitacion.inscripcion DETALLE).
+   * GET /v1/inscripciones-capacitacion/:id/pagos/:pagoId/recibo-pdf
+   *
+   * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
+   */
+  descargarReciboPdf(id, pagoId) {
+    return getPdf(
+      INSCRIPCIONES_CAPACITACION_ENDPOINTS.PAGO_RECIBO_PDF(id, pagoId),
+      `recibo_pago_${pagoId}.pdf`,
+      'Error al descargar el recibo de pago',
+    );
   }
 
   /**

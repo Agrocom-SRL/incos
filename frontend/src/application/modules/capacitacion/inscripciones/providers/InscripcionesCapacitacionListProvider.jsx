@@ -14,7 +14,7 @@ import { InscripcionesCapacitacionListContext } from '@application-capacitacion/
 
 export const InscripcionesCapacitacionListProvider = ({ children }) => {
   const { fetch: fetchInscripciones } = useInscripcionesCapacitacionApi();
-  const { eliminarInscripcion } = useInscripcionCapacitacionMutations();
+  const { eliminarInscripcion, descargarFormularioPdf } = useInscripcionCapacitacionMutations();
 
   const {
     rows,
@@ -42,8 +42,9 @@ export const InscripcionesCapacitacionListProvider = ({ children }) => {
       setSearchText,
       tablePagination,
       eliminarInscripcion,
+      descargarFormularioPdf,
     }),
-    [rows, loading, error, refetch, searchText, setSearchText, tablePagination, eliminarInscripcion],
+    [rows, loading, error, refetch, searchText, setSearchText, tablePagination, eliminarInscripcion, descargarFormularioPdf],
   );
 
   return (

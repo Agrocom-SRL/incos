@@ -54,6 +54,25 @@ export class IInscripcionCapacitacionRepository extends IBaseRepository {
   }
 
   /**
+   * Descarga el formulario de inscripción en PDF (GET, capacitacion.inscripcion DETALLE).
+   * @param {string|number} _inscripcionId
+   * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
+   */
+  async descargarFormularioPdf(_inscripcionId) {
+    throw new Error('Método descargarFormularioPdf debe ser implementado');
+  }
+
+  /**
+   * Descarga el recibo de un pago en PDF (GET, capacitacion.inscripcion DETALLE).
+   * @param {string|number} _inscripcionId
+   * @param {string|number} _pagoId
+   * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
+   */
+  async descargarReciboPdf(_inscripcionId, _pagoId) {
+    throw new Error('Método descargarReciboPdf debe ser implementado');
+  }
+
+  /**
    * Anula la inscripción (POST /:id/anular, permiso capacitacion.inscripcion
    * EDITAR — no existe acción ANULAR en el vocabulario cerrado de permisos).
    * Decisión administrativa manual: el monto ya pagado no se devuelve.
