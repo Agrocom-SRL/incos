@@ -207,22 +207,22 @@ const InscripcionCapacitacionDetail = () => {
           {!loading && !error && inscripcion && (
             <>
               <InscripcionFichaHeader inscripcion={inscripcion} />
+              {pendientes.length > 0 ? (
+                <Alert
+                  className="sd-pendientes"
+                  type="warning"
+                  showIcon
+                  title="La inscripción está pendiente: falta para pasar a «Inscrito»"
+                  description={
+                    <ul className="sd-pendientes__lista">
+                      {pendientes.map((p) => (
+                        <li key={p.key}>{p.label}</li>
+                      ))}
+                    </ul>
+                  }
+                />
+              ) : null}
               <div className="sd-tabs-shell">
-                {pendientes.length > 0 ? (
-                  <Alert
-                    type="warning"
-                    showIcon
-                    title="La inscripción está pendiente: falta para pasar a «Inscrito»"
-                    description={
-                      <ul>
-                        {pendientes.map((p) => (
-                          <li key={p.key}>{p.label}</li>
-                        ))}
-                      </ul>
-                    }
-                    style={{ marginBottom: allSpacing.margin }}
-                  />
-                ) : null}
                 <Tabs defaultActiveKey="informacion" items={tabItems} className="sd-tabs" />
               </div>
             </>

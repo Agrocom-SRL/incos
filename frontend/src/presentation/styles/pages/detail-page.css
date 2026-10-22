@@ -300,9 +300,9 @@
 /* Métricas en columnas de igual ancho, alineadas por arriba (sin que un valor alto descuadre a los demás). */
 .sd-profile__stats--grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
   align-items: start;
-  gap: 16px 32px;
+  gap: 16px 24px;
 }
 
 .sd-stat {
@@ -443,6 +443,16 @@
 .sd-btn--alternative:disabled {
   opacity: .6;
   cursor: not-allowed;
+}
+
+.sd-pendientes {
+  margin-bottom: 16px;
+  border-radius: var(--radius-lg);
+}
+
+.sd-pendientes__lista {
+  margin: 4px 0 0;
+  padding-left: 18px;
 }
 
 .sd-tabs-shell {
