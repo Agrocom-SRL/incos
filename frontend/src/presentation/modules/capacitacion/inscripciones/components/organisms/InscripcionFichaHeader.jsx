@@ -55,7 +55,7 @@ const InscripcionFichaHeader = ({ inscripcion }) => {
 
       <div className="sd-profile__divider" />
 
-      <div className="sd-profile__stats">
+      <div className="sd-profile__stats sd-profile__stats--grid">
         {inscripcion.montoMatricula > 0 ? (
           <div className="sd-stat">
             <span className="sd-stat__label">Matrícula</span>

@@ -10,6 +10,13 @@ const { CreateInscripcionCapacitacionUseCase } = await import(
   '../../../src/application/use-cases/capacitacion/CreateInscripcionCapacitacionUseCase.js'
 );
 
+const NO_EXTERNO = {
+  pagoCursoExterno: false,
+  requisitoId: null,
+  requisitoDescripcion: null,
+  acreditado: false,
+};
+
 describe('CreateInscripcionCapacitacionUseCase', () => {
   const cursoAbierto = (o = {}) => ({
     id: 1,
@@ -78,6 +85,7 @@ describe('CreateInscripcionCapacitacionUseCase', () => {
       capacitacionInscritoRequisitoRepository: {
         create: jest.fn().mockResolvedValue({}),
         contarObligatoriosPendientes: jest.fn().mockResolvedValue(pendientes),
+        resolverPagoCursoExterno: jest.fn().mockResolvedValue(NO_EXTERNO),
       },
       pagoCapacitacionRepository: { sumMontosPorConcepto: jest.fn().mockResolvedValue(pagos) },
       registerPagoCapacitacionUseCase: {
@@ -417,4 +425,37 @@ describe('CreateInscripcionCapacitacionUseCase', () => {
     await expect(useCase.execute({ capacitacionId: 1, participanteId: 9 })).rejects.toBeInstanceOf(ConflictError);
     expect(deps.inscripcionCapacitacionRepository.create).not.toHaveBeenCalled();
   });
+
+  describe('curso con entidad certificadora (costo del curso externo)', () => {
+    it('rechaza un pagoInicial de concepto CURSO antes de crear nada', async () => {
+      const { deps, useCase } = crear({ curso: cursoAbierto({ entidadCertificadora: 'IPELC' }) });
+      await expect(
+        useCase.execute(
+          { capacitacionId: 1, participanteId: 9, pagoInicial: { concepto: 'curso', monto: 100, metodoPagoId: 1 } },
+          5
+        )
+      ).rejects.toBeInstanceOf(ValidationError);
+      expect(mockTransaction).not.toHaveBeenCalled();
+      expect(deps.inscripcionCapacitacionRepository.create).not.toHaveBeenCalled();
+    });
+
+    it('acepta un pagoInicial de MATRÍCULA', async () => {
+      const { deps, useCase } = crear({ curso: cursoAbierto({ entidadCertificadora: 'IPELC' }) });
+      await useCase.execute(
+        { capacitacionId: 1, participanteId: 9, pagoInicial: { concepto: 'MATRICULA', monto: 150, metodoPagoId: 1 } },
+        5
+      );
+      expect(deps.registerPagoCapacitacionUseCase.execute).toHaveBeenCalledTimes(1);
+    });
+
+    it('un curso sin entidad conserva el pago de CURSO', async () => {
+      const { deps, useCase } = crear();
+      await useCase.execute(
+        { capacitacionId: 1, participanteId: 9, pagoInicial: { concepto: 'CURSO', monto: 100, metodoPagoId: 1 } },
+        5
+      );
+      expect(deps.registerPagoCapacitacionUseCase.execute).toHaveBeenCalledTimes(1);
+    });
+  });
+
 });

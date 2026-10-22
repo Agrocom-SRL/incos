@@ -42,7 +42,14 @@ export function rowToPresentation(row) {
   const pagadoCurso = Number(row.pagado_curso ?? 0);
   const pagadoMatricula = Number(row.pagado_matricula ?? 0);
   const totalPagado = Number(row.total_pagado ?? pagadoCurso + pagadoMatricula);
-  const saldoCurso = deCentavos(Math.max(0, aCentavos(montoObligatorio) - aCentavos(pagadoCurso)));
+  // Costo del curso EXTERNO (curso con entidad certificadora): no se registra como pago en el
+  // sistema; lo acredita el requisito `acredita_pago_curso` (fotocopia del depósito).
+  const pagoCursoExterno = Boolean(Number(row.pago_curso_externo ?? 0));
+  const requisitoAcreditaId = pagoCursoExterno ? (row.requisito_acredita_id ?? null) : null;
+  const requisitoAcreditaEntregado =
+    requisitoAcreditaId !== null && Boolean(Number(row.requisito_acredita_entregado ?? 0));
+  let saldoCurso = deCentavos(Math.max(0, aCentavos(montoObligatorio) - aCentavos(pagadoCurso)));
+  if (pagoCursoExterno) saldoCurso = requisitoAcreditaEntregado ? 0 : montoObligatorio;
   const saldoMatricula = deCentavos(
     Math.max(0, aCentavos(montoMatricula) - aCentavos(pagadoMatricula))
   );
@@ -79,8 +86,17 @@ export function rowToPresentation(row) {
     totalPagadoMatricula: pagadoMatricula,
     saldoCurso,
     saldoMatricula,
-    // Saldo total pendiente (curso + matrícula)
-    saldo: deCentavos(aCentavos(saldoCurso) + aCentavos(saldoMatricula)),
+    // Saldo total pendiente DE COBRO del instituto: matrícula (+ curso solo si no es externo)
+    saldo: deCentavos(aCentavos(saldoMatricula) + (pagoCursoExterno ? 0 : aCentavos(saldoCurso))),
+    pagoCursoExterno,
+    requisitoAcreditaPagoCurso:
+      requisitoAcreditaId === null
+        ? null
+        : {
+            requisitoId: requisitoAcreditaId,
+            descripcion: row.requisito_acredita_descripcion ?? null,
+            entregado: requisitoAcreditaEntregado,
+          },
     estadoPago: row.estado_pago,
     estadoPagoCurso: row.estado_pago_curso ?? null,
     estadoPagoMatricula: row.estado_pago_matricula ?? null,
@@ -106,6 +122,7 @@ export function requisitoRowToPresentation(row) {
     requisitoId: row.requisito_id,
     descripcion: row.descripcion,
     obligatorio: Boolean(Number(row.obligatorio)),
+    acreditaPagoCurso: Boolean(Number(row.acredita_pago_curso ?? 0)),
     orden: row.orden ?? null,
     entregado: Boolean(Number(row.entregado)),
     fechaEntrega: row.fecha_entrega ?? null,

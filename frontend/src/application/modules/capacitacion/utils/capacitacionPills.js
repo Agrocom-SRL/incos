@@ -99,3 +99,34 @@ export const esCursoGratuito = (costo) => Number(costo ?? 0) <= 0;
 
 /** Clase del StatusPill "Gratis" (mismo verde que ABIERTO/CANCELADO/Saldado). */
 export const COSTO_GRATUITO_PILL_CLASS = 'cfg-materia-pill cfg-materia-pill--success';
+
+/**
+ * Costo del curso EXTERNO (curso con entidad certificadora): el instituto no lo
+ * cobra, se deposita a la entidad. Se reutilizan los valores del enum de
+ * `estadoPagoCurso`: CANCELADO = pagado a la entidad (requisito de depósito
+ * entregado) | cualquier otro (PARCIAL) = pendiente de acreditar con depósito.
+ */
+export const esCursoExternoPagado = (estadoPagoCurso) => estadoPagoCurso === 'CANCELADO';
+
+/** Etiqueta del costo del curso externo según su estado de acreditación. */
+export const formatEstadoCursoExterno = (estadoPagoCurso) =>
+  esCursoExternoPagado(estadoPagoCurso)
+    ? 'Pagado a la entidad'
+    : 'Pendiente de acreditar con depósito';
+
+/** Clase del StatusPill del costo del curso externo (pagado = success, pendiente = warning). */
+export const getEstadoCursoExternoPillClass = (estadoPagoCurso) =>
+  `cfg-materia-pill ${esCursoExternoPagado(estadoPagoCurso) ? 'cfg-materia-pill--success' : 'cfg-materia-pill--warning'}`;
+
+/** Pill «Anulado» de un pago anulado (conservado como historial). */
+export const PAGO_ANULADO_PILL_CLASS = 'cfg-materia-pill cfg-materia-pill--danger';
+
+/** Pill «Acredita pago del curso» del requisito que prueba el depósito a la entidad. */
+export const REQUISITO_ACREDITA_PILL_CLASS = 'cfg-materia-pill cfg-materia-pill--info';
+
+/** Nota breve del formulario de pago cuando el curso se paga a la entidad. */
+export const NOTA_CURSO_EXTERNO = 'El costo del curso se deposita a la entidad certificadora.';
+
+/** Ayuda del requisito que acredita el depósito del curso. */
+export const AYUDA_REQUISITO_ACREDITA =
+  'Al entregarlo, el costo del curso queda acreditado como pagado a la entidad certificadora.';

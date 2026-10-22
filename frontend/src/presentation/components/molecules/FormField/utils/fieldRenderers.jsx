@@ -168,6 +168,7 @@ const renderDate = (field, disabled, readOnly, minAge) => (
     minAge={minAge}
     defaultValue={field.defaultValue}
     disabledDate={field.disabledDate}
+    emptyByDefault={field.emptyByDefault}
   />
 );
 

@@ -51,7 +51,7 @@ describe('GetCursoCapacitacionByIdUseCase', () => {
     expect(res.grupos[1].horarios.map((h) => h.horarioId)).toEqual([11]);
     expect(res.horariosComunes).toEqual([]);
     expect(deps.capacitacionRequisitoRepository.findByCapacitacionId).toHaveBeenCalledWith(1);
-    expect(res.requisitos).toEqual([{ id: 3, descripcion: 'Cédula', obligatorio: true, orden: 1 }]);
+    expect(res.requisitos).toEqual([{ id: 3, descripcion: 'Cédula', obligatorio: true, acreditaPagoCurso: false, orden: 1 }]);
   });
 
   it('expone los campos del folleto y fechaFin nula', async () => {

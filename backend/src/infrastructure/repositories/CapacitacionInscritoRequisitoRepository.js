@@ -123,6 +123,55 @@ export class CapacitacionInscritoRequisitoRepository extends BaseRepository {
   }
 
   /**
+   * Estado del costo del curso externo: el curso tiene entidad certificadora
+   * (su costo se deposita a ella y no se registra como pago), cuál es el
+   * requisito que acredita el depósito y si la inscripción ya lo entregó.
+   *
+   * @param {number} capacitacionInscritoId
+   * @param {number} capacitacionId
+   * @param {Object} options - Opciones opcionales (ej: `{ transaction }`)
+   * @returns {Promise<{pagoCursoExterno: boolean, requisitoId: number|null,
+   *   requisitoDescripcion: string|null, acreditado: boolean}>}
+   */
+  async resolverPagoCursoExterno(capacitacionInscritoId, capacitacionId, options = {}) {
+    const filas = await sequelize.query(
+      `SELECT
+         c.entidad_certificadora,
+         r.id AS requisito_id,
+         r.descripcion AS requisito_descripcion,
+         COALESCE(ir.entregado, FALSE) AS entregado
+       FROM capacitaciones c
+       LEFT JOIN capacitacion_requisitos r
+         ON r.capacitacion_id = c.id
+         AND r.acredita_pago_curso = TRUE
+         AND r.activo = TRUE
+         AND r.deleted_at IS NULL
+       LEFT JOIN capacitacion_inscrito_requisitos ir
+         ON ir.capacitacion_requisito_id = r.id
+         AND ir.capacitacion_inscrito_id = :capacitacionInscritoId
+         AND ir.activo = TRUE
+         AND ir.deleted_at IS NULL
+       WHERE c.id = :capacitacionId
+       LIMIT 1`,
+      {
+        replacements: { capacitacionInscritoId, capacitacionId },
+        type: sequelize.QueryTypes.SELECT,
+        transaction: options.transaction,
+      }
+    );
+    const fila = filas[0];
+    const entidad = typeof fila?.entidad_certificadora === 'string' ? fila.entidad_certificadora.trim() : '';
+    const pagoCursoExterno = entidad !== '';
+    const requisitoId = pagoCursoExterno ? (fila.requisito_id ?? null) : null;
+    return {
+      pagoCursoExterno,
+      requisitoId,
+      requisitoDescripcion: requisitoId !== null ? (fila.requisito_descripcion ?? null) : null,
+      acreditado: requisitoId !== null && Boolean(Number(fila.entregado)),
+    };
+  }
+
+  /**
    * Checklist completo de una inscripción: todos los requisitos vigentes del
    * curso con su estado de entrega (filas crudas snake_case, en orden).
    *
@@ -137,6 +186,7 @@ export class CapacitacionInscritoRequisitoRepository extends BaseRepository {
          r.id AS requisito_id,
          r.descripcion,
          r.obligatorio,
+         r.acredita_pago_curso,
          r.orden,
          COALESCE(ir.entregado, FALSE) AS entregado,
          ir.fecha_entrega,

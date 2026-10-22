@@ -109,7 +109,7 @@ describe('CursoGruposEditor', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: /agregar grupo/i }));
     await screen.findByText('Grupo 1');
-    expect(screen.getByText('Aula (opcional)')).toBeTruthy();
+    expect(screen.getByText('Aula')).toBeTruthy();
     expect(formRef.current.getFieldValue(['grupos', 0, 'aulaId'])).toBeNull();
   });
 

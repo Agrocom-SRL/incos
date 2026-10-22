@@ -25,8 +25,11 @@ export const horarioCapEditarPath = (id) => `${GRUPOS_CAP_LIST_PATH}/horarios/${
 export const INSCRIPCIONES_CAP_LIST_PATH = `${CAPACITACION_BASE}/inscripciones`;
 export const inscripcionCapInscribirPath = `${CAPACITACION_BASE}/inscripciones/inscribir`;
 export const inscripcionCapDetallePath = (id) => `${CAPACITACION_BASE}/inscripciones/${id}`;
+export const inscripcionCapEditarPath = (id) => `${CAPACITACION_BASE}/inscripciones/${id}/editar`;
 export const inscripcionCapRegistrarPagoPath = (id) =>
   `${CAPACITACION_BASE}/inscripciones/${id}/pagos/registrar`;
+export const inscripcionCapEditarPagoPath = (id, pagoId) =>
+  `${CAPACITACION_BASE}/inscripciones/${id}/pagos/${pagoId}/editar`;
 
 /** Keys de menú (sidebar) — deben coincidir con los routes.jsx de cada submódulo. */
 export const CAP_CURSOS_MENU_KEY = 'CAP-CURSOS';

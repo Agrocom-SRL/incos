@@ -10,6 +10,13 @@ const { UpdateRequisitosInscripcionUseCase } = await import(
   '../../../src/application/use-cases/capacitacion/UpdateRequisitosInscripcionUseCase.js'
 );
 
+const NO_EXTERNO = {
+  pagoCursoExterno: false,
+  requisitoId: null,
+  requisitoDescripcion: null,
+  acreditado: false,
+};
+
 describe('UpdateRequisitosInscripcionUseCase', () => {
   const inscripcionBase = {
     id: 7, capacitacionId: 1, estado: 'PENDIENTE', montoObligatorio: 440, montoMatricula: 150,
@@ -28,6 +35,7 @@ describe('UpdateRequisitosInscripcionUseCase', () => {
         create: jest.fn(),
         update: jest.fn(),
         contarObligatoriosPendientes: jest.fn().mockResolvedValue(pendientes),
+        resolverPagoCursoExterno: jest.fn().mockResolvedValue(NO_EXTERNO),
         findChecklistByInscripcionId: jest.fn().mockResolvedValue([
           { requisito_id: 1, descripcion: 'A', obligatorio: 1, orden: 1, entregado: 1, fecha_entrega: '2026-01-01', observacion: null },
         ]),

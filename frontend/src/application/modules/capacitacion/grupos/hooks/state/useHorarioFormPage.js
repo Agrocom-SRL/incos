@@ -2,6 +2,7 @@
  * Hook de pantalla: alta/edición de un horario de capacitación (CAP ·
  * CREAR/EDITAR).
  *
+ * En el alta el día es multiselección (un horario por día con la misma franja).
  * Gemelo de `useParticipanteFormPage`: precarga en modo edición (GET fresco por
  * id vía `HorarioFormProvider`), submit con payload EXACTO del backend y
  * navegación de vuelta al tab «Horarios» de Grupos (mantenimiento del catálogo; el
@@ -72,14 +73,27 @@ export const useHorarioFormPage = (mode = 'create') => {
     setError(null);
     try {
       const values = await form.validateFields();
-      const payload = mapFormValuesToHorarioPayload(values);
-      const resultado = await guardarHorario({ id: isEditMode ? horarioId : null, payload });
-      if (!resultado?.success) {
-        throw new Error(resultado?.error || 'No se pudo guardar el horario');
+      // Alta: uno o varios días con la misma franja (p. ej. lunes a viernes 19:00-21:00) →
+      // un horario por día. Edición: siempre un solo día.
+      const dias = isEditMode ? [values.dia] : [].concat(values.dia ?? []);
+      const payloads = dias.map((dia) => mapFormValuesToHorarioPayload({ ...values, dia }));
+      for (const payload of payloads) {
+        const resultado = await guardarHorario({ id: isEditMode ? horarioId : null, payload });
+        if (!resultado?.success) {
+          throw new Error(resultado?.error || 'No se pudo guardar el horario');
+        }
       }
+      const [primero] = payloads;
       notification.success({
-        title: isEditMode ? 'Horario actualizado' : 'Horario guardado',
-        description: buildHorarioEtiqueta(payload.dia, payload.horaInicio, payload.horaFin),
+        title: isEditMode
+          ? 'Horario actualizado'
+          : payloads.length > 1
+            ? `${payloads.length} horarios guardados`
+            : 'Horario guardado',
+        description:
+          payloads.length > 1
+            ? `${primero.horaInicio}-${primero.horaFin} · ${dias.length} días`
+            : buildHorarioEtiqueta(primero.dia, primero.horaInicio, primero.horaFin),
       });
       handleVolver();
     } catch (e) {

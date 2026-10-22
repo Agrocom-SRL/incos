@@ -14,15 +14,27 @@
  * todo el contexto de la inscripción a la vista), no en la tabla de listado.
  * Confirmación con `Popconfirm` que deja explícito que el monto ya pagado no
  * se devuelve; solo se ofrece si la inscripción sigue PENDIENTE o INSCRITA.
+ *
+ * Correcciones (capacitacion.inscripcion EDITAR): «Editar» en la cabecera abre
+ * la página de edición de la inscripción (solo grupo); en la pestaña Pagos
+ * cada fila permite «Editar pago» (página propia) y «Anular pago» (`useInscripcionPagoAcciones`,
+ * modal propio). Los pagos anulados se muestran marcados y sin acciones.
  */
 
 import { Alert, Empty, Flex, Popconfirm, Spin, Tabs } from 'antd';
-import { ArrowLeftOutlined, DollarOutlined, StopOutlined } from '@ant-design/icons';
+import {
+  ArrowLeftOutlined,
+  DollarOutlined,
+  EditOutlined,
+  FilePdfOutlined,
+  StopOutlined,
+} from '@ant-design/icons';
 import { allSpacing } from '@theme/tokens';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { ActionButton, BackButton } from '@atoms';
 import { useInscripcionCapacitacionDetailPage } from '@application-capacitacion/inscripciones/hooks/state/useInscripcionCapacitacionDetailPage';
+import { useInscripcionPagoAcciones } from '@application-capacitacion/inscripciones/hooks/state/useInscripcionPagoAcciones';
 import { CAPACITACION_PERMISOS } from '@application-capacitacion/utils/capacitacionPermisos';
 import { usePermiso } from '@application-auth';
 import InscripcionFichaHeader from '@capacitacion/inscripciones/components/organisms/InscripcionFichaHeader';
@@ -30,6 +42,7 @@ import InscripcionDatosSection from '@capacitacion/inscripciones/components/orga
 import InscripcionResumenPagosSection from '@capacitacion/inscripciones/components/organisms/InscripcionResumenPagosSection';
 import InscripcionRequisitosSection from '@capacitacion/inscripciones/components/organisms/InscripcionRequisitosSection';
 import InscripcionPagosSection from '@capacitacion/inscripciones/components/organisms/InscripcionPagosSection';
+import PagoAnularModal from '@capacitacion/inscripciones/components/organisms/PagoAnularModal';
 import '@presentation/styles/pages/detail-page.css';
 
 const InscripcionCapacitacionDetail = () => {
@@ -40,27 +53,24 @@ const InscripcionCapacitacionDetail = () => {
     breadcrumbItems,
     handleVolver,
     handleIrARegistrarPago,
+    handleIrAEditar,
     puedeAnular,
     handleAnular,
     anulando,
     pendientes,
-    requisitosDraft,
-    requisitosDirty,
-    guardandoRequisitos,
-    handleToggleRequisito,
-    handleGuardarRequisitos,
-    handleDescartarRequisitos,
-    subiendoComprobante,
-    handleAdjuntarComprobante,
     handleDescargarComprobante,
+    descargandoFormulario,
+    handleDescargarFormulario,
+    reciboDescargandoId,
+    handleDescargarRecibo,
   } = useInscripcionCapacitacionDetailPage();
-  const puedeEditarInscripcion = usePermiso(CAPACITACION_PERMISOS.inscripcion, 'EDITAR');
+  const pagoAcciones = useInscripcionPagoAcciones();
   const comprobante = {
     puedeDescargar: usePermiso(CAPACITACION_PERMISOS.inscripcion, 'DETALLE'),
-    puedeAdjuntar: usePermiso(CAPACITACION_PERMISOS.pago, 'CREAR'),
-    subiendo: subiendoComprobante,
     onDescargar: handleDescargarComprobante,
-    onAdjuntar: handleAdjuntarComprobante,
+    puedeDescargarRecibo: usePermiso(CAPACITACION_PERMISOS.inscripcion, 'DETALLE'),
+    reciboDescargandoId,
+    onDescargarRecibo: handleDescargarRecibo,
   };
 
   const tabItems = inscripcion
@@ -76,18 +86,10 @@ const InscripcionCapacitacionDetail = () => {
         },
         {
           key: 'requisitos',
-          label: `Requisitos (${requisitosDraft.length})`,
+          label: `Requisitos (${inscripcion.requisitos?.length ?? 0})`,
           children: (
             <div className="sd-tab-body">
-              <InscripcionRequisitosSection
-                requisitos={requisitosDraft}
-                dirty={requisitosDirty}
-                saving={guardandoRequisitos}
-                editable={puedeEditarInscripcion}
-                onToggle={handleToggleRequisito}
-                onGuardar={handleGuardarRequisitos}
-                onDescartar={handleDescartarRequisitos}
-              />
+              <InscripcionRequisitosSection requisitos={inscripcion.requisitos ?? []} />
             </div>
           ),
         },
@@ -97,7 +99,15 @@ const InscripcionCapacitacionDetail = () => {
           children: (
             <div className="sd-tab-body">
               <InscripcionResumenPagosSection inscripcion={inscripcion} />
-              <InscripcionPagosSection inscripcion={inscripcion} comprobante={comprobante} />
+              <InscripcionPagosSection
+                inscripcion={inscripcion}
+                comprobante={comprobante}
+                acciones={{
+                  evaluarPago: pagoAcciones.evaluarPago,
+                  onEditar: pagoAcciones.irAEditar,
+                  onAnular: pagoAcciones.abrirAnular,
+                }}
+              />
             </div>
           ),
         },
@@ -106,6 +116,27 @@ const InscripcionCapacitacionDetail = () => {
 
   const headerActions = (
     <Flex gap="small" wrap>
+      <ActionButton
+        permiso={CAPACITACION_PERMISOS.inscripcion}
+        accion="DETALLE"
+        variant="view"
+        icon={<FilePdfOutlined />}
+        loading={descargandoFormulario}
+        onClick={handleDescargarFormulario}
+        disabled={!inscripcion}
+      >
+        Formulario PDF
+      </ActionButton>
+      <ActionButton
+        permiso={CAPACITACION_PERMISOS.inscripcion}
+        accion="EDITAR"
+        variant="warning"
+        icon={<EditOutlined />}
+        onClick={handleIrAEditar}
+        disabled={!inscripcion}
+      >
+        Editar
+      </ActionButton>
       {inscripcion?.saldoTotal > 0 ? (
         <ActionButton
           permiso={CAPACITACION_PERMISOS.pago}
@@ -176,28 +207,41 @@ const InscripcionCapacitacionDetail = () => {
           {!loading && !error && inscripcion && (
             <>
               <InscripcionFichaHeader inscripcion={inscripcion} />
+              {pendientes.length > 0 ? (
+                <Alert
+                  className="sd-pendientes"
+                  type="warning"
+                  showIcon
+                  title="La inscripción está pendiente: falta para pasar a «Inscrito»"
+                  description={
+                    <ul className="sd-pendientes__lista">
+                      {pendientes.map((p) => (
+                        <li key={p.key}>{p.label}</li>
+                      ))}
+                    </ul>
+                  }
+                />
+              ) : null}
               <div className="sd-tabs-shell">
-                {pendientes.length > 0 ? (
-                  <Alert
-                    type="warning"
-                    showIcon
-                    title="La inscripción está pendiente: falta para pasar a «Inscrito»"
-                    description={
-                      <ul>
-                        {pendientes.map((p) => (
-                          <li key={p.key}>{p.label}</li>
-                        ))}
-                      </ul>
-                    }
-                    style={{ marginBottom: allSpacing.margin }}
-                  />
-                ) : null}
                 <Tabs defaultActiveKey="informacion" items={tabItems} className="sd-tabs" />
               </div>
             </>
           )}
         </div>
       </Spin>
+
+      {inscripcion ? (
+        <>
+          <PagoAnularModal
+            pago={pagoAcciones.pagoAnulando}
+            form={pagoAcciones.formAnular}
+            anulando={pagoAcciones.anulandoPagoEnCurso}
+            error={pagoAcciones.errorAnular}
+            onConfirmar={pagoAcciones.confirmarAnulacion}
+            onCancel={pagoAcciones.cerrarAnular}
+          />
+        </>
+      ) : null}
     </PageTemplate>
   );
 };

@@ -18,16 +18,22 @@ import { registerComponent } from '../../utils/container.helpers.js';
 import { ListInscripcionesCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/ListInscripcionesCapacitacionUseCase.js';
 import { GetInscripcionCapacitacionByIdUseCase } from '../../../../application/use-cases/capacitacion/GetInscripcionCapacitacionByIdUseCase.js';
 import { CreateInscripcionCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/CreateInscripcionCapacitacionUseCase.js';
+import { UpdateInscripcionCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/UpdateInscripcionCapacitacionUseCase.js';
 import { UpdateRequisitosInscripcionUseCase } from '../../../../application/use-cases/capacitacion/UpdateRequisitosInscripcionUseCase.js';
 import { DeleteInscripcionCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/DeleteInscripcionCapacitacionUseCase.js';
 import { AnularInscripcionCapacitacionUseCase } from '../../../../application/use-cases/capacitacion/AnularInscripcionCapacitacionUseCase.js';
+import { ExportFormularioInscripcionCapacitacionPdfUseCase } from '../../../../application/use-cases/capacitacion/ExportFormularioInscripcionCapacitacionPdfUseCase.js';
+import { ExportReciboPagoCapacitacionPdfUseCase } from '../../../../application/use-cases/capacitacion/ExportReciboPagoCapacitacionPdfUseCase.js';
 import {
     ListInscripcionesCapacitacionController,
     GetInscripcionCapacitacionByIdController,
     CreateInscripcionCapacitacionController,
+    UpdateInscripcionCapacitacionController,
     UpdateRequisitosInscripcionController,
     DeleteInscripcionCapacitacionController,
     AnularInscripcionCapacitacionController,
+    ExportFormularioInscripcionCapacitacionController,
+    ExportReciboPagoCapacitacionController,
 } from '../../../../presentation/controllers/capacitacion/index.js';
 import { buildInscripcionesCapacitacionRouter } from '../../../../presentation/routes/inscripciones-capacitacion.routes.js';
 
@@ -107,6 +113,27 @@ export function registerInscripcionesCapacitacionResource(container) {
 
     registerComponent(
         container,
+        CAPACITACION_TOKENS.updateInscripcionCapacitacionUseCase,
+        (c) =>
+            new UpdateInscripcionCapacitacionUseCase({
+                inscripcionCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.inscripcionCapacitacionRepository
+                ),
+                grupoCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.grupoCapacitacionRepository
+                ),
+                updateParticipanteUseCase: c.resolve(
+                    CAPACITACION_TOKENS.updateParticipanteUseCase
+                ),
+                getInscripcionCapacitacionByIdUseCase: c.resolve(
+                    CAPACITACION_TOKENS.getInscripcionCapacitacionByIdUseCase
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
         CAPACITACION_TOKENS.updateRequisitosInscripcionUseCase,
         (c) =>
             new UpdateRequisitosInscripcionUseCase({
@@ -156,6 +183,39 @@ export function registerInscripcionesCapacitacionResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        CAPACITACION_TOKENS.exportFormularioInscripcionCapacitacionPdfUseCase,
+        (c) =>
+            new ExportFormularioInscripcionCapacitacionPdfUseCase({
+                getInscripcionCapacitacionByIdUseCase: c.resolve(
+                    CAPACITACION_TOKENS.getInscripcionCapacitacionByIdUseCase
+                ),
+                getCursoCapacitacionByIdUseCase: c.resolve(
+                    CAPACITACION_TOKENS.getCursoCapacitacionByIdUseCase
+                ),
+                formularioInscripcionCapacitacionPdfGenerator: c.resolve(
+                    SERVICIOS_TOKENS.formularioInscripcionCapacitacionPdfGenerator
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        CAPACITACION_TOKENS.exportReciboPagoCapacitacionPdfUseCase,
+        (c) =>
+            new ExportReciboPagoCapacitacionPdfUseCase({
+                getInscripcionCapacitacionByIdUseCase: c.resolve(
+                    CAPACITACION_TOKENS.getInscripcionCapacitacionByIdUseCase
+                ),
+                reciboPagoCapacitacionPdfGenerator: c.resolve(
+                    SERVICIOS_TOKENS.reciboPagoCapacitacionPdfGenerator
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
     // ============================================
     // CONTROLLERS
     // ============================================
@@ -192,6 +252,19 @@ export function registerInscripcionesCapacitacionResource(container) {
             new CreateInscripcionCapacitacionController({
                 createInscripcionCapacitacionUseCase: c.resolve(
                     CAPACITACION_TOKENS.createInscripcionCapacitacionUseCase
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    registerComponent(
+        container,
+        CAPACITACION_TOKENS.updateInscripcionCapacitacionController,
+        (c) =>
+            new UpdateInscripcionCapacitacionController({
+                updateInscripcionCapacitacionUseCase: c.resolve(
+                    CAPACITACION_TOKENS.updateInscripcionCapacitacionUseCase
                 ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
                 responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
@@ -237,6 +310,30 @@ export function registerInscripcionesCapacitacionResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        CAPACITACION_TOKENS.exportFormularioInscripcionCapacitacionController,
+        (c) =>
+            new ExportFormularioInscripcionCapacitacionController({
+                exportFormularioInscripcionCapacitacionPdfUseCase: c.resolve(
+                    CAPACITACION_TOKENS.exportFormularioInscripcionCapacitacionPdfUseCase
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        CAPACITACION_TOKENS.exportReciboPagoCapacitacionController,
+        (c) =>
+            new ExportReciboPagoCapacitacionController({
+                exportReciboPagoCapacitacionPdfUseCase: c.resolve(
+                    CAPACITACION_TOKENS.exportReciboPagoCapacitacionPdfUseCase
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
     // ============================================
     // ROUTER
     // ============================================
@@ -263,6 +360,15 @@ export function registerInscripcionesCapacitacionResource(container) {
                 registerPagoCapacitacionController: c.resolve(
                     CAPACITACION_TOKENS.registerPagoCapacitacionController
                 ),
+                updateInscripcionCapacitacionController: c.resolve(
+                    CAPACITACION_TOKENS.updateInscripcionCapacitacionController
+                ),
+                updatePagoCapacitacionController: c.resolve(
+                    CAPACITACION_TOKENS.updatePagoCapacitacionController
+                ),
+                anularPagoCapacitacionController: c.resolve(
+                    CAPACITACION_TOKENS.anularPagoCapacitacionController
+                ),
                 updateRequisitosInscripcionController: c.resolve(
                     CAPACITACION_TOKENS.updateRequisitosInscripcionController
                 ),
@@ -271,6 +377,12 @@ export function registerInscripcionesCapacitacionResource(container) {
                 ),
                 descargarComprobantePagoCapacitacionController: c.resolve(
                     CAPACITACION_TOKENS.descargarComprobantePagoCapacitacionController
+                ),
+                exportFormularioInscripcionCapacitacionController: c.resolve(
+                    CAPACITACION_TOKENS.exportFormularioInscripcionCapacitacionController
+                ),
+                exportReciboPagoCapacitacionController: c.resolve(
+                    CAPACITACION_TOKENS.exportReciboPagoCapacitacionController
                 ),
             };
 

@@ -3,6 +3,7 @@ import {
   actualizarItem,
   alternarEntregado,
   crearRequisitoVacio,
+  dejarUnSoloAcreditaPago,
   hayCambiosRequisitos,
   quitarItem,
 } from '../requisitosCapacitacion';
@@ -35,5 +36,23 @@ describe('requisitosCapacitacion', () => {
     expect(hayCambiosRequisitos(original, [{ requisitoId: 1, entregado: false }])).toBe(false);
     expect(hayCambiosRequisitos(original, [{ requisitoId: 1, entregado: true }])).toBe(true);
     expect(hayCambiosRequisitos(original, [])).toBe(false);
+  });
+
+  it('un solo requisito acredita el pago: conserva el recién activado', () => {
+    const previa = [{ acreditaPagoCurso: true }, { acreditaPagoCurso: false }];
+    const lista = [{ acreditaPagoCurso: true }, { acreditaPagoCurso: true }];
+    expect(dejarUnSoloAcreditaPago(lista, previa)).toEqual([
+      { acreditaPagoCurso: false },
+      { acreditaPagoCurso: true },
+    ]);
+  });
+
+  it('no cambia la lista si hay a lo sumo un requisito que acredita', () => {
+    const lista = [{ acreditaPagoCurso: true }, { acreditaPagoCurso: false }];
+    expect(dejarUnSoloAcreditaPago(lista, [])).toBe(lista);
+  });
+
+  it('las filas nuevas no acreditan el pago', () => {
+    expect(crearRequisitoVacio().acreditaPagoCurso).toBe(false);
   });
 });

@@ -108,6 +108,10 @@ const extensionCursoValidators = [
     .optional()
     .isBoolean()
     .withMessage('requisitos[].obligatorio debe ser boolean'),
+  body('requisitos.*.acreditaPagoCurso')
+    .optional()
+    .isBoolean()
+    .withMessage('requisitos[].acreditaPagoCurso debe ser boolean'),
   body('requisitos.*.orden')
     .optional()
     .isInt({ min: 1 })

@@ -1,14 +1,22 @@
 import fs from 'fs';
-import { ConflictError, NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
+import { ConflictError, NotFoundError } from '../../../domain/errors/AppError.js';
 import {
   CONCEPTOS_PAGO_CAPACITACION,
-  CONCEPTOS_PAGO_CAPACITACION_VALUES,
   ESTADOS_INSCRIPCION_CAPACITACION,
 } from '../../../domain/constants/capacitacion.constants.js';
 import { sequelize } from '../../../infrastructure/database/sequelize.js';
 import { PagoCapacitacionMapper } from '../../mappers/capacitacion/index.js';
-import { parseFechaISO, parseIdPositivo, parseNumero } from '../../utils/validacionEntrada.js';
-import { aCentavos, recalcularEstadoInscripcion } from './helpers/estadoInscripcion.js';
+import { parseIdPositivo } from '../../utils/validacionEntrada.js';
+import { recalcularEstadoInscripcion } from './helpers/estadoInscripcion.js';
+import {
+  parseConceptoPago,
+  parseFechaPago,
+  parseMontoPago,
+  resolverCuentaPago,
+  resolverMetodoPago,
+  validarConceptoPermitido,
+  validarMontoDentroDelSaldo,
+} from './helpers/pagoCapacitacionInput.js';
 
 /**
  * Use Case: RegisterPagoCapacitacionUseCase
@@ -26,6 +34,8 @@ import { aCentavos, recalcularEstadoInscripcion } from './helpers/estadoInscripc
  * Reglas:
  * - La inscripción debe existir y estar vigente (estado PENDIENTE o INSCRITO;
  *   RETIRADO/ANULADO rechazan con ConflictError).
+ * - Un curso con entidad certificadora NO admite concepto CURSO (400): su costo se
+ *   deposita a la entidad y se acredita con un requisito, no con un pago.
  * - `concepto` es obligatorio. El monto no puede superar el saldo pendiente
  *   DEL CONCEPTO, calculado contra el SNAPSHOT de la inscripción
  *   (`montoMatricula` / `montoObligatorio`), no contra el costo actual del curso.
@@ -119,49 +129,33 @@ export class RegisterPagoCapacitacionUseCase {
     }
 
     // 2. Concepto y monto vs saldo pendiente DEL CONCEPTO (snapshot − pagado)
-    const concepto = this._parseConcepto(body.concepto);
-    const monto = parseNumero(body.monto, 'monto', { min: 0.01, max: 99999999.99 });
-    if (Math.abs(monto * 100 - Math.round(monto * 100)) > 1e-6) {
-      throw new ValidationError('monto admite como máximo 2 decimales');
+    const concepto = parseConceptoPago(body.concepto);
+    if (concepto === CONCEPTOS_PAGO_CAPACITACION.CURSO) {
+      const { pagoCursoExterno } =
+        await this.capacitacionInscritoRequisitoRepository.resolverPagoCursoExterno(
+          capacitacionInscritoId,
+          inscripcion.capacitacionId,
+          { transaction }
+        );
+      validarConceptoPermitido(concepto, pagoCursoExterno);
     }
+    const monto = parseMontoPago(body.monto);
 
     const totales = await this.pagoCapacitacionRepository.sumMontosPorConcepto(
       capacitacionInscritoId,
       { transaction }
     );
-    const esMatricula = concepto === CONCEPTOS_PAGO_CAPACITACION.MATRICULA;
-    const montoObjetivo = Number(
-      (esMatricula ? inscripcion.montoMatricula : inscripcion.montoObligatorio) ?? 0
-    );
-    const pagadoConcepto = Number(totales[concepto] ?? 0);
-    const saldoC = Math.max(0, aCentavos(montoObjetivo) - aCentavos(pagadoConcepto));
-    if (aCentavos(monto) > saldoC) {
-      const nombre = esMatricula ? 'la matrícula' : 'el costo del curso';
-      const limite = pagadoConcepto > 0 ? `el saldo pendiente de ${nombre}` : nombre;
-      throw new ValidationError(
-        `El monto del pago (Bs. ${monto.toFixed(2)}) no puede superar ${limite} (Bs. ${(saldoC / 100).toFixed(2)})`
-      );
-    }
+    validarMontoDentroDelSaldo({
+      concepto,
+      monto,
+      inscripcion,
+      pagadoConcepto: Number(totales[concepto] ?? 0),
+    });
 
-    // 3. Método de pago y cuenta (catálogos reutilizados)
-    if (body.metodoPagoId === undefined || body.metodoPagoId === null || body.metodoPagoId === '') {
-      throw new ValidationError('metodoPagoId es requerido');
-    }
-    const metodoPagoId = parseIdPositivo(body.metodoPagoId, 'metodoPagoId');
-    const metodoPago = await this.paymentMethodRepository.findById(metodoPagoId);
-    if (!metodoPago) throw new NotFoundError(`método de pago con ID ${metodoPagoId}`);
-
-    let cuentaPagoId = null;
-    if (body.cuentaPagoId !== undefined && body.cuentaPagoId !== null && body.cuentaPagoId !== '') {
-      cuentaPagoId = parseIdPositivo(body.cuentaPagoId, 'cuentaPagoId');
-      const cuenta = await this.paymentAccountRepository.findById(cuentaPagoId);
-      if (!cuenta) throw new NotFoundError(`cuenta de pago con ID ${cuentaPagoId}`);
-    }
-
-    const fechaPago =
-      body.fechaPago === undefined || body.fechaPago === null || body.fechaPago === ''
-        ? new Date().toISOString().slice(0, 10)
-        : parseFechaISO(body.fechaPago, 'fechaPago');
+    // 3. Método de pago y cuenta (catálogos reutilizados) y fecha
+    const metodoPagoId = await resolverMetodoPago(this.paymentMethodRepository, body.metodoPagoId);
+    const cuentaPagoId = await resolverCuentaPago(this.paymentAccountRepository, body.cuentaPagoId);
+    const fechaPago = parseFechaPago(body.fechaPago);
 
     // 4. Crear pago con numero_recibo temporal (NOT NULL); luego se reemplaza
     //    por el ID a 6 dígitos (mismo patrón que pago_cuotas de aportes)
@@ -220,25 +214,6 @@ export class RegisterPagoCapacitacionUseCase {
       saldoMatricula: resumen.saldoMatricula,
     };
     return { pagoCapacitacion: presentation };
-  }
-
-  /**
-   * Concepto obligatorio: MATRICULA | CURSO (sin distinguir mayúsculas).
-   * @private
-   */
-  _parseConcepto(valor) {
-    if (typeof valor !== 'string' || valor.trim() === '') {
-      throw new ValidationError(
-        `concepto es requerido (${CONCEPTOS_PAGO_CAPACITACION_VALUES.join(' o ')})`
-      );
-    }
-    const concepto = valor.trim().toUpperCase();
-    if (!CONCEPTOS_PAGO_CAPACITACION_VALUES.includes(concepto)) {
-      throw new ValidationError(
-        `concepto debe ser uno de: ${CONCEPTOS_PAGO_CAPACITACION_VALUES.join(', ')}`
-      );
-    }
-    return concepto;
   }
 
   /** Borra (mejor esfuerzo) el archivo subido cuando el pago no se registró. @private */

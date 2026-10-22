@@ -14,6 +14,7 @@
  */
 
 import { useCallback, useMemo, useState } from 'react';
+import { App } from 'antd';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useInscripcionesCapacitacionListContext } from '@application-capacitacion/inscripciones/hooks/context/useInscripcionesCapacitacionListContext';
 import { createInscripcionesCapTableColumns } from '@capacitacion/inscripciones/config/inscripcionesTableColumns';
@@ -26,6 +27,7 @@ import {
 export const useInscripcionesCapacitacionListPage = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const { message } = App.useApp();
 
   const {
     inscripciones: inscripcionesCargadas = [],
@@ -36,6 +38,7 @@ export const useInscripcionesCapacitacionListPage = () => {
     refetch,
     tablePagination,
     eliminarInscripcion,
+    descargarFormularioPdf,
   } = useInscripcionesCapacitacionListContext();
 
   const [soloVencidos, setSoloVencidos] = useState(false);
@@ -66,6 +69,22 @@ export const useInscripcionesCapacitacionListPage = () => {
     [eliminarInscripcion],
   );
 
+  /** Descarga el formulario PDF de una fila (feedback con message; el permiso lo valida TableActions). */
+  const handleDescargarFormulario = useCallback(
+    async (inscripcionId) => {
+      const hide = message.loading('Generando formulario de inscripción…', 0);
+      try {
+        const result = await descargarFormularioPdf(inscripcionId);
+        if (!result?.success) {
+          message.error(result?.error || 'No se pudo descargar el formulario de inscripción');
+        }
+      } finally {
+        hide();
+      }
+    },
+    [descargarFormularioPdf, message],
+  );
+
   const tableColumns = useMemo(
     () =>
       createInscripcionesCapTableColumns({
@@ -73,8 +92,9 @@ export const useInscripcionesCapacitacionListPage = () => {
         listNavState,
         refetch,
         deleteFn: handleEliminar,
+        onDescargarFormulario: handleDescargarFormulario,
       }),
-    [navigate, listNavState, refetch, handleEliminar],
+    [navigate, listNavState, refetch, handleEliminar, handleDescargarFormulario],
   );
 
   const breadcrumbItems = useMemo(

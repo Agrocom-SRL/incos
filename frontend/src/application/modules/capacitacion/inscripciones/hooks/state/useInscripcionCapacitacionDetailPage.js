@@ -31,6 +31,7 @@ import {
   INSCRIPCIONES_CAP_LIST_PATH,
   CAP_INSCRIPCIONES_MENU_KEY,
   inscripcionCapRegistrarPagoPath,
+  inscripcionCapEditarPath,
 } from '@application-capacitacion/config/paths';
 
 export const useInscripcionCapacitacionDetailPage = () => {
@@ -50,6 +51,8 @@ export const useInscripcionCapacitacionDetailPage = () => {
     adjuntarComprobantePago,
     subiendoComprobante,
     descargarComprobantePago,
+    descargarFormularioPdf,
+    descargarReciboPdfPago,
   } = useInscripcionCapacitacionDetailContext();
 
   // Borrador del checklist: `null` = sin cambios (se muestra lo persistido); al
@@ -115,6 +118,35 @@ export const useInscripcionCapacitacionDetailPage = () => {
     [descargarComprobantePago, message],
   );
 
+  // PDFs: el loading del formulario es global a la ficha; el del recibo es por pago.
+  const [descargandoFormulario, setDescargandoFormulario] = useState(false);
+  const [reciboDescargandoId, setReciboDescargandoId] = useState(null);
+
+  const handleDescargarFormulario = useCallback(async () => {
+    setDescargandoFormulario(true);
+    try {
+      const result = await descargarFormularioPdf();
+      if (!result?.success) {
+        message.error(result?.error || 'No se pudo descargar el formulario de inscripción');
+      }
+    } finally {
+      setDescargandoFormulario(false);
+    }
+  }, [descargarFormularioPdf, message]);
+
+  const handleDescargarRecibo = useCallback(
+    async (pagoId) => {
+      setReciboDescargandoId(pagoId);
+      try {
+        const result = await descargarReciboPdfPago(pagoId);
+        if (!result?.success) message.error(result?.error || 'No se pudo descargar el recibo de pago');
+      } finally {
+        setReciboDescargandoId(null);
+      }
+    },
+    [descargarReciboPdfPago, message],
+  );
+
   const returnListPath = location.state?.returnListPath || INSCRIPCIONES_CAP_LIST_PATH;
   const menuSidebarKey = location.state?.menuSidebarKey ?? CAP_INSCRIPCIONES_MENU_KEY;
 
@@ -139,6 +171,11 @@ export const useInscripcionCapacitacionDetailPage = () => {
     });
   }, [navigate, inscripcionId, returnListPath, menuSidebarKey]);
 
+  const handleIrAEditar = useCallback(() => {
+    if (!inscripcionId) return;
+    navigate(inscripcionCapEditarPath(inscripcionId), { state: { returnListPath, menuSidebarKey } });
+  }, [navigate, inscripcionId, returnListPath, menuSidebarKey]);
+
   /** Solo se ofrece anular desde PENDIENTE o INSCRITO (mismas reglas que el backend). */
   const puedeAnular = ESTADOS_INSCRIPCION_CAP_VIGENTES.includes(inscripcion?.estado);
 
@@ -158,6 +195,7 @@ export const useInscripcionCapacitacionDetailPage = () => {
     breadcrumbItems,
     handleVolver,
     handleIrARegistrarPago,
+    handleIrAEditar,
     puedeAnular,
     handleAnular,
     anulando,
@@ -174,5 +212,10 @@ export const useInscripcionCapacitacionDetailPage = () => {
     subiendoComprobante,
     handleAdjuntarComprobante,
     handleDescargarComprobante,
+    // PDFs (formulario de inscripción y recibo de pago)
+    descargandoFormulario,
+    handleDescargarFormulario,
+    reciboDescargandoId,
+    handleDescargarRecibo,
   };
 };

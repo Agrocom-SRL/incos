@@ -66,7 +66,7 @@ export const createCursoFormSections = ({
       },
       {
         name: 'entidadCertificadora',
-        label: 'Entidad certificadora (opcional)',
+        label: 'Entidad certificadora',
         type: 'input',
         span: 12,
         maxLength: 200,
@@ -74,7 +74,7 @@ export const createCursoFormSections = ({
       },
       {
         name: 'nivel',
-        label: 'Nivel (opcional)',
+        label: 'Nivel',
         type: 'input',
         span: 6,
         maxLength: 100,
@@ -82,7 +82,7 @@ export const createCursoFormSections = ({
       },
       {
         name: 'duracion',
-        label: 'Duración (opcional)',
+        label: 'Duración',
         type: 'input',
         span: 6,
         maxLength: 100,
@@ -90,7 +90,7 @@ export const createCursoFormSections = ({
       },
       {
         name: 'dirigidoA',
-        label: 'Dirigido a (opcional)',
+        label: 'Dirigido a',
         type: 'input',
         span: 12,
         maxLength: 255,
@@ -114,8 +114,9 @@ export const createCursoFormSections = ({
       },
       {
         name: 'fechaFin',
-        label: 'Fecha de fin (opcional)',
+        label: 'Fecha de fin',
         type: 'date',
+        emptyByDefault: true,
         span: 12,
         dependencies: ['fechaInicio'],
         rules: [
@@ -134,7 +135,7 @@ export const createCursoFormSections = ({
       },
       {
         name: 'descripcion',
-        label: 'Descripción (opcional)',
+        label: 'Descripción',
         type: 'textarea',
         span: 24,
         rows: 3,

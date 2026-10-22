@@ -43,7 +43,7 @@ const HorarioCrearModal = ({ open, creando = false, error = null, onCrear, onCan
             style={{ marginBottom: allSpacing.marginSM }}
           />
         ) : null}
-        <HorarioFormFields disabled={creando} />
+        <HorarioFormFields disabled={creando} multipleDias />
       </Form>
     </Modal>
   );

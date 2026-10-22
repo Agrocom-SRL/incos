@@ -1121,14 +1121,14 @@ Dominio `CAPACITACION`, módulo `CAP` (cursos cortos a público externo, sin log
 |---|---|---|---|---|
 | `capacitacion.curso` | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR | `/capacitacion/cursos` | `GET/POST /cursos-capacitacion`, `GET/PUT/DELETE /cursos-capacitacion/:id`, `PATCH /cursos-capacitacion/:id/estado` | RECTOR, DIR_ADMIN, SEC_ADMIN (SEC_ADMIN **sin** ELIMINAR/ACTIVAR) |
 | `capacitacion.participante` | LISTAR, DETALLE, CREAR, EDITAR | `/capacitacion/participantes` | `GET/POST /participantes`, `GET/PUT /participantes/:id` | RECTOR, DIR_ADMIN, SEC_ADMIN |
-| `capacitacion.inscripcion` | LISTAR, DETALLE, CREAR, ELIMINAR | `/capacitacion/inscripciones` | `GET/POST /inscripciones-capacitacion`, `GET/DELETE /inscripciones-capacitacion/:id` | RECTOR, DIR_ADMIN, SEC_ADMIN (SEC_ADMIN **sin** ELIMINAR) |
+| `capacitacion.inscripcion` | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR | `/capacitacion/inscripciones` | `GET/POST /inscripciones-capacitacion`, `GET/DELETE /inscripciones-capacitacion/:id`, `PUT /inscripciones-capacitacion/:id` (EDITAR: corregir participante y/o grupo), `PUT /inscripciones-capacitacion/:id/requisitos` y `POST /inscripciones-capacitacion/:id/anular` (EDITAR), `PUT /inscripciones-capacitacion/:id/pagos/:pagoId` (EDITAR: corregir un pago) y `POST /inscripciones-capacitacion/:id/pagos/:pagoId/anular` (EDITAR: anular un pago con motivo), `GET /inscripciones-capacitacion/:id/formulario-pdf` y `GET /inscripciones-capacitacion/:id/pagos/:pagoId/recibo-pdf` (DETALLE) | RECTOR, DIR_ADMIN, SEC_ADMIN (SEC_ADMIN **sin** ELIMINAR) |
 | `capacitacion.grupo` | LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR | `/capacitacion/grupos` | `GET /cursos-capacitacion/grupos` (listado de grupos de todas las capacitaciones); CRUD de horarios: `GET/POST /cursos-capacitacion/horarios`, `GET/PUT/DELETE /cursos-capacitacion/horarios/:id` (el `GET /horarios` también acepta `capacitacion.curso` CREAR/EDITAR: lo usa el selector de horarios del formulario de curso) | RECTOR, DIR_ADMIN, SEC_ADMIN (SEC_ADMIN **sin** ELIMINAR) |
 | `capacitacion.pago` | CREAR, EXPORTAR | `/capacitacion/inscripciones` | `POST /inscripciones-capacitacion/:id/pagos` (CREAR; EXPORTAR sembrado, sin endpoint aún) | RECTOR, DIR_ADMIN, SEC_ADMIN (SEC_ADMIN **sin** EXPORTAR) |
 
 > Aislamiento: tablas propias (`participantes`, `capacitaciones`, `capacitacion_*`) sin FK hacia
 > `estudiantes`/`usuarios`; reutiliza solo catálogos `aulas`, `horarios` (`tipo_horario='CAPACITACION'`),
 > `metodos_pago`, `cuentas_pago`. `DELETE /inscripciones-capacitacion/:id` marca RETIRADO + soft-delete
-> en cascada de pagos. Recibo PDF (GENERAR_PDF) diferido a una segunda iteración.
+> en cascada de pagos. El Formulario de Inscripción y el Recibo de Pago en PDF se exponen con `capacitacion.inscripcion` DETALLE (sin acción nueva).
 > Gap conocido: el picker de aulas del form de curso reutiliza `GET /aulas/catalogo`
 > (`institucional.oferta.paralelo-gestion` LISTAR) que SEC_ADMIN no tiene — la UI degrada con select
 > deshabilitado; candidato a `sistema.catalogo.referencia` (`listarCatalogoReferencia`).

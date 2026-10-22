@@ -18,6 +18,7 @@ import { Typography } from 'antd';
 import { ExclamationCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { FormWorkspaceSection } from '@organisms';
 import { Avatar, StatusPill } from '@atoms';
+import { ResumenDato } from '@molecules';
 import { buildInitials } from '@application/utils/formatters';
 import {
   getEnrollmentTypeLabel,
@@ -35,15 +36,6 @@ const TAG_MATERIA = {
   arrastre: { label: 'Arrastre', variante: 'info' },
   nivelar: { label: 'Nivelación', variante: 'warning' },
 };
-
-/** Columna del bloque académico: rótulo en versalitas + valor. */
-const DatoContexto = ({ label, value }) =>
-  value ? (
-    <div className="insc-resumen__dato">
-      <span className="insc-resumen__dato-label">{label}</span>
-      <span className="insc-resumen__dato-valor">{value}</span>
-    </div>
-  ) : null;
 
 const InscripcionSeleccionResumen = ({
   section = null,
@@ -121,10 +113,10 @@ const InscripcionSeleccionResumen = ({
         ) : null}
 
         <div className="insc-resumen__datos">
-          <DatoContexto label="Carrera" value={contexto?.carrera?.nombre} />
-          <DatoContexto label="Plan de estudio" value={contexto?.plan?.nombre} />
-          <DatoContexto label="Gestión" value={gestionTexto} />
-          <DatoContexto
+          <ResumenDato label="Carrera" value={contexto?.carrera?.nombre} />
+          <ResumenDato label="Plan de estudio" value={contexto?.plan?.nombre} />
+          <ResumenDato label="Gestión" value={gestionTexto} />
+          <ResumenDato
             label="Carga"
             value={
               hayMaterias

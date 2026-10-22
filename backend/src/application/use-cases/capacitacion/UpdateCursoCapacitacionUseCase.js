@@ -5,7 +5,10 @@ import {
   construirDatosCurso,
   normalizarRequisitos,
   sincronizarRequisitos,
+  tienePagoCursoExterno,
+  validarRequisitoAcreditaPago,
 } from './helpers/cursoCapacitacionInput.js';
+import { recalcularInscripcionesDeCurso } from './helpers/estadoInscripcion.js';
 import {
   normalizarGrupos,
   sincronizarGrupos,
@@ -23,6 +26,11 @@ import {
  * vigentes lanza 409); si trae `requisitos`,
  * sincroniza la lista de requisitos (actualiza los que traen `id`, crea los
  * nuevos y da de baja lógica los ausentes). Todo en UNA transacción.
+ *
+ * Costo externo: con `entidadCertificadora` el costo del curso se deposita a esa
+ * entidad; a lo sumo un requisito (`acreditaPagoCurso`) acredita el depósito y
+ * solo es válido con entidad. Si cambia la entidad o cuál requisito acredita el
+ * depósito, se recalculan los estados de las inscripciones del curso.
  *
  * `fechaFin: null` (o '') la deja sin fecha de fin (es opcional). El aula
  * (opcional) se indica por grupo en `grupos[].aulaId`.
@@ -43,6 +51,9 @@ export class UpdateCursoCapacitacionUseCase {
    * @param {Object} params.inscripcionCapacitacionRepository - Para validar la baja de grupos
    * @param {Object} params.scheduleRepository - Catálogo `horarios` (validación de bloques)
    * @param {Object} params.classroomRepository - Catálogo `aulas` (validación de aula)
+   * @param {Object} params.pagoCapacitacionRepository - Para recalcular estados de las inscripciones
+   * @param {Object} params.capacitacionInscritoRequisitoRepository - Idem
+   * @param {Object} params.capacitacionCompromisoRepository - Idem
    * @param {ILogger} params.logger
    */
   constructor({
@@ -53,6 +64,9 @@ export class UpdateCursoCapacitacionUseCase {
     inscripcionCapacitacionRepository,
     scheduleRepository,
     classroomRepository,
+    pagoCapacitacionRepository,
+    capacitacionInscritoRequisitoRepository,
+    capacitacionCompromisoRepository,
     logger,
   }) {
     this.cursoCapacitacionRepository = cursoCapacitacionRepository;
@@ -62,6 +76,9 @@ export class UpdateCursoCapacitacionUseCase {
     this.inscripcionCapacitacionRepository = inscripcionCapacitacionRepository;
     this.scheduleRepository = scheduleRepository;
     this.classroomRepository = classroomRepository;
+    this.pagoCapacitacionRepository = pagoCapacitacionRepository;
+    this.capacitacionInscritoRequisitoRepository = capacitacionInscritoRequisitoRepository;
+    this.capacitacionCompromisoRepository = capacitacionCompromisoRepository;
     this.logger = logger;
   }
 
@@ -78,6 +95,21 @@ export class UpdateCursoCapacitacionUseCase {
     const updateData = construirDatosCurso(body, existing);
     const grupos = normalizarGrupos(body.grupos);
     const requisitos = normalizarRequisitos(body.requisitos);
+
+    // Requisito que acredita el pago del curso: coherente con la entidad FINAL del curso
+    const entidadFinal =
+      'entidadCertificadora' in updateData
+        ? updateData.entidadCertificadora
+        : existing.entidadCertificadora;
+    const cambioCostoExterno = tienePagoCursoExterno(entidadFinal) !== tienePagoCursoExterno(existing);
+    if (requisitos !== null) {
+      validarRequisitoAcreditaPago(requisitos, entidadFinal);
+    } else if (cambioCostoExterno && !tienePagoCursoExterno(entidadFinal)) {
+      validarRequisitoAcreditaPago(
+        await this.capacitacionRequisitoRepository.findByCapacitacionId(id),
+        entidadFinal
+      );
+    }
 
     if (grupos !== null) {
       await validarAulasGrupos(this.classroomRepository, grupos);
@@ -104,11 +136,28 @@ export class UpdateCursoCapacitacionUseCase {
           transaction,
         });
       }
+      let acreditaAntes = null;
       if (requisitos !== null) {
+        const previos = await this.capacitacionRequisitoRepository.findByCapacitacionId(id, {
+          transaction,
+        });
+        acreditaAntes = previos.find((r) => r.acreditaPagoCurso)?.id ?? null;
         requisitosFinales = await sincronizarRequisitos({
           capacitacionRequisitoRepository: this.capacitacionRequisitoRepository,
           capacitacionId: id,
           requisitos,
+          userId,
+          transaction,
+        });
+      }
+      const acreditaDespues = requisitosFinales?.find((r) => r.acreditaPagoCurso)?.id ?? null;
+      if (cambioCostoExterno || acreditaAntes !== acreditaDespues) {
+        await recalcularInscripcionesDeCurso({
+          capacitacionId: id,
+          inscripcionCapacitacionRepository: this.inscripcionCapacitacionRepository,
+          pagoCapacitacionRepository: this.pagoCapacitacionRepository,
+          capacitacionInscritoRequisitoRepository: this.capacitacionInscritoRequisitoRepository,
+          capacitacionCompromisoRepository: this.capacitacionCompromisoRepository,
           userId,
           transaction,
         });
@@ -132,6 +181,9 @@ export class UpdateCursoCapacitacionUseCase {
     );
     presentation.requisitos = CursoCapacitacionMapper.requisitosToPresentation(
       requisitosFinales ?? (await this.capacitacionRequisitoRepository.findByCapacitacionId(id))
+    );
+    presentation.requisitoAcreditaPagoCurso = CursoCapacitacionMapper.requisitoAcreditaPagoCurso(
+      presentation.requisitos
     );
 
     return { cursoCapacitacion: presentation };

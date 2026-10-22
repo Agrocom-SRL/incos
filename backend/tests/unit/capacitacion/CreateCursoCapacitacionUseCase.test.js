@@ -262,15 +262,15 @@ describe('CreateCursoCapacitacionUseCase', () => {
   it('sincroniza requisitos[] en la misma transacción', async () => {
     const { deps, useCase } = crear();
     await useCase.execute(
-      { ...body, requisitos: [{ descripcion: ' Fotocopia de cédula ', obligatorio: true }, { descripcion: 'Formulario', obligatorio: false, orden: 5 }] },
+      { ...body, requisitos: [{ descripcion: ' Fotocopia de cédula ', obligatorio: true }, { descripcion: 'Formulario', obligatorio: false, acreditaPagoCurso: false, orden: 5 }] },
       4
     );
     const repo = deps.capacitacionRequisitoRepository;
     expect(repo.create).toHaveBeenNthCalledWith(
-      1, { capacitacionId: 20, descripcion: 'Fotocopia de cédula', obligatorio: true, orden: 1 }, 4, { transaction: 'TX' }
+      1, { capacitacionId: 20, descripcion: 'Fotocopia de cédula', obligatorio: true, acreditaPagoCurso: false, orden: 1 }, 4, { transaction: 'TX' }
     );
     expect(repo.create).toHaveBeenNthCalledWith(
-      2, { capacitacionId: 20, descripcion: 'Formulario', obligatorio: false, orden: 5 }, 4, { transaction: 'TX' }
+      2, { capacitacionId: 20, descripcion: 'Formulario', obligatorio: false, acreditaPagoCurso: false, orden: 5 }, 4, { transaction: 'TX' }
     );
   });
 

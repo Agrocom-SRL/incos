@@ -1,74 +1,114 @@
 /**
  * Columnas del historial de pagos de una inscripción (ficha CAP).
  *
- * Tabla embebida en `InscripcionPagosSection` (gemela de las cuotas de la
- * ficha de pago de Finanzas). Sin editar/eliminar por fila: los pagos de capacitación
- * no se modifican por separado (solo el comprobante, opcional) (el recibo PDF se difiere, §6.5).
- * Montos Bs SIN decimales (formatBs).
+ * Tabla embebida en `InscripcionPagosSection` (gemela de «Cuotas registradas» de la
+ * ficha de aporte de Finanzas): solo los datos principales por columna (recibo, fecha,
+ * concepto, monto, método); cuenta, observaciones y comprobante van en la fila
+ * expandible (botón «+»). Acciones de fila con `TableActions`: descargar recibo PDF,
+ * editar y eliminar pago (capacitacion.inscripcion EDITAR). Los pagos eliminados (anulados con motivo)
+ * no llegan aquí: la sección los filtra. Montos Bs SIN decimales (formatBs).
  */
 
+import { FilePdfOutlined, StopOutlined } from '@ant-design/icons';
+import { TableActions } from '@molecules';
 import { formatBs } from '@application/utils/formatters';
 import { formatConceptoPago } from '@application-capacitacion/utils/capacitacionCatalogos';
-import PagoComprobanteCell from '@capacitacion/inscripciones/components/molecules/PagoComprobanteCell';
+import { CAPACITACION_PERMISOS } from '@application-capacitacion/utils/capacitacionPermisos';
 
 /**
- * @param {Object} [comprobante] - permisos y handlers del comprobante (opcional)
- *   `{ puedeDescargar, puedeAdjuntar, subiendo, onDescargar, onAdjuntar }`
+ * @param {Object} [comprobante] - permisos y handlers del recibo
+ *   `{ puedeDescargarRecibo, reciboDescargandoId, onDescargarRecibo }`
+ * @param {Object} [acciones] - corrección de pagos
+ *   `{ evaluarPago(pago) → {permitido, motivo}, onEditar(pago), onAnular(pago) }`
  */
-export const createPagosCapacitacionTableColumns = (comprobante = {}) => [
-  {
-    title: '#',
-    key: 'nro',
-    width: 56,
-    align: 'center',
-    render: (_value, _record, index) => index + 1,
-  },
-  {
-    title: 'Recibo',
-    dataIndex: 'numeroRecibo',
-    width: 110,
-    render: (v) => v || '—',
-  },
-  {
-    title: 'Fecha',
-    dataIndex: 'fechaPagoLabel',
-    width: 120,
-    render: (v) => v || '—',
-  },
-  {
-    title: 'Concepto',
-    dataIndex: 'concepto',
-    width: 200,
-    render: (concepto) => formatConceptoPago(concepto),
-  },
-  {
-    title: 'Monto',
-    dataIndex: 'monto',
-    width: 120,
-    align: 'right',
-    render: (monto) => `Bs ${formatBs(monto)}`,
-  },
-  {
-    title: 'Método',
-    dataIndex: 'metodoPagoNombre',
-    width: 140,
-    render: (v) => v || '—',
-  },
-  {
-    title: 'Cuenta',
-    dataIndex: 'cuentaLabel',
-    width: 200,
-    render: (v) => v || '—',
-  },
-  {
-    title: 'Observaciones',
-    dataIndex: 'observaciones',
-    render: (v) => v || '—',
-  },
-  {
-    title: 'Comprobante',
-    key: 'comprobante',
-    width: 240,
-    render: (_, pago) => <PagoComprobanteCell pago={pago} {...comprobante} />,
-  },
-];
+export const createPagosCapacitacionTableColumns = (comprobante = {}, acciones = null) => {
+  const columns = [
+    {
+      title: 'Recibo',
+      dataIndex: 'numeroRecibo',
+      width: 130,
+      render: (v) => v || '—',
+    },
+    {
+      title: 'Fecha',
+      dataIndex: 'fechaPagoLabel',
+      width: 120,
+      render: (v) => v || '—',
+    },
+    {
+      title: 'Concepto',
+      dataIndex: 'concepto',
+      render: (concepto) => formatConceptoPago(concepto),
+    },
+    {
+      title: 'Monto',
+      dataIndex: 'monto',
+      width: 120,
+      align: 'right',
+      render: (monto) => `Bs ${formatBs(monto)}`,
+    },
+    {
+      title: 'Método de pago',
+      dataIndex: 'metodoPagoNombre',
+      render: (v) => v || '—',
+    },
+  ];
+
+  const recibo = comprobante.onDescargarRecibo
+    ? (pago) => ({
+        key: 'recibo',
+        icon: <FilePdfOutlined />,
+        variant: 'view',
+        tooltip: pago.anulado ? 'Un pago anulado no emite recibo' : 'Descargar recibo PDF',
+        permiso: CAPACITACION_PERMISOS.inscripcion,
+        accion: 'DETALLE',
+        disabled: !comprobante.puedeDescargarRecibo || pago.anulado,
+        loading: comprobante.reciboDescargandoId === pago.id,
+        onClick: () => comprobante.onDescargarRecibo(pago.id),
+      })
+    : null;
+
+  if (acciones || recibo) {
+    columns.push({
+      title: 'Acciones',
+      key: 'acciones',
+      width: 150,
+      align: 'right',
+      className: 'cfg-estado-col',
+      render: (_, pago) => {
+        const { permitido, motivo } = acciones?.evaluarPago(pago) ?? {};
+        const extraActions = [
+          ...(recibo ? [recibo(pago)] : []),
+          ...(acciones
+            ? [
+                {
+                  key: 'eliminar-pago',
+                  icon: <StopOutlined />,
+                  variant: 'error',
+                  tooltip: permitido ? 'Eliminar pago' : motivo,
+                  permiso: CAPACITACION_PERMISOS.inscripcion,
+                  accion: 'EDITAR',
+                  disabled: !permitido,
+                  onClick: () => acciones.onAnular(pago),
+                },
+              ]
+            : []),
+        ];
+        return (
+          <TableActions
+            record={pago}
+            itemName="el pago"
+            onEdit={acciones ? () => acciones.onEditar(pago) : undefined}
+            editDisabled={!permitido}
+            editTitle="Editar pago"
+            editDisabledTitle={motivo}
+            extraActions={extraActions}
+            permisos={{ editar: { codigo: CAPACITACION_PERMISOS.inscripcion, accion: 'EDITAR' } }}
+          />
+        );
+      },
+    });
+  }
+
+  return columns;
+};

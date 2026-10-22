@@ -198,6 +198,16 @@
   line-height: 1;
 }
 
+/* Variante con icono `CheckCircleFilled` (en vez del glifo ✓ sobre círculo):
+   el propio icono es el círculo, así que se quita el fondo y se tiñe con el acento. */
+.wizard-selection-cards__check.wizard-selection-cards__check--icon {
+  width: auto;
+  height: auto;
+  background-color: transparent;
+  color: var(--wizard-card-accent, var(--color-primary));
+  font-size: var(--font-size-lg);
+}
+
 /* Métricas (costo/cupo/fechas) dentro de la tarjeta de selección: el átomo
    `InfoLinesCell` (`cfg-academico-metricas-list`) es vertical por defecto para
    celdas de tabla angostas; aquí hay más ancho (~380px de tarjeta), así que se
