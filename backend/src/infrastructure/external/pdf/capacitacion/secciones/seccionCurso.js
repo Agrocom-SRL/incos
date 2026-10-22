@@ -1,9 +1,9 @@
 /**
- * Sección II del Formulario de Inscripción de Capacitación: curso, grupo y horarios.
+ * Sección II del Formulario de Inscripción de Capacitación: curso y grupo.
  *
- * Datos del curso (título, modalidad, entidad que certifica, fechas), estado y
- * fecha de la inscripción, y el grupo elegido con su horario. El grupo y los
- * horarios solo se dibujan si la inscripción tiene grupo asignado.
+ * Datos del curso (título, modalidad, entidad que certifica, inicio), estado y
+ * fecha de la inscripción, y el grupo elegido (en el lugar del fin del curso).
+ * Los horarios de todos los grupos van en la sección IV (`seccionGrupos`).
  */
 
 import { IncosPDFBase } from '../../IncosPDFBase.js';
@@ -35,19 +35,12 @@ export async function dibujarCurso(pdf, datos) {
     ],
     [
       { label: etiquetas.certificadoPor, value: valorODefecto(curso.entidadCertificadora, vacio) },
-      { label: etiquetas.fin, value: valorODefecto(curso.fechaFin, vacio) },
+      { label: etiquetas.grupo, value: valorODefecto(curso.grupo, vacio) },
       { label: etiquetas.estado, value: valorODefecto(datos.estado, vacio) }
     ],
     35
   );
 
-  if (curso.grupo || curso.horarios) {
-    await pdf._addBoxedFieldGrid(
-      [{ label: etiquetas.grupo, value: valorODefecto(curso.grupo, vacio) }],
-      [{ label: etiquetas.horarios, value: valorODefecto(curso.horarios, vacio) }],
-      35
-    );
-  }
   pdf._addSpace();
 }
 

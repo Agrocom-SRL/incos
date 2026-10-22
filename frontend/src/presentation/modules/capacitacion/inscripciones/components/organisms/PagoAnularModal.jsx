@@ -1,8 +1,8 @@
 /**
- * Organismo: modal de confirmación «Anular pago» (CAP · capacitacion.inscripcion
- * EDITAR). La anulación es DEFINITIVA: el pago se conserva en el historial
- * como anulado, deja de contar en totales, saldos e ingresos y para rehacerlo
- * hay que registrar un pago nuevo. Exige un motivo de 3 a 500 caracteres.
+ * Organismo: modal de confirmación «Eliminar pago» (CAP · capacitacion.inscripcion
+ * EDITAR). Es DEFINITIVO: el pago desaparece del historial, deja de contar en totales,
+ * saldos e ingresos y para rehacerlo hay que registrar un pago nuevo. Por auditoría el
+ * sistema guarda el motivo (3 a 500 caracteres, obligatorio) y quién lo eliminó.
  * Presentacional: `open` lo da `pago != null`.
  */
 
@@ -25,8 +25,8 @@ const PagoAnularModal = ({
 }) => (
   <Modal
     open={Boolean(pago)}
-    title="Anular pago"
-    okText="Anular pago"
+    title="Eliminar pago"
+    okText="Eliminar pago"
     okButtonProps={{ danger: true }}
     cancelText="Cancelar"
     onOk={onConfirmar}
@@ -39,22 +39,22 @@ const PagoAnularModal = ({
       <Alert
         type="warning"
         showIcon
-        title="La anulación es definitiva"
-        description={`Se anulará el pago${pago?.numeroRecibo ? ` ${pago.numeroRecibo}` : ''} de Bs ${formatBs(pago?.monto)} (${formatConceptoPago(pago?.concepto)}). Dejará de contar en el total pagado y los saldos, y no se puede revertir; para rehacerlo deberá registrar un pago nuevo.`}
+        title="La eliminación es definitiva"
+        description={`Se eliminará el pago${pago?.numeroRecibo ? ` ${pago.numeroRecibo}` : ''} de Bs ${formatBs(pago?.monto)} (${formatConceptoPago(pago?.concepto)}). Dejará de contar en el total pagado y los saldos, y no se puede revertir; para rehacerlo deberá registrar un pago nuevo.`}
         style={{ marginBottom: allSpacing.marginMD }}
       />
       {error ? (
         <Alert
           type="error"
           showIcon
-          title="No se pudo anular el pago"
+          title="No se pudo eliminar el pago"
           description={error}
           style={{ marginBottom: allSpacing.marginMD }}
         />
       ) : null}
       <Form.Item
         name="motivo"
-        label="Motivo de la anulación"
+        label="Motivo de la eliminación"
         rules={[
           {
             validator: (_, value) => {

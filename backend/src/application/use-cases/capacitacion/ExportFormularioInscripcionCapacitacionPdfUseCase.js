@@ -10,7 +10,7 @@ import {
  * Módulo: Capacitación (CAP)
  *
  * Exporta a PDF el Formulario de Inscripción de UNA inscripción (participante,
- * curso y grupo/horarios, requisitos, pagos y saldo, firmas).
+ * curso y grupo, requisitos, grupos disponibles con su horario y firmas).
  *
  * REUTILIZA `GetInscripcionCapacitacionByIdUseCase` para obtener la misma ficha que
  * pinta la pantalla (paridad pantalla ↔ PDF, sin consultas ni vistas nuevas). El
@@ -21,15 +21,18 @@ export class ExportFormularioInscripcionCapacitacionPdfUseCase {
   /**
    * @param {Object} params - Dependencias inyectadas
    * @param {Object} params.getInscripcionCapacitacionByIdUseCase
+   * @param {Object} params.getCursoCapacitacionByIdUseCase - Grupos del curso con sus horarios
    * @param {import('../../../domain/interfaces/services/IFormularioInscripcionCapacitacionPdfGenerator.js').IFormularioInscripcionCapacitacionPdfGenerator} params.formularioInscripcionCapacitacionPdfGenerator
    * @param {ILogger} params.logger
    */
   constructor({
     getInscripcionCapacitacionByIdUseCase,
+    getCursoCapacitacionByIdUseCase,
     formularioInscripcionCapacitacionPdfGenerator,
     logger,
   }) {
     this.getInscripcionCapacitacionByIdUseCase = getInscripcionCapacitacionByIdUseCase;
+    this.getCursoCapacitacionByIdUseCase = getCursoCapacitacionByIdUseCase;
     this.formularioInscripcionCapacitacionPdfGenerator =
       formularioInscripcionCapacitacionPdfGenerator;
     this.logger = logger;
@@ -45,14 +48,15 @@ export class ExportFormularioInscripcionCapacitacionPdfUseCase {
     const ficha = await this.getInscripcionCapacitacionByIdUseCase.execute(id);
     if (!ficha) throw new NotFoundError(`inscripción con ID ${id}`);
 
-    const datos = construirDatosFormularioInscripcion(ficha);
+    const curso = await this.getCursoCapacitacionByIdUseCase.execute(ficha.capacitacionId);
+    const datos = construirDatosFormularioInscripcion(ficha, { gruposCurso: curso?.grupos ?? null });
     const buffer =
       await this.formularioInscripcionCapacitacionPdfGenerator.generarFormularioInscripcion(datos);
     const fileName = nombreArchivoFormulario(datos);
 
     this.logger.info('[Capacitación] Formulario de inscripción exportado a PDF', {
       inscripcionId: id,
-      pagos: datos.pagos.length,
+      grupos: datos.grupos.length,
       requisitos: datos.requisitos.length,
       fileName,
     });

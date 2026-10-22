@@ -9,7 +9,7 @@
  *
  * Es un ORQUESTADOR: extiende IncosPDFLibBase (carga de plantilla, fuentes, estado
  * del documento) y delega cada bloque de contenido en un módulo de `secciones/`
- * (encabezado, participante, curso y grupo, requisitos, pagos, firmas). Etiquetas,
+ * (encabezado, participante, curso, requisitos, grupos y horarios, firmas). Etiquetas,
  * anchos y firmas viven en `capacitacionPdfConfig.js`; la aritmética, en
  * `capacitacionPdfLayout.js`.
  *
@@ -30,7 +30,7 @@ import { dibujarEncabezado } from './secciones/seccionEncabezado.js';
 import { dibujarParticipante } from './secciones/seccionParticipante.js';
 import { dibujarCurso } from './secciones/seccionCurso.js';
 import { dibujarRequisitos } from './secciones/seccionRequisitos.js';
-import { dibujarPagos } from './secciones/seccionPagos.js';
+import { dibujarGrupos } from './secciones/seccionGrupos.js';
 import { dibujarFirmas } from './secciones/seccionFirmas.js';
 
 export class FormularioInscripcionCapacitacionPdfGenerator extends IncosPDFLibBase {
@@ -57,7 +57,7 @@ export class FormularioInscripcionCapacitacionPdfGenerator extends IncosPDFLibBa
     await dibujarParticipante(this, datos);
     await dibujarCurso(this, datos);
     await dibujarRequisitos(this, datos);
-    await dibujarPagos(this, datos);
+    await dibujarGrupos(this, datos);
     await dibujarFirmas(this, {
       firmas: CFG.firmas,
       pieHeight: IncosPDFBase.LAYOUT.signatureTemplateFooterHeight

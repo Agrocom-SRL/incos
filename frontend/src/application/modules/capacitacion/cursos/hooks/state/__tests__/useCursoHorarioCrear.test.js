@@ -46,6 +46,23 @@ describe('useCursoHorarioCrear', () => {
     expect(result.current.crearOpen).toBe(false);
   });
 
+  it('con varios días crea un horario por día y los marca todos en el grupo', async () => {
+    const form = makeForm([{ key: 'a', nombre: 'G1', horarios: [] }]);
+    const crearHorario = vi
+      .fn()
+      .mockResolvedValueOnce({ success: true, data: { horarioId: 7 } })
+      .mockResolvedValueOnce({ success: true, data: { horarioId: 8 } });
+    const { result } = renderHook(() => useCursoHorarioCrear({ form, crearHorario }));
+    act(() => result.current.abrirCrear(0));
+    await act(async () => {
+      await result.current.handleCrearHorario({ ...valoresHorario, dia: ['MARTES', 'JUEVES'] });
+    });
+    expect(crearHorario).toHaveBeenCalledTimes(2);
+    expect(crearHorario.mock.calls.map(([v]) => v.dia)).toEqual(['MARTES', 'JUEVES']);
+    expect(form.store.grupos[0].horarios).toEqual([{ horarioId: 7 }, { horarioId: 8 }]);
+    expect(result.current.crearOpen).toBe(false);
+  });
+
   it('un horario ya marcado no se duplica', async () => {
     const form = makeForm([{ key: 'a', nombre: 'G1', horarios: [{ horarioId: 7 }] }]);
     const crearHorario = vi.fn().mockResolvedValue({ success: true, data: { horarioId: 7 } });

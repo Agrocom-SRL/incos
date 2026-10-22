@@ -31,7 +31,59 @@ const ETIQUETAS = {
 const TEXTO_COSTO_CURSO_ACREDITADO = 'Pagado a la entidad (acreditado con depósito)';
 const TEXTO_COSTO_CURSO_PENDIENTE = 'Se paga a la entidad (depósito pendiente de acreditar)';
 
+const ABREVIATURA_DIA = {
+  LUNES: 'Lunes',
+  MARTES: 'Martes',
+  MIERCOLES: 'Miércoles',
+  JUEVES: 'Jueves',
+  VIERNES: 'Viernes',
+  SABADO: 'Sábado',
+  DOMINGO: 'Domingo'
+};
+
 const textoOVacio = (valor) => (valor == null ? '' : String(valor).trim());
+
+const horaCorta = (hora) => textoOVacio(hora).slice(0, 5);
+
+/**
+ * Horarios de un grupo en texto legible, agrupando los días que comparten hora:
+ * `Martes, Jueves 19:00-21:00 · Sábado 09:00-12:00`. Respeta el orden recibido.
+ * @param {Array<{dia:string, horaInicio:string, horaFin:string}>} horarios
+ * @returns {string}
+ */
+export function textoHorariosGrupo(horarios) {
+  const porRango = new Map();
+  (horarios ?? []).forEach((h) => {
+    const rango = `${horaCorta(h.horaInicio)}-${horaCorta(h.horaFin)}`;
+    const dias = porRango.get(rango) ?? [];
+    dias.push(ABREVIATURA_DIA[h.dia] ?? textoOVacio(h.dia));
+    porRango.set(rango, dias);
+  });
+  return [...porRango].map(([rango, dias]) => `${dias.join(', ')} ${rango}`).join(' · ');
+}
+
+/**
+ * Grupos del curso para el formulario, marcando el elegido por el participante.
+ * Sin grupos del curso (o sin ficha de curso) cae al grupo de la inscripción.
+ */
+function gruposDelFormulario(ficha, gruposCurso) {
+  if (Array.isArray(gruposCurso) && gruposCurso.length > 0) {
+    return gruposCurso.map((grupo) => ({
+      nombre: textoOVacio(grupo.nombre),
+      horarios: textoHorariosGrupo(grupo.horarios),
+      seleccionado: Number(grupo.id) === Number(ficha.capacitacionGrupoId)
+    }));
+  }
+  return ficha.grupoNombre
+    ? [
+        {
+          nombre: textoOVacio(ficha.grupoNombre),
+          horarios: textoOVacio(ficha.grupoHorariosEtiqueta),
+          seleccionado: true
+        }
+      ]
+    : [];
+}
 
 /** Pagos que cuentan (los anulados se conservan como historial pero no se imprimen ni suman). */
 const pagosVigentes = (ficha) => (ficha.pagos ?? []).filter((pago) => !pago.anulado);
@@ -104,9 +156,13 @@ const sumaCentavos = (pagos) => pagos.reduce((acc, pago) => acc + aCentavos(pago
  * @param {Object} ficha - Salida de GetInscripcionCapacitacionByIdUseCase.
  * @param {Object} [opciones]
  * @param {string|Date} [opciones.fechaEmision] - Fecha de emisión (por defecto hoy).
+ * @param {Array<Object>} [opciones.gruposCurso] - Grupos del curso con sus horarios (ficha del curso).
  * @returns {Object} Payload para `generarFormularioInscripcion`.
  */
-export function construirDatosFormularioInscripcion(ficha, { fechaEmision = new Date() } = {}) {
+export function construirDatosFormularioInscripcion(
+  ficha,
+  { fechaEmision = new Date(), gruposCurso = null } = {}
+) {
   const requisitos = (ficha.requisitos ?? []).map((requisito) => ({
     descripcion: textoOVacio(requisito.descripcion),
     obligatorio: Boolean(requisito.obligatorio),
@@ -136,6 +192,7 @@ export function construirDatosFormularioInscripcion(ficha, { fechaEmision = new 
       grupo: textoOVacio(ficha.grupoNombre),
       horarios: textoOVacio(ficha.grupoHorariosEtiqueta)
     },
+    grupos: gruposDelFormulario(ficha, gruposCurso),
     requisitos,
     compromiso: compromisoVigente ? { fechaLimite: formatearFecha(ficha.fechaCompromiso) } : null,
     pagos: pagosVigentes(ficha).map((pago) => ({

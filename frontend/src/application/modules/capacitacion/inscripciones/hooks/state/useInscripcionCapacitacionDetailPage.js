@@ -31,6 +31,7 @@ import {
   INSCRIPCIONES_CAP_LIST_PATH,
   CAP_INSCRIPCIONES_MENU_KEY,
   inscripcionCapRegistrarPagoPath,
+  inscripcionCapEditarPath,
 } from '@application-capacitacion/config/paths';
 
 export const useInscripcionCapacitacionDetailPage = () => {
@@ -170,6 +171,11 @@ export const useInscripcionCapacitacionDetailPage = () => {
     });
   }, [navigate, inscripcionId, returnListPath, menuSidebarKey]);
 
+  const handleIrAEditar = useCallback(() => {
+    if (!inscripcionId) return;
+    navigate(inscripcionCapEditarPath(inscripcionId), { state: { returnListPath, menuSidebarKey } });
+  }, [navigate, inscripcionId, returnListPath, menuSidebarKey]);
+
   /** Solo se ofrece anular desde PENDIENTE o INSCRITO (mismas reglas que el backend). */
   const puedeAnular = ESTADOS_INSCRIPCION_CAP_VIGENTES.includes(inscripcion?.estado);
 
@@ -189,6 +195,7 @@ export const useInscripcionCapacitacionDetailPage = () => {
     breadcrumbItems,
     handleVolver,
     handleIrARegistrarPago,
+    handleIrAEditar,
     puedeAnular,
     handleAnular,
     anulando,

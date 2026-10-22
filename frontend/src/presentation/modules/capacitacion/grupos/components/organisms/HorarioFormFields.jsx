@@ -1,5 +1,5 @@
 /**
- * Organismo: campos del formulario de horario de capacitación (CAP): día, hora
+ * Organismo: campos del formulario de horario de capacitación (CAP): día (o varios, con `multipleDias`), hora
  * de inicio y hora de fin con reloj analógico en popup (AM/PM; el código interno lo genera el backend, no se pide nombre). Se monta DENTRO de un
  * `<Form layout="vertical">` (`beforeFields` de `CfgFormWorkspace`, mismo
  * patrón que `ParticipanteFormFields`). La regla «fin posterior a inicio» usa
@@ -23,7 +23,7 @@ const HoraReloj = (props) => (
 const horaFinRule = ({ getFieldValue }) => ({
   validator: (_, horaFin) => {
     const mensaje = validarHorarioNuevo({
-      dia: getFieldValue('dia') ?? 'x',
+      dia: [].concat(getFieldValue('dia') ?? 'x')[0] ?? 'x',
       horaInicio: getFieldValue('horaInicio'),
       horaFin,
     });
@@ -31,15 +31,20 @@ const horaFinRule = ({ getFieldValue }) => ({
   },
 });
 
-const HorarioFormFields = ({ disabled = false }) => (
+const HorarioFormFields = ({ disabled = false, multipleDias = false }) => (
   <Row gutter={[24, 0]}>
     <Col xs={24} sm={12}>
       <Form.Item
         name="dia"
-        label="Día"
-        rules={[{ required: true, message: 'Seleccione el día' }]}
+        label={multipleDias ? 'Días' : 'Día'}
+        rules={[{ required: true, message: multipleDias ? 'Seleccione al menos un día' : 'Seleccione el día' }]}
       >
-        <Select options={DIA_HORARIO_OPTIONS} placeholder="Seleccione el día" disabled={disabled} />
+        <Select
+          mode={multipleDias ? 'multiple' : undefined}
+          options={DIA_HORARIO_OPTIONS}
+          placeholder={multipleDias ? 'Seleccione uno o más días' : 'Seleccione el día'}
+          disabled={disabled}
+        />
       </Form.Item>
     </Col>
     <Col xs={24} sm={12}>

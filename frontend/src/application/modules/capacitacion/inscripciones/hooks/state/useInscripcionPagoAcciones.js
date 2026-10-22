@@ -2,119 +2,52 @@
  * Hook de pantalla: corregir y anular pagos en la pestaña «Pagos» de la ficha
  * (CAP · capacitacion.inscripcion EDITAR).
  *
- * - Editar (`PUT /:id/pagos/:pagoId`): modal con `PagoCapacitacionFormFields`;
- *   el saldo del concepto descuenta el propio pago y en curso externo solo se
- *   ofrece matrícula. Solo envía lo que cambió.
+ * - Editar: navega a la página «Editar pago» (`/:id/pagos/:pagoId/editar`, hook
+ *   `useInscripcionCapEditarPagoPage`), el mismo formulario de «Registrar pago».
  * - Anular (`POST /:id/pagos/:pagoId/anular`): modal con motivo obligatorio
  *   (3-500 caracteres); es DEFINITIVO, el pago queda en el historial como anulado.
  *
  * No se actúa sobre pagos anulados ni con la inscripción RETIRADA/ANULADA
  * (`evaluarAccionPago`, el backend responde 409 igualmente). Los errores del
- * servidor quedan visibles dentro del modal.
+ * servidor de la anulación quedan visibles dentro del modal.
  */
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { App, Form } from 'antd';
 import { useInscripcionCapacitacionDetailContext } from '@application-capacitacion/inscripciones/hooks/context/useInscripcionCapacitacionDetailContext';
-import {
-  buildPagoUpdatePayload,
-  mapPagoToEditFormValues,
-  normalizarMotivoAnulacion,
-} from '@application-capacitacion/inscripciones/mappers/inscripcionEdicionMapper';
-import {
-  conceptosParaEditarPago,
-  evaluarAccionPago,
-  saldosParaEditarPago,
-} from '@application-capacitacion/utils/pagosCapacitacion';
-import { buildReglasMetodo, findMetodoCodigo } from '@finanzas/pagos/config/registrarFormConfig';
+import { normalizarMotivoAnulacion } from '@application-capacitacion/inscripciones/mappers/inscripcionEdicionMapper';
+import { evaluarAccionPago } from '@application-capacitacion/utils/pagosCapacitacion';
+import { inscripcionCapEditarPagoPath } from '@application-capacitacion/config/paths';
 
 export const useInscripcionPagoAcciones = () => {
   const { message } = App.useApp();
-  const [formEditar] = Form.useForm();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [formAnular] = Form.useForm();
 
   const {
     inscripcion,
-    actualizarPago,
-    actualizandoPago,
     anularPago,
     anulandoPago,
-    metodosPago,
-    cuentasPago,
-    loadingCatalogos,
-    errorCatalogos,
   } = useInscripcionCapacitacionDetailContext();
 
-  const [pagoEditando, setPagoEditando] = useState(null);
   const [pagoAnulando, setPagoAnulando] = useState(null);
-  const [metodoPagoId, setMetodoPagoId] = useState(null);
-  const [errorEditar, setErrorEditar] = useState(null);
   const [errorAnular, setErrorAnular] = useState(null);
 
   /** Habilitación (y tooltip) de editar/anular para un pago de la tabla. */
   const evaluarPago = useCallback((pago) => evaluarAccionPago(inscripcion, pago), [inscripcion]);
 
-  // ── Editar ──
-  const abrirEditar = useCallback(
+  // ── Editar: página propia (`useInscripcionCapEditarPagoPage`), no modal ──
+  const irAEditar = useCallback(
     (pago) => {
       if (!evaluarAccionPago(inscripcion, pago).permitido) return;
-      setErrorEditar(null);
-      setMetodoPagoId(pago.metodoPagoId ?? null);
-      setPagoEditando(pago);
+      navigate(inscripcionCapEditarPagoPath(inscripcion.id, pago.id), {
+        state: location.state,
+      });
     },
-    [inscripcion],
+    [inscripcion, navigate, location.state],
   );
-
-  const cerrarEditar = useCallback(() => {
-    setPagoEditando(null);
-    setErrorEditar(null);
-  }, []);
-
-  /** Al cambiar de método, limpia la cuenta (deja de aplicar). */
-  const handleMetodoPagoChange = useCallback(
-    (value) => {
-      setMetodoPagoId(value);
-      formEditar.setFieldsValue({ cuentaPagoId: undefined });
-    },
-    [formEditar],
-  );
-
-  const reglasMetodo = useMemo(
-    () => buildReglasMetodo(findMetodoCodigo(metodosPago, metodoPagoId)),
-    [metodosPago, metodoPagoId],
-  );
-  const saldosPorConcepto = useMemo(
-    () => (pagoEditando ? saldosParaEditarPago(inscripcion, pagoEditando) : {}),
-    [inscripcion, pagoEditando],
-  );
-  const conceptoOptions = useMemo(
-    () => (pagoEditando ? conceptosParaEditarPago(inscripcion, pagoEditando) : []),
-    [inscripcion, pagoEditando],
-  );
-  const initialValuesEditar = useMemo(() => mapPagoToEditFormValues(pagoEditando), [pagoEditando]);
-
-  const guardarEdicion = useCallback(async () => {
-    setErrorEditar(null);
-    let values;
-    try {
-      values = await formEditar.validateFields();
-    } catch {
-      return;
-    }
-    const payload = buildPagoUpdatePayload(values, pagoEditando);
-    if (Object.keys(payload).length === 0) {
-      message.info('No hay cambios que guardar');
-      cerrarEditar();
-      return;
-    }
-    const result = await actualizarPago(pagoEditando.id, payload);
-    if (!result?.success) {
-      setErrorEditar(result?.error || 'No se pudo corregir el pago');
-      return;
-    }
-    message.success('Pago corregido');
-    cerrarEditar();
-  }, [formEditar, pagoEditando, actualizarPago, message, cerrarEditar]);
 
   // ── Anular ──
   const abrirAnular = useCallback(
@@ -141,33 +74,17 @@ export const useInscripcionPagoAcciones = () => {
     }
     const result = await anularPago(pagoAnulando.id, normalizarMotivoAnulacion(values.motivo));
     if (!result?.success) {
-      setErrorAnular(result?.error || 'No se pudo anular el pago');
+      setErrorAnular(result?.error || 'No se pudo eliminar el pago');
       return;
     }
-    message.success('Pago anulado');
+    message.success('Pago eliminado');
     cerrarAnular();
   }, [formAnular, pagoAnulando, anularPago, message, cerrarAnular]);
 
   return {
     evaluarPago,
-    // Editar
-    pagoEditando,
-    abrirEditar,
-    cerrarEditar,
-    guardarEdicion,
-    guardandoEdicion: actualizandoPago,
-    errorEditar,
-    formEditar,
-    initialValuesEditar,
-    reglasMetodo,
-    saldosPorConcepto,
-    conceptoOptions,
-    handleMetodoPagoChange,
-    cursoExterno: Boolean(inscripcion?.pagoCursoExterno),
-    metodosPago,
-    cuentasPago,
-    loadingCatalogos,
-    errorCatalogos,
+    // Editar (página propia)
+    irAEditar,
     // Anular
     pagoAnulando,
     abrirAnular,
