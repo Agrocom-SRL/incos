@@ -335,6 +335,10 @@ CREATE TABLE capacitacion_pagos (
     observaciones TEXT NULL COMMENT 'Observaciones del pago',
     comprobante_ruta VARCHAR(500) NULL COMMENT 'Ruta del comprobante/depósito escaneado (opcional, nunca obligatorio)',
     comprobante_nombre VARCHAR(255) NULL COMMENT 'Nombre original del archivo del comprobante',
+    anulado BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'Pago anulado por error: se conserva el historial pero NO cuenta en totales, saldos ni ingresos',
+    motivo_anulacion VARCHAR(500) NULL COMMENT 'Motivo obligatorio de la anulación',
+    fecha_anulacion DATETIME NULL COMMENT 'Momento en que se anuló el pago',
+    anulado_por INT NULL COMMENT 'Usuario que anuló el pago',
 
     -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
@@ -357,11 +361,12 @@ CREATE TABLE capacitacion_pagos (
     INDEX idx_numero_recibo (numero_recibo) COMMENT 'Búsqueda por número de recibo',
     INDEX idx_fecha_pago (fecha_pago) COMMENT 'Búsqueda por fecha de pago',
     INDEX idx_metodo_pago_id (metodo_pago_id) COMMENT 'Búsqueda por método de pago',
+    INDEX idx_anulado (anulado) COMMENT 'Filtrado de pagos anulados',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete'
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Historial de pagos (cuotas) de una inscripción a capacitación. Sin límite de filas: SUM(monto) WHERE activo=1 AND deleted_at IS NULL se compara contra capacitacion_inscritos.monto_obligatorio.';
+COMMENT='Historial de pagos (cuotas) de una inscripción a capacitación. Sin límite de filas: SUM(monto) WHERE activo=1 AND deleted_at IS NULL AND anulado=0 se compara contra capacitacion_inscritos.monto_obligatorio.';
 
 -- ============================================
 -- TABLA: capacitacion_requisitos
@@ -376,6 +381,7 @@ CREATE TABLE capacitacion_requisitos (
     capacitacion_id INT NULL COMMENT 'Curso de capacitación',
     descripcion VARCHAR(255) NOT NULL COMMENT 'Texto del requisito',
     obligatorio BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'Obligatorio para pasar a INSCRITO',
+    acredita_pago_curso BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'Entregarlo acredita el pago del costo del curso a la entidad certificadora (fotocopia del depósito). Solo con capacitaciones.entidad_certificadora; a lo sumo un requisito por curso (validado en lógica)',
     orden INT NOT NULL DEFAULT 1 COMMENT 'Orden de presentación',
 
     -- Campos de auditoría y control (ESTÁNDAR)

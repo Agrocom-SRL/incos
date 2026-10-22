@@ -21,9 +21,14 @@
 -- - capacitacion_inscritos.capacitacion_id → capacitaciones.id
 --
 -- Filtro: fila con monto > 0, capacitacion_pagos y capacitacion_inscritos
--- activos/no eliminados. capacitacion_pagos.monto siempre es > 0 por
--- validación en RegisterPagoCapacitacionUseCase.js; el filtro monto > 0 aquí
--- es higiene/consistencia con vista_base_ingreso_aporte.
+-- activos/no eliminados y pago NO anulado (anulado = FALSE: un pago anulado
+-- por error conserva el historial pero no es ingreso). capacitacion_pagos.monto
+-- siempre es > 0 por validación en RegisterPagoCapacitacionUseCase.js; el
+-- filtro monto > 0 aquí es higiene/consistencia con vista_base_ingreso_aporte.
+--
+-- Dependencia: 05-migrations/29-migrate-capacitacion-anulacion-pagos-y-costo-externo.sql
+-- (columna capacitacion_pagos.anulado). Tras recrear esta vista no hace falta
+-- recrear la 184 (mismas columnas).
 --
 -- Uso:
 -- SELECT * FROM vista_base_ingreso_capacitacion ORDER BY fecha_pago DESC;
@@ -64,5 +69,6 @@ INNER JOIN capacitaciones cap ON cap.id = cinsc.capacitacion_id
   AND cap.activo = TRUE
   AND cap.deleted_at IS NULL
 WHERE cp.monto > 0
+  AND cp.anulado = FALSE
   AND cp.activo = TRUE
   AND cp.deleted_at IS NULL;
