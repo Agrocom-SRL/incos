@@ -75,7 +75,13 @@ function gruposDelFormulario(ficha, gruposCurso) {
     }));
   }
   return ficha.grupoNombre
-    ? [{ nombre: textoOVacio(ficha.grupoNombre), horarios: textoOVacio(ficha.grupoHorariosEtiqueta), seleccionado: true }]
+    ? [
+        {
+          nombre: textoOVacio(ficha.grupoNombre),
+          horarios: textoOVacio(ficha.grupoHorariosEtiqueta),
+          seleccionado: true
+        }
+      ]
     : [];
 }
 

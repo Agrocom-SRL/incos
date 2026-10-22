@@ -141,7 +141,14 @@ export class ReciboPagoCapacitacionPdfGenerator extends ReciboPagoPdfGenerator {
     const rowHeight = Math.max(FILA_ALTO_MIN, lines.length * lineHeight + padding * 2 - 3);
     const rowY = this._currentY - rowHeight;
 
-    page.drawRectangle({ x: margins.left, y: rowY, width: labelWidth, height: rowHeight, borderColor: border, borderWidth: 1 });
+    page.drawRectangle({
+      x: margins.left,
+      y: rowY,
+      width: labelWidth,
+      height: rowHeight,
+      borderColor: border,
+      borderWidth: 1
+    });
     page.drawRectangle({
       x: margins.left + labelWidth,
       y: rowY,
