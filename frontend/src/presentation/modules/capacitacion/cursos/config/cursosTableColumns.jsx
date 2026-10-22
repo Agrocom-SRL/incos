@@ -12,7 +12,6 @@
 
 import {
   CalendarOutlined,
-  ClockCircleOutlined,
   DollarOutlined,
   FileExcelOutlined,
   TeamOutlined,
@@ -119,22 +118,6 @@ export const createCursosCapacitacionTableColumns = ({
       sortCompare: (a, b) =>
         (Number(a.costo) || 0) + (Number(a.costoMatricula) || 0) -
         ((Number(b.costo) || 0) + (Number(b.costoMatricula) || 0)),
-    },
-    {
-      title: 'Horarios',
-      key: 'horarios',
-      width: 220,
-      render: (_, record) => (
-        <InfoLinesCell
-          lines={[
-            ...record.horariosLineas.map((linea, i) => ({
-              key: `bloque-${i}`,
-              icon: <ClockCircleOutlined />,
-              label: linea,
-            })),
-          ]}
-        />
-      ),
     },
     {
       title: 'Cupo',

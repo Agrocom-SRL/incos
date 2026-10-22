@@ -17,7 +17,7 @@ export const FORMULARIO_CAPACITACION_PDF_CONFIG = {
   nullPlaceholder: '—',
   secciones: {
     participante: 'I. DATOS DEL PARTICIPANTE',
-    curso: 'II. DATOS DEL CURSO Y GRUPO',
+    curso: 'II. DATOS DEL CURSO',
     requisitos: 'III. REQUISITOS RECEPCIONADOS',
     grupos: 'IV. GRUPOS Y HORARIOS'
   },

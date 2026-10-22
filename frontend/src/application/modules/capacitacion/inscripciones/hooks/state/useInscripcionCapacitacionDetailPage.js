@@ -15,7 +15,7 @@
  * adjuntar/descargar comprobante de un pago (opcional).
  */
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { App } from 'antd';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useInscripcionCapacitacionDetailContext } from '@application-capacitacion/inscripciones/hooks/context/useInscripcionCapacitacionDetailContext';
@@ -149,6 +149,23 @@ export const useInscripcionCapacitacionDetailPage = () => {
 
   const returnListPath = location.state?.returnListPath || INSCRIPCIONES_CAP_LIST_PATH;
   const menuSidebarKey = location.state?.menuSidebarKey ?? CAP_INSCRIPCIONES_MENU_KEY;
+
+  /**
+   * Recién creada la inscripción (el alta navega con `state.descargarFormulario`), baja el
+   * formulario UNA sola vez. Se limpia la marca del `history.state` para que recargar la página,
+   * volver atrás o entrar luego a la ficha NO lo vuelvan a descargar: ahí la descarga es manual.
+   */
+  const descargaInicialRef = useRef(false);
+  useEffect(() => {
+    if (!location.state?.descargarFormulario || !inscripcionId || descargaInicialRef.current) {
+      return;
+    }
+    descargaInicialRef.current = true;
+    const resto = { ...location.state };
+    delete resto.descargarFormulario;
+    navigate(location.pathname, { replace: true, state: resto });
+    handleDescargarFormulario();
+  }, [location.state, location.pathname, inscripcionId, navigate, handleDescargarFormulario]);
 
   const breadcrumbItems = useMemo(
     () => [

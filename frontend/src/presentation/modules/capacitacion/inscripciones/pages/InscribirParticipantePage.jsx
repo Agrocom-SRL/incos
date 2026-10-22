@@ -28,7 +28,7 @@
  */
 
 import { useCallback, useMemo, useRef } from 'react';
-import { Flex, Typography } from 'antd';
+import { Alert, Flex, Spin, Typography } from 'antd';
 import { ArrowLeftOutlined, SearchOutlined, UserAddOutlined } from '@ant-design/icons';
 import { PermisoGuard } from '@/presentation/guards/PermisoGuard.jsx';
 import { MainContent, PageHeaderArea } from '@templates';
@@ -52,6 +52,13 @@ import '@configuracion/academico/styles/academico-form-page.css';
 
 const InscribirParticipantePage = () => {
   const {
+    esEdicion,
+    pageTitle,
+    finishLabel,
+    permisoAccion,
+    loadingFicha,
+    errorFicha,
+    grupoMotivoDeshabilitado,
     breadcrumbItems,
     handleVolver,
     form,
@@ -207,7 +214,7 @@ const InscribirParticipantePage = () => {
             error={errorCursoDetalle}
             grupos={gruposCurso}
             capacitacionGrupoId={capacitacionGrupoId}
-            onGrupoChange={setCapacitacionGrupoId}
+            onGrupoChange={grupoMotivoDeshabilitado ? undefined : setCapacitacionGrupoId}
           />
         );
       }
@@ -294,6 +301,7 @@ const InscribirParticipantePage = () => {
       requisitosCurso,
       grupoSeleccionado,
       capacitacionGrupoId,
+      grupoMotivoDeshabilitado,
       setCapacitacionGrupoId,
       requisitosEntregados,
       setRequisitosEntregados,
@@ -315,17 +323,19 @@ const InscribirParticipantePage = () => {
   return (
     <PermisoGuard
       codigo={CAPACITACION_PERMISOS.inscripcion}
-      accion="CREAR"
+      accion={permisoAccion}
       fallback={
         <Typography.Text type="danger">
-          No tiene permiso para inscribir participantes.
+          {esEdicion
+            ? 'No tiene permiso para editar inscripciones.'
+            : 'No tiene permiso para inscribir participantes.'}
         </Typography.Text>
       }
     >
       <Flex vertical gap="large" className="page-container" style={{ width: '100%' }}>
         <PageHeaderArea>
           <PageHeader
-            title="Inscribir participante"
+            title={pageTitle}
             breadcrumbItems={breadcrumbItems}
             actions={
               <BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver}>
@@ -337,7 +347,9 @@ const InscribirParticipantePage = () => {
 
         <DashboardPageShell>
           <MainContent>
-            <WizardForm
+            <Spin spinning={loadingFicha} tip="Cargando inscripción…">
+              {errorFicha ? <Alert type="error" showIcon title={errorFicha} /> : null}
+              <WizardForm
               ref={wizardRef}
               variant="tabs"
               steps={stepsWithHeaderActions}
@@ -353,10 +365,11 @@ const InscribirParticipantePage = () => {
               onValidationError={handleValidationError}
               strictForwardNavigation
               errorMessage={stepError}
-              finishLabel="Registrar inscripción"
+              finishLabel={finishLabel}
               nextLabel="Siguiente"
               prevLabel="Anterior"
             />
+            </Spin>
           </MainContent>
         </DashboardPageShell>
       </Flex>

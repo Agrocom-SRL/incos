@@ -20,10 +20,6 @@ import { FormWorkspaceSection } from '@organisms';
 import { quitarItem } from '@application-capacitacion/utils/requisitosCapacitacion';
 import { crearGrupoVacio } from '@application-capacitacion/utils/gruposCapacitacion';
 
-/** Ids de horario ya tomados por los demás grupos del curso (un horario no se reparte entre grupos). */
-const horariosDeOtrosGrupos = (grupos = [], index) =>
-  grupos.flatMap((g, i) => (i === index ? [] : (g.horarios ?? []).map((h) => Number(h.horarioId))));
-
 /**
  * Campos de un grupo (id y `key` ocultos para no perderlos al guardar). El aula es
  * opcional y por grupo (el grupo es el curso físico); sin permiso sobre el catálogo
@@ -31,7 +27,7 @@ const horariosDeOtrosGrupos = (grupos = [], index) =>
  */
 const camposGrupo = (
   index,
-  { aulaOptions, aulasDisponible, loadingAulas, horarioOptions, horarioDias, loadingHorarios, errorHorarios, onCrearHorario, grupos },
+  { aulaOptions, aulasDisponible, loadingAulas, horarioOptions, horarioDias, loadingHorarios, errorHorarios, onCrearHorario },
 ) => [
   { name: ['grupos', index, 'id'], type: 'hidden', hidden: true },
   { name: ['grupos', index, 'key'], type: 'hidden', hidden: true },
@@ -81,7 +77,6 @@ const camposGrupo = (
         options={horarioOptions}
         diaById={horarioDias}
         loading={loadingHorarios}
-        ocupados={horariosDeOtrosGrupos(grupos, index)}
         onCrear={() => onCrearHorario?.(index)}
       />
     ),
@@ -121,7 +116,6 @@ const CursoGruposEditor = ({
         loadingHorarios,
         errorHorarios,
         onCrearHorario,
-        grupos,
       }),
       showDeleteButton: true,
       onDelete: () => setGrupos(quitarItem(grupos, index)),
