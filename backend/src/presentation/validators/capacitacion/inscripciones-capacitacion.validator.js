@@ -177,3 +177,62 @@ export const updateRequisitosInscripcionValidator = [
     .isLength({ max: 255 })
     .withMessage('requisitos[].observacion no debe superar los 255 caracteres'),
 ];
+
+/**
+ * PUT /:id — corrección de la inscripción: datos del participante y/o grupo.
+ * Reutiliza las reglas de campos del participante (todas opcionales al corregir);
+ * unicidad de CI, pertenencia y cupo del grupo se validan en el use case.
+ */
+export const updateInscripcionCapacitacionValidator = [
+  body('participante')
+    .optional()
+    .isObject()
+    .withMessage('participante debe ser un objeto con los datos a corregir'),
+  ...buildParticipanteFieldValidators('participante.', false),
+  body('capacitacionGrupoId')
+    .optional({ nullable: true })
+    .isInt({ min: 1 })
+    .withMessage('capacitacionGrupoId debe ser un entero positivo'),
+];
+
+/**
+ * PUT /:id/pagos/:pagoId — corrección parcial de un pago (mismas reglas de forma
+ * que el registro, todas opcionales). Sobrepago y coherencia con el curso: use case.
+ */
+export const updatePagoCapacitacionValidator = [
+  body('concepto')
+    .optional()
+    .toUpperCase()
+    .isIn(CONCEPTOS_PAGO_CAPACITACION_VALUES)
+    .withMessage(`concepto debe ser uno de: ${CONCEPTOS_PAGO_CAPACITACION_VALUES.join(', ')}`),
+  body('monto').optional().isFloat({ gt: 0 }).withMessage('monto debe ser un número mayor a 0'),
+  body('metodoPagoId')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('metodoPagoId debe ser un entero positivo'),
+  body('cuentaPagoId')
+    .optional({ nullable: true })
+    .isInt({ min: 1 })
+    .withMessage('cuentaPagoId debe ser un entero positivo'),
+  body('fechaPago')
+    .optional()
+    .isISO8601()
+    .withMessage('fechaPago debe ser una fecha válida (YYYY-MM-DD)'),
+  body('observaciones')
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .isLength({ max: 2000 })
+    .withMessage('observaciones no debe superar los 2000 caracteres'),
+];
+
+/** POST /:id/pagos/:pagoId/anular — el motivo es obligatorio (3 a 500 caracteres). */
+export const anularPagoCapacitacionValidator = [
+  body('motivo')
+    .notEmpty()
+    .withMessage('motivo es requerido para anular un pago')
+    .isString()
+    .trim()
+    .isLength({ min: 3, max: 500 })
+    .withMessage('motivo debe tener entre 3 y 500 caracteres'),
+];

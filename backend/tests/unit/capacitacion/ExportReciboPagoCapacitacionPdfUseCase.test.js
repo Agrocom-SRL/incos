@@ -1,6 +1,6 @@
 import { describe, it, expect, jest } from '@jest/globals';
 import { ExportReciboPagoCapacitacionPdfUseCase } from '../../../src/application/use-cases/capacitacion/ExportReciboPagoCapacitacionPdfUseCase.js';
-import { NotFoundError, ValidationError } from '../../../src/domain/errors/AppError.js';
+import { ConflictError, NotFoundError, ValidationError } from '../../../src/domain/errors/AppError.js';
 import { crearFicha } from './pdf/fichaInscripcionFixture.js';
 
 describe('ExportReciboPagoCapacitacionPdfUseCase', () => {
@@ -44,4 +44,13 @@ describe('ExportReciboPagoCapacitacionPdfUseCase', () => {
     await expect(useCase.execute({ inscripcionId: 12, pagoId: 0 })).rejects.toBeInstanceOf(ValidationError);
     await expect(useCase.execute({ inscripcionId: 'x', pagoId: 1 })).rejects.toBeInstanceOf(ValidationError);
   });
+
+  it('un pago ANULADO no tiene recibo (409) y no se invoca al generador', async () => {
+    const ficha = crearFicha();
+    ficha.pagos = ficha.pagos.map((pago) => (pago.id === 31 ? { ...pago, anulado: true } : pago));
+    const { deps, useCase } = crear({ ficha });
+    await expect(useCase.execute({ inscripcionId: 12, pagoId: 31 })).rejects.toBeInstanceOf(ConflictError);
+    expect(deps.reciboPagoCapacitacionPdfGenerator.generarRecibo).not.toHaveBeenCalled();
+  });
+
 });

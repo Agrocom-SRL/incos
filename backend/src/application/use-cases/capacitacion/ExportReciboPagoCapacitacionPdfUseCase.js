@@ -1,4 +1,4 @@
-import { NotFoundError } from '../../../domain/errors/AppError.js';
+import { ConflictError, NotFoundError } from '../../../domain/errors/AppError.js';
 import { parseIdPositivo } from '../../utils/validacionEntrada.js';
 import { construirDatosReciboPago, nombreArchivoRecibo } from './helpers/capacitacionPdfDatos.js';
 
@@ -8,7 +8,8 @@ import { construirDatosReciboPago, nombreArchivoRecibo } from './helpers/capacit
  *
  * Exporta a PDF el Recibo de Pago de UN pago de una inscripción. Valida que el pago
  * pertenezca a la inscripción (un pago ajeno o inexistente → NotFoundError) y
- * calcula el saldo pendiente en el momento de ese pago.
+ * calcula el saldo pendiente en el momento de ese pago. Un pago ANULADO no tiene
+ * recibo (409): el historial se conserva en la ficha, pero no se imprime.
  *
  * REUTILIZA `GetInscripcionCapacitacionByIdUseCase`: su ficha ya trae el historial
  * de pagos con concepto, método y cuenta, por lo que no se duplican consultas. El
@@ -42,6 +43,13 @@ export class ExportReciboPagoCapacitacionPdfUseCase {
 
     const ficha = await this.getInscripcionCapacitacionByIdUseCase.execute(idInscripcion);
     if (!ficha) throw new NotFoundError(`inscripción con ID ${idInscripcion}`);
+
+    const pagoAnulado = (ficha.pagos ?? []).find((pago) => Number(pago.id) === idPago)?.anulado;
+    if (pagoAnulado) {
+      throw new ConflictError(
+        `El pago ${idPago} está anulado: no se emite recibo de un pago anulado`
+      );
+    }
 
     const datos = construirDatosReciboPago(ficha, idPago);
     if (!datos) {

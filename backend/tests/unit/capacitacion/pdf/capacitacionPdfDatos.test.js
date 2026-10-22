@@ -59,7 +59,7 @@ describe('capacitacionPdfDatos', () => {
       expect(datos.pagos[1]).toEqual({
         fechaPago: '05/03/2026', numeroRecibo: '000031', concepto: 'COSTO DEL CURSO', metodoPago: 'Transferencia', monto: 200,
       });
-      expect(datos.resumenPagos).toEqual({ costoCurso: 500, costoMatricula: 150, totalPagado: 350, saldo: 300 });
+      expect(datos.resumenPagos).toEqual({ costoCursoExterno: null, costoCurso: 500, costoMatricula: 150, totalPagado: 350, saldo: 300 });
     });
 
     it('omite el compromiso si no está vigente y tolera listas ausentes', () => {
@@ -120,4 +120,55 @@ describe('capacitacionPdfDatos', () => {
       'Recibo_000031_PEREZ_GOMEZ_JUAN_CARLOS.pdf'
     );
   });
+
+  describe('pagos anulados y costo del curso externo', () => {
+    const pagoAnulado = {
+      id: 33, monto: 80, concepto: 'MATRICULA', fechaPago: '2026-03-10', numeroRecibo: '000033',
+      metodoPagoNombre: 'Efectivo', anulado: true,
+    };
+
+    it('el formulario no imprime ni suma los pagos anulados', () => {
+      const ficha = crearFicha();
+      ficha.pagos = [...ficha.pagos, pagoAnulado];
+      const datos = construirDatosFormularioInscripcion(ficha);
+      expect(datos.pagos.map((p) => p.numeroRecibo)).toEqual(['000030', '000031', '000032']);
+    });
+
+    it('el recibo ignora los pagos anulados al calcular saldos y no existe para el anulado', () => {
+      const ficha = crearFicha();
+      ficha.pagos = [{ ...pagoAnulado, id: 29, fechaPago: '2026-03-01' }, ...ficha.pagos];
+      // el anulado de 80 no cuenta como "pagado antes" de la matrícula
+      expect(construirDatosReciboPago(ficha, 32)).toMatchObject({ pagadoAntes: 100, saldoConcepto: 0 });
+      expect(construirDatosReciboPago(ficha, 29)).toBeNull();
+    });
+
+    it('curso externo con depósito acreditado: leyenda «pagado a la entidad» y sin saldo del curso', () => {
+      const ficha = crearFicha({
+        pagoCursoExterno: true,
+        requisitoAcreditaPagoCurso: { requisitoId: 2, descripcion: 'Depósito', entregado: true },
+        pagos: [
+          { id: 30, monto: 150, concepto: 'MATRICULA', fechaPago: '2026-03-02', numeroRecibo: '000030', metodoPagoNombre: 'Efectivo' },
+        ],
+        saldo: 0,
+      });
+      const formulario = construirDatosFormularioInscripcion(ficha);
+      expect(formulario.resumenPagos.costoCursoExterno).toBe('Pagado a la entidad (acreditado con depósito)');
+      const recibo = construirDatosReciboPago(ficha, 30);
+      expect(recibo.costoCursoExterno).toBe('Pagado a la entidad (acreditado con depósito)');
+      expect(recibo.saldoTotal).toBe(0);
+    });
+
+    it('curso externo sin depósito acreditado: leyenda de pendiente y el saldo total no incluye el curso', () => {
+      const ficha = crearFicha({
+        pagoCursoExterno: true,
+        requisitoAcreditaPagoCurso: { requisitoId: 2, descripcion: 'Depósito', entregado: false },
+        pagos: [
+          { id: 30, monto: 100, concepto: 'MATRICULA', fechaPago: '2026-03-02', numeroRecibo: '000030', metodoPagoNombre: 'Efectivo' },
+        ],
+      });
+      expect(construirDatosFormularioInscripcion(ficha).resumenPagos.costoCursoExterno).toMatch(/pendiente de acreditar/);
+      expect(construirDatosReciboPago(ficha, 30)).toMatchObject({ saldoConcepto: 50, saldoTotal: 50 });
+    });
+  });
+
 });

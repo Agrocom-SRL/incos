@@ -44,4 +44,19 @@ export class ICapacitacionInscritoRequisitoRepository extends IRepository {
   async findChecklistByInscripcionId(_inscritoId, _capacitacionId, _options = {}) {
     throw new Error('Method findChecklistByInscripcionId() must be implemented');
   }
+
+  /**
+   * Estado del costo del curso externo de una inscripción: si el curso tiene
+   * entidad certificadora (el costo se deposita a ella, no se registra como
+   * pago), cuál es su requisito que acredita el depósito y si ya fue entregado.
+   *
+   * @param {number} capacitacionInscritoId
+   * @param {number} capacitacionId
+   * @param {Object} options - Opciones opcionales (ej: `{ transaction }`)
+   * @returns {Promise<{pagoCursoExterno: boolean, requisitoId: number|null,
+   *   requisitoDescripcion: string|null, acreditado: boolean}>}
+   */
+  async resolverPagoCursoExterno(_inscritoId, _capacitacionId, _options = {}) {
+    throw new Error('Method resolverPagoCursoExterno() must be implemented');
+  }
 }

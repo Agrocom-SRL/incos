@@ -28,7 +28,26 @@ const ETIQUETAS = {
   }
 };
 
+const TEXTO_COSTO_CURSO_ACREDITADO = 'Pagado a la entidad (acreditado con depósito)';
+const TEXTO_COSTO_CURSO_PENDIENTE = 'Se paga a la entidad (depósito pendiente de acreditar)';
+
 const textoOVacio = (valor) => (valor == null ? '' : String(valor).trim());
+
+/** Pagos que cuentan (los anulados se conservan como historial pero no se imprimen ni suman). */
+const pagosVigentes = (ficha) => (ficha.pagos ?? []).filter((pago) => !pago.anulado);
+
+/**
+ * Leyenda del costo del curso cuando es EXTERNO (curso con entidad certificadora: se
+ * deposita a la entidad y no se registra como pago). `null` si el curso se cobra aquí.
+ * @param {Object} ficha
+ * @returns {string|null}
+ */
+function textoCostoCursoExterno(ficha) {
+  if (!ficha.pagoCursoExterno) return null;
+  return ficha.requisitoAcreditaPagoCurso?.entregado
+    ? TEXTO_COSTO_CURSO_ACREDITADO
+    : TEXTO_COSTO_CURSO_PENDIENTE;
+}
 
 /**
  * Fecha (string `YYYY-MM-DD…` o Date de una columna DATE) → `YYYY-MM-DD`.
@@ -119,7 +138,7 @@ export function construirDatosFormularioInscripcion(ficha, { fechaEmision = new 
     },
     requisitos,
     compromiso: compromisoVigente ? { fechaLimite: formatearFecha(ficha.fechaCompromiso) } : null,
-    pagos: (ficha.pagos ?? []).map((pago) => ({
+    pagos: pagosVigentes(ficha).map((pago) => ({
       fechaPago: formatearFecha(pago.fechaPago),
       numeroRecibo: textoOVacio(pago.numeroRecibo),
       concepto: ETIQUETAS.concepto[pago.concepto] ?? textoOVacio(pago.concepto),
@@ -127,6 +146,8 @@ export function construirDatosFormularioInscripcion(ficha, { fechaEmision = new 
       monto: Number(pago.monto) || 0
     })),
     resumenPagos: {
+      // Texto (en vez de un importe) cuando el costo del curso se paga a la entidad externa
+      costoCursoExterno: textoCostoCursoExterno(ficha),
       costoCurso: Number(ficha.montoObligatorio) || 0,
       costoMatricula: Number(ficha.montoMatricula) || 0,
       totalPagado: Number(ficha.totalPagado) || 0,
@@ -145,7 +166,7 @@ export function construirDatosFormularioInscripcion(ficha, { fechaEmision = new 
  * @returns {Object|null} Payload para `generarRecibo`; `null` si el pago no pertenece a la ficha.
  */
 export function construirDatosReciboPago(ficha, pagoId) {
-  const pagos = ficha.pagos ?? [];
+  const pagos = pagosVigentes(ficha);
   const indice = pagos.findIndex((pago) => Number(pago.id) === Number(pagoId));
   if (indice < 0) return null;
 
@@ -156,11 +177,15 @@ export function construirDatosReciboPago(ficha, pagoId) {
     CURSO: Number(ficha.montoObligatorio) || 0,
     MATRICULA: Number(ficha.montoMatricula) || 0
   };
+  const costoCursoExterno = textoCostoCursoExterno(ficha);
   const saldoDe = (concepto) =>
-    Math.max(
-      0,
-      aCentavos(totales[concepto]) - sumaCentavos(hastaEstePago.filter((p) => p.concepto === concepto))
-    );
+    // El costo externo del curso no es un cobro del instituto: no genera saldo en el recibo
+    concepto === 'CURSO' && costoCursoExterno
+      ? 0
+      : Math.max(
+          0,
+          aCentavos(totales[concepto]) - sumaCentavos(hastaEstePago.filter((p) => p.concepto === concepto))
+        );
 
   const conceptoPago = esMatricula ? 'MATRICULA' : 'CURSO';
   const pagadoAntes = sumaCentavos(
@@ -185,6 +210,7 @@ export function construirDatosReciboPago(ficha, pagoId) {
       horarios: textoOVacio(ficha.grupoHorariosEtiqueta),
       entidadCertificadora: textoOVacio(ficha.capacitacionEntidadCertificadora)
     },
+    costoCursoExterno,
     concepto: conceptoPago,
     conceptoEtiqueta: ETIQUETAS.concepto[conceptoPago],
     metodoPago: textoOVacio(pago.metodoPagoNombre),

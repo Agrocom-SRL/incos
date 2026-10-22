@@ -52,8 +52,8 @@ describe('GetInscripcionCapacitacionByIdUseCase', () => {
     expect(res.pagos[0]).toMatchObject({ concepto: 'CURSO', tieneComprobante: true, comprobanteNombre: 'dep.pdf' });
     expect(res.pagos[1]).toMatchObject({ concepto: 'MATRICULA', tieneComprobante: false });
     expect(res.requisitos).toEqual([
-      { requisitoId: 1, descripcion: 'Cédula', obligatorio: true, orden: 1, entregado: true, fechaEntrega: '2026-01-02', observacion: null },
-      { requisitoId: 2, descripcion: 'Formulario', obligatorio: false, orden: 2, entregado: false, fechaEntrega: null, observacion: 'falta' },
+      { requisitoId: 1, descripcion: 'Cédula', obligatorio: true, acreditaPagoCurso: false, orden: 1, entregado: true, fechaEntrega: '2026-01-02', observacion: null },
+      { requisitoId: 2, descripcion: 'Formulario', obligatorio: false, acreditaPagoCurso: false, orden: 2, entregado: false, fechaEntrega: null, observacion: 'falta' },
     ]);
   });
 

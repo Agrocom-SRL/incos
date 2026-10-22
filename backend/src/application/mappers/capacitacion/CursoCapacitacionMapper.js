@@ -13,6 +13,7 @@
  */
 
 import { resolveEstadoEfectivoCurso } from '../../use-cases/capacitacion/helpers/cursoEstadoEfectivo.js';
+import { tienePagoCursoExterno } from '../../use-cases/capacitacion/helpers/cursoCapacitacionInput.js';
 
 /**
  * Convierte una fila de la vista 155 a formato de presentación.
@@ -34,6 +35,7 @@ export function viewRowToPresentation(row) {
         ? Number(row.costo_matricula)
         : 0,
     entidadCertificadora: row.entidad_certificadora ?? null,
+    pagoCursoExterno: tienePagoCursoExterno(row.entidad_certificadora),
     modalidad: row.modalidad ?? null,
     nivel: row.nivel ?? null,
     dirigidoA: row.dirigido_a ?? null,
@@ -119,6 +121,7 @@ export function entityToPresentation(entity) {
         ? Number(entity.costoMatricula)
         : 0,
     entidadCertificadora: entity.entidadCertificadora ?? null,
+    pagoCursoExterno: tienePagoCursoExterno(entity.entidadCertificadora),
     modalidad: entity.modalidad ?? null,
     nivel: entity.nivel ?? null,
     dirigidoA: entity.dirigidoA ?? null,
@@ -193,8 +196,19 @@ export function requisitoToPresentation(entity) {
     id: entity.id,
     descripcion: entity.descripcion,
     obligatorio: Boolean(entity.obligatorio),
+    acreditaPagoCurso: Boolean(entity.acreditaPagoCurso),
     orden: entity.orden ?? 1,
   };
+}
+
+/**
+ * Requisito del curso que acredita el pago del costo del curso (depósito a la
+ * entidad certificadora), o null si el curso no tiene.
+ * @param {Array<Object>} requisitosPresentation - Requisitos ya en presentación
+ * @returns {Object|null}
+ */
+export function requisitoAcreditaPagoCurso(requisitosPresentation) {
+  return (requisitosPresentation ?? []).find((r) => r.acreditaPagoCurso) ?? null;
 }
 
 /**
@@ -270,6 +284,10 @@ export class CursoCapacitacionMapper {
 
   static requisitosToPresentation(entities) {
     return requisitosToPresentation(entities);
+  }
+
+  static requisitoAcreditaPagoCurso(requisitosPresentation) {
+    return requisitoAcreditaPagoCurso(requisitosPresentation);
   }
 
   static horarioCatalogoToPresentation(row) {

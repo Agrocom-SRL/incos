@@ -5,6 +5,13 @@ import {
   recalcularEstadoInscripcion,
 } from '../../../src/application/use-cases/capacitacion/helpers/estadoInscripcion.js';
 
+const NO_EXTERNO = {
+  pagoCursoExterno: false,
+  requisitoId: null,
+  requisitoDescripcion: null,
+  acreditado: false,
+};
+
 describe('estadoInscripcion (helper de dominio)', () => {
   const base = {
     montoCurso: 440,
@@ -21,8 +28,48 @@ describe('estadoInscripcion (helper de dominio)', () => {
       estadoPagoMatricula: 'PARCIAL',
       estadoPago: 'PARCIAL',
       estado: 'PENDIENTE',
+      pagoCursoExterno: false,
       saldoCurso: 440,
       saldoMatricula: 150,
+    });
+  });
+
+  describe('costo del curso externo (entidad certificadora)', () => {
+    const externo = { ...base, pagoCursoExterno: true, pagadoMatricula: 150 };
+
+    it('sin el requisito del depósito el curso queda PENDIENTE (PARCIAL) con el monto por acreditar', () => {
+      expect(calcularEstadosInscripcion({ ...externo, cursoAcreditado: false })).toMatchObject({
+        estadoPagoCurso: 'PARCIAL',
+        saldoCurso: 440,
+        estadoPagoMatricula: 'CANCELADO',
+        // el global mira solo la matrícula
+        estadoPago: 'CANCELADO',
+        estado: 'INSCRITO',
+      });
+    });
+
+    it('con el requisito entregado el curso figura pagado (CANCELADO) y saldoCurso = 0', () => {
+      expect(calcularEstadosInscripcion({ ...externo, cursoAcreditado: true })).toMatchObject({
+        estadoPagoCurso: 'CANCELADO',
+        saldoCurso: 0,
+        estadoPago: 'CANCELADO',
+        estado: 'INSCRITO',
+      });
+    });
+
+    it('INSCRITO sigue exigiendo matrícula pagada y requisitos obligatorios entregados', () => {
+      expect(
+        calcularEstadosInscripcion({ ...externo, cursoAcreditado: true, pagadoMatricula: 0 })
+      ).toMatchObject({ estadoPago: 'PARCIAL', estado: 'PENDIENTE' });
+      expect(
+        calcularEstadosInscripcion({ ...externo, cursoAcreditado: true, requisitosPendientes: 1 })
+      ).toMatchObject({ estado: 'PENDIENTE' });
+    });
+
+    it('ignora los pagos CURSO que existieran: el costo externo solo lo acredita el requisito', () => {
+      expect(
+        calcularEstadosInscripcion({ ...externo, cursoAcreditado: false, pagadoCurso: 440 })
+      ).toMatchObject({ estadoPagoCurso: 'PARCIAL', saldoCurso: 440 });
     });
   });
 
@@ -72,6 +119,7 @@ describe('estadoInscripcion (helper de dominio)', () => {
         pagoCapacitacionRepository: { sumMontosPorConcepto: jest.fn().mockResolvedValue(pagos) },
         capacitacionInscritoRequisitoRepository: {
           contarObligatoriosPendientes: jest.fn().mockResolvedValue(pendientes),
+          resolverPagoCursoExterno: jest.fn().mockResolvedValue(NO_EXTERNO),
         },
         inscripcionCapacitacionRepository: { update: jest.fn() },
         capacitacionCompromisoRepository: {

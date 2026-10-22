@@ -37,7 +37,8 @@ export const FORMULARIO_CAPACITACION_PDF_CONFIG = {
     estado: 'Estado:',
     sinRequisitos: 'El curso no exige requisitos',
     compromiso: 'Compromiso de entrega hasta:',
-    sinPagos: 'Aún no se registraron pagos'
+    sinPagos: 'Aún no se registraron pagos',
+    costoCurso: 'Costo del curso:'
   },
   /**
    * Tabla de requisitos: anchos como fracciones (< 1, suman 1) —`_addTable` solo

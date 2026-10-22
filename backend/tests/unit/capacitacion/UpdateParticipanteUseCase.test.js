@@ -59,4 +59,12 @@ describe('UpdateParticipanteUseCase', () => {
     await expect(useCase.execute(4, { ci: '999' })).rejects.toBeInstanceOf(ConflictError);
     expect(deps.participanteRepository.update).not.toHaveBeenCalled();
   });
+
+  it('dentro de una transacción externa la propaga a la lectura y a la escritura', async () => {
+    const { deps, useCase } = crear();
+    await useCase.execute(4, { nombres: 'Luis' }, 8, { transaction: 'TX' });
+    expect(deps.participanteRepository.findById).toHaveBeenCalledWith(4, { paranoid: false, transaction: 'TX' });
+    expect(deps.participanteRepository.update).toHaveBeenCalledWith(4, { nombres: 'Luis' }, 8, { transaction: 'TX' });
+  });
+
 });

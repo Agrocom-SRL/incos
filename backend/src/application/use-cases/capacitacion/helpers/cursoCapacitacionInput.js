@@ -27,6 +27,22 @@ export function esCursoGratuito(curso) {
 }
 
 /**
+ * ¿El costo del curso es EXTERNO? Un curso con entidad certificadora deposita su
+ * costo a esa entidad: el sistema NO registra pagos de concepto CURSO; el instituto
+ * solo cobra la matrícula y el depósito se acredita con un requisito.
+ *
+ * @param {string|{entidadCertificadora?: string|null}|null|undefined} cursoOEntidad
+ * @returns {boolean}
+ */
+export function tienePagoCursoExterno(cursoOEntidad) {
+  const entidad =
+    cursoOEntidad !== null && typeof cursoOEntidad === 'object'
+      ? cursoOEntidad.entidadCertificadora
+      : cursoOEntidad;
+  return typeof entidad === 'string' && entidad.trim() !== '';
+}
+
+/**
  * Resuelve un interruptor de costo y su monto. Con el interruptor activo el
  * monto es obligatorio y > 0 (en edición, si no se envía, conserva el actual);
  * con el interruptor apagado se ignora lo enviado y se guarda 0.
@@ -159,7 +175,8 @@ export function construirDatosCurso(body = {}, existing = null) {
  * `null` (no tocar los requisitos existentes).
  *
  * @param {*} requisitos
- * @returns {Array<{id: number|null, descripcion: string, obligatorio: boolean, orden: number}>|null}
+ * @returns {Array<{id: number|null, descripcion: string, obligatorio: boolean,
+ *   acreditaPagoCurso: boolean, orden: number}>|null}
  */
 export function normalizarRequisitos(requisitos) {
   if (requisitos === undefined) return null;
@@ -195,11 +212,37 @@ export function normalizarRequisitos(requisitos) {
       obligatorio: esVacio(item.obligatorio)
         ? true
         : parseBooleano(item.obligatorio, `${etiqueta}.obligatorio`),
+      acreditaPagoCurso: esVacio(item.acreditaPagoCurso)
+        ? false
+        : parseBooleano(item.acreditaPagoCurso, `${etiqueta}.acreditaPagoCurso`),
       orden: esVacio(item.orden)
         ? index + 1
         : parseNumero(item.orden, `${etiqueta}.orden`, { min: 1, entero: true }),
     };
   });
+}
+
+/**
+ * Valida la regla del requisito que acredita el pago del curso: a lo sumo UNO por
+ * curso y solo tiene sentido si el curso tiene entidad certificadora.
+ *
+ * @param {Array<{acreditaPagoCurso?: boolean}>} requisitos - Lista final de requisitos
+ * @param {string|null|undefined} entidadCertificadora - Entidad final del curso
+ * @throws {ValidationError}
+ */
+export function validarRequisitoAcreditaPago(requisitos, entidadCertificadora) {
+  const acreditan = (requisitos ?? []).filter((r) => r.acreditaPagoCurso);
+  if (acreditan.length === 0) return;
+  if (acreditan.length > 1) {
+    throw new ValidationError(
+      'Solo un requisito del curso puede acreditar el pago del curso (acreditaPagoCurso)'
+    );
+  }
+  if (!tienePagoCursoExterno(entidadCertificadora)) {
+    throw new ValidationError(
+      'acreditaPagoCurso solo aplica a cursos con entidad certificadora (el costo del curso se deposita a esa entidad)'
+    );
+  }
 }
 
 /**
@@ -240,6 +283,7 @@ export async function sincronizarRequisitos({
         {
           descripcion: requisito.descripcion,
           obligatorio: requisito.obligatorio,
+          acreditaPagoCurso: requisito.acreditaPagoCurso,
           orden: requisito.orden,
         },
         userId,
@@ -252,6 +296,7 @@ export async function sincronizarRequisitos({
           capacitacionId,
           descripcion: requisito.descripcion,
           obligatorio: requisito.obligatorio,
+          acreditaPagoCurso: requisito.acreditaPagoCurso,
           orden: requisito.orden,
         },
         userId,

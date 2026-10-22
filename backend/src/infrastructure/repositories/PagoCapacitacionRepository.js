@@ -37,6 +37,10 @@ export class PagoCapacitacionRepository extends BaseRepository {
       observaciones: v.observaciones ?? null,
       comprobanteRuta: v.comprobanteRuta ?? null,
       comprobanteNombre: v.comprobanteNombre ?? null,
+      anulado: Boolean(v.anulado),
+      motivoAnulacion: v.motivoAnulacion ?? null,
+      fechaAnulacion: v.fechaAnulacion ?? null,
+      anuladoPor: v.anuladoPor ?? null,
       activo: v.activo ?? null,
       createdAt: v.createdAt ?? null,
       updatedAt: v.updatedAt ?? null,
@@ -77,6 +81,10 @@ export class PagoCapacitacionRepository extends BaseRepository {
     if ('observaciones' in data) model.observaciones = data.observaciones ?? null;
     if ('comprobanteRuta' in data) model.comprobanteRuta = data.comprobanteRuta ?? null;
     if ('comprobanteNombre' in data) model.comprobanteNombre = data.comprobanteNombre ?? null;
+    if ('anulado' in data) model.anulado = Boolean(data.anulado);
+    if ('motivoAnulacion' in data) model.motivoAnulacion = data.motivoAnulacion ?? null;
+    if ('fechaAnulacion' in data) model.fechaAnulacion = data.fechaAnulacion ?? null;
+    if ('anuladoPor' in data) model.anuladoPor = data.anuladoPor ?? null;
     return model;
   }
 
@@ -89,7 +97,7 @@ export class PagoCapacitacionRepository extends BaseRepository {
   }
 
   /**
-   * Suma de montos de pagos vigentes de una inscripción.
+   * Suma de montos de pagos vigentes (no anulados) de una inscripción.
    *
    * @param {number} capacitacionInscritoId
    * @param {Object} options - Opciones opcionales (ej: `{ transaction }`)
@@ -97,14 +105,14 @@ export class PagoCapacitacionRepository extends BaseRepository {
    */
   async sumMontoByInscripcionId(capacitacionInscritoId, options = {}) {
     const total = await PagoCapacitacionModel.sum('monto', {
-      where: { capacitacionInscritoId, activo: true },
+      where: { capacitacionInscritoId, activo: true, anulado: false },
       ...options,
     });
     return Number(total ?? 0);
   }
 
   /**
-   * Suma de pagos vigentes de una inscripción agrupada por concepto
+   * Suma de pagos vigentes (no anulados) de una inscripción agrupada por concepto
    * (`MATRICULA` / `CURSO`); ambos conceptos siempre presentes (0 si no hay pagos).
    *
    * @param {number} capacitacionInscritoId
@@ -114,7 +122,7 @@ export class PagoCapacitacionRepository extends BaseRepository {
   async sumMontosPorConcepto(capacitacionInscritoId, options = {}) {
     const filas = await PagoCapacitacionModel.findAll({
       attributes: ['concepto', [fn('SUM', col('monto')), 'total']],
-      where: { capacitacionInscritoId, activo: true },
+      where: { capacitacionInscritoId, activo: true, anulado: false },
       group: ['concepto'],
       raw: true,
       transaction: options.transaction,
@@ -129,6 +137,8 @@ export class PagoCapacitacionRepository extends BaseRepository {
   /**
    * Historial de pagos de una inscripción con nombre del método de pago y
    * datos mínimos de la cuenta (filas crudas snake_case, orden cronológico).
+   * Incluye los pagos ANULADOS (historial) con `anulado = 1`; quien totaliza
+   * debe excluirlos.
    *
    * @param {number} capacitacionInscritoId
    * @returns {Promise<Array<Object>>}
@@ -143,6 +153,9 @@ export class PagoCapacitacionRepository extends BaseRepository {
         cp.observaciones,
         cp.concepto,
         cp.comprobante_nombre,
+        cp.anulado,
+        cp.motivo_anulacion,
+        cp.fecha_anulacion,
         CASE WHEN cp.comprobante_ruta IS NULL THEN 0 ELSE 1 END AS tiene_comprobante,
         cp.metodo_pago_id,
         mp.nombre AS metodo_pago_nombre,

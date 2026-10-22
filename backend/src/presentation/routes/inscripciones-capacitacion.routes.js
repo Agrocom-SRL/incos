@@ -9,6 +9,9 @@ import {
     registerPagoCapacitacionValidator,
     anularInscripcionCapacitacionValidator,
     updateRequisitosInscripcionValidator,
+    updateInscripcionCapacitacionValidator,
+    updatePagoCapacitacionValidator,
+    anularPagoCapacitacionValidator,
     pagoIdValidator,
 } from '../validators/capacitacion/index.js';
 
@@ -22,6 +25,9 @@ import {
  *   en el vocabulario cerrado de permiso_acciones/roles_permisos; se evitó
  *   reusar ELIMINAR (ya asignado al "retiro" voluntario) para no otorgar esa
  *   capacidad de regalo a quien solo debía poder anular.
+ *   También cubre la corrección de la inscripción (PUT /:id), de un pago
+ *   (PUT /:id/pagos/:pagoId) y su anulación (POST /:id/pagos/:pagoId/anular): sin
+ *   permiso ni acción nuevos.
  * - `capacitacion.pago` CREAR para POST /:id/pagos (mismo grupo UI
  *   cap_inscripciones, permiso separado para poder dar caja sin alta).
  *
@@ -83,6 +89,17 @@ export function buildInscripcionesCapacitacionRouter({ controllers, middlewares 
             controllers.getInscripcionCapacitacionByIdController.handle(req, res, next)
     );
 
+    // PUT /:id - Corregir la inscripción: datos del participante y/o grupo/horario
+    router.put(
+        '/:id',
+        ...editar,
+        idValidator,
+        updateInscripcionCapacitacionValidator,
+        validateRequest,
+        (req, res, next) =>
+            controllers.updateInscripcionCapacitacionController.handle(req, res, next)
+    );
+
     // PUT /:id/requisitos - Checklist de requisitos entregados (recalcula el estado)
     router.put(
         '/:id/requisitos',
@@ -104,6 +121,28 @@ export function buildInscripcionesCapacitacionRouter({ controllers, middlewares 
         registerPagoCapacitacionValidator,
         validateRequest,
         (req, res, next) => controllers.registerPagoCapacitacionController.handle(req, res, next)
+    );
+
+    // PUT /:id/pagos/:pagoId - Corregir un pago registrado (recalcula estados)
+    router.put(
+        '/:id/pagos/:pagoId',
+        ...editar,
+        idValidator,
+        pagoIdValidator,
+        updatePagoCapacitacionValidator,
+        validateRequest,
+        (req, res, next) => controllers.updatePagoCapacitacionController.handle(req, res, next)
+    );
+
+    // POST /:id/pagos/:pagoId/anular - Anular un pago equivocado (motivo obligatorio, conserva historial)
+    router.post(
+        '/:id/pagos/:pagoId/anular',
+        ...editar,
+        idValidator,
+        pagoIdValidator,
+        anularPagoCapacitacionValidator,
+        validateRequest,
+        (req, res, next) => controllers.anularPagoCapacitacionController.handle(req, res, next)
     );
 
     // POST /:id/pagos/:pagoId/comprobante - Adjuntar o reemplazar el comprobante de un pago

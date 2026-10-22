@@ -26,6 +26,9 @@ export {
   registerPagoCapacitacionValidator,
   anularInscripcionCapacitacionValidator,
   updateRequisitosInscripcionValidator,
+  updateInscripcionCapacitacionValidator,
+  updatePagoCapacitacionValidator,
+  anularPagoCapacitacionValidator,
   pagoIdValidator,
 } from './inscripciones-capacitacion.validator.js';
 

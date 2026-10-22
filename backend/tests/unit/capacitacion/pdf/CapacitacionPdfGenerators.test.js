@@ -57,4 +57,20 @@ describe('Generadores PDF de Capacitación (humo)', () => {
     expect(generador._montoEnLetras(500)).toBe('Quinientos con 00/100 bolivianos');
     expect(generador._montoEnLetras(1250.5)).toBe('Mil doscientos cincuenta con 50/100 bolivianos');
   });
+
+  it('el formulario y el recibo de un curso externo (leyenda del costo del curso) producen un PDF válido', async () => {
+    const ficha = crearFicha({
+      pagoCursoExterno: true,
+      requisitoAcreditaPagoCurso: { requisitoId: 2, descripcion: 'Depósito', entregado: true },
+      pagos: [
+        { id: 30, monto: 150, concepto: 'MATRICULA', fechaPago: '2026-03-02', numeroRecibo: '000030', metodoPagoNombre: 'Efectivo' },
+      ],
+      saldo: 0,
+    });
+    const formulario = new FormularioInscripcionCapacitacionPdfGenerator({ logger: logger() });
+    expect(esPdf(await formulario.generarFormularioInscripcion(construirDatosFormularioInscripcion(ficha)))).toBe(true);
+    const recibo = new ReciboPagoCapacitacionPdfGenerator({ logger: logger() });
+    expect(esPdf(await recibo.generarRecibo(construirDatosReciboPago(ficha, 30)))).toBe(true);
+  });
+
 });

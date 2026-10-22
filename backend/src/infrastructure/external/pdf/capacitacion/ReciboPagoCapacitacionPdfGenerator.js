@@ -73,6 +73,9 @@ export class ReciboPagoCapacitacionPdfGenerator extends ReciboPagoPdfGenerator {
     if (esCurso && curso.entidadCertificadora) {
       await this._addTableRowObservacion('ENTIDAD CERTIFICADORA', curso.entidadCertificadora);
     }
+    if (datos.costoCursoExterno) {
+      await this._addTableRowObservacion('COSTO DEL CURSO', datos.costoCursoExterno);
+    }
     await this._addTableRow('MÉTODO DE PAGO', valorODefecto(datos.metodoPago, SIN_DATO));
     if (datos.cuenta) await this._addTableRowObservacion('CUENTA', datos.cuenta);
     await this._addTableRow('TOTAL A PAGAR', formatearMonto(datos.totalConcepto, CFG.moneda), true);

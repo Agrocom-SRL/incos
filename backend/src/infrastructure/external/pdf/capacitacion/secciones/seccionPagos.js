@@ -47,10 +47,17 @@ export async function dibujarPagos(pdf, datos) {
   }
 
   pdf._addSpace(IncosPDFBase.LAYOUT.spacing.subsection);
-  const items = CFG.resumenPagos.map(({ label, key }) => ({
-    label: `${label}:`,
-    value: formatearMonto(datos.resumenPagos?.[key])
-  }));
+  // Costo del curso externo (entidad certificadora): leyenda en lugar de un importe/saldo
+  const costoExterno = datos.resumenPagos?.costoCursoExterno;
+  if (costoExterno) {
+    await pdf._addBoxedField(etiquetas.costoCurso, costoExterno, true);
+  }
+  const items = CFG.resumenPagos
+    .filter(({ key }) => !(costoExterno && key === 'costoCurso'))
+    .map(({ label, key }) => ({
+      label: `${label}:`,
+      value: formatearMonto(datos.resumenPagos?.[key])
+    }));
   const mitad = Math.ceil(items.length / 2);
   await pdf._addBoxedFieldGrid(
     items.slice(0, mitad),

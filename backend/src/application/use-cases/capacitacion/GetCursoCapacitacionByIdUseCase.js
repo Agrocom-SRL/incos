@@ -48,6 +48,9 @@ export class GetCursoCapacitacionByIdUseCase {
 
     const requisitos = await this.capacitacionRequisitoRepository.findByCapacitacionId(id);
     presentation.requisitos = CursoCapacitacionMapper.requisitosToPresentation(requisitos);
+    presentation.requisitoAcreditaPagoCurso = CursoCapacitacionMapper.requisitoAcreditaPagoCurso(
+      presentation.requisitos
+    );
 
     this.logger.info('[Capacitación] Ficha de curso de capacitación obtenida', {
       id,
