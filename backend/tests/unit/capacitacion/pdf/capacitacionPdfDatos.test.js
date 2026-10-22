@@ -51,7 +51,12 @@ describe('capacitacionPdfDatos', () => {
 
     it('sin ficha de curso, el único grupo disponible es el de la inscripción (marcado)', () => {
       expect(datos.grupos).toEqual([
-        { nombre: 'Grupo 1 – Mañana', horarios: 'SAB 08:00-12:00', seleccionado: true },
+        {
+          nombre: 'Grupo 1 – Mañana',
+          horarios: 'SAB 08:00-12:00',
+          bloques: [{ dias: '', horas: 'SAB 08:00-12:00' }],
+          seleccionado: true
+        },
       ]);
     });
 
@@ -70,8 +75,21 @@ describe('capacitacionPdfDatos', () => {
       ];
       const conGrupos = construirDatosFormularioInscripcion(crearFicha({ capacitacionGrupoId: 6 }), { gruposCurso });
       expect(conGrupos.grupos).toEqual([
-        { nombre: 'Regular', horarios: 'Martes, Jueves 19:00-21:00 · Sábado 09:00-12:00', seleccionado: false },
-        { nombre: 'Intensivo', horarios: 'Lunes 19:00-21:00', seleccionado: true },
+        {
+          nombre: 'Regular',
+          horarios: 'Martes, Jueves 19:00-21:00 · Sábado 09:00-12:00',
+          bloques: [
+            { dias: 'Martes y Jueves', horas: '19:00 - 21:00' },
+            { dias: 'Sábado', horas: '09:00 - 12:00' }
+          ],
+          seleccionado: false
+        },
+        {
+          nombre: 'Intensivo',
+          horarios: 'Lunes 19:00-21:00',
+          bloques: [{ dias: 'Lunes', horas: '19:00 - 21:00' }],
+          seleccionado: true
+        },
       ]);
     });
 
