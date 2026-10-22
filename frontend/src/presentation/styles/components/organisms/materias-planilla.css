@@ -562,3 +562,42 @@
   display: block;
   padding: var(--spacing-base) var(--insc-resumen-pad-x);
 }
+
+/* ============================================================================
+   RESUMEN DE LA INSCRIPCIÓN DE CAPACITACIÓN (paso final de «Inscribir participante»)
+   ----------------------------------------------------------------------------
+   Reutiliza la ficha `.insc-resumen` (identidad → datos → listas) y solo añade
+   la franja del curso elegido y el estado de cada requisito. Mismos tokens y
+   divisores que las franjas de arriba; sin colores propios.
+   ============================================================================ */
+
+/* Franja del curso: título + costos/cupo/fechas/horarios (CursoCapacitacionResumen). */
+.curso-cap-resumen {
+  padding: var(--spacing-base) var(--insc-resumen-pad-x);
+  border-bottom: 1px solid var(--color-border-secondary);
+}
+
+.curso-cap-resumen__title {
+  margin-bottom: var(--spacing-sm);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-strong);
+  line-height: var(--line-height-sm);
+  color: var(--color-text);
+}
+
+/* El detalle de horarios es largo: las métricas fluyen en fila con wrap. */
+.curso-cap-resumen .cfg-academico-metricas-list {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs) var(--spacing-lg);
+}
+
+/* Requisito: estado (entregado / pendiente) a la izquierda, obligatoriedad a la derecha. */
+.insc-resumen__materia-estado {
+  flex: none;
+}
+
+.insc-resumen__materia-extra {
+  flex: none;
+  margin-inline-start: auto;
+}

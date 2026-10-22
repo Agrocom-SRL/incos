@@ -1,18 +1,17 @@
 /**
  * Inscribir participante a un curso de capacitación (CAP · CREAR) — wizard
- * por pestañas (`WizardForm variant="tabs"`, gemelo de `UsuarioCreatePage`):
- * participante (existente o nuevo) → curso → pago inicial (obligatorio si el
- * curso tiene costo; el paso no existe si el curso es gratuito).
+ * por pestañas (`WizardForm variant="tabs"`, gemelo de `InscripcionesNueva` de
+ * Matrícula): participante (existente o nuevo) → curso → grupo y requisitos →
+ * pago inicial (OPCIONAL; el paso no existe si el curso es gratuito). Con
+ * `strictForwardNavigation`: todo avance por pestaña valida el paso visible.
  *
  * Página "dumb": la orquestación (pasos, validación, submit) vive en
- * `useInscribirParticipantePage`. El contenido de cada paso (selector/
- * formulario de participante, selector de curso, campos de pago) vive en
- * organismos propios `InscribirParticipanteSeccion*`, que esta página compone
- * vía `renderSectionContent`. Reusa `fin-pago-reg-*` (pagos-registrar.css)
- * solo para el resaltado del selector de participante; en el paso "Pago
- * inicial" el resumen del curso elegido (costo/cupo/fechas/horarios) es la
- * molécula `CursoCapacitacionResumen` (icono+texto, mismo lenguaje que la
- * tarjeta del paso "Curso"), no cajas de ancho fijo.
+ * `useInscribirParticipantePage` y la config de pasos en
+ * `config/inscribirParticipanteWizardSteps`. El contenido de cada sección
+ * vive en organismos propios `InscribirParticipanteSeccion*` (cada uno envuelto
+ * en `FormWorkspaceSection` con el título/descripción de su sección) y el
+ * último paso cierra con `InscripcionCapSeleccionResumen`, que esta página
+ * compone vía `renderSectionContent`.
  *
  * Paso 1 sin tabs internas: arranca en búsqueda; si no encuentra a nadie, el
  * header de la tarjeta ofrece "Crear nuevo participante" (y, ya en modo
@@ -20,13 +19,12 @@
  * `handleVolverABusqueda` del hook. Este botón se inyecta en `wizardSteps[0]`
  * como `headerActions` aquí en la página (JSX no vive en el hook de estado).
  *
- * Elegir un participante de la tabla avanza directo al paso 2 (sin pasar por
+ * Elegir un participante de la lista avanza directo al paso 2 (sin pasar por
  * el botón "Siguiente"): usa la API imperativa de `WizardForm`
  * (`wizardRef.current.goToStep`) porque seleccionar una fila YA es una
  * selección válida — no hace falta repetir la validación del paso.
  *
- * Elegir un curso avanza directo al paso "Grupo y requisitos". El paso
- * "Pago inicial" (opcional) solo existe si el curso cobra algo.
+ * Elegir un curso avanza directo al paso "Grupo y requisitos".
  */
 
 import { useCallback, useMemo, useRef } from 'react';
@@ -45,13 +43,12 @@ import {
 import { CAPACITACION_PERMISOS } from '@application-capacitacion/utils/capacitacionPermisos';
 import InscribirParticipanteSeccionParticipante from '@capacitacion/inscripciones/components/organisms/InscribirParticipanteSeccionParticipante';
 import InscribirParticipanteSeccionCurso from '@capacitacion/inscripciones/components/organisms/InscribirParticipanteSeccionCurso';
-import InscribirParticipanteSeccionInscripcion from '@capacitacion/inscripciones/components/organisms/InscribirParticipanteSeccionInscripcion';
+import InscribirParticipanteSeccionGrupo from '@capacitacion/inscripciones/components/organisms/InscribirParticipanteSeccionGrupo';
+import InscribirParticipanteSeccionRequisitos from '@capacitacion/inscripciones/components/organisms/InscribirParticipanteSeccionRequisitos';
 import InscribirParticipanteSeccionPago from '@capacitacion/inscripciones/components/organisms/InscribirParticipanteSeccionPago';
-import CursoCapacitacionResumen from '@capacitacion/inscripciones/components/molecules/CursoCapacitacionResumen';
+import InscripcionCapSeleccionResumen from '@capacitacion/inscripciones/components/organisms/InscripcionCapSeleccionResumen';
 import '@presentation/styles/pages/detail-page.css';
 import '@configuracion/academico/styles/academico-form-page.css';
-import '@finanzas/pagos/styles/pagos-registrar.css';
-import '../styles/inscribir-participante.css';
 
 const InscribirParticipantePage = () => {
   const {
@@ -86,6 +83,7 @@ const InscribirParticipantePage = () => {
     errorCursoDetalle,
     gruposCurso,
     requisitosCurso,
+    grupoSeleccionado,
     capacitacionGrupoId,
     setCapacitacionGrupoId,
     requisitosEntregados,
@@ -94,6 +92,8 @@ const InscribirParticipantePage = () => {
     handleTogglePagoInicial,
     saldosPorConcepto,
     conceptoOptions,
+    ofrecePago,
+    cursoExterno,
     metodosPago,
     cuentasPago,
     loadingCatalogos,
@@ -159,11 +159,13 @@ const InscribirParticipantePage = () => {
   );
 
   const renderSectionContent = useCallback(
-    (_stepIndex, sectionKey) => {
+    (_stepIndex, sectionKey, section, formInstance) => {
       if (sectionKey === 'participante') {
         return (
           <InscribirParticipanteSeccionParticipante
-            key="participante"
+            key={sectionKey}
+            section={section}
+            form={formInstance}
             modoParticipante={modoParticipante}
             participantes={participantes}
             loadingBusqueda={loadingBusqueda}
@@ -183,7 +185,9 @@ const InscribirParticipantePage = () => {
       if (sectionKey === 'curso') {
         return (
           <InscribirParticipanteSeccionCurso
-            key="curso"
+            key={sectionKey}
+            section={section}
+            form={formInstance}
             cursos={cursos}
             loadingCursos={loadingCursos}
             errorCursos={errorCursos}
@@ -193,42 +197,73 @@ const InscribirParticipantePage = () => {
         );
       }
 
-      if (sectionKey === 'inscripcion') {
+      if (sectionKey === 'grupo') {
         return (
-          <Flex vertical gap="middle" key="inscripcion">
-            <CursoCapacitacionResumen curso={cursoSeleccionado} />
-            <InscribirParticipanteSeccionInscripcion
-              loading={loadingCursoDetalle}
-              error={errorCursoDetalle}
-              grupos={gruposCurso}
-              requisitos={requisitosCurso}
-              capacitacionGrupoId={capacitacionGrupoId}
-              onGrupoChange={setCapacitacionGrupoId}
-              requisitosEntregados={requisitosEntregados}
-              onRequisitosChange={setRequisitosEntregados}
-            />
-          </Flex>
+          <InscribirParticipanteSeccionGrupo
+            key={sectionKey}
+            section={section}
+            form={formInstance}
+            loading={loadingCursoDetalle}
+            error={errorCursoDetalle}
+            grupos={gruposCurso}
+            capacitacionGrupoId={capacitacionGrupoId}
+            onGrupoChange={setCapacitacionGrupoId}
+          />
+        );
+      }
+
+      if (sectionKey === 'requisitos') {
+        return (
+          <InscribirParticipanteSeccionRequisitos
+            key={sectionKey}
+            section={section}
+            form={formInstance}
+            error={errorCursoDetalle}
+            requisitos={requisitosCurso}
+            requisitosEntregados={requisitosEntregados}
+            onRequisitosChange={setRequisitosEntregados}
+          />
         );
       }
 
       if (sectionKey === 'pago') {
         return (
-          <Flex vertical gap="middle" key="pago">
-            <CursoCapacitacionResumen curso={cursoSeleccionado} />
-            <InscribirParticipanteSeccionPago
-              registrarPagoInicial={registrarPagoInicial}
-              onTogglePagoInicial={handleTogglePagoInicial}
-              errorCatalogos={errorCatalogos}
-              metodosPago={metodosPago}
-              cuentasPago={cuentasPago}
-              loadingCatalogos={loadingCatalogos}
-              reglasMetodo={reglasMetodo}
-              saldosPorConcepto={saldosPorConcepto}
-              conceptoOptions={conceptoOptions}
-              onMetodoPagoChange={handleMetodoPagoChange}
-              disabled={inscribiendo}
-            />
-          </Flex>
+          <InscribirParticipanteSeccionPago
+            key={sectionKey}
+            section={section}
+            form={formInstance}
+            registrarPagoInicial={registrarPagoInicial}
+            onTogglePagoInicial={handleTogglePagoInicial}
+            errorCatalogos={errorCatalogos}
+            metodosPago={metodosPago}
+            cuentasPago={cuentasPago}
+            loadingCatalogos={loadingCatalogos}
+            reglasMetodo={reglasMetodo}
+            saldosPorConcepto={saldosPorConcepto}
+            conceptoOptions={conceptoOptions}
+            cursoExterno={cursoExterno}
+            onMetodoPagoChange={handleMetodoPagoChange}
+            disabled={inscribiendo}
+          />
+        );
+      }
+
+      if (sectionKey === 'resumen') {
+        return (
+          <InscripcionCapSeleccionResumen
+            key={sectionKey}
+            section={section}
+            form={formInstance}
+            modoParticipante={modoParticipante}
+            participanteSeleccionado={participanteSeleccionado}
+            curso={cursoSeleccionado}
+            grupo={grupoSeleccionado}
+            requisitos={requisitosCurso}
+            requisitosEntregados={requisitosEntregados}
+            ofrecePago={ofrecePago}
+            registrarPagoInicial={registrarPagoInicial}
+            conceptoOptions={conceptoOptions}
+          />
         );
       }
 
@@ -257,6 +292,7 @@ const InscribirParticipantePage = () => {
       errorCursoDetalle,
       gruposCurso,
       requisitosCurso,
+      grupoSeleccionado,
       capacitacionGrupoId,
       setCapacitacionGrupoId,
       requisitosEntregados,
@@ -265,6 +301,8 @@ const InscribirParticipantePage = () => {
       handleTogglePagoInicial,
       saldosPorConcepto,
       conceptoOptions,
+      ofrecePago,
+      cursoExterno,
       errorCatalogos,
       metodosPago,
       cuentasPago,
@@ -289,7 +327,11 @@ const InscribirParticipantePage = () => {
           <PageHeader
             title="Inscribir participante"
             breadcrumbItems={breadcrumbItems}
-            actions={<BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver} />}
+            actions={
+              <BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver}>
+                Volver
+              </BackButton>
+            }
           />
         </PageHeaderArea>
 
@@ -309,6 +351,7 @@ const InscribirParticipantePage = () => {
               renderSectionContent={renderSectionContent}
               onValidateBeforeNext={onValidateBeforeNext}
               onValidationError={handleValidationError}
+              strictForwardNavigation
               errorMessage={stepError}
               finishLabel="Registrar inscripción"
               nextLabel="Siguiente"

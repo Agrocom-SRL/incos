@@ -1,23 +1,33 @@
 /**
- * Molécula: resumen compacto del curso elegido (costos/cupo/fechas/horarios),
- * pasos "Grupo y requisitos" y "Pago inicial" de Inscribir participante (CAP).
+ * Molécula: franja del curso elegido (título + costos/cupo/fechas/horarios)
+ * dentro del resumen de cierre de Inscribir participante (CAP)
+ * (`InscripcionCapSeleccionResumen`).
  *
  * Reusa `InfoLinesCell` (mismo lenguaje icono+texto que ya usa la tarjeta del
- * paso "Curso") en vez de las cajas de ancho fijo de `fin-pago-reg-resumen`
- * (pagos-registrar.css): el detalle de horarios es de longitud variable
- * (varios bloques día/hora) y no cabe bien en una caja homogénea junto a
- * valores cortos como el costo — se ve descuadrado.
+ * paso "Curso") en vez de cajas de ancho fijo: el detalle de horarios es de
+ * longitud variable (varios bloques día/hora) y no cabe bien en una caja
+ * homogénea junto a valores cortos como el costo. Estilos de la franja
+ * (`.curso-cap-resumen*`): materias-planilla.css, junto a `.insc-resumen*`.
  *
- * Recibe el curso ya mapeado; no llama hooks.
+ * `estadoPagoCursoExterno` (curso con entidad certificadora: el costo se deposita a
+ * ella) rotula el costo del curso «Pagado a la entidad» / «Pendiente de acreditar
+ * con depósito»; `null` en cursos normales.
+ *
+ * `mostrarHorarios` se apaga cuando el resumen ya detalla los horarios del grupo
+ * elegido (evita repetirlos). Recibe el curso ya mapeado; no llama hooks.
  */
 
 import { CalendarOutlined, ClockCircleOutlined, DollarOutlined, TeamOutlined } from '@ant-design/icons';
 import { InfoLinesCell } from '@atoms';
+import { StatusPill } from '@atoms';
+import {
+  formatEstadoCursoExterno,
+  getEstadoCursoExternoPillClass,
+} from '@application-capacitacion/utils/capacitacionPills';
 import CostoCursoLabel from '@capacitacion/components/atoms/CostoCursoLabel';
 import CursoGratuitoPill from '@capacitacion/components/atoms/CursoGratuitoPill';
-import '../../styles/inscribir-participante.css';
 
-const CursoCapacitacionResumen = ({ curso }) => {
+const CursoCapacitacionResumen = ({ curso, mostrarHorarios = true, estadoPagoCursoExterno = null }) => {
   if (!curso) return null;
 
   return (
@@ -32,6 +42,15 @@ const CursoCapacitacionResumen = ({ curso }) => {
                 label: (
                   <>
                     Curso: <CostoCursoLabel costo={curso.costo} />
+                    {estadoPagoCursoExterno ? (
+                      <>
+                        {' '}
+                        <StatusPill
+                          label={formatEstadoCursoExterno(estadoPagoCursoExterno)}
+                          className={getEstadoCursoExternoPillClass(estadoPagoCursoExterno)}
+                        />
+                      </>
+                    ) : null}
                   </>
                 ),
               }
@@ -54,7 +73,9 @@ const CursoCapacitacionResumen = ({ curso }) => {
                 : `${curso.inscritosCount} inscritos`,
           },
           curso.fechasLabel ? { icon: <CalendarOutlined />, label: curso.fechasLabel } : null,
-          { icon: <ClockCircleOutlined />, label: curso.horariosDetalle || 'Grupos por definir' },
+          mostrarHorarios
+            ? { icon: <ClockCircleOutlined />, label: curso.horariosDetalle || 'Grupos por definir' }
+            : null,
         ].filter(Boolean)}
       />
     </div>

@@ -165,11 +165,22 @@
   line-height: 1;
 }
 
+/* Variante con icono grande (grupos y cursos de capacitación). */
+.paralelo-card__inicial--icono {
+  width: var(--control-height-lg);
+  height: var(--control-height-lg);
+  font-size: var(--font-size-lg);
+}
+
 /* Elegida: la inicial pasa al primario sólido (confirma la elección). */
+.step2-paralelos-cards .data-cards__card--active .paralelo-card__inicial,
+.step2-paralelos-cards .data-cards__card--active .paralelo-card__inicial * {
+  color: var(--color-white) !important;
+}
+
 .step2-paralelos-cards .data-cards__card--active .paralelo-card__inicial {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: var(--color-white) !important;
 }
 
 .paralelo-card__identidad {
