@@ -7,10 +7,13 @@ export const CURSOS_CAP_LIST_PATH = `${CAPACITACION_BASE}/cursos`;
 export const cursoCapRegistrarPath = `${CAPACITACION_BASE}/cursos/registrar`;
 export const cursoCapDetallePath = (id) => `${CAPACITACION_BASE}/cursos/${id}`;
 export const cursoCapEditarPath = (id) => `${CAPACITACION_BASE}/cursos/${id}/editar`;
+/** Paso (índice base 0) «Grupos y horarios» del formulario de curso; se pasa en `location.state.initialStep`. */
+export const CURSO_FORM_STEP_GRUPOS = 1;
 
 /** Participantes */
 export const PARTICIPANTES_CAP_LIST_PATH = `${CAPACITACION_BASE}/participantes`;
 export const participanteCapRegistrarPath = `${CAPACITACION_BASE}/participantes/nuevo`;
+export const participanteCapDetallePath = (id) => `${CAPACITACION_BASE}/participantes/${id}`;
 export const participanteCapEditarPath = (id) => `${CAPACITACION_BASE}/participantes/${id}/editar`;
 
 /** Grupos (tabs «Horarios» y «Grupos»); el ABM de horarios cuelga de esta pantalla */

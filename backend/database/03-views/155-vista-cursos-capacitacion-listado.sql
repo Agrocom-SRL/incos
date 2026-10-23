@@ -3,10 +3,12 @@
 -- Una fila por capacitación (módulo CAP) para el listado
 -- GET /v1/cursos-capacitacion (dataFieldName: 'cursosCapacitacion').
 --
--- Propósito: datos del curso (título, costo del curso, costo de matrícula, entidad
+-- Propósito: datos del curso (título, edición, oferta de origen y gestión = año de fecha_inicio, costo del curso, costo de matrícula, entidad
 -- certificadora, modalidad, nivel, dirigido_a, duración, cupo, fechas (fecha_fin
 -- opcional), estado, resumen de aulas de sus grupos) +
 -- grupos_count, tiene_costo y cobra_matricula, +
+-- matricula_min/matricula_max (matrícula efectiva por grupo: la del grupo o, si no
+-- tiene, la del curso; sin grupos, la del curso) +
 -- agregados de inscritos (inscritos_count = capacitacion_inscritos activos
 -- con estado='INSCRITO'; cupo_disponible = cupo_maximo - inscritos_count,
 -- informativo en el MVP: no bloquea la inscripción) + horarios formateados
@@ -16,7 +18,9 @@
 -- y el switch ACTIVAR); solo excluye soft-deleted (deleted_at IS NULL).
 --
 -- Dependencias (orden sugerido):
--- 1. 01-schemas/21-cursos-capacitacion.sql (capacitaciones, capacitacion_inscritos)
+-- 1. 01-schemas/21-cursos-capacitacion.sql (capacitaciones, capacitacion_grupos, capacitacion_inscritos)
+--    (en servidores existentes, antes 05-migrations/30-migrate-capacitacion-grupos-costo-matricula.sql
+--    y 05-migrations/31-migrate-capacitacion-edicion-y-origen.sql)
 -- 2. 154-vista-base-cursos-capacitacion-horarios.sql
 -- 3. Esta vista
 --
@@ -32,11 +36,16 @@ CREATE VIEW vista_cursos_capacitacion_listado AS
 SELECT
   c.id,
   c.titulo,
+  c.edicion,
+  c.curso_origen_id,
+  YEAR(c.fecha_inicio) AS gestion,
   c.descripcion,
   c.tiene_costo,
   c.cobra_matricula,
   c.costo,
   c.costo_matricula,
+  COALESCE(gs.matricula_min, c.costo_matricula) AS matricula_min,
+  COALESCE(gs.matricula_max, c.costo_matricula) AS matricula_max,
   c.entidad_certificadora,
   c.modalidad,
   c.nivel,
@@ -69,8 +78,12 @@ LEFT JOIN (
   SELECT
     g.capacitacion_id,
     COUNT(*) AS grupos_count,
+    MIN(COALESCE(g.costo_matricula, cc.costo_matricula)) AS matricula_min,
+    MAX(COALESCE(g.costo_matricula, cc.costo_matricula)) AS matricula_max,
     GROUP_CONCAT(DISTINCT a.nombre ORDER BY a.nombre SEPARATOR ', ') AS aulas_resumen
   FROM capacitacion_grupos g
+  JOIN capacitaciones cc
+    ON cc.id = g.capacitacion_id
   LEFT JOIN aulas a
     ON a.id = g.aula_id
     AND a.deleted_at IS NULL

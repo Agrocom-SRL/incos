@@ -12,8 +12,7 @@ import {
  * Construye el router de Participantes de capacitación (módulo CAP).
  *
  * Personas externas a la matrícula formal (sin usuario/rol). Permiso
- * `capacitacion.participante` (LISTAR/DETALLE/CREAR/EDITAR — sin ELIMINAR en
- * este primer corte, ver seed 65).
+ * `capacitacion.participante` (LISTAR/DETALLE/CREAR/EDITAR/ELIMINAR; ver seed 64).
  *
  * @param {Object} params - Dependencias inyectadas
  * @param {Object} params.controllers - Controllers del módulo
@@ -27,6 +26,7 @@ export function buildParticipantesRouter({ controllers, middlewares }) {
     const detalle = [authenticate, verificarPermiso('capacitacion.participante', 'DETALLE')];
     const crear = [authenticate, verificarPermiso('capacitacion.participante', 'CREAR')];
     const editar = [authenticate, verificarPermiso('capacitacion.participante', 'EDITAR')];
+    const eliminar = [authenticate, verificarPermiso('capacitacion.participante', 'ELIMINAR')];
 
     /**
      * GET /api/v1/participantes
@@ -67,6 +67,15 @@ export function buildParticipantesRouter({ controllers, middlewares }) {
         updateParticipanteValidator,
         validateRequest,
         (req, res, next) => controllers.updateParticipanteController.handle(req, res, next)
+    );
+
+    // DELETE /:id - Eliminar participante (soft delete en cascada: inscripciones y pagos)
+    router.delete(
+        '/:id',
+        ...eliminar,
+        idValidator,
+        validateRequest,
+        (req, res, next) => controllers.deleteParticipanteController.handle(req, res, next)
     );
 
     return router;

@@ -13,7 +13,7 @@ import {
 import { parseFechaISO, parseIdPositivo } from '../../utils/validacionEntrada.js';
 import { resolveEstadoEfectivoCurso } from './helpers/cursoEstadoEfectivo.js';
 import { esCursoGratuito, tienePagoCursoExterno } from './helpers/cursoCapacitacionInput.js';
-import { resolverGrupoInscripcion } from './helpers/grupoInscripcion.js';
+import { resolverCostoMatricula, resolverGrupoInscripcion } from './helpers/grupoInscripcion.js';
 import { validarConceptoPermitido } from './helpers/pagoCapacitacionInput.js';
 import {
   calcularEstadosInscripcion,
@@ -34,7 +34,8 @@ const esVacio = (valor) =>
  *    (regla de negocio, sin UNIQUE en BD).
  * 3. Crea la inscripción (fecha_inscripcion = hoy si no se envía) con los
  *    snapshots `montoObligatorio` = `capacitaciones.costo` (curso) y
- *    `montoMatricula` = `capacitaciones.costo_matricula` en este momento (0 si
+ *    `montoMatricula` = matrícula del GRUPO elegido (`capacitacion_grupos.costo_matricula`,
+ *    o la del curso si el grupo no tiene) en este momento (0 si
  *    el interruptor `tieneCosto`/`cobraMatricula` del curso está apagado).
  *    El participante elige un GRUPO (`capacitacionGrupoId`): obligatorio si el
  *    curso tiene 2 o más grupos, se asigna solo si tiene uno y es null si no
@@ -168,7 +169,7 @@ export class CreateInscripcionCapacitacionUseCase {
 
     // 4. Montos (snapshot en este instante). Un curso totalmente gratuito no registra pagos.
     const costo = curso.tieneCosto ? Number(curso.costo ?? 0) : 0;
-    const costoMatricula = curso.cobraMatricula ? Number(curso.costoMatricula ?? 0) : 0;
+    const costoMatricula = resolverCostoMatricula(curso, grupo);
     const esGratuito = esCursoGratuito(curso);
     const pagoInicialBody = body.pagoInicial ?? null;
     if (pagoInicialBody !== null && (typeof pagoInicialBody !== 'object' || Array.isArray(pagoInicialBody))) {
@@ -318,6 +319,7 @@ export class CreateInscripcionCapacitacionUseCase {
     const presentation = InscripcionCapacitacionMapper.entityToPresentation(inscripcionCreada);
     presentation.participante = ParticipanteMapper.entityToPresentation(participante);
     presentation.capacitacionTitulo = curso.titulo;
+    presentation.capacitacionEdicion = curso.edicion ?? null;
     presentation.costo = costo;
     presentation.saldoCurso = resumen?.saldoCurso ?? 0;
     presentation.saldoMatricula = resumen?.saldoMatricula ?? 0;

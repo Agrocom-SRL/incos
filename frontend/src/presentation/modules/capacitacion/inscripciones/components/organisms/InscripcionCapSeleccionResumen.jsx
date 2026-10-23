@@ -121,6 +121,7 @@ const InscripcionCapSeleccionResumen = ({
         <CursoCapacitacionResumen
           curso={curso}
           mostrarHorarios={!grupo}
+          mostrarMatricula={!grupo}
           estadoPagoCursoExterno={estadoPagoCursoExterno}
         />
 
@@ -128,6 +129,9 @@ const InscripcionCapSeleccionResumen = ({
           <div className="insc-resumen__datos">
             <ResumenDato label="Grupo" value={grupo.nombre} />
             <ResumenDato label="Horarios" value={grupo.horariosLabel || 'Sin horarios definidos'} />
+            {grupo.matricula > 0 ? (
+              <ResumenDato label="Matrícula" value={`Bs ${formatBs(grupo.matricula)}`} />
+            ) : null}
             <ResumenDato label="Aula" value={grupo.aulaLabel} />
             <ResumenDato
               label="Cupo disponible"

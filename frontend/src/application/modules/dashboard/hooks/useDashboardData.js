@@ -84,6 +84,9 @@ const mapEstudiante = (row) => {
   };
 };
 
+/** Conteos del cuadro «Registro»: estudiantes y participantes de capacitación (hoy / mes). */
+const STATS_VACIAS = { todayOrders: 0, monthOrders: 0, participantesHoy: 0, participantesMes: 0 };
+
 export const useDashboardData = () => {
   const { hasPermiso } = useAuth();
   const puedeVerDetalleCarreras = hasPermiso(PERMISO_CARRERAS_DETALLE, 'LISTAR');
@@ -94,10 +97,7 @@ export const useDashboardData = () => {
   const [ultimosDocentes, setUltimosDocentes] = useState([]);
   const [ultimosEstudiantes, setUltimosEstudiantes] = useState([]);
   const [actividades, setActividades] = useState([]);
-  const [stats, setStats] = useState({
-    todayOrders: 0,
-    monthOrders: 0,
-  });
+  const [stats, setStats] = useState(STATS_VACIAS);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -141,13 +141,15 @@ export const useDashboardData = () => {
         setStats({
           todayOrders: Number(s.estudiantesRegistradosHoy ?? 0),
           monthOrders: Number(s.estudiantesRegistradosMes ?? 0),
+          participantesHoy: Number(s.participantesRegistradosHoy ?? 0),
+          participantesMes: Number(s.participantesRegistradosMes ?? 0),
         });
       } else {
         setActividades([]);
         setCarreras([]);
         setUltimosDocentes([]);
         setUltimosEstudiantes([]);
-        setStats({ todayOrders: 0, monthOrders: 0 });
+        setStats(STATS_VACIAS);
         if (resumenResult.error) {
           setError(
             typeof resumenResult.error === 'string'

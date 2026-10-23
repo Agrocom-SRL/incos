@@ -1,7 +1,7 @@
 /**
  * Utilidades puras para la lista de grupos de un curso y sus horarios (editor
  * «Grupos y horarios» del formulario de curso). Cada grupo del formulario:
- * `{ key, id, nombre, cupoMaximo, aulaId, horarios: [{ horarioId }] }`.
+ * `{ key, id, nombre, cupoMaximo, cobraMatricula, costoMatricula, aulaId, horarios: [{ horarioId }] }`.
  * Reordenar/quitar/actualizar reutilizan `requisitosCapacitacion` (misma
  * mecánica de lista editable).
  */
@@ -23,6 +23,8 @@ export const crearGrupoVacio = (cupoMaximo = null) => {
     id: null,
     nombre: '',
     cupoMaximo: cupoMaximo ?? null,
+    cobraMatricula: false,
+    costoMatricula: undefined,
     aulaId: null,
     horarios: [],
   };

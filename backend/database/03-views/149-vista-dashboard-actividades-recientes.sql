@@ -1,7 +1,7 @@
 -- ============================================
 -- VISTA: vista_dashboard_actividades_recientes
 -- Unión de las vistas base de actividad del dashboard (reemplaza al archivo 49;
--- misma vista lógica, ahora con 10 bases y columnas de alcance por actor).
+-- misma vista lógica, ahora con 12 bases y columnas de alcance por actor).
 --
 -- CONTRATO (10 columnas, mismo orden en TODAS las bases — requisito del UNION):
 --   artefacto_tipo   VARCHAR  tipo de actividad (ver catálogo abajo)
@@ -26,6 +26,8 @@
 --   LICENCIA           (146) licencia estudiantil
 --   CLASE_NO_DICTADA   (147) cancelación puntual del dictado
 --   ASIGNACION_DOCENTE (148) asignación vigente docente ↔ curso
+--   PARTICIPANTE       (191) alta de participante de capacitación
+--   INSCRIPCION_CAPACITACION (192) inscripción a un curso de capacitación
 --
 -- Feeds derivados (filtros del consumidor, DashboardRepository):
 --   - Global (panel admin):      sin filtro, ORDER BY ocurrido_en DESC.
@@ -34,7 +36,8 @@
 --   - Portal del docente:        WHERE docente_id = ? (tipos ASISTENCIA_TOMADA,
 --     CLASE_NO_DICTADA, ASIGNACION_DOCENTE, NOTA_REGISTRADA, DOCENTE).
 --
--- Dependencias (bases 41, 42, 43, 44, 47, 144, 145, 146, 147, 148).
+-- Dependencias (bases 41, 42, 43, 44, 47, 144, 145, 146, 147, 148, 191, 192).
+-- En un servidor existente crear primero 191 y 192 y luego recrear esta vista.
 --
 -- Uso:
 -- SELECT * FROM vista_dashboard_actividades_recientes ORDER BY ocurrido_en DESC;
@@ -81,4 +84,12 @@ SELECT * FROM vista_base_dashboard_actividad_clase_no_dictada
 
 UNION ALL
 
-SELECT * FROM vista_base_dashboard_actividad_asignacion_docente;
+SELECT * FROM vista_base_dashboard_actividad_asignacion_docente
+
+UNION ALL
+
+SELECT * FROM vista_base_dashboard_actividad_participante
+
+UNION ALL
+
+SELECT * FROM vista_base_dashboard_actividad_inscripcion_capacitacion;

@@ -6,7 +6,7 @@
  *
  * Acciones por permiso (vocabulario v2):
  * - curso:        LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR, ACTIVAR
- * - participante: LISTAR, DETALLE, CREAR, EDITAR
+ * - participante: LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR
  * - inscripcion:  LISTAR, DETALLE, CREAR, ELIMINAR
  * - pago:         CREAR, EXPORTAR
  * - grupo:        LISTAR, DETALLE, CREAR, EDITAR, ELIMINAR

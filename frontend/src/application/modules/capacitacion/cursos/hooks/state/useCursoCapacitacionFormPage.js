@@ -19,6 +19,7 @@ import { App, Form } from 'antd';
 import { useCursoCapacitacionFormContext } from '@application-capacitacion/cursos/hooks/context/useCursoCapacitacionFormContext';
 import {
   mapCursoToFormValues,
+  mapCursoToNuevaEdicionFormValues,
   mapFormValuesToCursoPayload,
 } from '@application-capacitacion/cursos/mappers/cursoCapacitacionMapper';
 import { createCursoFormSections } from '@application-capacitacion/cursos/config/cursoFormSections';
@@ -61,19 +62,15 @@ export const useCursoCapacitacionFormPage = (mode = 'create') => {
   const [error, setError] = useState(null);
   const [stepError, setStepError] = useState('');
 
-  // Los interruptores de costo gobiernan qué montos se piden.
+  // El interruptor de costo gobierna si se pide el monto del curso (la matrícula se decide por grupo).
   // `preserve: true`: en los pasos 2 y 3 los interruptores ya no están montados y sin esto
   // `useWatch` los vería apagados, lo que borraba los montos escritos en el paso 1.
   const tieneCosto = Form.useWatch('tieneCosto', { form, preserve: true }) === true;
-  const cobraMatricula = Form.useWatch('cobraMatricula', { form, preserve: true }) === true;
 
-  // Apagar un interruptor limpia su monto (se enviará 0).
+  // Apagar el interruptor del costo limpia su monto (se enviará 0); la matrícula vive en cada grupo.
   useEffect(() => {
     if (!tieneCosto) form.setFieldsValue({ costo: undefined });
   }, [tieneCosto, form]);
-  useEffect(() => {
-    if (!cobraMatricula) form.setFieldsValue({ costoMatricula: undefined });
-  }, [cobraMatricula, form]);
 
   // Catálogo + horarios ya asignados a los grupos (la edición nunca pierde una selección).
   const { options: horarioOptions, diaById: horarioDias } = useMemo(
@@ -87,7 +84,14 @@ export const useCursoCapacitacionFormPage = (mode = 'create') => {
 
   const horarioCrear = useCursoHorarioCrear({ form, crearHorario });
 
-  const pageTitle = isEditMode ? 'Editar curso de capacitación' : 'Nuevo curso de capacitación';
+  // «Nueva edición»: el alta parte de una copia de la oferta de origen (`location.state.cursoOrigenId`).
+  const origenId = !isEditMode && cursoId != null ? cursoId : null;
+
+  const pageTitle = isEditMode
+    ? 'Editar curso de capacitación'
+    : origenId
+      ? 'Nueva edición del curso'
+      : 'Nuevo curso de capacitación';
   const permisoAccion = isEditMode ? 'EDITAR' : 'CREAR';
   const isInvalidEditId = isEditMode && cursoId == null;
 
@@ -104,15 +108,17 @@ export const useCursoCapacitacionFormPage = (mode = 'create') => {
     [returnListPath, pageTitle],
   );
 
-  // Precarga: alta → defaults; edición → ficha del curso (grupos y requisitos).
+  // Precarga: alta → defaults; nueva edición → copia de la oferta de origen; edición → ficha del curso.
   useEffect(() => {
-    if (!isEditMode) {
+    if (!isEditMode && !origenId) {
       form.setFieldsValue(mapCursoToFormValues(null));
       return;
     }
     if (isInvalidEditId || loadingCurso || !curso) return;
-    form.setFieldsValue(mapCursoToFormValues(curso));
-  }, [isEditMode, isInvalidEditId, loadingCurso, curso, form]);
+    form.setFieldsValue(
+      isEditMode ? mapCursoToFormValues(curso) : mapCursoToNuevaEdicionFormValues(curso),
+    );
+  }, [isEditMode, origenId, isInvalidEditId, loadingCurso, curso, form]);
 
   const handleVolver = useCallback(() => {
     navigate(returnListPath, { state: { menuSidebarKey } });
@@ -127,7 +133,7 @@ export const useCursoCapacitacionFormPage = (mode = 'create') => {
       if (hayGrupoSinNombre(values.grupos)) {
         throw new Error('Todos los grupos deben tener nombre');
       }
-      const payload = mapFormValuesToCursoPayload(values);
+      const payload = mapFormValuesToCursoPayload(values, { cursoOrigenId: origenId });
       const resultado = await guardarCurso({ id: isEditMode ? cursoId : null, payload });
       if (!resultado?.success) {
         throw new Error(resultado?.error || 'No se pudo guardar el curso de capacitación');
@@ -159,6 +165,7 @@ export const useCursoCapacitacionFormPage = (mode = 'create') => {
     form,
     isEditMode,
     cursoId,
+    origenId,
     guardarCurso,
     notification,
     navigate,
@@ -171,9 +178,8 @@ export const useCursoCapacitacionFormPage = (mode = 'create') => {
     () =>
       createCursoFormSections({
         tieneCosto,
-        cobraMatricula,
       }),
-    [tieneCosto, cobraMatricula],
+    [tieneCosto],
   );
 
   /**
@@ -232,17 +238,21 @@ export const useCursoCapacitacionFormPage = (mode = 'create') => {
     setStepError(err?.errorFields ? 'Revise los campos obligatorios' : err?.message || 'Revise los datos del paso actual');
   }, []);
 
+  // Paso inicial (p. ej. desde «Editar grupo» del listado de grupos); solo en edición.
+  const initialStep = isEditMode ? Number(location.state?.initialStep) || 0 : 0;
+
   return {
     form,
     pageTitle,
     breadcrumbItems,
     permisoAccion,
     isEditMode,
-    loading: isEditMode ? loadingCurso : false,
+    loading: isEditMode || origenId ? loadingCurso : false,
     submitLoading: saving,
-    error: error || (isEditMode ? errorCurso : null),
+    error: error || (isEditMode || origenId ? errorCurso : null),
     formSections,
     wizardSteps,
+    initialStep,
     onValidateBeforeNext,
     handleValidationError,
     stepError,

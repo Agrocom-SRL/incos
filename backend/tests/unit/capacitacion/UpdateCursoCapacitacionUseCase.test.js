@@ -68,6 +68,12 @@ describe('UpdateCursoCapacitacionUseCase', () => {
 
   beforeEach(() => mockTransaction.mockClear());
 
+  it('permite cambiar la edición pero nunca reasignar la oferta de origen', async () => {
+    const { deps, useCase } = crear();
+    await useCase.execute(2, { edicion: ' 2028 ', cursoOrigenId: 9 }, 3);
+    expect(deps.cursoCapacitacionRepository.update.mock.calls[0][1]).toEqual({ edicion: '2028' });
+  });
+
   it('actualiza campos, ignora estado y devuelve grupos y requisitos actuales', async () => {
     const { deps, useCase } = crear({ bloques: [{ id: 1, grupoId: 10, horarioId: 7, ordenSecuencia: 1 }] });
     const res = await useCase.execute(2, { titulo: ' Nuevo ', estado: 'CERRADO' }, 3);
@@ -104,12 +110,18 @@ describe('UpdateCursoCapacitacionUseCase', () => {
       expect(deps.cursoCapacitacionRepository.update.mock.calls[0][1]).toEqual({ tieneCosto: false, costo: 0 });
     });
 
-    it('encender cobraMatricula exige costoMatricula mayor a 0', async () => {
+    it('encender cobraMatricula admite costoMatricula opcional (la fija cada grupo) pero no negativo', async () => {
       const { deps, useCase } = crear();
-      await expect(useCase.execute(2, { cobraMatricula: true })).rejects.toThrow(/costoMatricula es obligatorio/);
-      await expect(useCase.execute(2, { cobraMatricula: true, costoMatricula: 0 })).rejects.toBeInstanceOf(ValidationError);
+      await expect(useCase.execute(2, { cobraMatricula: true, costoMatricula: -1 })).rejects.toBeInstanceOf(ValidationError);
       await useCase.execute(2, { cobraMatricula: true, costoMatricula: 150 });
       expect(deps.cursoCapacitacionRepository.update.mock.calls[0][1]).toEqual({ cobraMatricula: true, costoMatricula: 150 });
+    });
+
+    it('con cobraMatricula exige matrícula en cada grupo enviado si el curso no tiene una por defecto', async () => {
+      const { useCase } = crear();
+      await expect(
+        useCase.execute(2, { cobraMatricula: true, grupos: [{ nombre: 'Intensivo', horarios: [] }] })
+      ).rejects.toThrow(/El grupo "Intensivo" necesita su matrícula/);
     });
 
     it.each([['abc'], [-5], [0], [null], ['']])('con tieneCosto activo rechaza costo inválido (%p)', async (costo) => {
@@ -160,8 +172,8 @@ describe('UpdateCursoCapacitacionUseCase', () => {
         3
       );
       const g = deps.grupoCapacitacionRepository;
-      expect(g.update).toHaveBeenCalledWith(10, { nombre: 'Grupo 1 – Mañana', cupoMaximo: 15, aulaId: null, orden: 1 }, 3, { transaction: 'TX' });
-      expect(g.create).toHaveBeenCalledWith({ capacitacionId: 2, nombre: 'Grupo nuevo', cupoMaximo: null, aulaId: null, orden: 2 }, 3, { transaction: 'TX' });
+      expect(g.update).toHaveBeenCalledWith(10, { nombre: 'Grupo 1 – Mañana', cupoMaximo: 15, costoMatricula: null, aulaId: null, orden: 1 }, 3, { transaction: 'TX' });
+      expect(g.create).toHaveBeenCalledWith({ capacitacionId: 2, nombre: 'Grupo nuevo', cupoMaximo: null, costoMatricula: null, aulaId: null, orden: 2 }, 3, { transaction: 'TX' });
       expect(g.softDeleteByIds).toHaveBeenCalledWith([11], 3, { transaction: 'TX' });
       const b = deps.bloqueCapacitacionRepository;
       // grupo 10: se quita el horario 7 (bloque 1), se conserva el 8 (reordenado a 1) y se crea el 9
@@ -238,10 +250,10 @@ describe('UpdateCursoCapacitacionUseCase', () => {
     expect(deps.classroomRepository.findById).toHaveBeenCalledTimes(1);
     expect(deps.classroomRepository.findById).toHaveBeenCalledWith(4);
     expect(deps.grupoCapacitacionRepository.update).toHaveBeenCalledWith(
-      10, { nombre: 'G1', cupoMaximo: null, aulaId: 4, orden: 1 }, 3, { transaction: 'TX' }
+      10, { nombre: 'G1', cupoMaximo: null, costoMatricula: null, aulaId: 4, orden: 1 }, 3, { transaction: 'TX' }
     );
     expect(deps.grupoCapacitacionRepository.update).toHaveBeenCalledWith(
-      11, { nombre: 'G2', cupoMaximo: null, aulaId: null, orden: 2 }, 3, { transaction: 'TX' }
+      11, { nombre: 'G2', cupoMaximo: null, costoMatricula: null, aulaId: null, orden: 2 }, 3, { transaction: 'TX' }
     );
     await expect(
       crear({ aula: null }).useCase.execute(2, { grupos: [{ id: 10, nombre: 'G1', aulaId: 8 }] })

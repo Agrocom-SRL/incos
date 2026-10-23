@@ -15,6 +15,9 @@
 import { resolveEstadoEfectivoCurso } from '../../use-cases/capacitacion/helpers/cursoEstadoEfectivo.js';
 import { tienePagoCursoExterno } from '../../use-cases/capacitacion/helpers/cursoCapacitacionInput.js';
 
+/** Monto de la vista (DECIMAL como texto) a número; 0 si falta. */
+const aMonto = (valor) => (valor !== null && valor !== undefined ? Number(valor) : 0);
+
 /**
  * Convierte una fila de la vista 155 a formato de presentación.
  * @param {Object|null} row - Fila cruda snake_case de la vista
@@ -26,6 +29,9 @@ export function viewRowToPresentation(row) {
   return {
     id: row.id,
     titulo: row.titulo,
+    edicion: row.edicion ?? null,
+    cursoOrigenId: row.curso_origen_id ?? null,
+    gestion: row.gestion != null ? Number(row.gestion) : null,
     descripcion: row.descripcion ?? null,
     tieneCosto: Boolean(Number(row.tiene_costo ?? 0)),
     cobraMatricula: Boolean(Number(row.cobra_matricula ?? 0)),
@@ -34,6 +40,9 @@ export function viewRowToPresentation(row) {
       row.costo_matricula !== null && row.costo_matricula !== undefined
         ? Number(row.costo_matricula)
         : 0,
+    // Rango de matrícula efectivo entre los grupos (la matrícula depende del grupo elegido)
+    matriculaMin: aMonto(row.matricula_min ?? row.costo_matricula),
+    matriculaMax: aMonto(row.matricula_max ?? row.costo_matricula),
     entidadCertificadora: row.entidad_certificadora ?? null,
     pagoCursoExterno: tienePagoCursoExterno(row.entidad_certificadora),
     modalidad: row.modalidad ?? null,
@@ -112,6 +121,8 @@ export function entityToPresentation(entity) {
   return {
     id: entity.id,
     titulo: entity.titulo,
+    edicion: entity.edicion ?? null,
+    cursoOrigenId: entity.cursoOrigenId ?? null,
     descripcion: entity.descripcion ?? null,
     tieneCosto: Boolean(entity.tieneCosto),
     cobraMatricula: Boolean(entity.cobraMatricula),
@@ -164,6 +175,10 @@ export function gruposToPresentation(grupos, bloques) {
     id: grupo.id,
     nombre: grupo.nombre,
     cupoMaximo: grupo.cupoMaximo ?? null,
+    costoMatricula:
+      grupo.costoMatricula !== undefined && grupo.costoMatricula !== null
+        ? Number(grupo.costoMatricula)
+        : null,
     aulaId: grupo.aulaId ?? null,
     aulaCodigo: grupo.aulaCodigo ?? null,
     aulaNombre: grupo.aulaNombre ?? null,

@@ -60,7 +60,7 @@ describe('capacitacionPdfDatos', () => {
       ]);
     });
 
-    it('con los grupos del curso marca solo el elegido y agrupa los días con la misma hora', () => {
+    it('con los grupos del curso incluye solo el grupo de la inscripción y agrupa los días con la misma hora', () => {
       const gruposCurso = [
         {
           id: 5,
@@ -75,15 +75,6 @@ describe('capacitacionPdfDatos', () => {
       ];
       const conGrupos = construirDatosFormularioInscripcion(crearFicha({ capacitacionGrupoId: 6 }), { gruposCurso });
       expect(conGrupos.grupos).toEqual([
-        {
-          nombre: 'Regular',
-          horarios: 'Martes, Jueves 19:00-21:00 · Sábado 09:00-12:00',
-          bloques: [
-            { dias: 'Martes y Jueves', horas: '19:00 - 21:00' },
-            { dias: 'Sábado', horas: '09:00 - 12:00' }
-          ],
-          seleccionado: false
-        },
         {
           nombre: 'Intensivo',
           horarios: 'Lunes 19:00-21:00',
@@ -136,6 +127,25 @@ describe('capacitacionPdfDatos', () => {
         observacion: 'Primera cuota',
         codigoInscripcion: 'CAP-00012',
       });
+    });
+
+    it('el curso lleva su edición en el título para distinguir ofertas del mismo curso', () => {
+      const ficha = crearFicha({ capacitacionEdicion: '2027 – 1ª edición' });
+      expect(construirDatosReciboPago(ficha, 31).curso.titulo).toBe('Word avanzado · 2027 – 1ª edición');
+      expect(construirDatosFormularioInscripcion(ficha).curso.titulo).toBe('Word avanzado · 2027 – 1ª edición');
+      expect(construirDatosReciboPago(crearFicha(), 31).curso.titulo).toBe('Word avanzado');
+    });
+
+    it('GRUPO Y HORARIO agrupa los días que comparten hora cuando hay grupos del curso', () => {
+      const dia = (d) => ({ dia: d, horaInicio: '19:00:00', horaFin: '21:00:00' });
+      const gruposCurso = [
+        { id: 5, nombre: 'Regular', horarios: [{ dia: 'SABADO', horaInicio: '08:00:00', horaFin: '12:00:00' }] },
+        { id: 6, nombre: 'Intensivo', horarios: ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES'].map(dia) },
+      ];
+      const datos = construirDatosReciboPago(crearFicha({ capacitacionGrupoId: 6 }), 31, { gruposCurso });
+      expect(datos.curso.horarios).toBe('Lunes, Martes, Miércoles, Jueves, Viernes 19:00-21:00');
+      // sin grupos del curso conserva la etiqueta de la ficha
+      expect(construirDatosReciboPago(crearFicha(), 31).curso.horarios).toBe('SAB 08:00-12:00');
     });
 
     it('descuenta pagos previos del mismo concepto (MATRICULA)', () => {

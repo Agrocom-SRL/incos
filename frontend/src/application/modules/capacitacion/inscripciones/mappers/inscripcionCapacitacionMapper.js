@@ -23,6 +23,7 @@
 
 import dayjs from 'dayjs';
 import { buildFullName, buildCompleteCI } from '@application/utils/formatters';
+import { tituloConEdicion } from '@application-capacitacion/utils/cursoTitulo';
 import { CONCEPTO_PAGO, formatConceptoPago } from '@application-capacitacion/utils/capacitacionCatalogos';
 
 const toNumber = (value, fallback = 0) => {
@@ -101,7 +102,9 @@ export const mapInscripcionCapacitacion = (raw) => {
     participanteEmail: cleanText(raw.participanteEmail),
     // Curso
     capacitacionId: raw.capacitacionId ?? null,
-    capacitacionTitulo: cleanText(raw.capacitacionTitulo) || 'Sin curso',
+    capacitacionEdicion: cleanText(raw.capacitacionEdicion),
+    // Título para mostrar: incluye la edición para distinguir ofertas del mismo curso.
+    capacitacionTitulo: tituloConEdicion(cleanText(raw.capacitacionTitulo) || 'Sin curso', raw.capacitacionEdicion),
     capacitacionEstado: raw.capacitacionEstado ?? null,
     capacitacionEntidadCertificadora: cleanText(raw.capacitacionEntidadCertificadora),
     capacitacionFechasLabel: fechaInicioLabel

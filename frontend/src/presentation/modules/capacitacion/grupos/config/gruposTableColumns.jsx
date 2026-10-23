@@ -1,14 +1,14 @@
 /**
- * Columnas del tab «Grupos» (solo lectura, módulo CAP).
+ * Columnas del tab «Grupos» (módulo CAP).
  *
  * Lenguaje visual de CursosList: numeración + IdentidadCelda del curso con su
- * `StatusPill` de estado + InfoLinesCell de horarios y aula + TableActions
- * (única acción: ver el curso). Orden en cliente (modo loadAll): cada columna
+ * `StatusPill` de estado + InfoLinesCell de días, horas y aula + TableActions
+ * (ver el curso y editar el grupo en el formulario de su curso). Orden en cliente (modo loadAll): cada columna
  * ordenable declara `sortCompare`.
  */
 
 import { Flex } from 'antd';
-import { ClockCircleOutlined, EnvironmentOutlined } from '@ant-design/icons';
+import { CalendarOutlined, ClockCircleOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import { IdentidadCelda, InfoLinesCell, StatusPill } from '@atoms';
 import { TableActions } from '@molecules';
 import { allSpacing } from '@theme/tokens';
@@ -20,7 +20,7 @@ import {
 
 const compareText = (a, b) => (a || '').localeCompare(b || '', 'es', { sensitivity: 'base' });
 
-export const createGruposTableColumns = ({ onVerCurso }) => [
+export const createGruposTableColumns = ({ onVerCurso, onEditarGrupo }) => [
   {
     title: '#',
     key: 'nro',
@@ -55,15 +55,29 @@ export const createGruposTableColumns = ({ onVerCurso }) => [
     sortCompare: (a, b) => compareText(a.nombre, b.nombre),
   },
   {
-    title: 'Horarios',
-    key: 'horarios',
-    width: 220,
+    title: 'Días',
+    key: 'dias',
+    width: 200,
     render: (_, record) => (
       <InfoLinesCell
-        lines={record.horariosLineas.map((linea, i) => ({
+        lines={record.bloques.map((bloque, i) => ({
+          key: `d-${i}`,
+          icon: <CalendarOutlined />,
+          label: bloque.dias,
+        }))}
+      />
+    ),
+  },
+  {
+    title: 'Horas',
+    key: 'horas',
+    width: 150,
+    render: (_, record) => (
+      <InfoLinesCell
+        lines={record.bloques.map((bloque, i) => ({
           key: `h-${i}`,
           icon: <ClockCircleOutlined />,
-          label: linea,
+          label: bloque.horas || '—',
         }))}
       />
     ),
@@ -101,14 +115,19 @@ export const createGruposTableColumns = ({ onVerCurso }) => [
   {
     title: 'Acciones',
     key: 'acciones',
-    width: 110,
+    width: 130,
     align: 'right',
     render: (_, record) => (
       <TableActions
         record={record}
         onView={() => onVerCurso(record)}
+        onEdit={() => onEditarGrupo(record)}
+        editTitle="Editar grupo (abre el curso en «Grupos y horarios»)"
         itemName={`el curso «${record.cursoTitulo}»`}
-        permisos={{ ver: { codigo: CAPACITACION_PERMISOS.curso, accion: 'DETALLE' } }}
+        permisos={{
+          ver: { codigo: CAPACITACION_PERMISOS.curso, accion: 'DETALLE' },
+          editar: { codigo: CAPACITACION_PERMISOS.curso, accion: 'EDITAR' },
+        }}
       />
     ),
   },

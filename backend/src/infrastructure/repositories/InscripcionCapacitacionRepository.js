@@ -88,6 +88,7 @@ export class InscripcionCapacitacionRepository extends BaseRepository {
     if ('estadoPago' in data) model.estadoPago = data.estadoPago;
     if ('estadoPagoCurso' in data) model.estadoPagoCurso = data.estadoPagoCurso;
     if ('estadoPagoMatricula' in data) model.estadoPagoMatricula = data.estadoPagoMatricula;
+    if ('montoMatricula' in data) model.montoMatricula = data.montoMatricula;
     if ('capacitacionGrupoId' in data) {
       model.capacitacionGrupoId = data.capacitacionGrupoId ?? null;
     }
@@ -101,6 +102,7 @@ export class InscripcionCapacitacionRepository extends BaseRepository {
     if ('estadoPago' in data) model.estadoPago = data.estadoPago;
     if ('estadoPagoCurso' in data) model.estadoPagoCurso = data.estadoPagoCurso;
     if ('estadoPagoMatricula' in data) model.estadoPagoMatricula = data.estadoPagoMatricula;
+    if ('montoMatricula' in data) model.montoMatricula = data.montoMatricula;
     if ('capacitacionGrupoId' in data) {
       model.capacitacionGrupoId = data.capacitacionGrupoId ?? null;
     }
@@ -137,6 +139,23 @@ export class InscripcionCapacitacionRepository extends BaseRepository {
       ...options,
     });
     return this.toEntity(model);
+  }
+
+  /**
+   * Ids de TODAS las inscripciones no eliminadas de un participante (cualquier estado, activas
+   * o no): base de la eliminación en cascada del participante.
+   *
+   * @param {number} participanteId
+   * @param {Object} options - Opciones opcionales (ej: `{ transaction }`)
+   * @returns {Promise<number[]>}
+   */
+  async findIdsByParticipanteId(participanteId, options = {}) {
+    const rows = await InscripcionCapacitacionModel.findAll({
+      attributes: ['id'],
+      where: { participanteId },
+      transaction: options.transaction,
+    });
+    return rows.map((row) => row.id);
   }
 
   /**
@@ -216,6 +235,7 @@ export class InscripcionCapacitacionRepository extends BaseRepository {
         p.email AS participante_email,
         c.id AS capacitacion_id,
         c.titulo AS capacitacion_titulo,
+        c.edicion AS capacitacion_edicion,
         c.estado AS capacitacion_estado,
         c.modalidad AS capacitacion_modalidad,
         c.entidad_certificadora AS capacitacion_entidad_certificadora,

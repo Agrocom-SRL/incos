@@ -43,6 +43,10 @@ const ABREVIATURA_DIA = {
 
 const textoOVacio = (valor) => (valor == null ? '' : String(valor).trim());
 
+/** Título del curso con su edición («Guaraní · 2027 – 1ª edición») para distinguir ofertas del mismo curso. */
+const tituloCurso = (ficha) =>
+  [textoOVacio(ficha.capacitacionTitulo), textoOVacio(ficha.capacitacionEdicion)].filter(Boolean).join(' · ');
+
 const horaCorta = (hora) => textoOVacio(hora).slice(0, 5);
 
 /**
@@ -83,18 +87,27 @@ export function bloquesHorariosGrupo(horarios) {
   return [...porRango].map(([horas, dias]) => ({ dias: unirDias(dias), horas }));
 }
 
+/** Grupo del curso (ficha del curso) en el que se inscribió el participante, o `null`. */
+const grupoElegidoDelCurso = (ficha, gruposCurso) =>
+  (Array.isArray(gruposCurso)
+    ? gruposCurso.find((grupo) => Number(grupo.id) === Number(ficha.capacitacionGrupoId))
+    : null) ?? null;
+
 /**
- * Grupos del curso para el formulario, marcando el elegido por el participante.
- * Sin grupos del curso (o sin ficha de curso) cae al grupo de la inscripción.
+ * Grupo del curso en el que se inscribió el participante (solo ese, no todos los del curso).
+ * Sin ese grupo entre los del curso (o sin ficha de curso) cae al grupo de la inscripción.
  */
 function gruposDelFormulario(ficha, gruposCurso) {
-  if (Array.isArray(gruposCurso) && gruposCurso.length > 0) {
-    return gruposCurso.map((grupo) => ({
-      nombre: textoOVacio(grupo.nombre),
-      horarios: textoHorariosGrupo(grupo.horarios),
-      bloques: bloquesHorariosGrupo(grupo.horarios),
-      seleccionado: Number(grupo.id) === Number(ficha.capacitacionGrupoId)
-    }));
+  const elegido = grupoElegidoDelCurso(ficha, gruposCurso);
+  if (elegido) {
+    return [
+      {
+        nombre: textoOVacio(elegido.nombre),
+        horarios: textoHorariosGrupo(elegido.horarios),
+        bloques: bloquesHorariosGrupo(elegido.horarios),
+        seleccionado: true
+      }
+    ];
   }
   return ficha.grupoNombre
     ? [
@@ -210,7 +223,7 @@ export function construirDatosFormularioInscripcion(
       email: textoOVacio(ficha.participanteEmail)
     },
     curso: {
-      titulo: textoOVacio(ficha.capacitacionTitulo),
+      titulo: tituloCurso(ficha),
       modalidad: ETIQUETAS.modalidad[ficha.capacitacionModalidad] ?? textoOVacio(ficha.capacitacionModalidad),
       entidadCertificadora: textoOVacio(ficha.capacitacionEntidadCertificadora),
       fechaInicio: formatearFecha(ficha.capacitacionFechaInicio),
@@ -246,9 +259,12 @@ export function construirDatosFormularioInscripcion(
  *
  * @param {Object} ficha - Salida de GetInscripcionCapacitacionByIdUseCase.
  * @param {number|string} pagoId
+ * @param {Object} [opciones]
+ * @param {Array<Object>} [opciones.gruposCurso] - Grupos del curso con sus horarios (ficha del curso):
+ *   permite agrupar los días que comparten hora en «GRUPO Y HORARIO».
  * @returns {Object|null} Payload para `generarRecibo`; `null` si el pago no pertenece a la ficha.
  */
-export function construirDatosReciboPago(ficha, pagoId) {
+export function construirDatosReciboPago(ficha, pagoId, { gruposCurso = null } = {}) {
   const pagos = pagosVigentes(ficha);
   const indice = pagos.findIndex((pago) => Number(pago.id) === Number(pagoId));
   if (indice < 0) return null;
@@ -274,6 +290,10 @@ export function construirDatosReciboPago(ficha, pagoId) {
   const pagadoAntes = sumaCentavos(
     pagos.slice(0, indice).filter((p) => p.concepto === conceptoPago)
   );
+  const grupoElegido = grupoElegidoDelCurso(ficha, gruposCurso);
+  const horariosGrupo = grupoElegido
+    ? textoHorariosGrupo(grupoElegido.horarios)
+    : textoOVacio(ficha.grupoHorariosEtiqueta);
   const cuenta = [pago.cuentaPagoTitular, pago.cuentaPagoNumero].map(textoOVacio).filter(Boolean).join(' · ');
 
   return {
@@ -288,9 +308,9 @@ export function construirDatosReciboPago(ficha, pagoId) {
       ci: [ficha.participanteCi, ficha.participanteExpedicion].map(textoOVacio).filter(Boolean).join(' ')
     },
     curso: {
-      titulo: textoOVacio(ficha.capacitacionTitulo),
+      titulo: tituloCurso(ficha),
       grupo: textoOVacio(ficha.grupoNombre),
-      horarios: textoOVacio(ficha.grupoHorariosEtiqueta),
+      horarios: horariosGrupo,
       entidadCertificadora: textoOVacio(ficha.capacitacionEntidadCertificadora)
     },
     costoCursoExterno,

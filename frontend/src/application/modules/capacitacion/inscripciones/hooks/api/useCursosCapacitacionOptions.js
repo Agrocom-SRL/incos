@@ -13,6 +13,8 @@
  * CreateInscripcionCapacitacionUseCase (defensa en profundidad). El filtro se
  * hace en cliente (no se manda `estado` al backend): el endpoint de listado
  * solo soporta filtrar por un único valor de estado.
+ *
+ * `enabled=false` no consulta (p. ej. el dashboard sin permiso sobre capacitación).
  */
 
 import { useEffect, useMemo, useState } from 'react';
@@ -24,12 +26,13 @@ const CATALOG_PARAMS = { params: { page: 1, limit: 500 } };
 
 const ESTADOS_QUE_ACEPTAN_INSCRIPCION = ['ABIERTO', 'EN_CURSO'];
 
-export const useCursosCapacitacionOptions = () => {
+export const useCursosCapacitacionOptions = ({ enabled = true } = {}) => {
   const [cursos, setCursos] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    if (!enabled) return undefined;
     let activo = true;
     cursoCapacitacionRepository.obtenerTodos(CATALOG_PARAMS).then((result) => {
       if (!activo) return;
@@ -47,7 +50,7 @@ export const useCursosCapacitacionOptions = () => {
     return () => {
       activo = false;
     };
-  }, []);
+  }, [enabled]);
 
   return useMemo(() => ({ cursos, loading, error }), [cursos, loading, error]);
 };

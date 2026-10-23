@@ -20,15 +20,18 @@ export class ExportReciboPagoCapacitacionPdfUseCase {
   /**
    * @param {Object} params - Dependencias inyectadas
    * @param {Object} params.getInscripcionCapacitacionByIdUseCase
+   * @param {Object} params.getCursoCapacitacionByIdUseCase - Grupos y horarios estructurados del curso
    * @param {import('../../../domain/interfaces/services/IReciboPagoCapacitacionPdfGenerator.js').IReciboPagoCapacitacionPdfGenerator} params.reciboPagoCapacitacionPdfGenerator
    * @param {ILogger} params.logger
    */
   constructor({
     getInscripcionCapacitacionByIdUseCase,
+    getCursoCapacitacionByIdUseCase,
     reciboPagoCapacitacionPdfGenerator,
     logger,
   }) {
     this.getInscripcionCapacitacionByIdUseCase = getInscripcionCapacitacionByIdUseCase;
+    this.getCursoCapacitacionByIdUseCase = getCursoCapacitacionByIdUseCase;
     this.reciboPagoCapacitacionPdfGenerator = reciboPagoCapacitacionPdfGenerator;
     this.logger = logger;
   }
@@ -51,7 +54,8 @@ export class ExportReciboPagoCapacitacionPdfUseCase {
       );
     }
 
-    const datos = construirDatosReciboPago(ficha, idPago);
+    const curso = await this.getCursoCapacitacionByIdUseCase.execute(ficha.capacitacionId);
+    const datos = construirDatosReciboPago(ficha, idPago, { gruposCurso: curso?.grupos ?? null });
     if (!datos) {
       throw new NotFoundError(`pago con ID ${idPago} de la inscripción ${idInscripcion}`);
     }

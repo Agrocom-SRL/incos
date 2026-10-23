@@ -13,6 +13,7 @@ import {
   normalizarGrupos,
   sincronizarGrupos,
   validarAulasGrupos,
+  validarMatriculaGrupos,
   validarHorariosGrupos,
 } from './helpers/gruposCurso.js';
 
@@ -112,6 +113,12 @@ export class UpdateCursoCapacitacionUseCase {
     }
 
     if (grupos !== null) {
+      validarMatriculaGrupos({
+        cobraMatricula: 'cobraMatricula' in updateData ? updateData.cobraMatricula : existing.cobraMatricula,
+        costoMatriculaCurso:
+          'costoMatricula' in updateData ? updateData.costoMatricula : existing.costoMatricula,
+        grupos,
+      });
       await validarAulasGrupos(this.classroomRepository, grupos);
       await validarHorariosGrupos(this.scheduleRepository, grupos);
     }

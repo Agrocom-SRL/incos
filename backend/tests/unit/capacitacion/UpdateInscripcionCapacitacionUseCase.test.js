@@ -17,11 +17,12 @@ describe('UpdateInscripcionCapacitacionUseCase', () => {
     capacitacionId: 1,
     estado: 'PENDIENTE',
     capacitacionGrupoId: 10,
+    montoMatricula: 100,
   };
   const grupos = [
-    { id: 10, nombre: 'Grupo 1', cupoMaximo: 20 },
-    { id: 11, nombre: 'Grupo 2', cupoMaximo: 2 },
-    { id: 12, nombre: 'Grupo 3', cupoMaximo: null },
+    { id: 10, nombre: 'Grupo 1', cupoMaximo: 20, costoMatricula: null },
+    { id: 11, nombre: 'Grupo 2', cupoMaximo: 2, costoMatricula: 200 },
+    { id: 12, nombre: 'Grupo 3', cupoMaximo: null, costoMatricula: null },
   ];
 
   const crear = ({ inscripcion = inscripcionBase, lleno = false } = {}) => {
@@ -32,6 +33,15 @@ describe('UpdateInscripcionCapacitacionUseCase', () => {
         countVigentesByGrupoIds: jest.fn().mockImplementation(async (ids) => ({ [ids[0]]: lleno ? 99 : 0 })),
       },
       grupoCapacitacionRepository: { findByCapacitacionId: jest.fn().mockResolvedValue(grupos) },
+      cursoCapacitacionRepository: {
+        findById: jest.fn().mockResolvedValue({ id: 1, cobraMatricula: true, costoMatricula: 100 }),
+      },
+      pagoCapacitacionRepository: { sumMontosPorConcepto: jest.fn().mockResolvedValue({}) },
+      capacitacionInscritoRequisitoRepository: {
+        contarObligatoriosPendientes: jest.fn().mockResolvedValue(0),
+        resolverPagoCursoExterno: jest.fn().mockResolvedValue({ pagoCursoExterno: false, acreditado: false }),
+      },
+      capacitacionCompromisoRepository: { findVigenteByInscripcionId: jest.fn().mockResolvedValue(null) },
       updateParticipanteUseCase: { execute: jest.fn().mockResolvedValue({ participante: {} }) },
       getInscripcionCapacitacionByIdUseCase: { execute: jest.fn().mockResolvedValue({ id: 5, grupoNombre: 'x' }) },
       logger: { info: jest.fn() },
@@ -67,13 +77,32 @@ describe('UpdateInscripcionCapacitacionUseCase', () => {
     ).rejects.toBeInstanceOf(ConflictError);
   });
 
-  it('cambia el grupo a otro del curso con lugar', async () => {
+  it('cambia el grupo a otro del curso con lugar (sin precio propio hereda la matrícula del curso)', async () => {
     const { deps, useCase } = crear();
     await useCase.execute(5, { capacitacionGrupoId: 12 }, 4);
     expect(deps.inscripcionCapacitacionRepository.update).toHaveBeenCalledWith(
-      5, { capacitacionGrupoId: 12 }, 4, { transaction: 'TX' }
+      5, { capacitacionGrupoId: 12, montoMatricula: 100 }, 4, { transaction: 'TX' }
     );
+    expect(deps.pagoCapacitacionRepository.sumMontosPorConcepto).not.toHaveBeenCalled();
     expect(deps.updateParticipanteUseCase.execute).not.toHaveBeenCalled();
+  });
+
+  it('al pasar a un grupo con otra matrícula actualiza el monto y recalcula los estados', async () => {
+    const { deps, useCase } = crear();
+    await useCase.execute(5, { capacitacionGrupoId: 11 }, 4);
+    expect(deps.inscripcionCapacitacionRepository.update).toHaveBeenCalledWith(
+      5, { capacitacionGrupoId: 11, montoMatricula: 200 }, 4, { transaction: 'TX' }
+    );
+    expect(deps.pagoCapacitacionRepository.sumMontosPorConcepto).toHaveBeenCalledWith(5, { transaction: 'TX' });
+  });
+
+  it('con el curso sin cobro de matrícula el grupo no genera monto de matrícula', async () => {
+    const { deps, useCase } = crear({ inscripcion: { ...inscripcionBase, montoMatricula: 0 } });
+    deps.cursoCapacitacionRepository.findById.mockResolvedValue({ id: 1, cobraMatricula: false, costoMatricula: 100 });
+    await useCase.execute(5, { capacitacionGrupoId: 11 }, 4);
+    expect(deps.inscripcionCapacitacionRepository.update).toHaveBeenCalledWith(
+      5, { capacitacionGrupoId: 11, montoMatricula: 0 }, 4, { transaction: 'TX' }
+    );
   });
 
   it('409 si el grupo destino tiene cupo propio y está lleno', async () => {

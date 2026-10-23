@@ -55,8 +55,8 @@ export const createCursosCapacitacionTableColumns = ({
       key: 'curso',
       width: 260,
       render: (_, record) => (
-        <div className="cfg-identidad-clamp2" title={record.titulo || undefined}>
-          <IdentidadCelda nombre={(record.titulo || 'Sin título').toUpperCase()} />
+        <div className="cfg-identidad-clamp2" title={record.tituloCompleto || undefined}>
+          <IdentidadCelda nombre={(record.tituloCompleto || 'Sin título').toUpperCase()} />
         </div>
       ),
       sorter: true,
@@ -97,15 +97,9 @@ export const createCursosCapacitacionTableColumns = ({
                   ),
                 }
               : null,
-            !record.esGratuito && record.cobraMatricula
-              ? {
-                  icon: <DollarOutlined />,
-                  label: (
-                    <>
-                      Matrícula: <CostoCursoLabel costo={record.costoMatricula} />
-                    </>
-                  ),
-                }
+            // La matrícula depende del grupo: el listado no la muestra (se ve en cada grupo del curso)
+            !record.esGratuito && !record.tieneCosto
+              ? { icon: <DollarOutlined />, label: 'Matrícula según el grupo' }
               : null,
             record.fechasLabel
               ? { icon: <CalendarOutlined />, label: record.fechasLabel }
@@ -116,8 +110,7 @@ export const createCursosCapacitacionTableColumns = ({
       ),
       sorter: true,
       sortCompare: (a, b) =>
-        (Number(a.costo) || 0) + (Number(a.costoMatricula) || 0) -
-        ((Number(b.costo) || 0) + (Number(b.costoMatricula) || 0)),
+        (Number(a.costo) || 0) - (Number(b.costo) || 0),
     },
     {
       title: 'Cupo',
@@ -153,18 +146,13 @@ export const createCursosCapacitacionTableColumns = ({
       width: 140,
       align: 'right',
       render: (_, record) => {
-        const itemName = `el curso «${record.titulo}»`;
+        const itemName = `el curso «${record.tituloCompleto}»`;
         const itemDetails = [
-          { label: 'Curso', value: record.titulo },
+          { label: 'Curso', value: record.tituloCompleto },
           { label: 'Estado', value: formatEstadoCurso(record.estado) },
           {
             label: 'Costo del curso',
             value: record.tieneCosto ? `Bs ${formatBs(record.costo)}` : 'No aplica',
-            icon: <DollarOutlined />,
-          },
-          {
-            label: 'Matrícula',
-            value: record.cobraMatricula ? `Bs ${formatBs(record.costoMatricula)}` : 'No aplica',
             icon: <DollarOutlined />,
           },
           { label: 'Fechas', value: record.fechasLabel, icon: <CalendarOutlined /> },

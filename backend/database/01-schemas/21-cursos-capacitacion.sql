@@ -92,11 +92,13 @@ COMMENT='Participantes de cursos de capacitación. Independiente de estudiantes/
 CREATE TABLE capacitaciones (
     id INT AUTO_INCREMENT PRIMARY KEY,
     titulo VARCHAR(200) NOT NULL COMMENT 'Título del curso (ej: Word avanzado)',
+    edicion VARCHAR(60) NULL COMMENT 'Etiqueta de la oferta (ej: 2027 – 1ª edición); distingue ofertas del mismo curso en una o varias gestiones',
+    curso_origen_id INT NULL COMMENT 'Oferta de la que se copió esta edición (capacitaciones.id); NULL = curso original',
     descripcion TEXT NULL COMMENT 'Descripción/temario del curso',
     tiene_costo BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'Interruptor: el curso NO es gratuito (habilita costo). FALSE = costo vale 0',
     cobra_matricula BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'Interruptor: el curso cobra matrícula (habilita costo_matricula). FALSE = costo_matricula vale 0',
     costo DECIMAL(10,2) NOT NULL DEFAULT 0.00 COMMENT 'Costo del CURSO en Bs (se deposita a la entidad certificadora, p. ej. IPELC)',
-    costo_matricula DECIMAL(10,2) NOT NULL DEFAULT 0.00 COMMENT 'Matrícula en Bs (se paga en secretaría del instituto; institución distinta a la que cobra el curso)',
+    costo_matricula DECIMAL(10,2) NOT NULL DEFAULT 0.00 COMMENT 'Matrícula en Bs por defecto del curso (se paga en secretaría). Cada grupo puede fijar la suya en capacitacion_grupos.costo_matricula; esta rige solo para grupos sin precio propio',
     entidad_certificadora VARCHAR(150) NULL COMMENT 'Entidad que emite el certificado y cobra el costo del curso (ej: IPELC)',
     modalidad ENUM('VIRTUAL', 'PRESENCIAL', 'SEMIPRESENCIAL') NOT NULL DEFAULT 'PRESENCIAL'
         COMMENT 'VIRTUAL | PRESENCIAL | SEMIPRESENCIAL (parte virtual + parte presencial)',
@@ -122,7 +124,10 @@ CREATE TABLE capacitaciones (
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
 
 
+    FOREIGN KEY (curso_origen_id) REFERENCES capacitaciones(id) ON DELETE SET NULL,
+
     INDEX idx_titulo (titulo) COMMENT 'Búsqueda por título',
+    INDEX idx_curso_origen_id (curso_origen_id) COMMENT 'Ediciones derivadas de una oferta',
     INDEX idx_estado (estado) COMMENT 'Filtrado por estado del curso',
     INDEX idx_fechas (fecha_inicio, fecha_fin) COMMENT 'Búsqueda por rango de fechas',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
@@ -143,6 +148,7 @@ CREATE TABLE capacitacion_grupos (
     capacitacion_id INT NULL COMMENT 'Curso de capacitación',
     nombre VARCHAR(60) NOT NULL COMMENT 'Nombre del grupo (ej: Grupo 1 – Mañana)',
     cupo_maximo INT NULL COMMENT 'Cupo del grupo; NULL = usa el cupo del curso',
+    costo_matricula DECIMAL(10,2) NULL COMMENT 'Matrícula en Bs de ESTE grupo (p. ej. Regular vs Intensivo); NULL = usa capacitaciones.costo_matricula. Solo aplica si el curso cobra_matricula',
     aula_id INT NULL COMMENT 'Aula del grupo (catálogo aulas, opcional)',
     orden INT NOT NULL DEFAULT 1 COMMENT 'Orden de presentación',
 

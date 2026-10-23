@@ -43,7 +43,7 @@ const CursoCapacitacionFichaHeader = ({ curso, puedeEditar = false, onEditar }) 
           </div>
         </div>
         <div className="sd-profile__name-block">
-          <h1 className="sd-profile__name">{curso.titulo}</h1>
+          <h1 className="sd-profile__name">{curso.tituloCompleto}</h1>
           <div className="sd-profile__meta">
             <p className="sd-profile__sub">{subtitleParts.join(' · ') || 'Curso de capacitación'}</p>
             <StatusPill
@@ -73,14 +73,6 @@ const CursoCapacitacionFichaHeader = ({ curso, puedeEditar = false, onEditar }) 
             <span className="sd-stat__label">Costo del curso</span>
             <span className="sd-stat__value sd-stat__value--primary">
               <CostoCursoLabel costo={curso.costo} />
-            </span>
-          </div>
-        ) : null}
-        {curso.cobraMatricula ? (
-          <div className="sd-stat">
-            <span className="sd-stat__label">Matrícula</span>
-            <span className="sd-stat__value">
-              <CostoCursoLabel costo={curso.costoMatricula} />
             </span>
           </div>
         ) : null}

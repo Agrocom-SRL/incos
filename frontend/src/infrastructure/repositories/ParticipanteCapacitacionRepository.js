@@ -81,6 +81,19 @@ export class ParticipanteCapacitacionRepository extends IParticipanteCapacitacio
       return handleErrorResponse(error, 'Error al actualizar el participante');
     }
   }
+
+  /**
+   * Elimina (soft delete) un participante; 409 si tiene inscripciones.
+   * DELETE /v1/participantes/:id
+   */
+  async eliminar(id) {
+    try {
+      const response = await apiClient.delete(PARTICIPANTES_CAPACITACION_ENDPOINTS.BY_ID(id));
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al eliminar el participante');
+    }
+  }
 }
 
 export default new ParticipanteCapacitacionRepository();

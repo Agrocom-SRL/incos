@@ -271,6 +271,17 @@ describe('CreateInscripcionCapacitacionUseCase', () => {
       expect(deps.inscripcionCapacitacionRepository.countVigentesByGrupoIds).not.toHaveBeenCalled();
     });
 
+    it('la matrícula del snapshot es la del grupo elegido; sin precio propio, la del curso', async () => {
+      const intensivo = { id: 6, nombre: 'Grupo 3 – Intensivo', cupoMaximo: null, costoMatricula: 300 };
+      const { deps, useCase } = crear({ grupos: [g1, intensivo] });
+      await useCase.execute({ capacitacionId: 1, participanteId: 9, capacitacionGrupoId: 6 });
+      expect(deps.inscripcionCapacitacionRepository.create.mock.calls[0][0].montoMatricula).toBe(300);
+
+      const { deps: deps2, useCase: useCase2 } = crear({ grupos: [g1, intensivo] });
+      await useCase2.execute({ capacitacionId: 1, participanteId: 9, capacitacionGrupoId: 4 });
+      expect(deps2.inscripcionCapacitacionRepository.create.mock.calls[0][0].montoMatricula).toBe(150);
+    });
+
     it('un grupo con cupo propio lleno bloquea la inscripción (409)', async () => {
       const { deps, useCase } = crear({ grupos: [g1, g2], conteoGrupo: 2 });
       await expect(

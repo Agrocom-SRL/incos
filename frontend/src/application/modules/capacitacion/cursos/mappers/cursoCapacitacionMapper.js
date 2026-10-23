@@ -7,6 +7,7 @@
  */
 
 import dayjs from 'dayjs';
+import { tituloConEdicion } from '@application-capacitacion/utils/cursoTitulo';
 import {
   buildHorarioEtiqueta,
   compararHorarios,
@@ -58,10 +59,18 @@ export const mapCursoCapacitacion = (raw) => {
   return {
     id: raw.id,
     titulo: cleanText(raw.titulo) || 'Sin título',
+    // Etiqueta de la oferta (2027 – 1ª edición), oferta de la que se copió y gestión (año de inicio).
+    edicion: cleanText(raw.edicion),
+    cursoOrigenId: raw.cursoOrigenId ?? null,
+    gestion: raw.gestion != null ? toNumber(raw.gestion) : null,
+    tituloCompleto: tituloConEdicion(cleanText(raw.titulo) || 'Sin título', raw.edicion),
     descripcion: cleanText(raw.descripcion),
     // `costo` = costo del CURSO (entidad certificadora); la matrícula va aparte.
     costo: toNumber(raw.costo),
     costoMatricula: toNumber(raw.costoMatricula),
+    // Rango de matrícula entre grupos (la matrícula depende del grupo elegido).
+    matriculaMin: toNumber(raw.matriculaMin ?? raw.costoMatricula),
+    matriculaMax: toNumber(raw.matriculaMax ?? raw.costoMatricula),
     // Interruptores de cobro; sin dato del backend se derivan del monto.
     tieneCosto,
     cobraMatricula,
@@ -142,6 +151,8 @@ export const mapGrupoCurso = (raw) => {
     id: raw.id ?? null,
     nombre: cleanText(raw.nombre) || 'Grupo',
     cupoMaximo,
+    // Matrícula propia del grupo; null = usa la del curso.
+    costoMatricula: raw.costoMatricula != null ? toNumber(raw.costoMatricula) : null,
     orden: raw.orden != null ? toNumber(raw.orden) : null,
     inscritosCount,
     cupoDisponible: cupoMaximo != null ? Math.max(cupoMaximo - inscritosCount, 0) : null,
@@ -209,7 +220,7 @@ export const mapRequisitosFormToPayload = (requisitos) =>
 
 /**
  * Grupos del formulario → `grupos[]` del payload: `orden` por posición, cupo
- * opcional (null si vacío), `aulaId` opcional (null si vacío), `id` solo si ya
+ * opcional (null si vacío), matrícula por grupo (0 si el grupo no cobra), `aulaId` opcional (null si vacío), `id` solo si ya
  * existía y sus `horarioId`.
  * @param {Array} grupos
  */
@@ -218,6 +229,11 @@ export const mapGruposFormToPayload = (grupos) =>
     ...(g.id != null ? { id: g.id } : {}),
     nombre: String(g.nombre ?? '').trim(),
     cupoMaximo: g.cupoMaximo != null && g.cupoMaximo !== '' ? Number(g.cupoMaximo) : null,
+    // Matrícula del grupo: con su interruptor apagado el grupo no cobra (0).
+    costoMatricula:
+      g.cobraMatricula === true && g.costoMatricula != null && g.costoMatricula !== ''
+        ? Number(g.costoMatricula)
+        : 0,
     aulaId: g.aulaId != null && g.aulaId !== '' ? Number(g.aulaId) : null,
     orden: index + 1,
     horarios: (g.horarios ?? []).map((h) => ({ horarioId: Number(h.horarioId) })),
@@ -231,17 +247,18 @@ export const mapGruposFormToPayload = (grupos) =>
  * @param {Object} values
  * @returns {Object}
  */
-export const mapFormValuesToCursoPayload = (values = {}) => {
+export const mapFormValuesToCursoPayload = (values = {}, { cursoOrigenId = null } = {}) => {
   const tieneCosto = values.tieneCosto === true;
-  const cobraMatricula = values.cobraMatricula === true;
+  // El curso cobra matrícula si algún grupo la cobra (cada grupo decide con su interruptor).
+  const cobraMatricula = (values.grupos ?? []).some((g) => g?.cobraMatricula === true);
   return {
     titulo: (values.titulo || '').trim(),
+    edicion: (values.edicion || '').trim() || null,
+    ...(cursoOrigenId != null ? { cursoOrigenId } : {}),
     descripcion: (values.descripcion || '').trim() || null,
     tieneCosto,
     cobraMatricula,
     costo: tieneCosto && values.costo != null ? Number(values.costo) : 0,
-    costoMatricula:
-      cobraMatricula && values.costoMatricula != null ? Number(values.costoMatricula) : 0,
     entidadCertificadora: (values.entidadCertificadora || '').trim() || null,
     modalidad: values.modalidad || undefined,
     nivel: (values.nivel || '').trim() || null,
@@ -254,6 +271,15 @@ export const mapFormValuesToCursoPayload = (values = {}) => {
     grupos: mapGruposFormToPayload(values.grupos),
     requisitos: mapRequisitosFormToPayload(values.requisitos),
   };
+};
+
+/**
+ * Matrícula efectiva del grupo (la propia o, sin precio propio, la que regía del curso) →
+ * interruptor y monto del grupo en el formulario.
+ */
+const matriculaDeGrupoAForm = (curso, grupo) => {
+  const efectiva = curso?.cobraMatricula ? Number(grupo.costoMatricula ?? curso.costoMatricula) || 0 : 0;
+  return { cobraMatricula: efectiva > 0, costoMatricula: efectiva > 0 ? efectiva : undefined };
 };
 
 /**
@@ -271,11 +297,10 @@ export const mapFormValuesToCursoPayload = (values = {}) => {
  */
 export const mapCursoToFormValues = (curso) => ({
   titulo: curso?.titulo ?? '',
+  edicion: curso?.edicion ?? '',
   descripcion: curso?.descripcion ?? '',
   tieneCosto: curso?.tieneCosto ?? false,
-  cobraMatricula: curso?.cobraMatricula ?? false,
   costo: curso?.tieneCosto ? curso.costo : undefined,
-  costoMatricula: curso?.cobraMatricula ? curso.costoMatricula : undefined,
   entidadCertificadora: curso?.entidadCertificadora ?? '',
   modalidad: curso?.modalidad ?? MODALIDAD_CURSO.PRESENCIAL,
   nivel: curso?.nivel ?? '',
@@ -289,6 +314,7 @@ export const mapCursoToFormValues = (curso) => ({
     id: g.id ?? null,
     nombre: g.nombre,
     cupoMaximo: g.cupoMaximo,
+    ...matriculaDeGrupoAForm(curso, g),
     aulaId: g.aulaId ?? undefined,
     horarios: g.horarios.map((h) => ({ horarioId: h.horarioId })),
   })),
@@ -300,3 +326,21 @@ export const mapCursoToFormValues = (curso) => ({
     acreditaPagoCurso: Boolean(r.acreditaPagoCurso),
   })),
 });
+
+/**
+ * Valores del formulario para «Nueva edición» de un curso: copia datos, costos, grupos (con
+ * horarios y matrícula) y requisitos de la oferta de origen, pero como registros NUEVOS (sin ids)
+ * y con fechas y etiqueta de edición en blanco para que se ajusten antes de guardar.
+ * @param {Object} curso - Ficha de la oferta de origen
+ */
+export const mapCursoToNuevaEdicionFormValues = (curso) => {
+  const base = mapCursoToFormValues(curso);
+  return {
+    ...base,
+    edicion: '',
+    fechaInicio: dayjs(),
+    fechaFin: undefined,
+    grupos: base.grupos.map((g, index) => ({ ...g, id: null, key: `grupo-copia-${index}` })),
+    requisitos: base.requisitos.map((r, index) => ({ ...r, id: null, key: `req-copia-${index}` })),
+  };
+};

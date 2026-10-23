@@ -1,3 +1,4 @@
+import { NotFoundError } from '../../../domain/errors/AppError.js';
 import { ESTADOS_CAPACITACION } from '../../../domain/constants/capacitacion.constants.js';
 import { sequelize } from '../../../infrastructure/database/sequelize.js';
 import { CursoCapacitacionMapper } from '../../mappers/capacitacion/index.js';
@@ -12,6 +13,7 @@ import {
   sincronizarGrupos,
   validarAulasGrupos,
   validarHorariosGrupos,
+  validarMatriculaGrupos,
 } from './helpers/gruposCurso.js';
 
 /**
@@ -23,8 +25,11 @@ import {
  * inscripción (`capacitacion_requisitos`) en UNA transacción.
  *
  * - `tieneCosto`/`cobraMatricula` habilitan `costo` (del CURSO, se deposita a la
- *   entidad certificadora) y `costoMatricula` (se paga en secretaría); con el
- *   interruptor apagado el monto se guarda en 0.
+ *   entidad certificadora) y la matrícula (se paga en secretaría); con el
+ *   interruptor apagado el monto se guarda en 0. La matrícula la fija cada GRUPO
+ *   (`grupos[].costoMatricula`); `costoMatricula` del curso es solo el valor por defecto.
+ * - `edicion` (etiqueta de la oferta) y `cursoOrigenId` (oferta de la que se copió, «Nueva
+ *   edición») relacionan las ofertas de un mismo curso; cada oferta conserva su historial.
  * - Un curso sin grupos es válido (borrador PROPUESTO): la coherencia con la
  *   modalidad se valida al abrirlo (`AbrirCursoCapacitacionUseCase`).
  * - `fechaFin` es opcional (el curso puede definirse solo por `duracion`).
@@ -80,10 +85,19 @@ export class CreateCursoCapacitacionUseCase {
       // Siempre PROPUESTO al crear: ignora cualquier `estado` del body.
       estado: ESTADOS_CAPACITACION.PROPUESTO,
     };
+    if (data.cursoOrigenId !== null) {
+      const origen = await this.cursoCapacitacionRepository.findById(data.cursoOrigenId);
+      if (!origen) throw new NotFoundError('curso de capacitación de origen');
+    }
     const grupos = normalizarGrupos(body.grupos) ?? [];
     const requisitos = normalizarRequisitos(body.requisitos) ?? [];
     validarRequisitoAcreditaPago(requisitos, data.entidadCertificadora);
 
+    validarMatriculaGrupos({
+      cobraMatricula: data.cobraMatricula,
+      costoMatriculaCurso: data.costoMatricula,
+      grupos,
+    });
     await validarAulasGrupos(this.classroomRepository, grupos);
     await validarHorariosGrupos(this.scheduleRepository, grupos);
 

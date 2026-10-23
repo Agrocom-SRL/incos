@@ -43,6 +43,10 @@ const gruposValidators = [
     .optional({ nullable: true })
     .isInt({ min: 1 })
     .withMessage('grupos[].cupoMaximo debe ser un entero positivo'),
+  body('grupos.*.costoMatricula')
+    .optional({ nullable: true })
+    .isFloat({ min: 0 })
+    .withMessage('grupos[].costoMatricula debe ser un número mayor o igual a 0'),
   body('grupos.*.orden')
     .optional()
     .isInt({ min: 1 })
@@ -57,6 +61,16 @@ const gruposValidators = [
 ];
 
 const extensionCursoValidators = [
+  body('edicion')
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .isLength({ max: 60 })
+    .withMessage('edicion no debe superar los 60 caracteres'),
+  body('cursoOrigenId')
+    .optional({ nullable: true })
+    .isInt({ min: 1 })
+    .withMessage('cursoOrigenId debe ser un entero positivo'),
   body('tieneCosto').optional().isBoolean().withMessage('tieneCosto debe ser boolean'),
   body('cobraMatricula').optional().isBoolean().withMessage('cobraMatricula debe ser boolean'),
   body('costoMatricula')

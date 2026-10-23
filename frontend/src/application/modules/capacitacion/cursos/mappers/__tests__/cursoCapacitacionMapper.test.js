@@ -4,6 +4,7 @@ import {
   mapCursoCapacitacion,
   mapCursoCapacitacionDetail,
   mapCursoToFormValues,
+  mapCursoToNuevaEdicionFormValues,
   mapFormValuesToCursoPayload,
   mapGruposFormToPayload,
   mapRequisitosFormToPayload,
@@ -126,10 +127,19 @@ describe('payload de grupos y requisitos', () => {
         { key: 'b', id: null, nombre: '2do grupo', cupoMaximo: null, aulaId: undefined, horarios: [] },
       ]),
     ).toEqual([
-      { id: 4, nombre: '1er grupo', cupoMaximo: 20, aulaId: 3, orden: 1, horarios: [{ horarioId: 70 }] },
-      { nombre: '2do grupo', cupoMaximo: null, aulaId: null, orden: 2, horarios: [] },
+      { id: 4, nombre: '1er grupo', cupoMaximo: 20, costoMatricula: 0, aulaId: 3, orden: 1, horarios: [{ horarioId: 70 }] },
+      { nombre: '2do grupo', cupoMaximo: null, costoMatricula: 0, aulaId: null, orden: 2, horarios: [] },
     ]);
     expect(mapGruposFormToPayload(undefined)).toEqual([]);
+  });
+
+  it('grupos: la matrícula viaja solo en los grupos con su interruptor «Cobra matrícula» activo', () => {
+    const grupos = [
+      { nombre: 'Regular', cobraMatricula: true, costoMatricula: 150, horarios: [] },
+      { nombre: 'Intensivo', cobraMatricula: true, costoMatricula: '250', horarios: [] },
+      { nombre: 'Sin matrícula', cobraMatricula: false, costoMatricula: 99, horarios: [] },
+    ];
+    expect(mapGruposFormToPayload(grupos).map((g) => g.costoMatricula)).toEqual([150, 250, 0]);
   });
 
   it('requisitos: descarta vacíos y recalcula orden', () => {
@@ -158,25 +168,24 @@ describe('mapFormValuesToCursoPayload (costos condicionales)', () => {
     requisitos: [],
   };
 
-  it('interruptores activos envían los montos', () => {
+  it('el costo del curso y la matrícula por grupo viajan; el curso cobra matrícula si algún grupo la cobra', () => {
     const p = mapFormValuesToCursoPayload({
       ...base,
       tieneCosto: true,
-      cobraMatricula: true,
       costo: 440,
-      costoMatricula: 150,
+      grupos: [{ nombre: 'Intensivo', cobraMatricula: true, costoMatricula: 250, horarios: [] }],
     });
     expect(p).toMatchObject({
       titulo: 'Guaraní',
       tieneCosto: true,
       cobraMatricula: true,
       costo: 440,
-      costoMatricula: 150,
       entidadCertificadora: 'IPELC',
       nivel: null,
       fechaInicio: '2026-11-01',
       fechaFin: null,
     });
+    expect(p).not.toHaveProperty('costoMatricula');
     expect(p).not.toHaveProperty('horarioIds');
     expect(p).not.toHaveProperty('aulaId');
     expect(p).not.toHaveProperty('descripcionVirtual');
@@ -186,26 +195,44 @@ describe('mapFormValuesToCursoPayload (costos condicionales)', () => {
     const p = mapFormValuesToCursoPayload({
       ...base,
       tieneCosto: false,
-      cobraMatricula: true,
       costo: 999,
-      costoMatricula: 150,
+      grupos: [{ nombre: 'Regular', cobraMatricula: true, costoMatricula: 150, horarios: [] }],
     });
-    expect(p).toMatchObject({ tieneCosto: false, costo: 0, cobraMatricula: true, costoMatricula: 150 });
+    expect(p).toMatchObject({ tieneCosto: false, costo: 0, cobraMatricula: true });
+    expect(p.grupos[0].costoMatricula).toBe(150);
   });
 
-  it('curso gratuito: ambos apagados envían 0/0', () => {
-    const p = mapFormValuesToCursoPayload({ ...base, tieneCosto: false, cobraMatricula: false });
-    expect(p).toMatchObject({ costo: 0, costoMatricula: 0, tieneCosto: false, cobraMatricula: false });
+  it('curso gratuito: sin costo ni matrícula en ningún grupo', () => {
+    const p = mapFormValuesToCursoPayload({
+      ...base,
+      tieneCosto: false,
+      grupos: [{ nombre: 'Regular', cobraMatricula: false, horarios: [] }],
+    });
+    expect(p).toMatchObject({ costo: 0, tieneCosto: false, cobraMatricula: false });
   });
 });
 
 describe('mapCursoToFormValues', () => {
   it('alta: gratuito, PRESENCIAL, fechaFin vacía y sin grupos ni requisitos', () => {
     const v = mapCursoToFormValues(null);
-    expect(v).toMatchObject({ tieneCosto: false, cobraMatricula: false, modalidad: 'PRESENCIAL' });
+    expect(v).toMatchObject({ tieneCosto: false, modalidad: 'PRESENCIAL' });
     expect(v.fechaFin).toBeUndefined();
     expect(v.grupos).toEqual([]);
     expect(v.requisitos).toEqual([]);
+  });
+
+  it('edición: el grupo sin precio propio precarga la matrícula del curso; con precio propio, la suya', () => {
+    const v = mapCursoToFormValues(
+      mapCursoCapacitacionDetail({
+        ...rawCurso,
+        grupos: [
+          { id: 1, nombre: 'Regular', orden: 1, horarios: [] },
+          { id: 2, nombre: 'Intensivo', costoMatricula: '250.00', orden: 2, horarios: [] },
+        ],
+      }),
+    );
+    expect(v.grupos.map((g) => g.costoMatricula)).toEqual([150, 250]);
+    expect(v.grupos.map((g) => g.cobraMatricula)).toEqual([true, true]);
   });
 
   it('edición: precarga montos solo si el interruptor está activo, grupos y requisitos con key', () => {
@@ -218,9 +245,8 @@ describe('mapCursoToFormValues', () => {
       }),
     );
     expect(v.costo).toBe(440);
-    expect(v.costoMatricula).toBeUndefined();
     expect(v.grupos).toEqual([
-      { key: 'grupo-7', id: 7, nombre: '1er grupo', cupoMaximo: 20, aulaId: undefined, horarios: [{ horarioId: 70 }] },
+      { key: 'grupo-7', id: 7, nombre: '1er grupo', cupoMaximo: 20, cobraMatricula: false, costoMatricula: undefined, aulaId: undefined, horarios: [{ horarioId: 70 }] },
     ]);
     expect(v.requisitos).toEqual([
       { key: 'req-7', id: 7, descripcion: 'CI', obligatorio: true, acreditaPagoCurso: false },
@@ -234,5 +260,51 @@ describe('mapCursoCapacitacion · pagoCursoExterno', () => {
     expect(mapCursoCapacitacion({ ...rawCurso, pagoCursoExterno: false }).pagoCursoExterno).toBe(false);
     expect(mapCursoCapacitacion(rawCurso).pagoCursoExterno).toBe(true); // entidad 'IPELC'
     expect(mapCursoCapacitacion({ ...rawCurso, entidadCertificadora: null }).pagoCursoExterno).toBe(false);
+  });
+});
+
+describe('ediciones de un mismo curso', () => {
+  it('mapea edición, oferta de origen y gestión, y arma el título completo', () => {
+    const curso = mapCursoCapacitacion({
+      ...rawCurso,
+      edicion: ' 2027 – 1ª edición ',
+      cursoOrigenId: 4,
+      gestion: 2027,
+    });
+    expect(curso).toMatchObject({
+      edicion: '2027 – 1ª edición',
+      cursoOrigenId: 4,
+      gestion: 2027,
+      tituloCompleto: 'Curso de Guaraní · 2027 – 1ª edición',
+    });
+    expect(mapCursoCapacitacion(rawCurso).tituloCompleto).toBe('Curso de Guaraní');
+  });
+
+  it('el payload lleva la edición y, en «Nueva edición», la oferta de origen', () => {
+    const base = { titulo: 'Guaraní', modalidad: 'PRESENCIAL', fechaInicio: dayjs('2027-03-01'), edicion: ' 2027 ' };
+    expect(mapFormValuesToCursoPayload(base)).toMatchObject({ edicion: '2027' });
+    expect(mapFormValuesToCursoPayload(base)).not.toHaveProperty('cursoOrigenId');
+    expect(mapFormValuesToCursoPayload(base, { cursoOrigenId: 4 })).toMatchObject({ cursoOrigenId: 4 });
+    expect(mapFormValuesToCursoPayload({ ...base, edicion: '' }).edicion).toBeNull();
+  });
+
+  it('«Nueva edición» copia grupos, precios y requisitos como registros nuevos con fechas y edición en blanco', () => {
+    const origen = mapCursoCapacitacionDetail({
+      ...rawCurso,
+      edicion: '2026',
+      fechaFin: '2026-12-20',
+      grupos: [
+        { id: 7, nombre: 'Intensivo', costoMatricula: '250.00', orden: 1, horarios: [{ horarioId: 70, dia: 'LUNES', horaInicio: '19:00', horaFin: '21:00' }] },
+      ],
+      requisitos: [{ id: 3, descripcion: 'CI', obligatorio: true, orden: 1 }],
+    });
+    const v = mapCursoToNuevaEdicionFormValues(origen);
+    expect(v).toMatchObject({ titulo: 'Curso de Guaraní', edicion: '', costo: 440 });
+    expect(v.fechaFin).toBeUndefined();
+    expect(dayjs.isDayjs(v.fechaInicio)).toBe(true);
+    expect(v.grupos).toEqual([
+      expect.objectContaining({ id: null, nombre: 'Intensivo', cobraMatricula: true, costoMatricula: 250, horarios: [{ horarioId: 70 }] }),
+    ]);
+    expect(v.requisitos).toEqual([expect.objectContaining({ id: null, descripcion: 'CI' })]);
   });
 });

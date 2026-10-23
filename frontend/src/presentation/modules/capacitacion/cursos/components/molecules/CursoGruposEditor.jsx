@@ -5,7 +5,8 @@
  * Mismo patrón que los contactos de emergencia de la matrícula: `FormWorkspaceSection`
  * con una sub-sección por grupo (título, botón eliminar, campos etiquetados) y un botón
  * «Agregar otro grupo» al final. Los valores viven en el `Form` bajo
- * `grupos[i].{id,key,nombre,cupoMaximo,aulaId,horarios}`.
+ * `grupos[i].{id,key,nombre,cupoMaximo,cobraMatricula,costoMatricula,aulaId,horarios}`; cada grupo
+ * tiene su interruptor «Cobra matrícula» y `costoMatricula` (Bs) es obligatorio solo con él activo.
  *
  * Los horarios de cada grupo van debajo de nombre y cupo, al lado del aula, como pills con un botón «Agregar
  * horario» al lado (`HorariosGrupoPicker`); «Crear horario» abre el modal (`onCrearHorario(index)`)
@@ -27,7 +28,7 @@ import { crearGrupoVacio } from '@application-capacitacion/utils/gruposCapacitac
  */
 const camposGrupo = (
   index,
-  { aulaOptions, aulasDisponible, loadingAulas, horarioOptions, horarioDias, loadingHorarios, errorHorarios, onCrearHorario },
+  { cobraMatricula, aulaOptions, aulasDisponible, loadingAulas, horarioOptions, horarioDias, loadingHorarios, errorHorarios, onCrearHorario },
 ) => [
   { name: ['grupos', index, 'id'], type: 'hidden', hidden: true },
   { name: ['grupos', index, 'key'], type: 'hidden', hidden: true },
@@ -48,6 +49,37 @@ const camposGrupo = (
     min: 1,
     placeholder: 'Cupo del grupo',
   },
+  {
+    // Cada grupo decide si cobra matrícula (p. ej. Regular vs Intensivo con montos distintos).
+    name: ['grupos', index, 'cobraMatricula'],
+    label: 'Cobra matrícula',
+    type: 'switch',
+    span: 12,
+    checkedChildren: 'Sí',
+    unCheckedChildren: 'No',
+  },
+  ...(cobraMatricula
+    ? [
+        {
+          name: ['grupos', index, 'costoMatricula'],
+          label: 'Matrícula del grupo',
+          type: 'number',
+          span: 12,
+          min: 0,
+          addonBefore: 'Bs',
+          placeholder: '0',
+          required: true,
+          rules: [
+            {
+              validator: (_, value) =>
+                Number(value) > 0
+                  ? Promise.resolve()
+                  : Promise.reject(new Error('La matrícula del grupo debe ser mayor a 0')),
+            },
+          ],
+        },
+      ]
+    : []),
   {
     name: ['grupos', index, 'aulaId'],
     label: 'Aula',
@@ -108,6 +140,7 @@ const CursoGruposEditor = ({
       subsectionTitle: `Grupo ${index + 1}`,
       subsectionIndex: grupo.key ?? grupo.id ?? index,
       fields: camposGrupo(index, {
+        cobraMatricula: grupo.cobraMatricula === true,
         aulaOptions,
         aulasDisponible,
         loadingAulas,

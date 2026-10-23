@@ -30,6 +30,20 @@ export async function validarCupoGrupo(inscripcionCapacitacionRepository, grupo)
 }
 
 /**
+ * Matrícula (Bs) que paga el participante: la del grupo elegido si la tiene; si no, la del
+ * curso. 0 si el curso no cobra matrícula.
+ *
+ * @param {{cobraMatricula?: boolean, costoMatricula?: number|null}} curso
+ * @param {{costoMatricula?: number|null}|null} grupo
+ * @returns {number}
+ */
+export function resolverCostoMatricula(curso, grupo) {
+  if (!curso?.cobraMatricula) return 0;
+  const delGrupo = grupo?.costoMatricula;
+  return Number(delGrupo ?? curso.costoMatricula ?? 0);
+}
+
+/**
  * Resuelve el grupo elegido para una inscripción.
  *
  * @param {Object} params

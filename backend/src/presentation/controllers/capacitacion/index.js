@@ -25,6 +25,7 @@ export { ListParticipantesController } from './list-participantes.controller.js'
 export { GetParticipanteByIdController } from './get-participante-by-id.controller.js';
 export { CreateParticipanteController } from './create-participante.controller.js';
 export { UpdateParticipanteController } from './update-participante.controller.js';
+export { DeleteParticipanteController } from './delete-participante.controller.js';
 
 // Inscripciones y pagos
 export { ListInscripcionesCapacitacionController } from './list-inscripciones-capacitacion.controller.js';

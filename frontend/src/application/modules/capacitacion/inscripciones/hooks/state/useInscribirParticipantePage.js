@@ -252,7 +252,15 @@ export const useInscribirParticipantePage = () => {
     () => cursos.find((c) => c.id === cursoSeleccionadoId) ?? null,
     [cursos, cursoSeleccionadoId],
   );
-  const gruposCurso = useMemo(() => cursoFicha?.grupos ?? [], [cursoFicha]);
+  // Cada grupo lleva su matrícula efectiva (la propia o la del curso); `null` si el curso no la cobra.
+  const gruposCurso = useMemo(
+    () =>
+      (cursoFicha?.grupos ?? []).map((g) => ({
+        ...g,
+        matricula: cursoFicha?.cobraMatricula ? (g.costoMatricula ?? cursoFicha.costoMatricula) : null,
+      })),
+    [cursoFicha],
+  );
   const requisitosCurso = useMemo(() => cursoFicha?.requisitos ?? [], [cursoFicha]);
   /** Grupo elegido (para el resumen de cierre); `null` si aún no se eligió. */
   const grupoSeleccionado = useMemo(
@@ -281,11 +289,18 @@ export const useInscribirParticipantePage = () => {
     [esEdicion, form, cargarCursoDetalle],
   );
 
+  /** Acceso directo (dashboard): el curso llega elegido en `location.state.cursoId`. */
+  const cursoIdInicial = location.state?.cursoId ?? null;
+  useEffect(() => {
+    if (!esEdicion && cursoIdInicial != null) handleCursoChange(Number(cursoIdInicial));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   /**
    * Saldo máximo por concepto: solo los conceptos que el curso cobra (los demás valen 0).
    * Con costo del curso externo (entidad certificadora) solo se cobra la matrícula.
    */
-  const saldosPorConcepto = useMemo(() => montosCobradosCurso(cursoSeleccionado), [cursoSeleccionado]);
+  const saldosPorConcepto = useMemo(() => montosCobradosCurso(cursoSeleccionado, grupoSeleccionado), [cursoSeleccionado, grupoSeleccionado]);
   const conceptoOptions = useMemo(() => buildConceptoOptions(saldosPorConcepto), [saldosPorConcepto]);
 
   /**

@@ -7,7 +7,7 @@
  */
 
 import { Alert, Empty, Flex, Spin, Tabs } from 'antd';
-import { ArrowLeftOutlined, PlayCircleOutlined, StopOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, CopyOutlined, PlayCircleOutlined, StopOutlined } from '@ant-design/icons';
 import { allSpacing } from '@theme/tokens';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
@@ -29,6 +29,7 @@ const CursoCapacitacionDetail = () => {
     breadcrumbItems,
     handleVolver,
     handleEditar,
+    handleNuevaEdicion,
     puedeAbrir,
     puedeCancelar,
     handleAbrirInscripciones,
@@ -63,6 +64,15 @@ const CursoCapacitacionDetail = () => {
           Cancelar curso
         </ActionButton>
       )}
+      <ActionButton
+        permiso={CAPACITACION_PERMISOS.curso}
+        accion="CREAR"
+        variant="info"
+        icon={<CopyOutlined />}
+        onClick={handleNuevaEdicion}
+      >
+        Nueva edición
+      </ActionButton>
       <BackButton icon={<ArrowLeftOutlined />} onClick={handleVolver}>
         Volver
       </BackButton>
@@ -79,7 +89,11 @@ const CursoCapacitacionDetail = () => {
         {
           key: 'grupos',
           label: `Grupos y horarios (${curso.grupos.length})`,
-          children: <CursoGruposSection grupos={curso.grupos} />,
+          children: <CursoGruposSection
+              grupos={curso.grupos}
+              cobraMatricula={curso.cobraMatricula}
+              costoMatriculaCurso={curso.costoMatricula}
+            />,
         },
         {
           key: 'requisitos',

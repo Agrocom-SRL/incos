@@ -18,6 +18,7 @@ describe('CreateCursoCapacitacionUseCase', () => {
     const deps = {
       cursoCapacitacionRepository: {
         create: jest.fn().mockImplementation(async (d) => ({ id: 20, ...d })),
+        findById: jest.fn().mockImplementation(async (id) => (id === 7 ? { id: 7, titulo: 'Guaraní' } : null)),
       },
       capacitacionRequisitoRepository: {
         findByCapacitacionId: jest.fn().mockResolvedValue([]),
@@ -61,6 +62,8 @@ describe('CreateCursoCapacitacionUseCase', () => {
     expect(deps.cursoCapacitacionRepository.create).toHaveBeenCalledWith(
       {
         titulo: 'Excel',
+        edicion: null,
+        cursoOrigenId: null,
         descripcion: null,
         tieneCosto: false,
         costo: 0,
@@ -83,6 +86,29 @@ describe('CreateCursoCapacitacionUseCase', () => {
     expect(res.cursoCapacitacion).toMatchObject({ id: 20, estado: 'PROPUESTO', grupos: [] });
   });
 
+  describe('ediciones del mismo curso', () => {
+    it('guarda la etiqueta de edición y la oferta de origen («Nueva edición»)', async () => {
+      const { deps, useCase } = crear();
+      await useCase.execute({ ...body, edicion: ' 2027 – 1ª edición ', cursoOrigenId: '7' });
+      expect(deps.cursoCapacitacionRepository.findById).toHaveBeenCalledWith(7);
+      expect(deps.cursoCapacitacionRepository.create.mock.calls[0][0]).toMatchObject({
+        edicion: '2027 – 1ª edición',
+        cursoOrigenId: 7,
+      });
+    });
+
+    it('404 si la oferta de origen no existe y no crea nada', async () => {
+      const { deps, useCase } = crear();
+      await expect(useCase.execute({ ...body, cursoOrigenId: 99 })).rejects.toBeInstanceOf(NotFoundError);
+      expect(deps.cursoCapacitacionRepository.create).not.toHaveBeenCalled();
+    });
+
+    it('rechaza una edición de más de 60 caracteres', async () => {
+      const { useCase } = crear();
+      await expect(useCase.execute({ ...body, edicion: 'x'.repeat(61) })).rejects.toBeInstanceOf(ValidationError);
+    });
+  });
+
   describe('costos condicionales', () => {
     it('con tieneCosto el costo es obligatorio y mayor a 0', async () => {
       const { deps, useCase } = crear();
@@ -92,12 +118,36 @@ describe('CreateCursoCapacitacionUseCase', () => {
       expect(deps.cursoCapacitacionRepository.create).not.toHaveBeenCalled();
     });
 
-    it('con cobraMatricula la matrícula es obligatoria y mayor a 0', async () => {
-      const { useCase } = crear();
-      await expect(useCase.execute({ ...body, cobraMatricula: true })).rejects.toThrow(/costoMatricula es obligatorio/);
+    it('con cobraMatricula la matrícula del curso es opcional (valor por defecto) pero no negativa', async () => {
+      const { deps, useCase } = crear();
+      await useCase.execute({ ...body, cobraMatricula: true });
+      expect(deps.cursoCapacitacionRepository.create.mock.calls[0][0]).toMatchObject({
+        cobraMatricula: true, costoMatricula: 0,
+      });
       await expect(useCase.execute({ ...body, cobraMatricula: true, costoMatricula: -5 })).rejects.toBeInstanceOf(
         ValidationError
       );
+    });
+
+    it('con cobraMatricula cada grupo necesita su matrícula si el curso no tiene una por defecto', async () => {
+      const grupo = (extra) => ({ nombre: 'Intensivo', horarios: [], ...extra });
+      await expect(
+        crear().useCase.execute({ ...body, cobraMatricula: true, grupos: [grupo({ costoMatricula: 300 }), grupo({ nombre: 'Regular' })] })
+      ).rejects.toThrow(/El grupo "Regular" necesita su matrícula/);
+      await expect(
+        crear().useCase.execute({
+          ...body, cobraMatricula: true, grupos: [grupo({ costoMatricula: 300 }), grupo({ nombre: 'Regular', costoMatricula: 150 })],
+        })
+      ).resolves.toBeDefined();
+      // con una matrícula por defecto en el curso, un grupo sin precio propio la hereda
+      await expect(
+        crear().useCase.execute({ ...body, cobraMatricula: true, costoMatricula: 100, grupos: [grupo()] })
+      ).resolves.toBeDefined();
+    });
+
+    it('con cobraMatricula apagado los grupos no necesitan matrícula', async () => {
+      const { useCase } = crear();
+      await expect(useCase.execute({ ...body, grupos: [{ nombre: 'Regular', horarios: [] }] })).resolves.toBeDefined();
     });
 
     it('guarda los montos solo si su interruptor está activo; apagado se ignora lo enviado y vale 0', async () => {
@@ -126,7 +176,7 @@ describe('CreateCursoCapacitacionUseCase', () => {
         cupoMaximo: '12',
         activo: false,
         grupos: [
-          { nombre: ' Grupo 1 – Mañana ', cupoMaximo: 15, aulaId: 3, horarios: [{ horarioId: '5' }, { horarioId: 6 }] },
+          { nombre: ' Grupo 1 – Mañana ', cupoMaximo: 15, costoMatricula: '120.5', aulaId: 3, horarios: [{ horarioId: '5' }, { horarioId: 6 }] },
           { nombre: 'Grupo 2 – Tarde', horarios: [{ horarioId: 5 }] },
         ],
       },
@@ -137,13 +187,13 @@ describe('CreateCursoCapacitacionUseCase', () => {
     expect(deps.scheduleRepository.findById).toHaveBeenCalledTimes(2); // ids únicos 5 y 6
     expect(deps.grupoCapacitacionRepository.create).toHaveBeenNthCalledWith(
       1,
-      { capacitacionId: 20, nombre: 'Grupo 1 – Mañana', cupoMaximo: 15, aulaId: 3, orden: 1 },
+      { capacitacionId: 20, nombre: 'Grupo 1 – Mañana', cupoMaximo: 15, costoMatricula: 120.5, aulaId: 3, orden: 1 },
       4,
       { transaction: 'TX' }
     );
     expect(deps.grupoCapacitacionRepository.create).toHaveBeenNthCalledWith(
       2,
-      { capacitacionId: 20, nombre: 'Grupo 2 – Tarde', cupoMaximo: null, aulaId: null, orden: 2 },
+      { capacitacionId: 20, nombre: 'Grupo 2 – Tarde', cupoMaximo: null, costoMatricula: null, aulaId: null, orden: 2 },
       4,
       { transaction: 'TX' }
     );

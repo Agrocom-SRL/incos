@@ -23,6 +23,17 @@ export const CursoCapacitacion = sequelize.define(
       allowNull: false,
       comment: 'Título del curso (ej: Word avanzado)',
     },
+    edicion: {
+      type: DataTypes.STRING(60),
+      allowNull: true,
+      comment: 'Etiqueta de la oferta (ej: 2027 – 1ª edición)',
+    },
+    cursoOrigenId: {
+      type: DataTypes.INTEGER,
+      field: 'curso_origen_id',
+      allowNull: true,
+      comment: 'Oferta de la que se copió esta edición',
+    },
     descripcion: {
       type: DataTypes.TEXT,
       allowNull: true,
