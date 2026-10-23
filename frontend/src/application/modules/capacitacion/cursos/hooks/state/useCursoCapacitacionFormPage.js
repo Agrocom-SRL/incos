@@ -61,19 +61,15 @@ export const useCursoCapacitacionFormPage = (mode = 'create') => {
   const [error, setError] = useState(null);
   const [stepError, setStepError] = useState('');
 
-  // Los interruptores de costo gobiernan qué montos se piden.
+  // El interruptor de costo gobierna si se pide el monto del curso (la matrícula se decide por grupo).
   // `preserve: true`: en los pasos 2 y 3 los interruptores ya no están montados y sin esto
   // `useWatch` los vería apagados, lo que borraba los montos escritos en el paso 1.
   const tieneCosto = Form.useWatch('tieneCosto', { form, preserve: true }) === true;
-  const cobraMatricula = Form.useWatch('cobraMatricula', { form, preserve: true }) === true;
 
-  // Apagar un interruptor limpia su monto (se enviará 0).
+  // Apagar el interruptor del costo limpia su monto (se enviará 0); la matrícula vive en cada grupo.
   useEffect(() => {
     if (!tieneCosto) form.setFieldsValue({ costo: undefined });
   }, [tieneCosto, form]);
-  useEffect(() => {
-    if (!cobraMatricula) form.setFieldsValue({ costoMatricula: undefined });
-  }, [cobraMatricula, form]);
 
   // Catálogo + horarios ya asignados a los grupos (la edición nunca pierde una selección).
   const { options: horarioOptions, diaById: horarioDias } = useMemo(
@@ -171,9 +167,8 @@ export const useCursoCapacitacionFormPage = (mode = 'create') => {
     () =>
       createCursoFormSections({
         tieneCosto,
-        cobraMatricula,
       }),
-    [tieneCosto, cobraMatricula],
+    [tieneCosto],
   );
 
   /**

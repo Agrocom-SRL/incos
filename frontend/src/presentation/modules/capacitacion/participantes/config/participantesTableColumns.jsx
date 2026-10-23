@@ -5,8 +5,9 @@
  * IdentidadCelda (CI arriba, nombre en orden APELLIDO_PATERNO APELLIDO_MATERNO
  * NOMBRES vía buildFullName del mapper) + InfoLinesCell + TableActions.
  *
- * El recurso no tiene ficha propia ni ELIMINAR (seed 65): la única acción de
- * fila es EDITAR (navega a `/participantes/:id/editar`). Orden en cliente (loadAll).
+ * Acciones de fila con permiso propio: VER (ficha con historial de cursos), EDITAR
+ * (`/participantes/:id/editar`) y ELIMINAR (soft delete en cascada: también sus
+ * inscripciones y pagos). Orden en cliente (loadAll).
  */
 
 import { CalendarOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
@@ -14,7 +15,7 @@ import { IdentidadCelda, InfoLinesCell } from '@atoms';
 import { TableActions } from '@molecules';
 import { CAPACITACION_PERMISOS } from '@application-capacitacion/utils/capacitacionPermisos';
 
-export const createParticipantesTableColumns = ({ onEditar }) => {
+export const createParticipantesTableColumns = ({ onVer, onEditar, deleteFn, refetch }) => {
   return [
     {
       title: '#',
@@ -73,15 +74,26 @@ export const createParticipantesTableColumns = ({ onEditar }) => {
     {
       title: 'Acciones',
       key: 'acciones',
-      width: 110,
+      width: 140,
       align: 'right',
       render: (_, record) => (
         <TableActions
           record={record}
+          refetch={refetch}
+          deleteFn={deleteFn}
+          itemName={`al participante «${record.nombreCompleto}»`}
+          itemDetails={[
+            { label: 'Participante', value: record.nombreCompleto },
+            { label: 'CI', value: record.ciCompleto || '—' },
+            { label: 'Alcance', value: 'Se eliminan también sus inscripciones y pagos' },
+          ]}
+          onView={() => onVer(record)}
           onEdit={() => onEditar(record)}
           editTitle="Editar participante"
           permisos={{
+            ver: { codigo: CAPACITACION_PERMISOS.participante, accion: 'DETALLE' },
             editar: { codigo: CAPACITACION_PERMISOS.participante, accion: 'EDITAR' },
+            eliminar: { codigo: CAPACITACION_PERMISOS.participante, accion: 'ELIMINAR' },
           }}
         />
       ),

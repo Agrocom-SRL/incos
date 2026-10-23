@@ -53,8 +53,10 @@ export function tienePagoCursoExterno(cursoOEntidad) {
  * @param {Object} params.data - Datos de salida (se completa)
  * @param {string} params.flag - 'tieneCosto' | 'cobraMatricula'
  * @param {string} params.monto - 'costo' | 'costoMatricula'
+ * @param {boolean} [params.montoOpcional=false] - Con el interruptor activo el monto puede ser 0
+ *   o no enviarse (la matrícula la fija cada grupo; el del curso solo es el valor por defecto)
  */
-function resolverCosto({ body, existing, data, flag, monto }) {
+function resolverCosto({ body, existing, data, flag, monto, montoOpcional = false }) {
   const esCreacion = existing === null;
   if (flag in body) data[flag] = parseBooleano(body[flag], flag);
   else if (esCreacion) data[flag] = false;
@@ -66,7 +68,11 @@ function resolverCosto({ body, existing, data, flag, monto }) {
   }
 
   if (monto in body) {
-    data[monto] = parseNumero(body[monto], monto, { min: 0.01, max: MONTO_MAXIMO });
+    data[monto] = parseNumero(body[monto], monto, { min: montoOpcional ? 0 : 0.01, max: MONTO_MAXIMO });
+    return;
+  }
+  if (montoOpcional) {
+    if (esCreacion) data[monto] = 0;
     return;
   }
   const yaTeniaMonto = !esCreacion && Boolean(existing?.[flag]) && Number(existing?.[monto]) > 0;
@@ -118,7 +124,7 @@ export function construirDatosCurso(body = {}, existing = null) {
   }
 
   resolverCosto({ body, existing, data, flag: 'tieneCosto', monto: 'costo' });
-  resolverCosto({ body, existing, data, flag: 'cobraMatricula', monto: 'costoMatricula' });
+  resolverCosto({ body, existing, data, flag: 'cobraMatricula', monto: 'costoMatricula', montoOpcional: true });
 
   if (esCreacion || tiene('entidadCertificadora')) {
     data.entidadCertificadora = parseTextoOpcional(body.entidadCertificadora, 'entidadCertificadora', 150);

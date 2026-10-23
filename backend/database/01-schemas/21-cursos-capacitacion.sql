@@ -96,7 +96,7 @@ CREATE TABLE capacitaciones (
     tiene_costo BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'Interruptor: el curso NO es gratuito (habilita costo). FALSE = costo vale 0',
     cobra_matricula BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'Interruptor: el curso cobra matrícula (habilita costo_matricula). FALSE = costo_matricula vale 0',
     costo DECIMAL(10,2) NOT NULL DEFAULT 0.00 COMMENT 'Costo del CURSO en Bs (se deposita a la entidad certificadora, p. ej. IPELC)',
-    costo_matricula DECIMAL(10,2) NOT NULL DEFAULT 0.00 COMMENT 'Matrícula en Bs (se paga en secretaría del instituto; institución distinta a la que cobra el curso)',
+    costo_matricula DECIMAL(10,2) NOT NULL DEFAULT 0.00 COMMENT 'Matrícula en Bs por defecto del curso (se paga en secretaría). Cada grupo puede fijar la suya en capacitacion_grupos.costo_matricula; esta rige solo para grupos sin precio propio',
     entidad_certificadora VARCHAR(150) NULL COMMENT 'Entidad que emite el certificado y cobra el costo del curso (ej: IPELC)',
     modalidad ENUM('VIRTUAL', 'PRESENCIAL', 'SEMIPRESENCIAL') NOT NULL DEFAULT 'PRESENCIAL'
         COMMENT 'VIRTUAL | PRESENCIAL | SEMIPRESENCIAL (parte virtual + parte presencial)',
@@ -143,6 +143,7 @@ CREATE TABLE capacitacion_grupos (
     capacitacion_id INT NULL COMMENT 'Curso de capacitación',
     nombre VARCHAR(60) NOT NULL COMMENT 'Nombre del grupo (ej: Grupo 1 – Mañana)',
     cupo_maximo INT NULL COMMENT 'Cupo del grupo; NULL = usa el cupo del curso',
+    costo_matricula DECIMAL(10,2) NULL COMMENT 'Matrícula en Bs de ESTE grupo (p. ej. Regular vs Intensivo); NULL = usa capacitaciones.costo_matricula. Solo aplica si el curso cobra_matricula',
     aula_id INT NULL COMMENT 'Aula del grupo (catálogo aulas, opcional)',
     orden INT NOT NULL DEFAULT 1 COMMENT 'Orden de presentación',
 

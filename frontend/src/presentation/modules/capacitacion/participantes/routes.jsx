@@ -2,8 +2,8 @@
 /**
  * Capacitación → Participantes (ítem de menú CAP, order 2).
  *
- * Permiso `capacitacion.participante` (seed 65). Rutas estáticas ANTES de
- * `/:id/editar` (React Router interceptaría /nuevo como id). La ruta con
+ * Permiso `capacitacion.participante` (seed 64). Rutas estáticas ANTES de
+ * `/:id` (React Router interceptaría /nuevo como id). La ruta con
  * menú va al final del array (patrón cursos/finanzas).
  */
 
@@ -11,6 +11,9 @@ import { lazy } from 'react';
 
 const ParticipantesListConnector = lazy(
   () => import('./connectors/ParticipantesListConnector.jsx'),
+);
+const ParticipanteDetailConnector = lazy(
+  () => import('./connectors/ParticipanteDetailConnector.jsx'),
 );
 const ParticipanteFormCreateConnector = lazy(
   () => import('./connectors/ParticipanteFormCreateConnector.jsx'),
@@ -37,6 +40,16 @@ export const capacitacionParticipantesRoutes = [
     breadcrumbLabel: 'Editar participante',
     permiso: 'capacitacion.participante',
     accion: 'EDITAR',
+    menu: null,
+    breadcrumbParent: 'CAP-PARTICIPANTES',
+  },
+  {
+    path: '/capacitacion/participantes/:id',
+    element: <ParticipanteDetailConnector />,
+    key: 'CAP-PARTICIPANTES-DETALLE',
+    breadcrumbLabel: 'Detalle de participante',
+    permiso: 'capacitacion.participante',
+    accion: 'DETALLE',
     menu: null,
     breadcrumbParent: 'CAP-PARTICIPANTES',
   },

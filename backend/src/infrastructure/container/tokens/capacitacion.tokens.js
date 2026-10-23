@@ -43,6 +43,7 @@ export const CAPACITACION_TOKENS = {
   getParticipanteByIdUseCase: 'capacitacion.getParticipanteByIdUseCase',
   createParticipanteUseCase: 'capacitacion.createParticipanteUseCase',
   updateParticipanteUseCase: 'capacitacion.updateParticipanteUseCase',
+  deleteParticipanteUseCase: 'capacitacion.deleteParticipanteUseCase',
 
   // Use Cases — Inscripciones y pagos
   listInscripcionesCapacitacionUseCase: 'capacitacion.listInscripcionesCapacitacionUseCase',
@@ -85,6 +86,7 @@ export const CAPACITACION_TOKENS = {
   getParticipanteByIdController: 'capacitacion.getParticipanteByIdController',
   createParticipanteController: 'capacitacion.createParticipanteController',
   updateParticipanteController: 'capacitacion.updateParticipanteController',
+  deleteParticipanteController: 'capacitacion.deleteParticipanteController',
 
   // Controllers — Inscripciones y pagos
   listInscripcionesCapacitacionController: 'capacitacion.listInscripcionesCapacitacionController',

@@ -17,12 +17,14 @@ import { registerComponent } from '../../utils/container.helpers.js';
 import { ListParticipantesUseCase } from '../../../../application/use-cases/capacitacion/ListParticipantesUseCase.js';
 import { GetParticipanteByIdUseCase } from '../../../../application/use-cases/capacitacion/GetParticipanteByIdUseCase.js';
 import { CreateParticipanteUseCase } from '../../../../application/use-cases/capacitacion/CreateParticipanteUseCase.js';
+import { DeleteParticipanteUseCase } from '../../../../application/use-cases/capacitacion/DeleteParticipanteUseCase.js';
 import { UpdateParticipanteUseCase } from '../../../../application/use-cases/capacitacion/UpdateParticipanteUseCase.js';
 import {
     ListParticipantesController,
     GetParticipanteByIdController,
     CreateParticipanteController,
     UpdateParticipanteController,
+    DeleteParticipanteController,
 } from '../../../../presentation/controllers/capacitacion/index.js';
 import { buildParticipantesRouter } from '../../../../presentation/routes/participantes.routes.js';
 
@@ -78,6 +80,22 @@ export function registerParticipantesResource(container) {
     // ============================================
     registerComponent(
         container,
+        CAPACITACION_TOKENS.deleteParticipanteUseCase,
+        (c) =>
+            new DeleteParticipanteUseCase({
+                participanteRepository: c.resolve(CAPACITACION_TOKENS.participanteRepository),
+                inscripcionCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.inscripcionCapacitacionRepository
+                ),
+                deleteInscripcionCapacitacionUseCase: c.resolve(
+                    CAPACITACION_TOKENS.deleteInscripcionCapacitacionUseCase
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
         CAPACITACION_TOKENS.listParticipantesController,
         (c) =>
             new ListParticipantesController({
@@ -122,6 +140,17 @@ export function registerParticipantesResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        CAPACITACION_TOKENS.deleteParticipanteController,
+        (c) =>
+            new DeleteParticipanteController({
+                deleteParticipanteUseCase: c.resolve(CAPACITACION_TOKENS.deleteParticipanteUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
     // ============================================
     // ROUTER
     // ============================================
@@ -141,6 +170,9 @@ export function registerParticipantesResource(container) {
                 ),
                 updateParticipanteController: c.resolve(
                     CAPACITACION_TOKENS.updateParticipanteController
+                ),
+                deleteParticipanteController: c.resolve(
+                    CAPACITACION_TOKENS.deleteParticipanteController
                 ),
             };
 

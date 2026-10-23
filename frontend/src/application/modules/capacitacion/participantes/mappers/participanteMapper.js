@@ -14,6 +14,7 @@
 
 import dayjs from 'dayjs';
 import { buildFullName, buildCompleteCI } from '@application/utils/formatters';
+import { mapInscripcionCapacitacion } from '@application-capacitacion/inscripciones/mappers/inscripcionCapacitacionMapper';
 
 const cleanText = (value) => {
   if (value == null) return null;
@@ -53,6 +54,22 @@ export const mapParticipante = (raw) => {
     createdAt: raw.createdAt ?? null,
     registradoLabel: raw.createdAt ? dayjs(raw.createdAt).format('DD/MM/YYYY') : null,
   };
+};
+
+/**
+ * Mapea la ficha del participante (dataKey `participante`): datos personales +
+ * `inscripciones[]` (historial de capacitaciones, la más reciente primero).
+ * @param {Object} raw
+ * @returns {Object|null}
+ */
+export const mapParticipanteDetail = (raw) => {
+  const base = mapParticipante(raw);
+  if (!base) return null;
+  const inscripciones = (Array.isArray(raw.inscripciones) ? raw.inscripciones : [])
+    .map(mapInscripcionCapacitacion)
+    .filter(Boolean)
+    .sort((a, b) => (b.fechaInscripcion || '').localeCompare(a.fechaInscripcion || '') || b.id - a.id);
+  return { ...base, inscripciones };
 };
 
 /** Mapea el array del listado (dataKey `participantes`). */

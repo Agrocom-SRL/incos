@@ -3,7 +3,7 @@
  * (`CfgFormWorkspace`): datos del curso, costos condicionales y grupos (el aula es de cada grupo).
  *
  * Builder puro (sin hooks): recibe lo que cambia según el estado del form
- * (interruptores de costo) y los catálogos. El editor de grupos y de
+ * (interruptor de costo) y los catálogos. El editor de grupos y de
  * requisitos son controles propios que inyecta la presentación (`beforeFields` /
  * `children`), no campos declarativos.
  */
@@ -36,12 +36,8 @@ const montoField = ({ name, label, nombreRegla, activo }) => ({
 /**
  * @param {Object} params
  * @param {boolean} params.tieneCosto - interruptor «El curso tiene costo»
- * @param {boolean} params.cobraMatricula - interruptor «Cobra matrícula»
  */
-export const createCursoFormSections = ({
-  tieneCosto,
-  cobraMatricula,
-}) => ({
+export const createCursoFormSections = ({ tieneCosto }) => ({
   datosCurso: {
     title: 'Datos del curso',
     description:
@@ -147,19 +143,11 @@ export const createCursoFormSections = ({
   costos: {
     title: 'Costos',
     description:
-      'La matrícula se paga en secretaría del instituto; el costo del curso se deposita a la entidad certificadora. Se registran y se saldan por separado. Con ambos apagados el curso es gratuito.',
+      'El costo del curso es fijo y se deposita a la entidad certificadora (se acredita con un documento en los requisitos). La matrícula se paga en secretaría y se define en cada grupo (paso 2): cada grupo decide si cobra matrícula y cuánto. Sin costo del curso ni matrícula en ningún grupo, el curso es gratuito.',
     fields: [
       {
         name: 'tieneCosto',
         label: 'El curso tiene costo',
-        type: 'switch',
-        span: 12,
-        checkedChildren: 'Sí',
-        unCheckedChildren: 'No',
-      },
-      {
-        name: 'cobraMatricula',
-        label: 'Cobra matrícula',
         type: 'switch',
         span: 12,
         checkedChildren: 'Sí',
@@ -170,12 +158,6 @@ export const createCursoFormSections = ({
         label: 'Costo del curso',
         nombreRegla: 'El costo del curso',
         activo: tieneCosto,
-      }),
-      montoField({
-        name: 'costoMatricula',
-        label: 'Matrícula',
-        nombreRegla: 'La matrícula',
-        activo: cobraMatricula,
       }),
     ],
   },

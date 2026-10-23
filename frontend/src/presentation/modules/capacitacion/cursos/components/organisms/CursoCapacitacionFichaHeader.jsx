@@ -76,14 +76,6 @@ const CursoCapacitacionFichaHeader = ({ curso, puedeEditar = false, onEditar }) 
             </span>
           </div>
         ) : null}
-        {curso.cobraMatricula ? (
-          <div className="sd-stat">
-            <span className="sd-stat__label">Matrícula</span>
-            <span className="sd-stat__value">
-              <CostoCursoLabel costo={curso.costoMatricula} />
-            </span>
-          </div>
-        ) : null}
         <div className="sd-stat">
           <span className="sd-stat__label">Inscritos</span>
           <span className="sd-stat__value">

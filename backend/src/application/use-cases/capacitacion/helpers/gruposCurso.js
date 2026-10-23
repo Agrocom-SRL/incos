@@ -45,7 +45,7 @@ function normalizarHorariosGrupo(horarios, etiqueta) {
  * (no tocar los grupos existentes); `null` equivale a "sin grupos".
  *
  * @param {*} grupos
- * @returns {Array<{id: number|null, nombre: string, cupoMaximo: number|null, aulaId: number|null, orden: number,
+ * @returns {Array<{id: number|null, nombre: string, cupoMaximo: number|null, costoMatricula: number|null, aulaId: number|null, orden: number,
  *   horarios: Array<{horarioId: number}>}>|null}
  */
 export function normalizarGrupos(grupos) {
@@ -83,12 +83,35 @@ export function normalizarGrupos(grupos) {
       cupoMaximo: esVacio(item.cupoMaximo)
         ? null
         : parseNumero(item.cupoMaximo, `${etiqueta}.cupoMaximo`, { min: 1, entero: true }),
+      costoMatricula: esVacio(item.costoMatricula)
+        ? null
+        : parseNumero(item.costoMatricula, `${etiqueta}.costoMatricula`, { min: 0 }),
       orden: esVacio(item.orden)
         ? index + 1
         : parseNumero(item.orden, `${etiqueta}.orden`, { min: 1, entero: true }),
       horarios: normalizarHorariosGrupo(item.horarios, etiqueta),
     };
   });
+}
+
+/**
+ * Con el curso cobrando matrícula, cada grupo debe tener la suya (o heredar una matrícula
+ * por defecto del curso mayor a 0); si no, el participante se inscribiría sin matrícula.
+ *
+ * @param {Object} params
+ * @param {boolean} params.cobraMatricula - Interruptor final del curso
+ * @param {number|null} params.costoMatriculaCurso - Matrícula por defecto del curso
+ * @param {Array<Object>} params.grupos - Resultado de `normalizarGrupos`
+ * @throws {ValidationError}
+ */
+export function validarMatriculaGrupos({ cobraMatricula, costoMatriculaCurso, grupos }) {
+  if (!cobraMatricula || Number(costoMatriculaCurso) > 0) return;
+  const sinPrecio = grupos.find((g) => g.costoMatricula === null);
+  if (sinPrecio) {
+    throw new ValidationError(
+      `El grupo "${sinPrecio.nombre}" necesita su matrícula: el curso cobra matrícula`
+    );
+  }
 }
 
 /**
@@ -229,6 +252,7 @@ export async function sincronizarGrupos({
     const datos = {
       nombre: grupo.nombre,
       cupoMaximo: grupo.cupoMaximo,
+      costoMatricula: grupo.costoMatricula,
       aulaId: grupo.aulaId,
       orden: grupo.orden,
     };

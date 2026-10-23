@@ -1,3 +1,4 @@
+import { formatBs } from '@application/utils/formatters';
 import { ESTADOS_INSCRIPCION_CAP_VIGENTES } from './capacitacionPills';
 
 /**
@@ -18,10 +19,13 @@ export const validarGrupoElegido = (grupos = [], grupoId = null) =>
  * Montos cobrados al inscribir según los interruptores del curso: un concepto
  * no cobrado vale 0 (no se ofrece ni se pide). Con costo del curso externo
  * (`pagoCursoExterno`) el instituto no cobra el curso: solo la matrícula.
+ * La matrícula es la del grupo elegido (o la del curso si el grupo no tiene).
+ * @param {Object} curso
+ * @param {Object|null} [grupo] grupo elegido
  * @returns {{MATRICULA: number, CURSO: number}}
  */
-export const montosCobradosCurso = (curso) => ({
-  MATRICULA: curso?.cobraMatricula ? Number(curso.costoMatricula) || 0 : 0,
+export const montosCobradosCurso = (curso, grupo = null) => ({
+  MATRICULA: curso?.cobraMatricula ? Number(grupo?.costoMatricula ?? curso.costoMatricula) || 0 : 0,
   CURSO: curso?.tieneCosto && !curso?.pagoCursoExterno ? Number(curso.costo) || 0 : 0,
 });
 
@@ -54,6 +58,13 @@ export const opcionesGrupoEdicion = (grupos = [], grupoActualId = null) =>
     return {
       value: g.id,
       disabled: lleno,
-      label: [g.nombre, g.horariosLabel || null, cupo].filter(Boolean).join(' · '),
+      label: [
+        g.nombre,
+        g.horariosLabel || null,
+        g.matricula > 0 ? `Matrícula Bs ${formatBs(g.matricula)}` : null,
+        cupo,
+      ]
+        .filter(Boolean)
+        .join(' · '),
     };
   });

@@ -24,6 +24,8 @@ export class GrupoCapacitacionRepository extends BaseRepository {
       capacitacionId: v.capacitacionId ?? null,
       nombre: v.nombre ?? null,
       cupoMaximo: v.cupoMaximo ?? null,
+      costoMatricula:
+        v.costoMatricula !== undefined && v.costoMatricula !== null ? Number(v.costoMatricula) : null,
       aulaId: v.aulaId ?? null,
       orden: v.orden ?? 1,
       activo: v.activo ?? null,
@@ -52,6 +54,7 @@ export class GrupoCapacitacionRepository extends BaseRepository {
     if ('capacitacionId' in data) model.capacitacionId = data.capacitacionId;
     if ('nombre' in data) model.nombre = data.nombre;
     if ('cupoMaximo' in data) model.cupoMaximo = data.cupoMaximo ?? null;
+    if ('costoMatricula' in data) model.costoMatricula = data.costoMatricula ?? null;
     if ('aulaId' in data) model.aulaId = data.aulaId ?? null;
     if ('orden' in data) model.orden = data.orden;
     return model;
@@ -111,7 +114,7 @@ export class GrupoCapacitacionRepository extends BaseRepository {
   async findConInscritosByCapacitacionId(capacitacionId) {
     const rows = await sequelize.query(
       `SELECT
-         g.id, g.nombre, g.cupo_maximo AS cupoMaximo, g.orden,
+         g.id, g.nombre, g.cupo_maximo AS cupoMaximo, g.costo_matricula AS costoMatricula, g.orden,
          g.aula_id AS aulaId, a.codigo AS aulaCodigo, a.nombre AS aulaNombre,
          (SELECT COUNT(*)
             FROM capacitacion_inscritos ci
@@ -127,6 +130,10 @@ export class GrupoCapacitacionRepository extends BaseRepository {
        ORDER BY g.orden ASC, g.id ASC`,
       { replacements: { capacitacionId }, type: sequelize.QueryTypes.SELECT }
     );
-    return rows.map((row) => ({ ...row, inscritosCount: Number(row.inscritosCount ?? 0) }));
+    return rows.map((row) => ({
+      ...row,
+      costoMatricula: row.costoMatricula === null ? null : Number(row.costoMatricula),
+      inscritosCount: Number(row.inscritosCount ?? 0),
+    }));
   }
 }
