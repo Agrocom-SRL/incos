@@ -1,27 +1,37 @@
-import { Flex, Typography } from 'antd';
+import { Typography } from 'antd';
 import { CalendarOutlined, ReadOutlined, RightOutlined } from '@ant-design/icons';
-import { allSpacing, allColors, typography } from '@theme/tokens';
+import { allSpacing, allColors, componentConfig, typography, shadows } from '@theme/tokens';
 
 const { Text } = Typography;
 
+const pad2 = (n) => String(n).padStart(2, '0');
+
 /**
- * Molécula: cuadros de acceso directo a inscribir en los cursos de capacitación
- * DISPONIBLES, pensados para ir DENTRO del banner de bienvenida (`children`).
+ * Molécula: lista numerada de accesos directos a inscribir en los cursos de capacitación
+ * DISPONIBLES (dashboard), bajo el banner de bienvenida.
  *
- * Cada cuadro es un contenedor clickeable con un ícono de curso, solo el nombre y la fecha de
- * inicio, y la llamada «Inscribir». Sin cursos no dibuja nada. Solo presentación +
- * navegación: recibe los cursos ya mapeados y `onInscribir`; no llama hooks de fetch.
+ * Diseño «ordered list cards»: cada curso es una tarjeta clickeable con un bloque verde a la
+ * izquierda (número 01, 02… y ícono de curso), el nombre y la fecha de inicio al centro y la
+ * llamada «Inscribir» a la derecha; elevación suave que sube al pasar el mouse. Las tarjetas ocupan media
+ * columna (2 por fila, como un col-6) dentro del contenido principal; la fecha va en la fuente de
+ * código del tema (`fontFamilyCode`) para distinguirla del nombre. Sin cursos no dibuja nada.
+ * Solo presentación + navegación: recibe los cursos ya mapeados y `onInscribir`; no llama hooks
+ * de fetch.
  */
 const DashboardCapacitacionAbiertaTiles = ({ cursos = [], onInscribir }) => {
   if (cursos.length === 0) return null;
 
   return (
-    <Flex gap={allSpacing.margin} wrap>
-      {cursos.map((curso) => (
-        <Flex
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+        gap: allSpacing.margin,
+      }}
+    >
+      {cursos.map((curso, index) => (
+        <div
           key={curso.id}
-          align="center"
-          gap={allSpacing.margin}
           role="button"
           tabIndex={0}
           onClick={() => onInscribir?.(curso)}
@@ -32,51 +42,89 @@ const DashboardCapacitacionAbiertaTiles = ({ cursos = [], onInscribir }) => {
             }
           }}
           style={{
-            flex: '1 1 280px',
-            maxWidth: 420,
+            display: 'flex',
+            alignItems: 'stretch',
             minWidth: 0,
-            padding: `${allSpacing.paddingSM}px ${allSpacing.padding}px`,
-            border: `1px solid ${allColors.colorBorder}`,
-            borderRadius: `${allSpacing.borderRadiusMD}px`,
-            backgroundColor: allColors.colorBgContainer,
+            minHeight: 120,
+            overflow: 'hidden',
             cursor: 'pointer',
-            transition: `border-color ${allSpacing.motionDurationMid} ${allSpacing.motionEaseOut}, background-color ${allSpacing.motionDurationMid} ${allSpacing.motionEaseOut}`,
+            backgroundColor: allColors.colorBgContainer,
+            border: `1px solid ${allColors.colorBorder}`,
+            borderRadius: `${componentConfig.Card.borderRadiusLG}px`,
+            boxShadow: shadows.shadowElevation2,
+            transition: `transform ${allSpacing.motionDurationMid} ${allSpacing.motionEaseOut}, box-shadow ${allSpacing.motionDurationMid} ${allSpacing.motionEaseOut}`,
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = allColors.colorPrimary;
-            e.currentTarget.style.backgroundColor = allColors.colorPrimaryBg;
+            e.currentTarget.style.boxShadow = shadows.shadowElevation3;
+            e.currentTarget.style.transform = 'translateY(-3px)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = allColors.colorBorder;
-            e.currentTarget.style.backgroundColor = allColors.colorBgContainer;
+            e.currentTarget.style.boxShadow = shadows.shadowElevation2;
+            e.currentTarget.style.transform = 'translateY(0)';
           }}
         >
-          <Flex
-            align="center"
-            justify="center"
+          <div
             style={{
-              width: allSpacing.controlHeightLG,
-              height: allSpacing.controlHeightLG,
-              borderRadius: `${allSpacing.borderRadiusMD}px`,
-              backgroundColor: allColors.colorPrimaryBg,
-              color: allColors.colorPrimary,
-              fontSize: `${typography.fontSizeXL}px`,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: allSpacing.marginXS,
               flexShrink: 0,
+              width: 84,
+              backgroundColor: allColors.colorPrimary,
+              color: allColors.colorTextOnDark,
+              borderRadius: `0 ${allSpacing.borderRadiusLG * 3}px ${allSpacing.borderRadiusLG * 3}px 0`,
             }}
           >
-            <ReadOutlined />
-          </Flex>
-          <Flex vertical style={{ flex: 1, minWidth: 0 }}>
-            <Text strong ellipsis={{ tooltip: curso.titulo }}>
+            <span
+              style={{
+                fontSize: `${typography.fontSizeHeading4}px`,
+                fontWeight: typography.fontWeightStrong,
+                lineHeight: 1,
+              }}
+            >
+              {pad2(index + 1)}
+            </span>
+            <ReadOutlined style={{ fontSize: `${typography.fontSizeXL}px` }} />
+          </div>
+
+          <div
+            style={{
+              display: 'flex',
+              flex: 1,
+              flexDirection: 'column',
+              justifyContent: 'center',
+              minWidth: 0,
+              padding: `${allSpacing.paddingLG}px`,
+            }}
+          >
+            <Text
+              strong
+              ellipsis={{ tooltip: curso.titulo }}
+              style={{ color: allColors.colorPrimary, fontSize: `${typography.fontSizeLG}px` }}
+            >
               {curso.titulo}
             </Text>
             {curso.fechaInicioLabel ? (
-              <Text type="secondary">
+              <Text
+                type="secondary"
+                style={{ fontFamily: typography.fontFamilyCode, fontSize: `${typography.fontSizeSM}px` }}
+              >
                 <CalendarOutlined /> Inicia {curso.fechaInicioLabel}
               </Text>
             ) : null}
-          </Flex>
-          <Flex align="center" gap={allSpacing.marginXS} style={{ color: allColors.colorPrimary }}>
+          </div>
+
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: allSpacing.marginXS,
+              paddingRight: allSpacing.paddingLG,
+              color: allColors.colorPrimary,
+            }}
+          >
             <Text
               style={{
                 color: allColors.colorPrimary,
@@ -87,10 +135,10 @@ const DashboardCapacitacionAbiertaTiles = ({ cursos = [], onInscribir }) => {
               Inscribir
             </Text>
             <RightOutlined style={{ fontSize: `${typography.fontSizeXS}px` }} />
-          </Flex>
-        </Flex>
+          </div>
+        </div>
       ))}
-    </Flex>
+    </div>
   );
 };
 

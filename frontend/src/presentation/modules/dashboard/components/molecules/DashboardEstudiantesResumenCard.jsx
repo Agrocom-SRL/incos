@@ -9,7 +9,8 @@ const { Title, Text } = Typography;
  * Variante genérica (aditiva, no rompe consumidores): si se pasa `lines`
  * (`[{ label, value, unidad? }]`) se pintan esas filas como KPIs en lugar del
  * par hoy/mes — la usa el dashboard del docente (cursos / horas / estudiantes).
- * `compact` reduce tipografía, separación y alto mínimo (cuadros con varias filas).
+ * `compact` reduce separación y alto mínimo para cuadros con varias filas (la tipografía queda
+ * en 27 px, 50 % más que la versión anterior).
  */
 const DashboardEstudiantesResumenCard = ({
     todayCount,
@@ -55,7 +56,7 @@ const DashboardEstudiantesResumenCard = ({
                         level={4}
                         style={{
                             color: allColors.colorTextOnDark,
-                            fontSize: `${compact ? typography.fontSizeLG : typography.fontSizeHeading3}px`,
+                            fontSize: `${compact ? Math.round(typography.fontSizeLG * 1.5) : typography.fontSizeHeading3}px`,
                             fontWeight: typography.fontWeightStrong,
                             margin: 0,
                             lineHeight: compact ? 1.25 : 1.35,

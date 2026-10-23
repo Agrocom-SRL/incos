@@ -4,8 +4,7 @@ import { allSpacing, componentConfig, allColors, typography, shadows } from '@th
 const { Title, Text } = Typography;
 
 /**
- * Molécula: hero de bienvenida con CTA (dashboard). `children` (opcional) se dibuja bajo los
- * botones, p. ej. los accesos directos a inscribir en capacitaciones abiertas.
+ * Molécula: hero de bienvenida con CTA (dashboard).
  */
 const DEFAULT_TITLE = 'Bienvenido al Instituto INCOS';
 const DEFAULT_DESCRIPTION =
@@ -19,7 +18,6 @@ const DashboardWelcomeBanner = ({
     showRegistrarEstudiante = true,
     title = DEFAULT_TITLE,
     description = DEFAULT_DESCRIPTION,
-    children = null,
 }) => {
     const showActions = showVerCarreras || showRegistrarEstudiante;
     return (
@@ -106,7 +104,6 @@ const DashboardWelcomeBanner = ({
                     ) : null}
                 </Flex>
                 ) : null}
-                {children}
             </Flex>
         </Card>
     );
