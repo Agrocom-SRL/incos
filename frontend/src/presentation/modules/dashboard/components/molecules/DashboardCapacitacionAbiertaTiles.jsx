@@ -6,7 +6,7 @@ const { Text } = Typography;
 
 /**
  * Molécula: cuadros de acceso directo a inscribir en los cursos de capacitación
- * DISPONIBLES, pensados para ir DENTRO del banner de bienvenida (`children`).
+ * DISPONIBLES, en su propio bloque bajo el banner de bienvenida (el diseño final está pendiente).
  *
  * Cada cuadro es un contenedor clickeable con un ícono de curso, solo el nombre y la fecha de
  * inicio, y la llamada «Inscribir». Sin cursos no dibuja nada. Solo presentación +

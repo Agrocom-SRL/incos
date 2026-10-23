@@ -127,18 +127,18 @@ const Dashboard = () => {
             onRegistrarEstudiante={() =>
               navigateIfPermiso('/estudiantes/registrar', 'matricula.admision.crear', 'CREAR')
             }
-          >
-            {puedeInscribirCapacitacion ? (
-              <DashboardCapacitacionAbiertaTiles
-                cursos={cursosAbiertos}
-                onInscribir={(curso) =>
-                  navigate(inscripcionCapInscribirPath, {
-                    state: { cursoId: curso.id, menuSidebarKey: CAP_INSCRIPCIONES_MENU_KEY },
-                  })
-                }
-              />
-            ) : null}
-          </DashboardWelcomeBanner>
+          />
+
+          {puedeInscribirCapacitacion ? (
+            <DashboardCapacitacionAbiertaTiles
+              cursos={cursosAbiertos}
+              onInscribir={(curso) =>
+                navigate(inscripcionCapInscribirPath, {
+                  state: { cursoId: curso.id, menuSidebarKey: CAP_INSCRIPCIONES_MENU_KEY },
+                })
+              }
+            />
+          ) : null}
 
           <DashboardCarrerasSection
             carreras={carreras}
