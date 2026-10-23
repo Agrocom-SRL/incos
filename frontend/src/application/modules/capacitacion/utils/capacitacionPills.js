@@ -61,8 +61,9 @@ export const ESTADOS_INSCRIPCION_CAP = ['PENDIENTE', 'INSCRITO', 'RETIRADO', 'AN
 
 /**
  * Estado de la INSCRIPCIÓN (4 valores, no confundir con el estado de pago):
- * PENDIENTE = pago parcial, aún no completa el monto obligatorio | INSCRITO =
- * monto obligatorio cancelado | RETIRADO = se retiró estando inscrito
+ * PENDIENTE = falta saldar el monto obligatorio o entregar requisitos (por eso
+ * se rotula solo «Pendiente», no «Pendiente de pago») | INSCRITO = monto
+ * obligatorio cancelado y requisitos entregados | RETIRADO = se retiró estando inscrito
  * (decisión del participante) | ANULADO = decisión administrativa manual
  * (nunca automática por incumplir el compromiso de pago).
  *
@@ -73,7 +74,7 @@ export const ESTADOS_INSCRIPCION_CAP = ['PENDIENTE', 'INSCRITO', 'RETIRADO', 'AN
  * la misma severidad visual que un curso cancelado, no un simple "inactivo".
  */
 const ESTADO_INSCRIPCION_META = {
-  PENDIENTE: { label: 'Pendiente de pago', pill: 'cfg-materia-pill--warning' },
+  PENDIENTE: { label: 'Pendiente', pill: 'cfg-materia-pill--warning' },
   INSCRITO: { label: 'Inscrito', pill: 'cfg-materia-pill--success' },
   RETIRADO: { label: 'Retirado', pill: 'cfg-materia-pill--inactiva' },
   ANULADO: { label: 'Anulado', pill: 'cfg-materia-pill--danger' },
