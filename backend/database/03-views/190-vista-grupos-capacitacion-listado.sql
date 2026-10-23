@@ -33,6 +33,7 @@ SELECT
   g.orden,
   g.capacitacion_id AS curso_id,
   c.titulo AS curso_titulo,
+  c.edicion AS curso_edicion,
   c.estado AS curso_estado,
   c.modalidad,
   c.fecha_inicio AS curso_fecha_inicio,

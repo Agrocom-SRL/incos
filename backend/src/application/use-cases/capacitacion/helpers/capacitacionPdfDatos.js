@@ -43,6 +43,10 @@ const ABREVIATURA_DIA = {
 
 const textoOVacio = (valor) => (valor == null ? '' : String(valor).trim());
 
+/** Título del curso con su edición («Guaraní · 2027 – 1ª edición») para distinguir ofertas del mismo curso. */
+const tituloCurso = (ficha) =>
+  [textoOVacio(ficha.capacitacionTitulo), textoOVacio(ficha.capacitacionEdicion)].filter(Boolean).join(' · ');
+
 const horaCorta = (hora) => textoOVacio(hora).slice(0, 5);
 
 /**
@@ -219,7 +223,7 @@ export function construirDatosFormularioInscripcion(
       email: textoOVacio(ficha.participanteEmail)
     },
     curso: {
-      titulo: textoOVacio(ficha.capacitacionTitulo),
+      titulo: tituloCurso(ficha),
       modalidad: ETIQUETAS.modalidad[ficha.capacitacionModalidad] ?? textoOVacio(ficha.capacitacionModalidad),
       entidadCertificadora: textoOVacio(ficha.capacitacionEntidadCertificadora),
       fechaInicio: formatearFecha(ficha.capacitacionFechaInicio),
@@ -304,7 +308,7 @@ export function construirDatosReciboPago(ficha, pagoId, { gruposCurso = null } =
       ci: [ficha.participanteCi, ficha.participanteExpedicion].map(textoOVacio).filter(Boolean).join(' ')
     },
     curso: {
-      titulo: textoOVacio(ficha.capacitacionTitulo),
+      titulo: tituloCurso(ficha),
       grupo: textoOVacio(ficha.grupoNombre),
       horarios: horariosGrupo,
       entidadCertificadora: textoOVacio(ficha.capacitacionEntidadCertificadora)

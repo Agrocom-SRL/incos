@@ -18,6 +18,7 @@ describe('CreateCursoCapacitacionUseCase', () => {
     const deps = {
       cursoCapacitacionRepository: {
         create: jest.fn().mockImplementation(async (d) => ({ id: 20, ...d })),
+        findById: jest.fn().mockImplementation(async (id) => (id === 7 ? { id: 7, titulo: 'Guaraní' } : null)),
       },
       capacitacionRequisitoRepository: {
         findByCapacitacionId: jest.fn().mockResolvedValue([]),
@@ -61,6 +62,8 @@ describe('CreateCursoCapacitacionUseCase', () => {
     expect(deps.cursoCapacitacionRepository.create).toHaveBeenCalledWith(
       {
         titulo: 'Excel',
+        edicion: null,
+        cursoOrigenId: null,
         descripcion: null,
         tieneCosto: false,
         costo: 0,
@@ -81,6 +84,29 @@ describe('CreateCursoCapacitacionUseCase', () => {
     );
     expect(deps.grupoCapacitacionRepository.create).not.toHaveBeenCalled();
     expect(res.cursoCapacitacion).toMatchObject({ id: 20, estado: 'PROPUESTO', grupos: [] });
+  });
+
+  describe('ediciones del mismo curso', () => {
+    it('guarda la etiqueta de edición y la oferta de origen («Nueva edición»)', async () => {
+      const { deps, useCase } = crear();
+      await useCase.execute({ ...body, edicion: ' 2027 – 1ª edición ', cursoOrigenId: '7' });
+      expect(deps.cursoCapacitacionRepository.findById).toHaveBeenCalledWith(7);
+      expect(deps.cursoCapacitacionRepository.create.mock.calls[0][0]).toMatchObject({
+        edicion: '2027 – 1ª edición',
+        cursoOrigenId: 7,
+      });
+    });
+
+    it('404 si la oferta de origen no existe y no crea nada', async () => {
+      const { deps, useCase } = crear();
+      await expect(useCase.execute({ ...body, cursoOrigenId: 99 })).rejects.toBeInstanceOf(NotFoundError);
+      expect(deps.cursoCapacitacionRepository.create).not.toHaveBeenCalled();
+    });
+
+    it('rechaza una edición de más de 60 caracteres', async () => {
+      const { useCase } = crear();
+      await expect(useCase.execute({ ...body, edicion: 'x'.repeat(61) })).rejects.toBeInstanceOf(ValidationError);
+    });
   });
 
   describe('costos condicionales', () => {

@@ -7,6 +7,7 @@
  */
 
 import dayjs from 'dayjs';
+import { tituloConEdicion } from '@application-capacitacion/utils/cursoTitulo';
 import {
   buildHorarioEtiqueta,
   compararHorarios,
@@ -58,6 +59,11 @@ export const mapCursoCapacitacion = (raw) => {
   return {
     id: raw.id,
     titulo: cleanText(raw.titulo) || 'Sin título',
+    // Etiqueta de la oferta (2027 – 1ª edición), oferta de la que se copió y gestión (año de inicio).
+    edicion: cleanText(raw.edicion),
+    cursoOrigenId: raw.cursoOrigenId ?? null,
+    gestion: raw.gestion != null ? toNumber(raw.gestion) : null,
+    tituloCompleto: tituloConEdicion(cleanText(raw.titulo) || 'Sin título', raw.edicion),
     descripcion: cleanText(raw.descripcion),
     // `costo` = costo del CURSO (entidad certificadora); la matrícula va aparte.
     costo: toNumber(raw.costo),
@@ -241,12 +247,14 @@ export const mapGruposFormToPayload = (grupos) =>
  * @param {Object} values
  * @returns {Object}
  */
-export const mapFormValuesToCursoPayload = (values = {}) => {
+export const mapFormValuesToCursoPayload = (values = {}, { cursoOrigenId = null } = {}) => {
   const tieneCosto = values.tieneCosto === true;
   // El curso cobra matrícula si algún grupo la cobra (cada grupo decide con su interruptor).
   const cobraMatricula = (values.grupos ?? []).some((g) => g?.cobraMatricula === true);
   return {
     titulo: (values.titulo || '').trim(),
+    edicion: (values.edicion || '').trim() || null,
+    ...(cursoOrigenId != null ? { cursoOrigenId } : {}),
     descripcion: (values.descripcion || '').trim() || null,
     tieneCosto,
     cobraMatricula,
@@ -289,6 +297,7 @@ const matriculaDeGrupoAForm = (curso, grupo) => {
  */
 export const mapCursoToFormValues = (curso) => ({
   titulo: curso?.titulo ?? '',
+  edicion: curso?.edicion ?? '',
   descripcion: curso?.descripcion ?? '',
   tieneCosto: curso?.tieneCosto ?? false,
   costo: curso?.tieneCosto ? curso.costo : undefined,
@@ -317,3 +326,21 @@ export const mapCursoToFormValues = (curso) => ({
     acreditaPagoCurso: Boolean(r.acreditaPagoCurso),
   })),
 });
+
+/**
+ * Valores del formulario para «Nueva edición» de un curso: copia datos, costos, grupos (con
+ * horarios y matrícula) y requisitos de la oferta de origen, pero como registros NUEVOS (sin ids)
+ * y con fechas y etiqueta de edición en blanco para que se ajusten antes de guardar.
+ * @param {Object} curso - Ficha de la oferta de origen
+ */
+export const mapCursoToNuevaEdicionFormValues = (curso) => {
+  const base = mapCursoToFormValues(curso);
+  return {
+    ...base,
+    edicion: '',
+    fechaInicio: dayjs(),
+    fechaFin: undefined,
+    grupos: base.grupos.map((g, index) => ({ ...g, id: null, key: `grupo-copia-${index}` })),
+    requisitos: base.requisitos.map((r, index) => ({ ...r, id: null, key: `req-copia-${index}` })),
+  };
+};

@@ -29,6 +29,9 @@ export function viewRowToPresentation(row) {
   return {
     id: row.id,
     titulo: row.titulo,
+    edicion: row.edicion ?? null,
+    cursoOrigenId: row.curso_origen_id ?? null,
+    gestion: row.gestion != null ? Number(row.gestion) : null,
     descripcion: row.descripcion ?? null,
     tieneCosto: Boolean(Number(row.tiene_costo ?? 0)),
     cobraMatricula: Boolean(Number(row.cobra_matricula ?? 0)),
@@ -118,6 +121,8 @@ export function entityToPresentation(entity) {
   return {
     id: entity.id,
     titulo: entity.titulo,
+    edicion: entity.edicion ?? null,
+    cursoOrigenId: entity.cursoOrigenId ?? null,
     descripcion: entity.descripcion ?? null,
     tieneCosto: Boolean(entity.tieneCosto),
     cobraMatricula: Boolean(entity.cobraMatricula),

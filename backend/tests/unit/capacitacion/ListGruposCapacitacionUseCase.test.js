@@ -31,7 +31,7 @@ describe('ListGruposCapacitacionUseCase', () => {
     expect(deps.grupoCapacitacionListadoViewRepository.findHorariosByGrupoIds).toHaveBeenCalledWith([1]);
     expect(res).toMatchObject({ total: 21, page: 2, limit: 10, totalPages: 3 });
     expect(res.grupos[0]).toEqual({
-      grupoId: 1, nombre: 'Grupo 1 – Mañana', orden: 1, cursoId: 9, cursoTitulo: 'Guaraní', cursoEstado: 'ABIERTO',
+      grupoId: 1, nombre: 'Grupo 1 – Mañana', orden: 1, cursoId: 9, cursoTitulo: 'Guaraní', cursoEdicion: null, cursoEstado: 'ABIERTO',
       modalidad: 'PRESENCIAL', cupoMaximo: 25, inscritosCount: 3, aulaId: 4, aulaCodigo: 'A-4', aulaNombre: 'Aula 4',
       horarios: [{ horarioId: 5, etiqueta: 'SAB 08:00-12:00' }], horariosEtiqueta: 'SAB 08:00-12:00',
     });

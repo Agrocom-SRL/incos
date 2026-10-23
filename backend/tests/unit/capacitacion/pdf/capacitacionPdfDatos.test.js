@@ -129,6 +129,13 @@ describe('capacitacionPdfDatos', () => {
       });
     });
 
+    it('el curso lleva su edición en el título para distinguir ofertas del mismo curso', () => {
+      const ficha = crearFicha({ capacitacionEdicion: '2027 – 1ª edición' });
+      expect(construirDatosReciboPago(ficha, 31).curso.titulo).toBe('Word avanzado · 2027 – 1ª edición');
+      expect(construirDatosFormularioInscripcion(ficha).curso.titulo).toBe('Word avanzado · 2027 – 1ª edición');
+      expect(construirDatosReciboPago(crearFicha(), 31).curso.titulo).toBe('Word avanzado');
+    });
+
     it('GRUPO Y HORARIO agrupa los días que comparten hora cuando hay grupos del curso', () => {
       const dia = (d) => ({ dia: d, horaInicio: '19:00:00', horaFin: '21:00:00' });
       const gruposCurso = [

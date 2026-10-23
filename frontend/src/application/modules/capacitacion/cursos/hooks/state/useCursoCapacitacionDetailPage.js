@@ -21,6 +21,7 @@ import {
   CURSOS_CAP_LIST_PATH,
   CAP_CURSOS_MENU_KEY,
   cursoCapEditarPath,
+  cursoCapRegistrarPath,
 } from '@application-capacitacion/config/paths';
 
 export const useCursoCapacitacionDetailPage = () => {
@@ -53,6 +54,14 @@ export const useCursoCapacitacionDetailPage = () => {
     if (!cursoId) return;
     navigate(cursoCapEditarPath(cursoId), {
       state: { returnListPath, menuSidebarKey },
+    });
+  }, [navigate, cursoId, returnListPath, menuSidebarKey]);
+
+  /** «Nueva edición»: abre el alta precargada con una copia de este curso (grupos, precios, requisitos). */
+  const handleNuevaEdicion = useCallback(() => {
+    if (!cursoId) return;
+    navigate(cursoCapRegistrarPath, {
+      state: { cursoOrigenId: cursoId, returnListPath, menuSidebarKey },
     });
   }, [navigate, cursoId, returnListPath, menuSidebarKey]);
 
@@ -123,6 +132,7 @@ export const useCursoCapacitacionDetailPage = () => {
     breadcrumbItems,
     handleVolver,
     handleEditar,
+    handleNuevaEdicion,
     puedeAbrir,
     puedeCancelar,
     handleAbrirInscripciones,

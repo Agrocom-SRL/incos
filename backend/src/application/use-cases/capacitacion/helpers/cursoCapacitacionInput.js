@@ -119,6 +119,14 @@ export function construirDatosCurso(body = {}, existing = null) {
     data.titulo = titulo;
   }
 
+  if (esCreacion || tiene('edicion')) {
+    data.edicion = parseTextoOpcional(body.edicion, 'edicion', 60);
+  }
+  // La oferta de origen solo se fija al crear («Nueva edición»); no se reasigna después.
+  if (esCreacion) {
+    data.cursoOrigenId = parseIdOpcional(body.cursoOrigenId, 'cursoOrigenId');
+  }
+
   if (esCreacion || tiene('descripcion')) {
     data.descripcion = esVacio(body.descripcion) ? null : String(body.descripcion);
   }

@@ -53,6 +53,14 @@ export const createCursoFormSections = ({ tieneCosto }) => ({
         maxLength: 200,
       },
       {
+        name: 'edicion',
+        label: 'Edición',
+        type: 'input',
+        span: 12,
+        maxLength: 60,
+        placeholder: 'Ej. 2027 – 1ª edición',
+      },
+      {
         name: 'modalidad',
         label: 'Modalidad',
         type: 'select',

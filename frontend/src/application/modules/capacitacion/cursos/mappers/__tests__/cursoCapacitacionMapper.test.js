@@ -4,6 +4,7 @@ import {
   mapCursoCapacitacion,
   mapCursoCapacitacionDetail,
   mapCursoToFormValues,
+  mapCursoToNuevaEdicionFormValues,
   mapFormValuesToCursoPayload,
   mapGruposFormToPayload,
   mapRequisitosFormToPayload,
@@ -259,5 +260,51 @@ describe('mapCursoCapacitacion · pagoCursoExterno', () => {
     expect(mapCursoCapacitacion({ ...rawCurso, pagoCursoExterno: false }).pagoCursoExterno).toBe(false);
     expect(mapCursoCapacitacion(rawCurso).pagoCursoExterno).toBe(true); // entidad 'IPELC'
     expect(mapCursoCapacitacion({ ...rawCurso, entidadCertificadora: null }).pagoCursoExterno).toBe(false);
+  });
+});
+
+describe('ediciones de un mismo curso', () => {
+  it('mapea edición, oferta de origen y gestión, y arma el título completo', () => {
+    const curso = mapCursoCapacitacion({
+      ...rawCurso,
+      edicion: ' 2027 – 1ª edición ',
+      cursoOrigenId: 4,
+      gestion: 2027,
+    });
+    expect(curso).toMatchObject({
+      edicion: '2027 – 1ª edición',
+      cursoOrigenId: 4,
+      gestion: 2027,
+      tituloCompleto: 'Curso de Guaraní · 2027 – 1ª edición',
+    });
+    expect(mapCursoCapacitacion(rawCurso).tituloCompleto).toBe('Curso de Guaraní');
+  });
+
+  it('el payload lleva la edición y, en «Nueva edición», la oferta de origen', () => {
+    const base = { titulo: 'Guaraní', modalidad: 'PRESENCIAL', fechaInicio: dayjs('2027-03-01'), edicion: ' 2027 ' };
+    expect(mapFormValuesToCursoPayload(base)).toMatchObject({ edicion: '2027' });
+    expect(mapFormValuesToCursoPayload(base)).not.toHaveProperty('cursoOrigenId');
+    expect(mapFormValuesToCursoPayload(base, { cursoOrigenId: 4 })).toMatchObject({ cursoOrigenId: 4 });
+    expect(mapFormValuesToCursoPayload({ ...base, edicion: '' }).edicion).toBeNull();
+  });
+
+  it('«Nueva edición» copia grupos, precios y requisitos como registros nuevos con fechas y edición en blanco', () => {
+    const origen = mapCursoCapacitacionDetail({
+      ...rawCurso,
+      edicion: '2026',
+      fechaFin: '2026-12-20',
+      grupos: [
+        { id: 7, nombre: 'Intensivo', costoMatricula: '250.00', orden: 1, horarios: [{ horarioId: 70, dia: 'LUNES', horaInicio: '19:00', horaFin: '21:00' }] },
+      ],
+      requisitos: [{ id: 3, descripcion: 'CI', obligatorio: true, orden: 1 }],
+    });
+    const v = mapCursoToNuevaEdicionFormValues(origen);
+    expect(v).toMatchObject({ titulo: 'Curso de Guaraní', edicion: '', costo: 440 });
+    expect(v.fechaFin).toBeUndefined();
+    expect(dayjs.isDayjs(v.fechaInicio)).toBe(true);
+    expect(v.grupos).toEqual([
+      expect.objectContaining({ id: null, nombre: 'Intensivo', cobraMatricula: true, costoMatricula: 250, horarios: [{ horarioId: 70 }] }),
+    ]);
+    expect(v.requisitos).toEqual([expect.objectContaining({ id: null, descripcion: 'CI' })]);
   });
 });

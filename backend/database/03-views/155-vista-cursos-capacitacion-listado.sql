@@ -3,7 +3,7 @@
 -- Una fila por capacitación (módulo CAP) para el listado
 -- GET /v1/cursos-capacitacion (dataFieldName: 'cursosCapacitacion').
 --
--- Propósito: datos del curso (título, costo del curso, costo de matrícula, entidad
+-- Propósito: datos del curso (título, edición, oferta de origen y gestión = año de fecha_inicio, costo del curso, costo de matrícula, entidad
 -- certificadora, modalidad, nivel, dirigido_a, duración, cupo, fechas (fecha_fin
 -- opcional), estado, resumen de aulas de sus grupos) +
 -- grupos_count, tiene_costo y cobra_matricula, +
@@ -19,7 +19,8 @@
 --
 -- Dependencias (orden sugerido):
 -- 1. 01-schemas/21-cursos-capacitacion.sql (capacitaciones, capacitacion_grupos, capacitacion_inscritos)
---    (en servidores existentes, antes 05-migrations/30-migrate-capacitacion-grupos-costo-matricula.sql)
+--    (en servidores existentes, antes 05-migrations/30-migrate-capacitacion-grupos-costo-matricula.sql
+--    y 05-migrations/31-migrate-capacitacion-edicion-y-origen.sql)
 -- 2. 154-vista-base-cursos-capacitacion-horarios.sql
 -- 3. Esta vista
 --
@@ -35,6 +36,9 @@ CREATE VIEW vista_cursos_capacitacion_listado AS
 SELECT
   c.id,
   c.titulo,
+  c.edicion,
+  c.curso_origen_id,
+  YEAR(c.fecha_inicio) AS gestion,
   c.descripcion,
   c.tiene_costo,
   c.cobra_matricula,
