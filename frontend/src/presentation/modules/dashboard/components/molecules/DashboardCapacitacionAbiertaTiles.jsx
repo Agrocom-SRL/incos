@@ -12,8 +12,9 @@ const pad2 = (n) => String(n).padStart(2, '0');
  *
  * Diseño «ordered list cards»: cada curso es una tarjeta clickeable con un bloque verde a la
  * izquierda (número 01, 02… y ícono de curso), el nombre y la fecha de inicio al centro y la
- * llamada «Inscribir» a la derecha; elevación suave que sube al pasar el mouse. Las tarjetas se
- * acomodan en una cuadrícula que crece con la cantidad de cursos. Sin cursos no dibuja nada.
+ * llamada «Inscribir» a la derecha; elevación suave que sube al pasar el mouse. Las tarjetas ocupan media
+ * columna (2 por fila, como un col-6) dentro del contenido principal; la fecha va en la fuente de
+ * código del tema (`fontFamilyCode`) para distinguirla del nombre. Sin cursos no dibuja nada.
  * Solo presentación + navegación: recibe los cursos ya mapeados y `onInscribir`; no llama hooks
  * de fetch.
  */
@@ -24,7 +25,7 @@ const DashboardCapacitacionAbiertaTiles = ({ cursos = [], onInscribir }) => {
     <div
       style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+        gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
         gap: allSpacing.margin,
       }}
     >
@@ -105,7 +106,10 @@ const DashboardCapacitacionAbiertaTiles = ({ cursos = [], onInscribir }) => {
               {curso.titulo}
             </Text>
             {curso.fechaInicioLabel ? (
-              <Text type="secondary">
+              <Text
+                type="secondary"
+                style={{ fontFamily: typography.fontFamilyCode, fontSize: `${typography.fontSizeSM}px` }}
+              >
                 <CalendarOutlined /> Inicia {curso.fechaInicioLabel}
               </Text>
             ) : null}
