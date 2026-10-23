@@ -92,6 +92,8 @@ COMMENT='Participantes de cursos de capacitación. Independiente de estudiantes/
 CREATE TABLE capacitaciones (
     id INT AUTO_INCREMENT PRIMARY KEY,
     titulo VARCHAR(200) NOT NULL COMMENT 'Título del curso (ej: Word avanzado)',
+    edicion VARCHAR(60) NULL COMMENT 'Etiqueta de la oferta (ej: 2027 – 1ª edición); distingue ofertas del mismo curso en una o varias gestiones',
+    curso_origen_id INT NULL COMMENT 'Oferta de la que se copió esta edición (capacitaciones.id); NULL = curso original',
     descripcion TEXT NULL COMMENT 'Descripción/temario del curso',
     tiene_costo BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'Interruptor: el curso NO es gratuito (habilita costo). FALSE = costo vale 0',
     cobra_matricula BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'Interruptor: el curso cobra matrícula (habilita costo_matricula). FALSE = costo_matricula vale 0',
@@ -122,7 +124,10 @@ CREATE TABLE capacitaciones (
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
 
 
+    FOREIGN KEY (curso_origen_id) REFERENCES capacitaciones(id) ON DELETE SET NULL,
+
     INDEX idx_titulo (titulo) COMMENT 'Búsqueda por título',
+    INDEX idx_curso_origen_id (curso_origen_id) COMMENT 'Ediciones derivadas de una oferta',
     INDEX idx_estado (estado) COMMENT 'Filtrado por estado del curso',
     INDEX idx_fechas (fecha_inicio, fecha_fin) COMMENT 'Búsqueda por rango de fechas',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',

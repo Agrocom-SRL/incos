@@ -41,7 +41,7 @@ const CursoCapacitacionCard = ({ curso }) => {
           <ReadOutlined />
         </span>
         <div className="paralelo-card__identidad">
-          <h4 className="paralelo-card__title">{curso.titulo}</h4>
+          <h4 className="paralelo-card__title">{curso.tituloCompleto}</h4>
           {curso.fechasLabel ? (
             <p className="paralelo-card__desc">
               <CalendarOutlined aria-hidden /> {curso.fechasLabel}

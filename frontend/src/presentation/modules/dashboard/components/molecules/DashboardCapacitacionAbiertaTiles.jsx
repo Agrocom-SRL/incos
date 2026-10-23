@@ -101,10 +101,10 @@ const DashboardCapacitacionAbiertaTiles = ({ cursos = [], onInscribir }) => {
           >
             <Text
               strong
-              ellipsis={{ tooltip: curso.titulo }}
+              ellipsis={{ tooltip: curso.tituloCompleto }}
               style={{ color: allColors.colorPrimary, fontSize: `${typography.fontSizeLG}px` }}
             >
-              {curso.titulo}
+              {curso.tituloCompleto}
             </Text>
             {curso.fechaInicioLabel ? (
               <Text

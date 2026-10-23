@@ -319,6 +319,7 @@ export class CreateInscripcionCapacitacionUseCase {
     const presentation = InscripcionCapacitacionMapper.entityToPresentation(inscripcionCreada);
     presentation.participante = ParticipanteMapper.entityToPresentation(participante);
     presentation.capacitacionTitulo = curso.titulo;
+    presentation.capacitacionEdicion = curso.edicion ?? null;
     presentation.costo = costo;
     presentation.saldoCurso = resumen?.saldoCurso ?? 0;
     presentation.saldoMatricula = resumen?.saldoMatricula ?? 0;

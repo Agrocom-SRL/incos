@@ -31,6 +31,8 @@ export class CursoCapacitacionRepository extends BaseRepository {
     return {
       id: v.id,
       titulo: v.titulo ?? null,
+      edicion: v.edicion ?? null,
+      cursoOrigenId: v.cursoOrigenId ?? null,
       descripcion: v.descripcion ?? null,
       costo: v.costo !== undefined && v.costo !== null ? Number(v.costo) : null,
       tieneCosto: Boolean(v.tieneCosto),
@@ -74,6 +76,8 @@ export class CursoCapacitacionRepository extends BaseRepository {
   mapDataToModel(data) {
     const model = {};
     if ('titulo' in data) model.titulo = data.titulo;
+    if ('edicion' in data) model.edicion = data.edicion ?? null;
+    if ('cursoOrigenId' in data) model.cursoOrigenId = data.cursoOrigenId ?? null;
     if ('descripcion' in data) model.descripcion = data.descripcion ?? null;
     if ('tieneCosto' in data) model.tieneCosto = data.tieneCosto;
     if ('cobraMatricula' in data) model.cobraMatricula = data.cobraMatricula;

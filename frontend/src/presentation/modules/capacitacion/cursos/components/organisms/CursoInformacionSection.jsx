@@ -18,6 +18,8 @@ import CursoGratuitoPill from '@capacitacion/components/atoms/CursoGratuitoPill'
 const CursoInformacionSection = ({ curso }) => (
   <div className="sd-tab-body">
     <DetailInfoCard title="Datos del curso" icon={<InfoCircleOutlined />} cols={3}>
+      <DetailField label="Edición">{curso.edicion || '—'}</DetailField>
+      <DetailField label="Gestión">{curso.gestion ?? '—'}</DetailField>
       <DetailField label="Estado">
         <StatusPill
           label={formatEstadoCurso(curso.estado)}

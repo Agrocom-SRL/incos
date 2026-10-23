@@ -235,6 +235,7 @@ export class InscripcionCapacitacionRepository extends BaseRepository {
         p.email AS participante_email,
         c.id AS capacitacion_id,
         c.titulo AS capacitacion_titulo,
+        c.edicion AS capacitacion_edicion,
         c.estado AS capacitacion_estado,
         c.modalidad AS capacitacion_modalidad,
         c.entidad_certificadora AS capacitacion_entidad_certificadora,

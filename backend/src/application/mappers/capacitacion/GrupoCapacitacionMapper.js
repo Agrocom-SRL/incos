@@ -24,6 +24,7 @@ export function rowToPresentation(row, horarios = []) {
     orden: row.orden ?? 1,
     cursoId: row.curso_id,
     cursoTitulo: row.curso_titulo,
+    cursoEdicion: row.curso_edicion ?? null,
     cursoEstado: resolveEstadoEfectivoCurso(
       row.curso_estado,
       row.curso_fecha_inicio,

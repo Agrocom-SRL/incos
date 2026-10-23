@@ -68,6 +68,12 @@ describe('UpdateCursoCapacitacionUseCase', () => {
 
   beforeEach(() => mockTransaction.mockClear());
 
+  it('permite cambiar la edición pero nunca reasignar la oferta de origen', async () => {
+    const { deps, useCase } = crear();
+    await useCase.execute(2, { edicion: ' 2028 ', cursoOrigenId: 9 }, 3);
+    expect(deps.cursoCapacitacionRepository.update.mock.calls[0][1]).toEqual({ edicion: '2028' });
+  });
+
   it('actualiza campos, ignora estado y devuelve grupos y requisitos actuales', async () => {
     const { deps, useCase } = crear({ bloques: [{ id: 1, grupoId: 10, horarioId: 7, ordenSecuencia: 1 }] });
     const res = await useCase.execute(2, { titulo: ' Nuevo ', estado: 'CERRADO' }, 3);

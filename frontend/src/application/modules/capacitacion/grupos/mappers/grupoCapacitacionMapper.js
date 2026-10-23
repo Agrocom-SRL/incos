@@ -8,6 +8,7 @@
  */
 
 import { formatModalidadCurso } from '@application-capacitacion/utils/capacitacionCatalogos';
+import { tituloConEdicion } from '@application-capacitacion/utils/cursoTitulo';
 import { bloquesDesdeEtiquetas } from '@application-capacitacion/utils/horarioCapacitacion';
 
 const toNumber = (value, fallback = 0) => {
@@ -45,7 +46,8 @@ export const mapGrupoCapacitacion = (raw) => {
     grupoId: Number(id),
     nombre: cleanText(raw.nombre) || 'Grupo',
     cursoId: raw.cursoId ?? null,
-    cursoTitulo: cleanText(raw.cursoTitulo) || 'Sin título',
+    cursoEdicion: cleanText(raw.cursoEdicion),
+    cursoTitulo: tituloConEdicion(cleanText(raw.cursoTitulo) || 'Sin título', raw.cursoEdicion),
     cursoEstado: raw.cursoEstado ?? null,
     modalidad: raw.modalidad ?? null,
     modalidadLabel: formatModalidadCurso(raw.modalidad),

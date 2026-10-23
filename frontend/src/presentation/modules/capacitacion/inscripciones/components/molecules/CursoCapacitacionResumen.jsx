@@ -37,7 +37,7 @@ const CursoCapacitacionResumen = ({
 
   return (
     <div className="curso-cap-resumen">
-      <div className="curso-cap-resumen__title">{curso.titulo}</div>
+      <div className="curso-cap-resumen__title">{curso.tituloCompleto}</div>
       <InfoLinesCell
         lines={[
           curso.esGratuito ? { icon: <DollarOutlined />, label: <CursoGratuitoPill /> } : null,

@@ -55,8 +55,8 @@ export const createCursosCapacitacionTableColumns = ({
       key: 'curso',
       width: 260,
       render: (_, record) => (
-        <div className="cfg-identidad-clamp2" title={record.titulo || undefined}>
-          <IdentidadCelda nombre={(record.titulo || 'Sin título').toUpperCase()} />
+        <div className="cfg-identidad-clamp2" title={record.tituloCompleto || undefined}>
+          <IdentidadCelda nombre={(record.tituloCompleto || 'Sin título').toUpperCase()} />
         </div>
       ),
       sorter: true,
@@ -146,9 +146,9 @@ export const createCursosCapacitacionTableColumns = ({
       width: 140,
       align: 'right',
       render: (_, record) => {
-        const itemName = `el curso «${record.titulo}»`;
+        const itemName = `el curso «${record.tituloCompleto}»`;
         const itemDetails = [
-          { label: 'Curso', value: record.titulo },
+          { label: 'Curso', value: record.tituloCompleto },
           { label: 'Estado', value: formatEstadoCurso(record.estado) },
           {
             label: 'Costo del curso',

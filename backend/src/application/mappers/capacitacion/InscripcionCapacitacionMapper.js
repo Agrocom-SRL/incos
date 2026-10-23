@@ -70,6 +70,7 @@ export function rowToPresentation(row) {
     participanteEmail: row.participante_email ?? null,
     capacitacionId: row.capacitacion_id,
     capacitacionTitulo: row.capacitacion_titulo,
+    capacitacionEdicion: row.capacitacion_edicion ?? null,
     capacitacionEstado: row.capacitacion_estado,
     capacitacionModalidad: row.capacitacion_modalidad ?? null,
     capacitacionEntidadCertificadora: row.capacitacion_entidad_certificadora ?? null,
