@@ -12,6 +12,7 @@ import {
   sincronizarGrupos,
   validarAulasGrupos,
   validarHorariosGrupos,
+  validarMatriculaGrupos,
 } from './helpers/gruposCurso.js';
 
 /**
@@ -23,8 +24,9 @@ import {
  * inscripción (`capacitacion_requisitos`) en UNA transacción.
  *
  * - `tieneCosto`/`cobraMatricula` habilitan `costo` (del CURSO, se deposita a la
- *   entidad certificadora) y `costoMatricula` (se paga en secretaría); con el
- *   interruptor apagado el monto se guarda en 0.
+ *   entidad certificadora) y la matrícula (se paga en secretaría); con el
+ *   interruptor apagado el monto se guarda en 0. La matrícula la fija cada GRUPO
+ *   (`grupos[].costoMatricula`); `costoMatricula` del curso es solo el valor por defecto.
  * - Un curso sin grupos es válido (borrador PROPUESTO): la coherencia con la
  *   modalidad se valida al abrirlo (`AbrirCursoCapacitacionUseCase`).
  * - `fechaFin` es opcional (el curso puede definirse solo por `duracion`).
@@ -84,6 +86,11 @@ export class CreateCursoCapacitacionUseCase {
     const requisitos = normalizarRequisitos(body.requisitos) ?? [];
     validarRequisitoAcreditaPago(requisitos, data.entidadCertificadora);
 
+    validarMatriculaGrupos({
+      cobraMatricula: data.cobraMatricula,
+      costoMatriculaCurso: data.costoMatricula,
+      grupos,
+    });
     await validarAulasGrupos(this.classroomRepository, grupos);
     await validarHorariosGrupos(this.scheduleRepository, grupos);
 

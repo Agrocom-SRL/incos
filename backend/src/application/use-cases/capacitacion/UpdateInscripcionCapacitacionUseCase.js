@@ -2,7 +2,8 @@ import { ConflictError, NotFoundError, ValidationError } from '../../../domain/e
 import { ESTADOS_INSCRIPCION_CAPACITACION } from '../../../domain/constants/capacitacion.constants.js';
 import { sequelize } from '../../../infrastructure/database/sequelize.js';
 import { parseIdPositivo } from '../../utils/validacionEntrada.js';
-import { resolverGrupoInscripcion } from './helpers/grupoInscripcion.js';
+import { resolverCostoMatricula, resolverGrupoInscripcion } from './helpers/grupoInscripcion.js';
+import { recalcularEstadoInscripcion } from './helpers/estadoInscripcion.js';
 
 /** Campos del participante que se pueden corregir desde la inscripción (sin `activo`). */
 const CAMPOS_PARTICIPANTE = [
@@ -44,6 +45,10 @@ export class UpdateInscripcionCapacitacionUseCase {
    * @param {Object} params - Dependencias inyectadas
    * @param {Object} params.inscripcionCapacitacionRepository
    * @param {Object} params.grupoCapacitacionRepository
+   * @param {Object} params.cursoCapacitacionRepository - Para la matrícula del grupo nuevo
+   * @param {Object} params.pagoCapacitacionRepository - Recálculo de estados al cambiar la matrícula
+   * @param {Object} params.capacitacionInscritoRequisitoRepository
+   * @param {Object} params.capacitacionCompromisoRepository
    * @param {Object} params.updateParticipanteUseCase - Reutilizado (validaciones y unicidad de CI)
    * @param {Object} params.getInscripcionCapacitacionByIdUseCase - Ficha de respuesta
    * @param {ILogger} params.logger
@@ -51,12 +56,20 @@ export class UpdateInscripcionCapacitacionUseCase {
   constructor({
     inscripcionCapacitacionRepository,
     grupoCapacitacionRepository,
+    cursoCapacitacionRepository,
+    pagoCapacitacionRepository,
+    capacitacionInscritoRequisitoRepository,
+    capacitacionCompromisoRepository,
     updateParticipanteUseCase,
     getInscripcionCapacitacionByIdUseCase,
     logger,
   }) {
     this.inscripcionCapacitacionRepository = inscripcionCapacitacionRepository;
     this.grupoCapacitacionRepository = grupoCapacitacionRepository;
+    this.cursoCapacitacionRepository = cursoCapacitacionRepository;
+    this.pagoCapacitacionRepository = pagoCapacitacionRepository;
+    this.capacitacionInscritoRequisitoRepository = capacitacionInscritoRequisitoRepository;
+    this.capacitacionCompromisoRepository = capacitacionCompromisoRepository;
     this.updateParticipanteUseCase = updateParticipanteUseCase;
     this.getInscripcionCapacitacionByIdUseCase = getInscripcionCapacitacionByIdUseCase;
     this.logger = logger;
@@ -79,8 +92,10 @@ export class UpdateInscripcionCapacitacionUseCase {
     const inscripcion = await this.inscripcionCapacitacionRepository.findById(inscripcionId);
     if (!inscripcion) throw new NotFoundError('inscripción de capacitación');
 
-    const nuevoGrupoId = cambiaGrupo ? await this._resolverNuevoGrupo(inscripcion, body) : null;
+    const nuevoGrupo = cambiaGrupo ? await this._resolverNuevoGrupo(inscripcion, body) : null;
+    const nuevoGrupoId = nuevoGrupo?.id ?? null;
     const grupoCambia = cambiaGrupo && nuevoGrupoId !== (inscripcion.capacitacionGrupoId ?? null);
+    const montoMatricula = grupoCambia ? await this._matriculaDelGrupo(inscripcion, nuevoGrupo) : null;
 
     await sequelize.transaction(async (transaction) => {
       if (datosParticipante !== null) {
@@ -92,12 +107,24 @@ export class UpdateInscripcionCapacitacionUseCase {
         );
       }
       if (grupoCambia) {
+        // La matrícula depende del grupo: el snapshot sigue al grupo nuevo y los estados se recalculan
         await this.inscripcionCapacitacionRepository.update(
           inscripcionId,
-          { capacitacionGrupoId: nuevoGrupoId },
+          { capacitacionGrupoId: nuevoGrupoId, montoMatricula },
           userId,
           { transaction }
         );
+        if (montoMatricula !== Number(inscripcion.montoMatricula ?? 0)) {
+          await recalcularEstadoInscripcion({
+            inscripcion: { ...inscripcion, capacitacionGrupoId: nuevoGrupoId, montoMatricula },
+            pagoCapacitacionRepository: this.pagoCapacitacionRepository,
+            capacitacionInscritoRequisitoRepository: this.capacitacionInscritoRequisitoRepository,
+            inscripcionCapacitacionRepository: this.inscripcionCapacitacionRepository,
+            capacitacionCompromisoRepository: this.capacitacionCompromisoRepository,
+            userId,
+            transaction,
+          });
+        }
       }
     });
 
@@ -135,7 +162,7 @@ export class UpdateInscripcionCapacitacionUseCase {
   /**
    * Resuelve y valida el grupo destino (pertenencia al curso y cupo).
    * @private
-   * @returns {Promise<number|null>} id del grupo destino
+   * @returns {Promise<Object|null>} grupo destino (null si el curso no tiene grupos)
    */
   async _resolverNuevoGrupo(inscripcion, body) {
     if (!ESTADOS_CON_GRUPO_EDITABLE.includes(inscripcion.estado)) {
@@ -148,7 +175,17 @@ export class UpdateInscripcionCapacitacionUseCase {
       valor: body.capacitacionGrupoId,
       grupoActualId: inscripcion.capacitacionGrupoId ?? null,
     });
-    return grupo?.id ?? null;
+    return grupo;
+  }
+
+  /**
+   * Matrícula que corresponde al grupo destino (la del grupo o, si no tiene, la del curso).
+   * @private
+   * @returns {Promise<number>}
+   */
+  async _matriculaDelGrupo(inscripcion, grupo) {
+    const curso = await this.cursoCapacitacionRepository.findById(inscripcion.capacitacionId);
+    return resolverCostoMatricula(curso, grupo);
   }
 }
 

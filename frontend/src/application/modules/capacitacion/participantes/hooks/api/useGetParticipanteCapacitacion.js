@@ -7,7 +7,7 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import participanteCapacitacionRepository from '@implementations/ParticipanteCapacitacionRepository';
-import { mapParticipante } from '@application-capacitacion/participantes/mappers/participanteMapper';
+import { mapParticipanteDetail } from '@application-capacitacion/participantes/mappers/participanteMapper';
 
 export const useGetParticipanteCapacitacion = () => {
   const [participante, setParticipante] = useState(null);
@@ -29,7 +29,7 @@ export const useGetParticipanteCapacitacion = () => {
       setLoading(false);
       return { success: false, error: msg };
     }
-    const mapped = mapParticipante(result.data?.participante ?? result.data);
+    const mapped = mapParticipanteDetail(result.data?.participante ?? result.data);
     setParticipante(mapped);
     setLoading(false);
     return { success: true, data: mapped };

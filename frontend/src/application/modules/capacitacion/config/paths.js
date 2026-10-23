@@ -11,6 +11,7 @@ export const cursoCapEditarPath = (id) => `${CAPACITACION_BASE}/cursos/${id}/edi
 /** Participantes */
 export const PARTICIPANTES_CAP_LIST_PATH = `${CAPACITACION_BASE}/participantes`;
 export const participanteCapRegistrarPath = `${CAPACITACION_BASE}/participantes/nuevo`;
+export const participanteCapDetallePath = (id) => `${CAPACITACION_BASE}/participantes/${id}`;
 export const participanteCapEditarPath = (id) => `${CAPACITACION_BASE}/participantes/${id}/editar`;
 
 /** Grupos (tabs «Horarios» y «Grupos»); el ABM de horarios cuelga de esta pantalla */

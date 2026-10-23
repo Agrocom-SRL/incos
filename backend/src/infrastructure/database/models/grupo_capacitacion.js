@@ -28,6 +28,12 @@ export const GrupoCapacitacion = sequelize.define(
       allowNull: true,
       comment: 'Cupo del grupo; NULL = usa el cupo del curso',
     },
+    costoMatricula: {
+      type: DataTypes.DECIMAL(10, 2),
+      field: 'costo_matricula',
+      allowNull: true,
+      comment: 'Matrícula en Bs del grupo; NULL = usa capacitaciones.costo_matricula',
+    },
     aulaId: {
       type: DataTypes.INTEGER,
       field: 'aula_id',

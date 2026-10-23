@@ -5,6 +5,7 @@
  */
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Flex, Spin, Alert } from 'antd';
 import { Spinner } from '@atoms';
 import { useAuth } from '@application-auth';
@@ -16,9 +17,16 @@ import {
   PERMISO_ESTUDIANTES_DETALLE,
 } from '@application-dashboard';
 import { MainContent, InfoSidebar } from '@templates';
+import { useCursosCapacitacionOptions } from '@application-capacitacion/inscripciones/hooks/api/useCursosCapacitacionOptions';
+import {
+  CURSOS_CAP_LIST_PATH,
+  inscripcionCapInscribirPath,
+  CAP_INSCRIPCIONES_MENU_KEY,
+} from '@application-capacitacion/config/paths';
 import { PERSONAS_VISIBLE } from '../constants';
 import DashboardPageShell from '../components/organisms/DashboardPageShell';
 import DashboardWelcomeBanner from '../components/molecules/DashboardWelcomeBanner';
+import DashboardCapacitacionAbiertaCard from '../components/molecules/DashboardCapacitacionAbiertaCard';
 import DashboardCarrerasSection from '../components/molecules/DashboardCarrerasSection';
 import DashboardUltimosRegistrosPanel from '../components/molecules/DashboardUltimosRegistrosPanel';
 import DashboardEstudiantesResumenCard from '../components/molecules/DashboardEstudiantesResumenCard';
@@ -31,8 +39,15 @@ const PATH_ESTUDIANTES = '/estudiantes/listar';
 
 const Dashboard = () => {
   const { hasPermiso } = useAuth();
+  const navigate = useNavigate();
   const { navigateIfPermiso, navigateToPath } = useDashboardGuardedNavigate();
   const puedeRegistrarEstudiante = hasPermiso('matricula.admision.crear', 'CREAR');
+  // Acceso directo a inscribir en cursos de capacitación disponibles (solo con ambos permisos)
+  const puedeInscribirCapacitacion =
+    hasPermiso('capacitacion.inscripcion', 'CREAR') && hasPermiso('capacitacion.curso', 'LISTAR');
+  const { cursos: cursosAbiertos } = useCursosCapacitacionOptions({
+    enabled: puedeInscribirCapacitacion,
+  });
 
   const [overflowModal, setOverflowModal] = useState({
     open: false,
@@ -113,6 +128,18 @@ const Dashboard = () => {
               navigateIfPermiso('/estudiantes/registrar', 'matricula.admision.crear', 'CREAR')
             }
           />
+
+          {puedeInscribirCapacitacion ? (
+            <DashboardCapacitacionAbiertaCard
+              cursos={cursosAbiertos}
+              onInscribir={(curso) =>
+                navigate(inscripcionCapInscribirPath, {
+                  state: { cursoId: curso.id, menuSidebarKey: CAP_INSCRIPCIONES_MENU_KEY },
+                })
+              }
+              onVerCursos={() => navigate(CURSOS_CAP_LIST_PATH)}
+            />
+          ) : null}
 
           <DashboardCarrerasSection
             carreras={carreras}

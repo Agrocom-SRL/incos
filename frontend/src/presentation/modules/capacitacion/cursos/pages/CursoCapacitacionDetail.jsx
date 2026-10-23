@@ -79,7 +79,11 @@ const CursoCapacitacionDetail = () => {
         {
           key: 'grupos',
           label: `Grupos y horarios (${curso.grupos.length})`,
-          children: <CursoGruposSection grupos={curso.grupos} />,
+          children: <CursoGruposSection
+              grupos={curso.grupos}
+              cobraMatricula={curso.cobraMatricula}
+              costoMatriculaCurso={curso.costoMatricula}
+            />,
         },
         {
           key: 'requisitos',

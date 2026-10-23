@@ -96,6 +96,51 @@ export const ordenDia = (dia) => {
   return porAbbr?.orden ?? 99;
 };
 
+/** Nombre completo del día («Miércoles»); desconocido devuelve el texto tal cual. */
+const nombreDia = (dia) => {
+  const key = normalizarDia(dia);
+  const porAbbr = Object.keys(DIAS).find((nombre) => DIAS[nombre].abbr === key.slice(0, 3));
+  return DIA_LABELS[key] ?? DIA_LABELS[porAbbr] ?? String(dia ?? '').trim();
+};
+
+/** Une días: `A y B` con dos, `A, B, C` con más. */
+const unirDias = (dias) => (dias.length === 2 ? dias.join(' y ') : dias.join(', '));
+
+/**
+ * Horarios de un grupo como bloques `{ dias, horas }` para mostrar días y horas por
+ * separado: los días que comparten hora se agrupan («Martes y Jueves» · «19:00 - 21:00»).
+ * Bloques en orden de aparición; días en orden semanal.
+ * @param {Array<{dia: string, horaInicio?: string, horaFin?: string}>} horarios
+ * @returns {Array<{dias: string, horas: string}>}
+ */
+export const bloquesHorarios = (horarios = []) => {
+  const porHoras = new Map();
+  [...horarios]
+    .sort((a, b) => ordenDia(a.dia) - ordenDia(b.dia))
+    .forEach((h) => {
+      const ini = recortarHora(h.horaInicio);
+      const fin = recortarHora(h.horaFin);
+      const horas = ini && fin ? `${ini} - ${fin}` : '';
+      porHoras.set(horas, [...(porHoras.get(horas) ?? []), nombreDia(h.dia)]);
+    });
+  return [...porHoras].map(([horas, dias]) => ({ dias: unirDias(dias), horas }));
+};
+
+/**
+ * Bloques `{ dias, horas }` a partir de etiquetas «LUN 19:00-21:00» (listados que solo
+ * traen el texto de la vista). Misma agrupación que `bloquesHorarios`; una etiqueta que no
+ * respeta el formato se ignora.
+ * @param {string[]} etiquetas
+ * @returns {Array<{dias: string, horas: string}>}
+ */
+export const bloquesDesdeEtiquetas = (etiquetas = []) =>
+  bloquesHorarios(
+    etiquetas
+      .map((etiqueta) => /^(\S+)\s+(\d{2}:\d{2})-(\d{2}:\d{2})$/.exec(String(etiqueta).trim()))
+      .filter(Boolean)
+      .map(([, dia, horaInicio, horaFin]) => ({ dia, horaInicio, horaFin })),
+  );
+
 /** «SAB 08:00-12:00»; sin horas devuelve solo el día. */
 export const buildHorarioEtiqueta = (dia, horaInicio, horaFin) => {
   const ini = recortarHora(horaInicio);

@@ -8,6 +8,7 @@
  */
 
 import { formatModalidadCurso } from '@application-capacitacion/utils/capacitacionCatalogos';
+import { bloquesDesdeEtiquetas } from '@application-capacitacion/utils/horarioCapacitacion';
 
 const toNumber = (value, fallback = 0) => {
   const n = Number(value);
@@ -56,6 +57,8 @@ export const mapGrupoCapacitacion = (raw) => {
     horarios,
     horariosEtiqueta,
     horariosLineas: horariosEtiqueta ? horariosEtiqueta.split(' · ').filter(Boolean) : [],
+    // Días y horas por separado (los días con la misma hora van juntos).
+    bloques: bloquesDesdeEtiquetas(horariosEtiqueta ? horariosEtiqueta.split(' · ') : []),
   };
 };
 

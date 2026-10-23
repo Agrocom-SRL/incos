@@ -10,11 +10,18 @@
  * El cupo es una pill: verde con cupos, ámbar si el grupo está lleno (el cupo
  * es informativo, no bloquea), neutra si el grupo no tiene tope.
  *
- * Recibe el grupo ya mapeado (`mapGrupoCurso`); no llama hooks.
+ * Recibe el grupo ya mapeado (`mapGrupoCurso`, con `matricula` efectiva si el curso la cobra); no llama hooks.
  */
 
-import { CheckCircleFilled, ClockCircleOutlined, EnvironmentOutlined, TeamOutlined } from '@ant-design/icons';
+import {
+  CheckCircleFilled,
+  ClockCircleOutlined,
+  DollarOutlined,
+  EnvironmentOutlined,
+  TeamOutlined,
+} from '@ant-design/icons';
 import { InfoLinesCell, StatusPill } from '@atoms';
+import { formatBs } from '@application/utils/formatters';
 
 const PILL_BASE = 'cfg-materia-pill';
 
@@ -46,6 +53,9 @@ const GrupoCapacitacionCard = ({ grupo }) => {
           label: h.etiqueta,
         }))
       : [{ key: 'sin-horarios', icon: <ClockCircleOutlined />, label: 'Sin horarios definidos' }]),
+    grupo.matricula > 0
+      ? { key: 'matricula', icon: <DollarOutlined />, label: `Matrícula: Bs ${formatBs(grupo.matricula)}` }
+      : null,
     grupo.aulaLabel ? { key: 'aula', icon: <EnvironmentOutlined />, label: grupo.aulaLabel } : null,
   ].filter(Boolean);
 

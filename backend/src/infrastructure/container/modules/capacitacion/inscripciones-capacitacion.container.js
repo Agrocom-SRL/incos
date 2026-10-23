@@ -122,6 +122,18 @@ export function registerInscripcionesCapacitacionResource(container) {
                 grupoCapacitacionRepository: c.resolve(
                     CAPACITACION_TOKENS.grupoCapacitacionRepository
                 ),
+                cursoCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.cursoCapacitacionRepository
+                ),
+                pagoCapacitacionRepository: c.resolve(
+                    CAPACITACION_TOKENS.pagoCapacitacionRepository
+                ),
+                capacitacionInscritoRequisitoRepository: c.resolve(
+                    CAPACITACION_TOKENS.capacitacionInscritoRequisitoRepository
+                ),
+                capacitacionCompromisoRepository: c.resolve(
+                    CAPACITACION_TOKENS.capacitacionCompromisoRepository
+                ),
                 updateParticipanteUseCase: c.resolve(
                     CAPACITACION_TOKENS.updateParticipanteUseCase
                 ),
@@ -208,6 +220,9 @@ export function registerInscripcionesCapacitacionResource(container) {
             new ExportReciboPagoCapacitacionPdfUseCase({
                 getInscripcionCapacitacionByIdUseCase: c.resolve(
                     CAPACITACION_TOKENS.getInscripcionCapacitacionByIdUseCase
+                ),
+                getCursoCapacitacionByIdUseCase: c.resolve(
+                    CAPACITACION_TOKENS.getCursoCapacitacionByIdUseCase
                 ),
                 reciboPagoCapacitacionPdfGenerator: c.resolve(
                     SERVICIOS_TOKENS.reciboPagoCapacitacionPdfGenerator

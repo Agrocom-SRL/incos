@@ -7,6 +7,7 @@ describe('ExportReciboPagoCapacitacionPdfUseCase', () => {
   const crear = ({ ficha = crearFicha() } = {}) => {
     const deps = {
       getInscripcionCapacitacionByIdUseCase: { execute: jest.fn().mockResolvedValue(ficha) },
+      getCursoCapacitacionByIdUseCase: { execute: jest.fn().mockResolvedValue({ grupos: [] }) },
       reciboPagoCapacitacionPdfGenerator: {
         generarRecibo: jest.fn().mockResolvedValue(Buffer.from('%PDF-1.7')),
       },

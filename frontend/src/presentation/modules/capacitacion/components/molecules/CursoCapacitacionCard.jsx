@@ -78,7 +78,7 @@ const CursoCapacitacionCard = ({ curso }) => {
         ) : null}
         {curso.cobraMatricula ? (
           <Metrica label="Matrícula">
-            <CostoCursoLabel costo={curso.costoMatricula} />
+            <CostoCursoLabel costo={curso.matriculaMin} costoMax={curso.matriculaMax} />
           </Metrica>
         ) : null}
         <Metrica label="Inscritos">{inscritos}</Metrica>

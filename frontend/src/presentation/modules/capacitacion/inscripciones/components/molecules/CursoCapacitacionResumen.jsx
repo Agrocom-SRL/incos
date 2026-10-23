@@ -27,7 +27,12 @@ import {
 import CostoCursoLabel from '@capacitacion/components/atoms/CostoCursoLabel';
 import CursoGratuitoPill from '@capacitacion/components/atoms/CursoGratuitoPill';
 
-const CursoCapacitacionResumen = ({ curso, mostrarHorarios = true, estadoPagoCursoExterno = null }) => {
+const CursoCapacitacionResumen = ({
+  curso,
+  mostrarHorarios = true,
+  mostrarMatricula = true,
+  estadoPagoCursoExterno = null,
+}) => {
   if (!curso) return null;
 
   return (
@@ -55,12 +60,12 @@ const CursoCapacitacionResumen = ({ curso, mostrarHorarios = true, estadoPagoCur
                 ),
               }
             : null,
-          curso.cobraMatricula
+          curso.cobraMatricula && mostrarMatricula
             ? {
                 icon: <DollarOutlined />,
                 label: (
                   <>
-                    Matrícula: <CostoCursoLabel costo={curso.costoMatricula} />
+                    Matrícula: <CostoCursoLabel costo={curso.matriculaMin} costoMax={curso.matriculaMax} />
                   </>
                 ),
               }

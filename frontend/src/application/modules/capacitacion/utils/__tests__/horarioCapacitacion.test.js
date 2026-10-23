@@ -3,6 +3,8 @@ import dayjs from 'dayjs';
 import {
   abreviarDia,
   buildHorarioEtiqueta,
+  bloquesDesdeEtiquetas,
+  bloquesHorarios,
   buildHorarioOptions,
   compararHorarios,
   horaADayjs,
@@ -86,5 +88,29 @@ describe('horarioCapacitacion', () => {
       ]);
       expect(turnoById).toEqual({ 9: 'MAÑANA', 2: 'TARDE' });
     });
+  });
+
+  it('separa días y horas: agrupa los días con la misma hora en orden semanal', () => {
+    expect(
+      bloquesHorarios([
+        { dia: 'JUEVES', horaInicio: '19:00:00', horaFin: '21:00:00' },
+        { dia: 'MARTES', horaInicio: '19:00:00', horaFin: '21:00:00' },
+        { dia: 'SABADO', horaInicio: '09:00', horaFin: '12:00' },
+      ]),
+    ).toEqual([
+      { dias: 'Martes y Jueves', horas: '19:00 - 21:00' },
+      { dias: 'Sábado', horas: '09:00 - 12:00' },
+    ]);
+    expect(bloquesHorarios([])).toEqual([]);
+  });
+
+  it('arma bloques de días y horas desde etiquetas «LUN 19:00-21:00»', () => {
+    expect(
+      bloquesDesdeEtiquetas(['LUN 19:00-21:00', 'MAR 19:00-21:00', 'MIE 19:00-21:00', 'SAB 08:00-12:00', 'raro']),
+    ).toEqual([
+      { dias: 'Lunes, Martes, Miércoles', horas: '19:00 - 21:00' },
+      { dias: 'Sábado', horas: '08:00 - 12:00' },
+    ]);
+    expect(bloquesDesdeEtiquetas([])).toEqual([]);
   });
 });

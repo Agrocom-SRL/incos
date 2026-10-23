@@ -2,7 +2,7 @@
 -- SEEDER permisos · módulo Capacitación (CAP)
 -- Sin ids: id por AUTO_INCREMENT; tablas hijas referencian por CÓDIGO.
 -- Orden: roles (55) → usuarios-admin (56) → permisos+acciones+roles por módulo (57-65).
--- Roles con acceso (primer corte): RECTOR, DIR_ADMIN, SEC_ADMIN. SEC_ADMIN sin ELIMINAR/ACTIVAR en curso ni ELIMINAR en horario.
+-- Roles con acceso (primer corte): RECTOR, DIR_ADMIN, SEC_ADMIN. SEC_ADMIN sin ELIMINAR/ACTIVAR en curso ni ELIMINAR en horario ni en participante.
 -- ============================================
 
 USE instituto_incos;
@@ -19,7 +19,7 @@ INSERT INTO grupos_ui (codigo, nombre, dominio, orden, activo, created_at, updat
 -- 1) Permisos del módulo CAP
 INSERT INTO permisos (codigo, nombre, descripcion, dominio, modulo, grupo_ui, ruta_sidebar, activo, created_at, updated_at) VALUES
 ('capacitacion.curso', 'Cursos de capacitación: listar, ver detalle, crear, editar, eliminar y activar/desactivar', NULL, 'CAPACITACION', 'CAP', 'cap_cursos', '/capacitacion/cursos', 1, NOW(), NOW()),
-('capacitacion.participante', 'Participantes: listar, ver detalle, crear y editar', NULL, 'CAPACITACION', 'CAP', 'cap_participantes', '/capacitacion/participantes', 1, NOW(), NOW()),
+('capacitacion.participante', 'Participantes: listar, ver detalle, crear, editar y eliminar', NULL, 'CAPACITACION', 'CAP', 'cap_participantes', '/capacitacion/participantes', 1, NOW(), NOW()),
 ('capacitacion.inscripcion', 'Inscripciones: listar, ver detalle, crear y eliminar', NULL, 'CAPACITACION', 'CAP', 'cap_inscripciones', '/capacitacion/inscripciones', 1, NOW(), NOW()),
 ('capacitacion.pago', 'Pagos de capacitación: registrar pago y exportar', NULL, 'CAPACITACION', 'CAP', 'cap_inscripciones', '/capacitacion/inscripciones', 1, NOW(), NOW()),
 ('capacitacion.grupo', 'Grupos y horarios de capacitación', NULL, 'CAPACITACION', 'CAP', 'cap_grupos', '/capacitacion/grupos', 1, NOW(), NOW());
@@ -40,6 +40,7 @@ JOIN (
   UNION ALL SELECT 'capacitacion.participante', 'DETALLE'
   UNION ALL SELECT 'capacitacion.participante', 'CREAR'
   UNION ALL SELECT 'capacitacion.participante', 'EDITAR'
+  UNION ALL SELECT 'capacitacion.participante', 'ELIMINAR'
   UNION ALL SELECT 'capacitacion.inscripcion', 'LISTAR'
   UNION ALL SELECT 'capacitacion.inscripcion', 'DETALLE'
   UNION ALL SELECT 'capacitacion.inscripcion', 'CREAR'
@@ -83,10 +84,12 @@ FROM (
   UNION ALL SELECT 'RECTOR', 'capacitacion.participante', 'DETALLE'
   UNION ALL SELECT 'RECTOR', 'capacitacion.participante', 'CREAR'
   UNION ALL SELECT 'RECTOR', 'capacitacion.participante', 'EDITAR'
+  UNION ALL SELECT 'RECTOR', 'capacitacion.participante', 'ELIMINAR'
   UNION ALL SELECT 'DIR_ADMIN', 'capacitacion.participante', 'LISTAR'
   UNION ALL SELECT 'DIR_ADMIN', 'capacitacion.participante', 'DETALLE'
   UNION ALL SELECT 'DIR_ADMIN', 'capacitacion.participante', 'CREAR'
   UNION ALL SELECT 'DIR_ADMIN', 'capacitacion.participante', 'EDITAR'
+  UNION ALL SELECT 'DIR_ADMIN', 'capacitacion.participante', 'ELIMINAR'
   UNION ALL SELECT 'SEC_ADMIN', 'capacitacion.participante', 'LISTAR'
   UNION ALL SELECT 'SEC_ADMIN', 'capacitacion.participante', 'DETALLE'
   UNION ALL SELECT 'SEC_ADMIN', 'capacitacion.participante', 'CREAR'

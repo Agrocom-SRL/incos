@@ -2,10 +2,10 @@
  * Sección IV del Formulario de Inscripción de Capacitación: grupos y horarios.
  *
  * Tabla con el encabezado verde institucional (igual que la de requisitos) y las columnas
- * Selección · Grupo · Días · Horarios: una fila por grupo disponible del curso (p. ej. Regular e
- * Intensivo) con su casilla —marcada en el que eligió el participante— y, por cada bloque horario
- * del grupo, los días y la hora alineados en la misma línea. El cuerpo va sobre el color del papel.
- * Si el curso no tiene grupos, la sección no se dibuja.
+ * Selección · Grupo · Días · Horarios: una fila con el grupo en el que se inscribió el participante
+ * (p. ej. Intensivo) con su casilla marcada y, por cada bloque horario del grupo, los días y la hora alineados en la misma línea. El cuerpo va sobre el color del papel.
+ * La casilla y el nombre del grupo van centrados verticalmente en la fila.
+ * Si la inscripción no tiene grupo, la sección no se dibuja.
  */
 
 import { rgb } from 'pdf-lib';
@@ -152,13 +152,21 @@ export async function dibujarGrupos(pdf, datos) {
     dibujarCasilla(
       page,
       xColumna[colSeleccion] + (anchos[colSeleccion] - LADO_CASILLA) / 2,
-      top - PADDING - LADO_CASILLA + 2,
+      base + (alto - LADO_CASILLA) / 2,
       grupo.seleccionado
     );
 
     const yLinea = (indice) => top - PADDING - FUENTE - indice * INTERLINEADO;
+    // El nombre va centrado verticalmente en la fila (igual que la casilla)
+    const margenNombre = (alto - lineasNombre.length * INTERLINEADO) / 2;
     lineasNombre.forEach((linea, i) => {
-      page.drawText(linea, { x: xColumna[colGrupo] + PADDING, y: yLinea(i), size: FUENTE, font: fontBold, color });
+      page.drawText(linea, {
+        x: xColumna[colGrupo] + PADDING,
+        y: top - margenNombre - FUENTE - i * INTERLINEADO,
+        size: FUENTE,
+        font: fontBold,
+        color
+      });
     });
 
     // Días y horas de cada bloque salen en la misma línea inicial, uno debajo del otro.

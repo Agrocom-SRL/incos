@@ -33,7 +33,7 @@ const CursoInformacionSection = ({ curso }) => (
         )}
       </DetailField>
       <DetailField label="Matrícula">
-        <CostoCursoLabel costo={curso.costoMatricula} aplica={curso.cobraMatricula} />
+        <CostoCursoLabel costo={curso.matriculaMin} costoMax={curso.matriculaMax} aplica={curso.cobraMatricula} />
       </DetailField>
       <DetailField label="Entidad certificadora">{curso.entidadCertificadora || '—'}</DetailField>
       <DetailField label="Nivel">{curso.nivel || '—'}</DetailField>

@@ -1,8 +1,8 @@
 /**
  * Hook de API: mutaciones de participantes de capacitación (módulo CAP).
  *
- * UPSERT del modal de alta/edición: sin `id` → POST; con `id` → PUT. El recurso
- * no expone ELIMINAR (seed 65). Solo HTTP + estado de guardado.
+ * UPSERT de alta/edición: sin `id` → POST; con `id` → PUT; `eliminarParticipante` →
+ * DELETE (soft delete; 409 si tiene inscripciones). Solo HTTP + estado de guardado.
  */
 
 import { useCallback, useMemo, useState } from 'react';
@@ -22,5 +22,13 @@ export const useParticipanteMutations = () => {
     }
   }, []);
 
-  return useMemo(() => ({ saving, guardarParticipante }), [saving, guardarParticipante]);
+  const eliminarParticipante = useCallback(
+    (id) => participanteCapacitacionRepository.eliminar(id),
+    [],
+  );
+
+  return useMemo(
+    () => ({ saving, guardarParticipante, eliminarParticipante }),
+    [saving, guardarParticipante, eliminarParticipante],
+  );
 };

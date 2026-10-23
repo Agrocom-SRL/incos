@@ -43,6 +43,10 @@ const gruposValidators = [
     .optional({ nullable: true })
     .isInt({ min: 1 })
     .withMessage('grupos[].cupoMaximo debe ser un entero positivo'),
+  body('grupos.*.costoMatricula')
+    .optional({ nullable: true })
+    .isFloat({ min: 0 })
+    .withMessage('grupos[].costoMatricula debe ser un número mayor o igual a 0'),
   body('grupos.*.orden')
     .optional()
     .isInt({ min: 1 })
