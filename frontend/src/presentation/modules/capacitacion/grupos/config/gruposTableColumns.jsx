@@ -1,9 +1,9 @@
 /**
- * Columnas del tab «Grupos» (solo lectura, módulo CAP).
+ * Columnas del tab «Grupos» (módulo CAP).
  *
  * Lenguaje visual de CursosList: numeración + IdentidadCelda del curso con su
  * `StatusPill` de estado + InfoLinesCell de días, horas y aula + TableActions
- * (única acción: ver el curso). Orden en cliente (modo loadAll): cada columna
+ * (ver el curso y editar el grupo en el formulario de su curso). Orden en cliente (modo loadAll): cada columna
  * ordenable declara `sortCompare`.
  */
 
@@ -20,7 +20,7 @@ import {
 
 const compareText = (a, b) => (a || '').localeCompare(b || '', 'es', { sensitivity: 'base' });
 
-export const createGruposTableColumns = ({ onVerCurso }) => [
+export const createGruposTableColumns = ({ onVerCurso, onEditarGrupo }) => [
   {
     title: '#',
     key: 'nro',
@@ -115,14 +115,19 @@ export const createGruposTableColumns = ({ onVerCurso }) => [
   {
     title: 'Acciones',
     key: 'acciones',
-    width: 110,
+    width: 130,
     align: 'right',
     render: (_, record) => (
       <TableActions
         record={record}
         onView={() => onVerCurso(record)}
+        onEdit={() => onEditarGrupo(record)}
+        editTitle="Editar grupo (abre el curso en «Grupos y horarios»)"
         itemName={`el curso «${record.cursoTitulo}»`}
-        permisos={{ ver: { codigo: CAPACITACION_PERMISOS.curso, accion: 'DETALLE' } }}
+        permisos={{
+          ver: { codigo: CAPACITACION_PERMISOS.curso, accion: 'DETALLE' },
+          editar: { codigo: CAPACITACION_PERMISOS.curso, accion: 'EDITAR' },
+        }}
       />
     ),
   },

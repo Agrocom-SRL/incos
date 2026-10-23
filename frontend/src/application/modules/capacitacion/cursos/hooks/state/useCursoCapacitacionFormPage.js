@@ -227,6 +227,9 @@ export const useCursoCapacitacionFormPage = (mode = 'create') => {
     setStepError(err?.errorFields ? 'Revise los campos obligatorios' : err?.message || 'Revise los datos del paso actual');
   }, []);
 
+  // Paso inicial (p. ej. desde «Editar grupo» del listado de grupos); solo en edición.
+  const initialStep = isEditMode ? Number(location.state?.initialStep) || 0 : 0;
+
   return {
     form,
     pageTitle,
@@ -238,6 +241,7 @@ export const useCursoCapacitacionFormPage = (mode = 'create') => {
     error: error || (isEditMode ? errorCurso : null),
     formSections,
     wizardSteps,
+    initialStep,
     onValidateBeforeNext,
     handleValidationError,
     stepError,

@@ -33,6 +33,7 @@ const CursoCapacitacionFormPage = ({ mode = 'create' }) => {
     submitLoading,
     error,
     wizardSteps,
+    initialStep,
     onValidateBeforeNext,
     handleValidationError,
     stepError,
@@ -158,7 +159,7 @@ const CursoCapacitacionFormPage = ({ mode = 'create' }) => {
                   loading={submitLoading || loading}
                   viewMode={false}
                   resolveOptions={() => []}
-                  initialStep={0}
+                  initialStep={initialStep}
                   onFinish={handleSubmit}
                   showSaveButton={false}
                   renderSectionContent={renderSectionContent}

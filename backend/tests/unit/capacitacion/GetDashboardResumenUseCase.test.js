@@ -7,6 +7,7 @@ describe('GetDashboardResumenUseCase', () => {
       dashboardRepository: {
         findActividadesRecientes: jest.fn().mockResolvedValue([{ id: 1 }]),
         countEstudiantesRegistradosHoyYMes: jest.fn().mockResolvedValue({ hoy: 2, mes: 9 }),
+        countParticipantesRegistradosHoyYMes: jest.fn().mockResolvedValue({ hoy: 1, mes: 4 }),
         findDocentesRecientes: jest.fn().mockResolvedValue([{ id: 2 }]),
         findEstudiantesRecientes: jest.fn().mockResolvedValue([{ id: 3 }]),
         findCarrerasDestacadas: jest.fn().mockResolvedValue([{ id: 4 }]),
@@ -25,7 +26,12 @@ describe('GetDashboardResumenUseCase', () => {
     expect(deps.dashboardRepository.findCarrerasDestacadas).toHaveBeenCalledWith(10);
     expect(res).toEqual({
       actividades: [{ id: 1 }],
-      stats: { estudiantesRegistradosHoy: 2, estudiantesRegistradosMes: 9 },
+      stats: {
+        estudiantesRegistradosHoy: 2,
+        estudiantesRegistradosMes: 9,
+        participantesRegistradosHoy: 1,
+        participantesRegistradosMes: 4,
+      },
       ultimosDocentes: [{ id: 2 }],
       ultimosEstudiantes: [{ id: 3 }],
       carreras: [{ id: 4 }],

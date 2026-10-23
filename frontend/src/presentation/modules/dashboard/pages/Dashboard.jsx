@@ -19,14 +19,13 @@ import {
 import { MainContent, InfoSidebar } from '@templates';
 import { useCursosCapacitacionOptions } from '@application-capacitacion/inscripciones/hooks/api/useCursosCapacitacionOptions';
 import {
-  CURSOS_CAP_LIST_PATH,
   inscripcionCapInscribirPath,
   CAP_INSCRIPCIONES_MENU_KEY,
 } from '@application-capacitacion/config/paths';
 import { PERSONAS_VISIBLE } from '../constants';
 import DashboardPageShell from '../components/organisms/DashboardPageShell';
 import DashboardWelcomeBanner from '../components/molecules/DashboardWelcomeBanner';
-import DashboardCapacitacionAbiertaCard from '../components/molecules/DashboardCapacitacionAbiertaCard';
+import DashboardCapacitacionAbiertaTiles from '../components/molecules/DashboardCapacitacionAbiertaTiles';
 import DashboardCarrerasSection from '../components/molecules/DashboardCarrerasSection';
 import DashboardUltimosRegistrosPanel from '../components/molecules/DashboardUltimosRegistrosPanel';
 import DashboardEstudiantesResumenCard from '../components/molecules/DashboardEstudiantesResumenCard';
@@ -45,6 +44,7 @@ const Dashboard = () => {
   // Acceso directo a inscribir en cursos de capacitación disponibles (solo con ambos permisos)
   const puedeInscribirCapacitacion =
     hasPermiso('capacitacion.inscripcion', 'CREAR') && hasPermiso('capacitacion.curso', 'LISTAR');
+  const puedeVerParticipantes = hasPermiso('capacitacion.participante', 'LISTAR');
   const { cursos: cursosAbiertos } = useCursosCapacitacionOptions({
     enabled: puedeInscribirCapacitacion,
   });
@@ -65,7 +65,7 @@ const Dashboard = () => {
     ultimosDocentes = [],
     ultimosEstudiantes = [],
     actividades = [],
-    stats = { todayOrders: 0, monthOrders: 0 },
+    stats = { todayOrders: 0, monthOrders: 0, participantesHoy: 0, participantesMes: 0 },
     loading,
     error: dashboardError,
   } = useDashboardContext();
@@ -127,19 +127,18 @@ const Dashboard = () => {
             onRegistrarEstudiante={() =>
               navigateIfPermiso('/estudiantes/registrar', 'matricula.admision.crear', 'CREAR')
             }
-          />
-
-          {puedeInscribirCapacitacion ? (
-            <DashboardCapacitacionAbiertaCard
-              cursos={cursosAbiertos}
-              onInscribir={(curso) =>
-                navigate(inscripcionCapInscribirPath, {
-                  state: { cursoId: curso.id, menuSidebarKey: CAP_INSCRIPCIONES_MENU_KEY },
-                })
-              }
-              onVerCursos={() => navigate(CURSOS_CAP_LIST_PATH)}
-            />
-          ) : null}
+          >
+            {puedeInscribirCapacitacion ? (
+              <DashboardCapacitacionAbiertaTiles
+                cursos={cursosAbiertos}
+                onInscribir={(curso) =>
+                  navigate(inscripcionCapInscribirPath, {
+                    state: { cursoId: curso.id, menuSidebarKey: CAP_INSCRIPCIONES_MENU_KEY },
+                  })
+                }
+              />
+            ) : null}
+          </DashboardWelcomeBanner>
 
           <DashboardCarrerasSection
             carreras={carreras}
@@ -184,8 +183,17 @@ const Dashboard = () => {
           <Spin spinning={loading && !sinDatos} tip="Actualizando…">
             <Flex vertical gap="large">
           <DashboardEstudiantesResumenCard
-            todayCount={stats.todayOrders}
-            monthCount={stats.monthOrders}
+            compact
+            lines={[
+              { label: 'Hoy', value: stats.todayOrders, unidad: 'estudiantes' },
+              { label: 'Este mes', value: stats.monthOrders, unidad: 'estudiantes' },
+              ...(puedeVerParticipantes
+                ? [
+                    { label: 'Hoy', value: stats.participantesHoy, unidad: 'participantes' },
+                    { label: 'Este mes', value: stats.participantesMes, unidad: 'participantes' },
+                  ]
+                : []),
+            ]}
           />
           <DashboardActividadesRecientesCard
             actividades={actividades}
