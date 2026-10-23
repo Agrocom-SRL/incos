@@ -79,6 +79,35 @@ export class DashboardRepository extends IDashboardRepository {
   }
 
   /**
+   * Participantes de capacitación registrados (fila creada) hoy y en el mes calendario actual.
+   * Mismo criterio que `countEstudiantesRegistradosHoyYMes`.
+   *
+   * @returns {Promise<{ hoy: number, mes: number }>}
+   */
+  async countParticipantesRegistradosHoyYMes() {
+    const query = `
+      SELECT
+        SUM(CASE WHEN DATE(created_at) = CURDATE() THEN 1 ELSE 0 END) AS hoy,
+        SUM(
+          CASE
+            WHEN YEAR(created_at) = YEAR(CURDATE())
+             AND MONTH(created_at) = MONTH(CURDATE())
+            THEN 1 ELSE 0
+          END
+        ) AS mes
+      FROM participantes
+      WHERE deleted_at IS NULL
+        AND activo = TRUE
+    `;
+    const rows = await sequelize.query(query, { type: sequelize.QueryTypes.SELECT });
+    const row = rows[0] || {};
+    return {
+      hoy: Number(row.hoy ?? 0),
+      mes: Number(row.mes ?? 0),
+    };
+  }
+
+  /**
    * Docentes activos más recientemente registrados.
    *
    * @param {number} limit

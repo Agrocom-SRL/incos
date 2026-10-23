@@ -17,6 +17,8 @@ describe('GET /dashboard/resumen (panel general, catálogo de referencia)', () =
       expect.objectContaining({
         estudiantesRegistradosHoy: expect.any(Number),
         estudiantesRegistradosMes: expect.any(Number),
+        participantesRegistradosHoy: expect.any(Number),
+        participantesRegistradosMes: expect.any(Number),
       })
     );
   });

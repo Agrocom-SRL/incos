@@ -9,6 +9,7 @@ const { Title, Text } = Typography;
  * Variante genérica (aditiva, no rompe consumidores): si se pasa `lines`
  * (`[{ label, value, unidad? }]`) se pintan esas filas como KPIs en lugar del
  * par hoy/mes — la usa el dashboard del docente (cursos / horas / estudiantes).
+ * `compact` reduce tipografía, separación y alto mínimo (cuadros con varias filas).
  */
 const DashboardEstudiantesResumenCard = ({
     todayCount,
@@ -18,6 +19,7 @@ const DashboardEstudiantesResumenCard = ({
     monthLabel = 'Este mes',
     unidad = 'estudiantes',
     lines = null,
+    compact = false,
 }) => {
     const kpiLines = Array.isArray(lines)
         ? lines
@@ -32,11 +34,11 @@ const DashboardEstudiantesResumenCard = ({
                 borderRadius: `${componentConfig.Card.borderRadiusLG}px`,
                 boxShadow: shadows.shadowPrimary,
                 border: 'none',
-                minHeight: 160,
+                minHeight: compact ? undefined : 160,
             }}
-            styles={{ body: { padding: `${componentConfig.Card.paddingLG}px` } }}
+            styles={{ body: { padding: `${compact ? componentConfig.Card.padding : componentConfig.Card.paddingLG}px` } }}
         >
-            <Flex vertical gap={allSpacing.marginMD}>
+            <Flex vertical gap={compact ? allSpacing.marginXS : allSpacing.marginMD}>
                 <Text
                     style={{
                         color: allColors.colorTextSecondaryOnDark,
@@ -49,14 +51,14 @@ const DashboardEstudiantesResumenCard = ({
                 </Text>
                 {kpiLines.map((line) => (
                     <Title
-                        key={line.label}
+                        key={`${line.label}-${line.unidad ?? ''}`}
                         level={4}
                         style={{
                             color: allColors.colorTextOnDark,
-                            fontSize: `${typography.fontSizeHeading3}px`,
+                            fontSize: `${compact ? typography.fontSizeLG : typography.fontSizeHeading3}px`,
                             fontWeight: typography.fontWeightStrong,
                             margin: 0,
-                            lineHeight: 1.35,
+                            lineHeight: compact ? 1.25 : 1.35,
                         }}
                     >
                         {line.label}: {line.value}
