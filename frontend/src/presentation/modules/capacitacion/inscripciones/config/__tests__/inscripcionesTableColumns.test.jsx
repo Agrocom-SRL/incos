@@ -11,39 +11,55 @@ describe('columnas de inscripciones de capacitación', () => {
     expect(screen.getByText('mañana')).toBeTruthy();
   });
 
-  it('curso externo: «Pagado» cuenta solo la matrícula y rotula el curso como pagado a la entidad', () => {
-    const columnas = createInscripcionesCapTableColumns({});
-    const pagado = columnas.find((c) => c.key === 'pagado');
-    render(
-      pagado.render(null, {
-        montoTotal: 590,
-        montoCobrable: 150,
-        montoObligatorio: 440,
-        totalPagado: 150,
-        pagosCount: 1,
-        pagoCursoExterno: true,
-        estadoPagoCurso: 'CANCELADO',
-      }),
-    );
-    expect(screen.getByText('Bs 150 de Bs 150')).toBeTruthy();
-    expect(screen.getByText('Pagado a la entidad')).toBeTruthy();
+  it('la columna «Acciones» se arma con la acción de requisitos para inscripciones vigentes', () => {
+    const columnas = createInscripcionesCapTableColumns({ onGestionarRequisitos: () => {} });
+    const acciones = columnas.find((c) => c.key === 'acciones');
+    const el = acciones.render(null, { id: 1, estado: 'PENDIENTE', saldoTotal: 0 });
+    const extra = el.props.extraActions.map((a) => a.key);
+    expect(extra).toContain('requisitos');
+    const anulada = acciones.render(null, { id: 2, estado: 'ANULADO', saldoTotal: 0 });
+    expect(anulada.props.extraActions.map((a) => a.key)).not.toContain('requisitos');
   });
 
-  it('curso externo con el depósito sin acreditar muestra «Pendiente de acreditar con depósito»', () => {
-    const columnas = createInscripcionesCapTableColumns({});
-    const pagado = columnas.find((c) => c.key === 'pagado');
+  it('columnas: el «Estado» es el de la inscripción; sin «Saldo» ni «Estado de pago»', () => {
+    const keys = createInscripcionesCapTableColumns({}).map((c) => c.key);
+    expect(keys).toEqual(['nro', 'participante', 'curso', 'pagado', 'estado', 'acciones']);
+  });
+
+  it('«Curso» no muestra las fechas del curso', () => {
+    const curso = createInscripcionesCapTableColumns({}).find((c) => c.key === 'curso');
     render(
-      pagado.render(null, {
-        montoTotal: 440,
-        montoCobrable: 0,
-        montoObligatorio: 440,
-        totalPagado: 0,
-        pagosCount: 0,
-        pagoCursoExterno: true,
-        estadoPagoCurso: 'PARCIAL',
-      }),
+      curso.render(null, { capacitacionTitulo: 'Guaraní', capacitacionFechasLabel: '01/11/2026 – 30/11/2026' }),
     );
-    expect(screen.getByText('Sin cobro en el instituto')).toBeTruthy();
-    expect(screen.getByText('Pendiente de acreditar con depósito')).toBeTruthy();
+    expect(screen.queryByText(/01\/11\/2026/)).toBeNull();
+  });
+
+  it('«Pagado» muestra Matrícula y Curso, cada uno con su pill y sin montos ni cantidad de pagos', () => {
+    const pagado = createInscripcionesCapTableColumns({}).find((c) => c.key === 'pagado');
+    const base = {
+      montoTotal: 590, montoMatricula: 150, montoObligatorio: 440, saldoMatricula: 0,
+      saldoCurso: 440, pagoCursoExterno: false, pagosCount: 2,
+    };
+    render(pagado.render(null, base));
+    expect(screen.getByText(/Matrícula:/)).toBeTruthy();
+    expect(screen.getByText(/Curso:/)).toBeTruthy();
+    expect(screen.getByText('Pagado')).toBeTruthy();
+    expect(screen.getByText('Pendiente')).toBeTruthy();
+    expect(screen.queryByText(/Bs/)).toBeNull();
+  });
+
+  it('curso externo: «Depósito pendiente» hasta que se acredita, luego «Pagado»', () => {
+    const pagado = createInscripcionesCapTableColumns({}).find((c) => c.key === 'pagado');
+    const base = {
+      montoTotal: 590, montoMatricula: 150, montoObligatorio: 440, saldoMatricula: 150,
+      saldoCurso: 440, pagoCursoExterno: true,
+    };
+    const { unmount } = render(pagado.render(null, { ...base, estadoPagoCurso: 'PARCIAL' }));
+    expect(screen.getByText('Depósito pendiente')).toBeTruthy();
+    expect(screen.getByText('Pendiente')).toBeTruthy();
+    unmount();
+    render(pagado.render(null, { ...base, saldoMatricula: 0, estadoPagoCurso: 'CANCELADO' }));
+    expect(screen.queryByText('Depósito pendiente')).toBeNull();
+    expect(screen.getAllByText('Pagado')).toHaveLength(2);
   });
 });

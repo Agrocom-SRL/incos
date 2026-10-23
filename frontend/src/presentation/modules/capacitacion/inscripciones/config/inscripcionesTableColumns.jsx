@@ -7,16 +7,8 @@
  * únicos del módulo, ver `capacitacionPills.js`). Montos Bs SIN decimales
  * (formatBs). Orden en cliente (modo loadAll del provider).
  *
- * La columna "Saldo" suma un tag "Vencido" cuando `record.pagoVencido` es
- * true (derivado en el mapper del frontend: `estadoPago === 'PARCIAL'` Y la
- * fecha de compromiso ya pasó — NUNCA se confía solo en `compromisoEstado`
- * del backend, que puede quedar en INCUMPLIDO para siempre aunque la deuda ya
- * se haya saldado). El filtro "Solo con pago vencido" del listado
- * (`useInscripcionesCapacitacionListPage`) usa el mismo flag.
- *
- * Curso con costo EXTERNO (entidad certificadora): "Pagado" y "Saldo" cuentan
- * solo la matrícula (lo que cobra el instituto) y el curso se rotula «Pagado a
- * la entidad» / «Pendiente de acreditar con depósito» (columna Pagado). La
+ * Columna «Pagado»: Matrícula y Curso, cada uno con su pill. Curso con costo
+ * EXTERNO (entidad certificadora): «Depósito pendiente» hasta acreditar el requisito. La
  * acción «Editar» (capacitacion.inscripcion EDITAR) abre la página de edición
  * de la inscripción (`/:id/editar`).
  */
@@ -24,10 +16,9 @@
 import { Flex } from 'antd';
 import {
   BookOutlined,
-  CalendarOutlined,
+  CheckSquareOutlined,
   DollarOutlined,
   FilePdfOutlined,
-  NumberOutlined,
   TeamOutlined,
   UserOutlined,
 } from '@ant-design/icons';
@@ -37,12 +28,9 @@ import { formatBs } from '@application/utils/formatters';
 import { CAPACITACION_PERMISOS } from '@application-capacitacion/utils/capacitacionPermisos';
 import {
   formatEstadoCurso,
-  formatEstadoCursoExterno,
   formatEstadoInscripcionCap,
-  formatEstadoPagoCap,
   getEstadoCursoExternoPillClass,
   getEstadoInscripcionCapPillClass,
-  getEstadoPagoCapPillClass,
   getSaldoCapPillClass,
   ESTADOS_INSCRIPCION_CAP_VIGENTES,
 } from '@application-capacitacion/utils/capacitacionPills';
@@ -59,6 +47,7 @@ export const createInscripcionesCapTableColumns = ({
   refetch,
   deleteFn,
   onDescargarFormulario,
+  onGestionarRequisitos,
 }) => {
   return [
     {
@@ -97,9 +86,6 @@ export const createInscripcionesCapTableColumns = ({
           lines={[
             { icon: <BookOutlined />, label: record.capacitacionTitulo },
             record.grupoNombre ? { icon: <TeamOutlined />, label: record.grupoNombre } : null,
-            record.capacitacionFechasLabel
-              ? { icon: <CalendarOutlined />, label: record.capacitacionFechasLabel }
-              : null,
             record.fechaInscripcionLabel
               ? { label: `Inscrito el ${record.fechaInscripcionLabel}` }
               : null,
@@ -111,6 +97,67 @@ export const createInscripcionesCapTableColumns = ({
         (a.capacitacionTitulo || '').localeCompare(b.capacitacionTitulo || '', 'es', {
           sensitivity: 'base',
         }),
+    },
+    {
+      title: 'Pagado',
+      key: 'pagado',
+      width: 240,
+      render: (_, record) => {
+        const matriculaPendiente = Number(record.saldoMatricula) > 0;
+        // Curso externo: lo acredita el depósito a la entidad; si no, se cobra en el instituto.
+        const cursoPendiente = record.pagoCursoExterno
+          ? record.estadoPagoCurso !== 'CANCELADO'
+          : Number(record.saldoCurso) > 0;
+        return (
+          <InfoLinesCell
+            lines={[
+              record.montoMatricula > 0
+                ? {
+                    icon: <DollarOutlined />,
+                    label: (
+                      <>
+                        Matrícula:{' '}
+                        <StatusPill
+                          label={matriculaPendiente ? 'Pendiente' : 'Pagado'}
+                          className={getSaldoCapPillClass(matriculaPendiente ? 1 : 0)}
+                        />
+                      </>
+                    ),
+                  }
+                : null,
+              record.montoObligatorio > 0
+                ? {
+                    icon: <BookOutlined />,
+                    label: (
+                      <>
+                        Curso:{' '}
+                        <StatusPill
+                          label={
+                            cursoPendiente
+                              ? record.pagoCursoExterno
+                                ? 'Depósito pendiente'
+                                : 'Pendiente'
+                              : 'Pagado'
+                          }
+                          className={
+                            record.pagoCursoExterno
+                              ? getEstadoCursoExternoPillClass(record.estadoPagoCurso)
+                              : getSaldoCapPillClass(cursoPendiente ? 1 : 0)
+                          }
+                        />
+                      </>
+                    ),
+                  }
+                : null,
+              record.montoTotal <= 0
+                ? { icon: <DollarOutlined />, label: <CostoCursoLabel costo={0} /> }
+                : null,
+            ].filter(Boolean)}
+          />
+        );
+      },
+      sorter: true,
+      sortCompare: (a, b) => (Number(a.totalPagado) || 0) - (Number(b.totalPagado) || 0),
     },
     {
       title: 'Estado',
@@ -125,81 +172,6 @@ export const createInscripcionesCapTableColumns = ({
       ),
       sorter: true,
       sortCompare: (a, b) => (a.estado || '').localeCompare(b.estado || ''),
-    },
-    {
-      title: 'Pagado',
-      key: 'pagado',
-      width: 190,
-      render: (_, record) => (
-        <InfoLinesCell
-          lines={[
-            {
-              icon: <DollarOutlined />,
-              label:
-                record.montoTotal <= 0 ? (
-                  <CostoCursoLabel costo={0} />
-                ) : record.montoCobrable <= 0 ? (
-                  'Sin cobro en el instituto'
-                ) : (
-                  `Bs ${formatBs(record.totalPagado)} de Bs ${formatBs(record.montoCobrable)}`
-                ),
-            },
-            record.pagoCursoExterno && record.montoObligatorio > 0
-              ? {
-                  icon: <BookOutlined />,
-                  label: (
-                    <>
-                      Curso:{' '}
-                      <StatusPill
-                        label={formatEstadoCursoExterno(record.estadoPagoCurso)}
-                        className={getEstadoCursoExternoPillClass(record.estadoPagoCurso)}
-                      />
-                    </>
-                  ),
-                }
-              : null,
-            {
-              icon: <NumberOutlined />,
-              label: `${record.pagosCount} ${record.pagosCount === 1 ? 'pago' : 'pagos'}`,
-            },
-          ].filter(Boolean)}
-        />
-      ),
-      sorter: true,
-      sortCompare: (a, b) => (Number(a.totalPagado) || 0) - (Number(b.totalPagado) || 0),
-    },
-    {
-      title: 'Saldo',
-      key: 'saldo',
-      width: 150,
-      align: 'center',
-      render: (_, record) => (
-        <Flex vertical gap={2} align="center">
-          <StatusPill
-            label={record.saldoTotal > 0 ? `Bs ${formatBs(record.saldoTotal)}` : 'Saldado'}
-            className={getSaldoCapPillClass(record.saldoTotal)}
-          />
-          {record.pagoVencido ? (
-            <StatusPill label="Vencido" className="cfg-materia-pill cfg-materia-pill--danger" />
-          ) : null}
-        </Flex>
-      ),
-      sorter: true,
-      sortCompare: (a, b) => (Number(a.saldoTotal) || 0) - (Number(b.saldoTotal) || 0),
-    },
-    {
-      title: 'Estado de pago',
-      key: 'estadoPago',
-      width: 140,
-      align: 'center',
-      render: (_, record) => (
-        <StatusPill
-          label={formatEstadoPagoCap(record.estadoPago)}
-          className={getEstadoPagoCapPillClass(record.estadoPago)}
-        />
-      ),
-      sorter: true,
-      sortCompare: (a, b) => (a.estadoPago || '').localeCompare(b.estadoPago || ''),
     },
     {
       title: 'Acciones',
@@ -239,6 +211,19 @@ export const createInscripcionesCapTableColumns = ({
             accion: 'DETALLE',
             onClick: () => onDescargarFormulario?.(record.id),
           },
+          ...(ESTADOS_INSCRIPCION_CAP_VIGENTES.includes(record.estado)
+            ? [
+                {
+                  key: 'requisitos',
+                  icon: <CheckSquareOutlined />,
+                  variant: 'alternative',
+                  tooltip: 'Marcar requisitos entregados',
+                  permiso: CAPACITACION_PERMISOS.inscripcion,
+                  accion: 'EDITAR',
+                  onClick: () => onGestionarRequisitos?.(record.id),
+                },
+              ]
+            : []),
           ...(puedeIrAPagar
           ? [
               {
