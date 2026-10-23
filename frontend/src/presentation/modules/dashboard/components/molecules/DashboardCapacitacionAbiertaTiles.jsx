@@ -45,6 +45,7 @@ const DashboardCapacitacionAbiertaTiles = ({ cursos = [], onInscribir }) => {
             display: 'flex',
             alignItems: 'stretch',
             minWidth: 0,
+            minHeight: 120,
             overflow: 'hidden',
             cursor: 'pointer',
             backgroundColor: allColors.colorBgContainer,
@@ -95,7 +96,7 @@ const DashboardCapacitacionAbiertaTiles = ({ cursos = [], onInscribir }) => {
               flexDirection: 'column',
               justifyContent: 'center',
               minWidth: 0,
-              padding: `${allSpacing.padding}px ${allSpacing.paddingLG}px`,
+              padding: `${allSpacing.paddingLG}px`,
             }}
           >
             <Text
