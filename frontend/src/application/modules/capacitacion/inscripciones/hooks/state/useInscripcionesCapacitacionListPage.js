@@ -1,22 +1,15 @@
 /**
  * Hook de pantalla: listado de inscripciones de capacitación (CAP · LISTAR).
  *
- * Espejo de `usePagosListPage`: columnas (participante + curso + estado de
- * pago), breadcrumb y handlers (inscribir, eliminar). La página es "dumb".
- *
- * Filtro "Solo con pago vencido" (regla de negocio §7 del módulo): combina
- * `estadoPago === 'PARCIAL'` (todavía debe, dato real) con la fecha de
- * compromiso vencida — ambas ya resueltas en `record.pagoVencido` por el
- * mapper (`mapInscripcionCapacitacion`). Se filtra en cliente porque el
- * provider ya carga todo el listado (`loadAll`); NO se usa `compromisoEstado`
- * del backend solo, porque puede quedar en INCUMPLIDO para siempre aunque la
- * deuda ya esté saldada.
+ * Espejo de `usePagosListPage`: columnas (participante + curso + pago +
+ * estado), breadcrumb y handlers (inscribir, eliminar). La página es "dumb".
  */
 
 import { useCallback, useMemo, useState } from 'react';
 import { App } from 'antd';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useInscripcionesCapacitacionListContext } from '@application-capacitacion/inscripciones/hooks/context/useInscripcionesCapacitacionListContext';
+import { useInscripcionRequisitosRapido } from '@application-capacitacion/inscripciones/hooks/state/useInscripcionRequisitosRapido';
 import { createInscripcionesCapTableColumns } from '@capacitacion/inscripciones/config/inscripcionesTableColumns';
 import {
   INSCRIPCIONES_CAP_LIST_PATH,
@@ -30,7 +23,7 @@ export const useInscripcionesCapacitacionListPage = () => {
   const { message } = App.useApp();
 
   const {
-    inscripciones: inscripcionesCargadas = [],
+    inscripciones = [],
     loading = false,
     error = null,
     searchText = '',
@@ -40,16 +33,6 @@ export const useInscripcionesCapacitacionListPage = () => {
     eliminarInscripcion,
     descargarFormularioPdf,
   } = useInscripcionesCapacitacionListContext();
-
-  const [soloVencidos, setSoloVencidos] = useState(false);
-
-  const inscripciones = useMemo(
-    () =>
-      soloVencidos
-        ? inscripcionesCargadas.filter((inscripcion) => inscripcion.pagoVencido)
-        : inscripcionesCargadas,
-    [inscripcionesCargadas, soloVencidos],
-  );
 
   const listNavState = useMemo(
     () => ({
@@ -85,6 +68,15 @@ export const useInscripcionesCapacitacionListPage = () => {
     [descargarFormularioPdf, message],
   );
 
+  // Acceso rápido a requisitos: la fila abre un modal (sin pasar por «Editar inscripción»).
+  const [requisitosInscripcionId, setRequisitosInscripcionId] = useState(null);
+  const handleCerrarRequisitos = useCallback(() => setRequisitosInscripcionId(null), []);
+  const requisitosRapido = useInscripcionRequisitosRapido({
+    inscripcionId: requisitosInscripcionId,
+    onGuardado: refetch,
+    onCerrar: handleCerrarRequisitos,
+  });
+
   const tableColumns = useMemo(
     () =>
       createInscripcionesCapTableColumns({
@@ -93,6 +85,7 @@ export const useInscripcionesCapacitacionListPage = () => {
         refetch,
         deleteFn: handleEliminar,
         onDescargarFormulario: handleDescargarFormulario,
+        onGestionarRequisitos: setRequisitosInscripcionId,
       }),
     [navigate, listNavState, refetch, handleEliminar, handleDescargarFormulario],
   );
@@ -123,7 +116,7 @@ export const useInscripcionesCapacitacionListPage = () => {
     handleInscribir,
     handleSearchChange,
     tablePagination,
-    soloVencidos,
-    setSoloVencidos,
+    requisitosRapido,
+    handleCerrarRequisitos,
   };
 };
