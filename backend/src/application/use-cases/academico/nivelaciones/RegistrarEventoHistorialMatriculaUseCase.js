@@ -1,3 +1,4 @@
+import { parseIdPositivo } from '../../../utils/validacionEntrada.js';
 import { ValidationError } from '../../../../domain/errors/AppError.js';
 import { SubjectEnrollmentHistory } from '../../../../domain/entities/SubjectEnrollmentHistory.js';
 
@@ -129,9 +130,9 @@ export class RegistrarEventoHistorialMatriculaUseCase {
     }
 
     return {
-      subjectEnrollmentId: tieneMatricula ? Number(subjectEnrollmentId) : null,
-      enrollmentId: tieneAlterna ? Number(enrollmentId) : null,
-      planSubjectId: tieneAlterna ? Number(planSubjectId) : null,
+      subjectEnrollmentId: tieneMatricula ? parseIdPositivo(subjectEnrollmentId, 'subjectEnrollmentId') : null,
+      enrollmentId: tieneAlterna ? parseIdPositivo(enrollmentId, 'enrollmentId') : null,
+      planSubjectId: tieneAlterna ? parseIdPositivo(planSubjectId, 'planSubjectId') : null,
     };
   }
 }

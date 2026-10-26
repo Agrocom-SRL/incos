@@ -85,4 +85,11 @@ describe('EditarLicenciaUseCase', () => {
     const { useCase } = crear();
     await expect(useCase.execute({ usuarioId: 10, id: 1 })).rejects.toBeInstanceOf(ValidationError);
   });
+
+  it.each([['abc'], ['2026-02-31']])('rechaza fechas no parseables (%p) con ValidationError', async (fecha) => {
+    const { useCase, licenseRepository } = crear();
+    await expect(run(useCase, { body: body({ fechaInicio: fecha }) })).rejects.toBeInstanceOf(ValidationError);
+    await expect(run(useCase, { body: body({ fechaFin: fecha }) })).rejects.toBeInstanceOf(ValidationError);
+    expect(licenseRepository.update).not.toHaveBeenCalled();
+  });
 });

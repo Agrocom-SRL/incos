@@ -13,6 +13,7 @@
  * - Total por género (hombres y mujeres)
  */
 import { BaseListUseCase } from '../base/BaseListUseCase.js';
+import { parseBooleano, parseFiltroId } from '../../utils/validacionEntrada.js';
 import { ParallelMapper } from '../../mappers/academico/index.js';
 
 export class ListParalelosUseCase extends BaseListUseCase {
@@ -66,22 +67,23 @@ export class ListParalelosUseCase extends BaseListUseCase {
     const filters = { ...baseFilters };
 
     // periodo_id: filtro directo por ID único
-    if (queryParams.periodo_id) {
-      filters.periodId = parseInt(queryParams.periodo_id, 10);
+    const periodId = parseFiltroId(queryParams.periodo_id, 'periodo_id');
+    if (periodId !== undefined) {
+      filters.periodId = periodId;
     }
 
     // periodo: se maneja en execute() para obtener IDs de todas las carreras
     // No se agrega aquí, se procesa antes de llamar al método base
 
-    if (queryParams.carrera_id) {
-      filters.careerId = parseInt(queryParams.carrera_id, 10);
+    const careerId = parseFiltroId(queryParams.carrera_id, 'carrera_id');
+    if (careerId !== undefined) {
+      filters.careerId = careerId;
     }
 
     // incluirInactivos → includeInactive (mismo patrón que ListAulasUseCase /
     // catálogos de referencia): permite administrar ítems desactivados desde CFG
-    if (queryParams.incluirInactivos !== undefined) {
-      filters.includeInactive =
-        queryParams.incluirInactivos === 'true' || queryParams.incluirInactivos === true;
+    if (queryParams.incluirInactivos !== undefined && queryParams.incluirInactivos !== '') {
+      filters.includeInactive = parseBooleano(queryParams.incluirInactivos, 'incluirInactivos');
     }
 
     return filters;
@@ -99,9 +101,8 @@ export class ListParalelosUseCase extends BaseListUseCase {
    */
   async prepareFilters(filters = {}, queryParams = {}) {
     // Si hay filtro por periodo (número), obtener IDs de periodos primero
-    if (queryParams.periodo) {
-      const periodoNumero = parseInt(queryParams.periodo, 10);
-
+    const periodoNumero = parseFiltroId(queryParams.periodo, 'periodo');
+    if (periodoNumero !== undefined) {
       // Obtener solo los IDs de periodos con ese número (de todas las carreras)
       const periodosResult = await this.periodRepository.findAll(
         {
