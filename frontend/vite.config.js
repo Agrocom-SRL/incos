@@ -112,6 +112,8 @@ export default defineConfig({
         globals: false,
         setupFiles: ['./src/test/setup.js'],
         include: ['src/**/*.test.{js,jsx}'],
+        // Los smoke de Playwright viven en e2e/ y corren con `npm run test:e2e`.
+        exclude: ['e2e/**', 'node_modules/**'],
         css: false,
     },
 

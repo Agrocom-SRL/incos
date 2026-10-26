@@ -1,4 +1,5 @@
 import { NotFoundError } from '../../../domain/errors/AppError.js';
+import { parseIdPositivo } from '../../utils/validacionEntrada.js';
 
 export class DeletePrerrequisitoUseCase {
   constructor({ prerequisiteRepository, logger }) {
@@ -7,8 +8,9 @@ export class DeletePrerrequisitoUseCase {
   }
 
   async execute(id, userId = null) {
-    const ok = await this.prerequisiteRepository.delete(id, userId);
+    const ok = await this.prerequisiteRepository.delete(parseIdPositivo(id, 'id'), userId);
     if (!ok) throw new NotFoundError('prerrequisito');
+    this.logger?.info('Prerrequisito eliminado', { id });
     return true;
   }
 }

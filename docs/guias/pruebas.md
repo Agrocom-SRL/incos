@@ -122,6 +122,19 @@ activar `TRUST_PROXY=true`; si no, todos los clientes comparten la IP del proxy.
 - Muchos controladores leen `req.user` (nunca asignado; solo `req.usuario` lo está), de modo que `created_by`/auditoría quedan nulos. Solución de bajo riesgo: `req.user = req.usuario` en `authenticate`, o migrar controlador por controlador.
 - `AuthController.login` toma la IP de `X-Forwarded-For` sin validar (solo afecta la IP registrada en la sesión, no el rate limit, que usa `req.ip`).
 
+## E2E del frontend (Playwright, API interceptada)
+
+Smoke tests en `frontend/e2e/` que corren en Chromium contra `vite preview` (se construye con
+`VITE_API_BASE_URL` apuntando al mismo origen) y **sin backend**: toda llamada a `/api/v1/**` se
+intercepta con `page.route` (`e2e/support/mockApi.js`) y responde datos simulados por rol
+(`e2e/support/roles.js`). Cubren login por rol, menú lateral por rol, listado (datos / vacío / error 500)
+y rutas protegidas (sin sesión → `/login`; sin permiso → «Acceso denegado» y vuelta al dashboard).
+
+- Ejecutar: `cd frontend && npm run test:e2e` (construye y levanta el preview solo; en local reutiliza un preview ya abierto).
+- Primera vez: `npx playwright install chromium`.
+- Vitest no los recoge (`exclude: ['e2e/**']` en `vite.config.js`); el CI los corre en `.github/workflows/e2e.yml`.
+- Pruebas de componentes con RBAC: usar `renderWithProviders` (`src/test/renderWithProviders.jsx`), que monta Router + `<App>` de AntD + un `AuthContext` con `permisos`.
+
 ## Qué NO hacer
 - No bajar la cobertura ni borrar pruebas para que pase el CI.
 - No `skip`/`only` en lo que se fusiona.

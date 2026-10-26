@@ -1,3 +1,4 @@
+import { NotFoundError } from '../../../domain/errors/AppError.js';
 import { RelationshipTypeMapper, mergeUsosComplementarios } from '../../mappers/referencia/index.js';
 
 export class GetTipoParentescoByIdUseCase {
@@ -15,7 +16,7 @@ export class GetTipoParentescoByIdUseCase {
 
   async execute(id) {
     const entity = await this.relationshipTypeRepository.findById(id, { paranoid: false });
-    if (!entity) return null;
+    if (!entity) throw new NotFoundError('tipo de parentesco');
 
     const presentation = RelationshipTypeMapper.entityToPresentation(entity);
 

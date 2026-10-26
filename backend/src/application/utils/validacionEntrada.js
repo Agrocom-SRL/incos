@@ -148,6 +148,56 @@ export function parseAnioMes({ anio, mes } = {}, { anioDefecto, mesDefecto } = {
 }
 
 /**
+ * Primer valor definido (`!== undefined`) entre varias claves/alias del body. A diferencia de `??`
+ * conserva `null`, de modo que un PATCH puede vaciar un campo enviando `null`.
+ * @returns {*} `undefined` si ninguna clave viene en el body
+ */
+export function primerDefinido(origen, ...claves) {
+  for (const clave of claves) {
+    if (origen?.[clave] !== undefined) return origen[clave];
+  }
+  return undefined;
+}
+
+/**
+ * Número opcional para PATCH: `undefined` ⇒ no tocar; `null` o `''` ⇒ `null` (vaciar);
+ * cualquier otro valor se valida con `parseNumero`.
+ * @returns {number|null|undefined}
+ */
+export function parseNumeroOpcional(value, nombre = 'valor', opciones = {}) {
+  if (value === undefined) return undefined;
+  if (esVacio(value)) return null;
+  return parseNumero(value, nombre, opciones);
+}
+
+/**
+ * Booleano opcional: `undefined` y `null` ⇒ `undefined` (no tocar / valor por defecto);
+ * cualquier otro valor se valida con `parseBooleano`.
+ * @returns {boolean|undefined}
+ */
+export function parseBooleanoOpcional(value, nombre = 'valor') {
+  return value === undefined || value === null ? undefined : parseBooleano(value, nombre);
+}
+
+/**
+ * Texto opcional: `undefined` ⇒ `undefined`; `null` ⇒ `null` (vaciar, salvo `requerido`);
+ * otro valor ⇒ `String(...).trim()`; si es requerido no puede quedar vacío; respeta `max`.
+ * @returns {string|null|undefined}
+ */
+export function parseTextoOpcional(value, nombre = 'valor', { max = Infinity, requerido = false } = {}) {
+  if (value === undefined) return undefined;
+  if (value === null) {
+    if (requerido) throw new ValidationError(`${nombre} es requerido`);
+    return null;
+  }
+  if (typeof value === 'object') throw new ValidationError(`${nombre} debe ser texto`);
+  const texto = String(value).trim();
+  if (requerido && texto === '') throw new ValidationError(`${nombre} es requerido`);
+  if (texto.length > max) throw new ValidationError(`${nombre} no puede superar ${max} caracteres`);
+  return texto;
+}
+
+/**
  * Lectura tolerante de una columna id (filas de BD/vistas): entero positivo o `null`.
  * `null`/`undefined`/`''`/`0`/`NaN` => `null` (no se convierten en 0). No lanza.
  * @returns {number|null}
