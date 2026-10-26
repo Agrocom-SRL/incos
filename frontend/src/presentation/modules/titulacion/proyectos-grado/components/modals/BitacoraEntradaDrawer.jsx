@@ -90,7 +90,9 @@ const BitacoraEntradaDrawer = ({
   );
 
   const handleGuardar = async () => {
-    const values = await form.validateFields();
+    // Validación fallida: los errores ya se muestran en el formulario; no propagar el rechazo.
+    const values = await form.validateFields().catch(() => null);
+    if (!values) return;
     const base = {
       fecha: values.fecha ? values.fecha.format('YYYY-MM-DD') : undefined,
       actividad: (values.actividad || '').trim() || null,

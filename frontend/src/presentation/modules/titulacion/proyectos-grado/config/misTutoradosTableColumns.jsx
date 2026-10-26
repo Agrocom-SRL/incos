@@ -99,8 +99,8 @@ export const createMisTutoradosTableColumns = ({
             },
             record.observacionesPendientes > 0
               ? {
-                  label: `${record.observacionesPendientes} observación${
-                    record.observacionesPendientes === 1 ? '' : 'es'
+                  label: `${record.observacionesPendientes} observaci${
+                    record.observacionesPendientes === 1 ? 'ón' : 'ones'
                   } pendiente${record.observacionesPendientes === 1 ? '' : 's'}`,
                 }
               : null,
