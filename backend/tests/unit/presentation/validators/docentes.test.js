@@ -152,8 +152,14 @@ describe('createTeacherAssignmentValidator', () => {
     ).toEqual([]);
   });
 
-  it('campos ausentes: el validator los deja pasar (.optional()); CreateTeacherAssignmentUseCase responde 422', async () => {
-    expect(await camposInvalidos(v.createTeacherAssignmentValidator, { body: {} })).toEqual([]);
+  it('campos ausentes: gestionPlanId, ofertaCursoId y docenteId son requeridos', async () => {
+    expect(await camposInvalidos(v.createTeacherAssignmentValidator, { body: {} })).toEqual(
+      expect.arrayContaining(['gestionPlanId', 'ofertaCursoId', 'docenteId'])
+    );
+  });
+
+  it.each([null, '', undefined])('docenteId=%p cuenta como ausente', async (docenteId) => {
+    expect(await camposInvalidos(v.createTeacherAssignmentValidator, { body: { ...ok, docenteId } })).toContain('docenteId');
   });
 
   it.each([
@@ -183,6 +189,16 @@ describe('createTeacherAssignmentValidator', () => {
 });
 
 describe('assignTeacherToCourseValidator', () => {
+  it('body vacío o con ids nulos/vacíos: ofertaCursoId y docenteId son requeridos', async () => {
+    expect(await camposInvalidos(v.assignTeacherToCourseValidator, { body: {} })).toEqual(
+      expect.arrayContaining(['ofertaCursoId', 'docenteId'])
+    );
+    expect(await camposInvalidos(v.assignTeacherToCourseValidator, { body: { ofertaCursoId: null, docenteId: '' } })).toEqual(
+      expect.arrayContaining(['ofertaCursoId', 'docenteId'])
+    );
+    expect(await camposInvalidos(v.assignTeacherToCourseValidator, { body: { docenteId: 2 } })).toEqual(['ofertaCursoId']);
+  });
+
   it('acepta ids válidos (y alias)', async () => {
     expect(await camposInvalidos(v.assignTeacherToCourseValidator, { body: { ofertaCursoId: 1, docenteId: 2 } })).toEqual([]);
     expect(await camposInvalidos(v.assignTeacherToCourseValidator, { body: { oferta_curso_id: 1, docente_id: 2, gestionPlanId: 4, vigente: true } })).toEqual([]);
