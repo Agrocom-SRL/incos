@@ -14,6 +14,7 @@ import {
   iniciarSistema,
   cerrarSistema,
   como,
+  comoEnviando,
   request,
   app,
   API,
@@ -102,7 +103,7 @@ describe('Matriz 403: roles sin permiso no acceden a endpoints sensibles', () =>
 
   describe.each(SIN_PRIVILEGIOS)('%s no puede escribir en módulos administrativos', (rol) => {
     it.each(escrituras.map((r) => [`${r.metodo} ${r.ruta}`, r]))('%s -> 403', async (_n, r) => {
-      const res = await como(rol, r.metodo.toLowerCase(), sinPrefijo(rutaConcreta(r.ruta))).send({});
+      const res = await comoEnviando(rol, r.metodo.toLowerCase(), sinPrefijo(rutaConcreta(r.ruta)), {});
       expect(res.status).toBe(403);
     });
   });
@@ -120,7 +121,7 @@ describe('Escalada vertical: nadie sin ADMIN_SISTEMA toca a un ADMIN_SISTEMA', (
   it.each(['RECTOR', 'DIR_ACADEMICO', 'DIR_ADMIN'])(
     '%s no puede cambiar la clave del administrador (403)',
     async (rol) => {
-      const res = await como(rol, 'patch', `/usuarios/${adminId}/password`).send({
+      const res = await comoEnviando(rol, 'patch', `/usuarios/${adminId}/password`, {
         password_nuevo: '        ',
       });
       expect(res.status).toBe(403);
@@ -137,7 +138,7 @@ describe('Escalada vertical: nadie sin ADMIN_SISTEMA toca a un ADMIN_SISTEMA', (
     async (rol) => {
       const [roles] = await sequelize.query("SELECT id FROM roles WHERE codigo = 'ADMIN_SISTEMA'");
       const [docente] = await sequelize.query("SELECT id FROM usuarios WHERE username = 'test.docente'");
-      const res = await como(rol, 'put', `/usuarios/${docente[0].id}`).send({ rol_id: roles[0].id });
+      const res = await comoEnviando(rol, 'put', `/usuarios/${docente[0].id}`, { rol_id: roles[0].id });
       expect(res.status).toBe(403);
     }
   );
