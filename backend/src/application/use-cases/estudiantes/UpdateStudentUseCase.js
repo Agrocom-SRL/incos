@@ -1,4 +1,4 @@
-import { ConflictError, NotFoundError } from '../../../domain/errors/AppError.js';
+import { ConflictError, NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
 
 /**
  * Use Case: UpdateStudentUseCase
@@ -374,6 +374,31 @@ export class UpdateStudentUseCase {
     } catch (err) {
       this.logger.warn('[Estudiantes] No se pudo obtener gestión vigente', { error: err.message });
       return null;
+    }
+  }
+
+  /**
+   * Un estudiante ANTIGUO debe quedar con gestión de ingreso y carrera válidas.
+   * Lo enviado en el payload manda; si no se envía, vale lo ya guardado.
+   *
+   * @param {Object} data - Payload del request
+   * @param {Object|null} existingAcademicPlain - Datos académicos actuales o null
+   * @throws {ValidationError} Si falta alguna de las dos o no es un entero positivo
+   */
+  _assertAntiguoTieneGestionYCarrera(data, existingAcademicPlain) {
+    if (data.tipoAdmision !== 'ANTIGUO') return;
+    const esIdValido = (v) => v !== null && v !== undefined && v !== '' && Number.isInteger(Number(v)) && Number(v) >= 1;
+    const gestion = data.gestionIngresoId !== undefined
+      ? data.gestionIngresoId
+      : (existingAcademicPlain?.managementId ?? existingAcademicPlain?.gestionIngresoId);
+    const carrera = data.carreraId !== undefined
+      ? data.carreraId
+      : (existingAcademicPlain?.careerId ?? existingAcademicPlain?.carreraId);
+    if (!esIdValido(gestion)) {
+      throw new ValidationError('Gestión de ingreso es requerida para estudiantes antiguos');
+    }
+    if (!esIdValido(carrera)) {
+      throw new ValidationError('Carrera es requerida para estudiantes antiguos');
     }
   }
 
@@ -1157,6 +1182,8 @@ export class UpdateStudentUseCase {
         const tipoAdmisionActual = existingAcademicPlain?.admissionType || existingAcademicPlain?.tipoAdmision || null;
         const gestionIngresoIdActual = existingAcademicPlain?.managementId || existingAcademicPlain?.gestionIngresoId
           || null;
+
+        this._assertAntiguoTieneGestionYCarrera(data, existingAcademicPlain);
 
         // Resolver tipo, gestión y carrera (NUEVO → gestión vigente; resto → valores enviados)
         const { tipoAdmision, gestionIngresoId,
