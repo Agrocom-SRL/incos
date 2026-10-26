@@ -88,7 +88,7 @@ export class UpdateAsignacionDocenteController extends UpdateTeacherAssignmentCo
       const body = req.body || {};
       this.logger.info('Request PUT asignaciones-docentes', { id });
       const userId = req.user?.id ?? null;
-      const result = await this.useCase.execute(id, body, userId);
+      const result = await this.updateTeacherAssignmentUseCase.execute(id, body, userId);
       return this.responseFormatter._success(res, { asignacion: result.asignacion }, {}, req);
     } catch (error) {
       this.logger.error('Error PUT asignaciones-docentes', { error: error.message, id: req.params.id });

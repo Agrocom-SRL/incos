@@ -119,9 +119,9 @@ export default defineConfig({
         testTimeout: 20000,
         coverage: {
             provider: 'v8',
-            reporter: ['text-summary', 'json-summary'],
-            include: ['src/presentation/modules/**/*.{js,jsx}'],
-            exclude: ['**/__tests__/**', '**/*.test.{js,jsx}', '**/design/**', '**/studio/**'],
+            reporter: ['text-summary', 'lcov', 'json-summary'],
+            include: ['src/application/**/*.{js,jsx}', 'src/presentation/modules/**/*.{js,jsx}'],
+            exclude: ['**/*.test.{js,jsx}', '**/__tests__/**', '**/design/**', '**/studio/**'],
         },
     },
 

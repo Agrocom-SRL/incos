@@ -48,6 +48,7 @@ import path from 'path';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import { IncosPDFBase } from './IncosPDFBase.js';
+import { protegerFuentesEstandar } from './pdfFontSafety.js';
 
 export class IncosPDFLibBase {
     /**
@@ -100,6 +101,7 @@ export class IncosPDFLibBase {
 
         // Registrar fontkit para poder usar fuentes personalizadas TTF/OTF
         pdfDoc.registerFontkit(fontkit);
+        protegerFuentesEstandar(pdfDoc);
 
         // Recordar el nombre para páginas adicionales (ver _addTemplatePage)
         this._templateFileName = templateFileName;
@@ -249,7 +251,7 @@ export class IncosPDFLibBase {
      * @param {boolean} [useInitialY=true] - Si es true, calcula automáticamente la posición inicial desde el encabezado
      */
     _initializeDocumentState(pdfDoc, page, useInitialY = true) {
-        this._pdfDoc = pdfDoc;
+        this._pdfDoc = protegerFuentesEstandar(pdfDoc);
         this._currentPage = page;
 
         if (useInitialY) {

@@ -134,7 +134,8 @@ export class SeguridadUsuariosController {
       const id = parseInt(req.params.id, 10);
       const data = await this.cambiarPasswordUsuarioUseCase.execute(
         id,
-        req.body.password_nuevo
+        req.body.password_nuevo,
+        req.usuario?.id
       );
       return this.responseFormatter.updated(res, data, 'usuario', id, req);
     } catch (e) {
@@ -145,7 +146,7 @@ export class SeguridadUsuariosController {
   delete = async (req, res, next) => {
     try {
       const id = parseInt(req.params.id, 10);
-      const actorId = req.user?.id ?? null;
+      const actorId = req.usuario?.id ?? null;
       await this.eliminarUsuarioUseCase.execute(id, actorId);
       return this.responseFormatter.deleted(res, 'usuario', id, req);
     } catch (e) {

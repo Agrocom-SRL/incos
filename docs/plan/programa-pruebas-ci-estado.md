@@ -1,7 +1,7 @@
 # Programa de pruebas y correcciones — estado vivo
 
 > **Punto de entrada para retomar sin re-derivar contexto.** Se actualiza en cada PR del programa.
-> **Última actualización:** 2026-10-26. Rama de trabajo del programa: `claude/blissful-dijkstra-vf4yji`.
+> **Última actualización:** 2026-10-26 (noche). Rama de trabajo del programa: `claude/blissful-dijkstra-vf4yji`.
 
 ## Objetivo
 Cerrar el backlog de `correcciones-hallazgos-pruebas.md` y ampliar las pruebas de backend y frontend
@@ -17,30 +17,49 @@ Cerrar el backlog de `correcciones-hallazgos-pruebas.md` y ampliar las pruebas d
 ## Estado de las correcciones del backlog
 | Bloque | Estado |
 |---|---|
-| 1 Pagos, 2 Seguridad, 3 Cadena de negocio, 5 Titulación, 7 Estudiantes | Hechos y fusionados (PR #34 a #39) |
-| Decisiones de negocio (bimestres, licencias docente, estados) | Hecho; PR de este programa |
-| 4 Fechas y asistencia | En curso |
-| 6 Configuración y catálogos | En curso |
+| 1 Pagos, 2 Seguridad, 3 Cadena de negocio, 5 Titulación, 7 Estudiantes | Fusionados (PR #34 a #39) |
+| Decisiones de negocio (bimestres, licencias docente, estados) | Fusionado (PR #56) |
+| 4 Fechas y asistencia | Fusionado (PR #57) |
+| 6 Configuración y catálogos | Fusionado (PR #58) |
+| Hallazgos de la integración (centralizador vacío, `POST /libros`, `POST /carreras` duplicada, aporte huérfano, `stack` en 404) | En curso |
 
-## Decisiones tomadas y pendientes de confirmar
-- Compuerta de bimestre única (`assertBimestreEditable`): editable EN_CURSO o REABIERTO; cerrado solo tras reapertura, que exige gestión vigente y permiso de gestión de bimestres (RECTOR, DIR_ACADEMICO; ADMIN_SISTEMA por herencia). Confirmar si ese es el conjunto de roles deseado.
-- Licencias de docente: fuera de alcance (quitadas del seed 60, la matriz y las rutas). Las bases ya sembradas conservan los registros viejos, apagados: re-sembrar el seed 60 al desplegar.
-- `paralelos_gestion`: BORRADOR→OFERTADO; OFERTADO→PUBLICADO|BORRADOR; PUBLICADO→OFERTADO|BORRADOR|CERRADO; CERRADO terminal. Pendiente: confirmar PUBLICADO→CERRADO y el significado de PUBLICADO.
-- `OfertaCurso`: PROGRAMADA→ACTIVA|CANCELADA; ACTIVA→CERRADA|CANCELADA. `GestionPlan`: PROPUESTO→APROBADO|CANCELADO; APROBADO→VIGENTE|CANCELADO; VIGENTE→CERRADO|CANCELADO. **Pendiente de confirmar con el dueño.**
+## Decisiones tomadas
+- Compuerta de bimestre única (`assertBimestreEditable`): editable EN_CURSO o REABIERTO; cerrado solo tras reapertura, que exige gestión vigente y permiso de gestión de bimestres (RECTOR, DIR_ACADEMICO; ADMIN_SISTEMA por herencia). 
+- Licencias de docente: fuera de alcance (quitadas del seed 60, la matriz y las rutas). Las bases ya sembradas conservan los registros viejos, apagados: **es obligatorio re-sembrar el seed 60 (permisos) al desplegar** (confirmado).
+- `paralelos_gestion`: BORRADOR→OFERTADO; OFERTADO→PUBLICADO|BORRADOR; PUBLICADO→OFERTADO|BORRADOR|CERRADO; CERRADO terminal. **Confirmado por el dueño (2026-10-26)**, incluido PUBLICADO→CERRADO.
+- `OfertaCurso`: PROGRAMADA→ACTIVA|CANCELADA; ACTIVA→CERRADA|CANCELADA. `GestionPlan`: PROPUESTO→APROBADO|CANCELADO; APROBADO→VIGENTE|CANCELADO; VIGENTE→CERRADO|CANCELADO. **Confirmado por el dueño (2026-10-26)**: CANCELADO desde VIGENTE permitido y sin vuelta a PROPUESTO.
 
-## Cobertura backend (unitarias) al 2026-10-26
-Global 50 % líneas / 37 % ramas, 4105 pruebas. Menor cobertura: `infrastructure/external/excel` 5 %, `views` 3 %, `external/pdf` 26 %, controllers 17–36 %, `presentation/validators/estudiantes` 2 %.
-
-## Frentes de pruebas
-| Frente | Dónde | Estado |
+## Pruebas: cobertura y PR fusionados
+| Frente | PR | Resultado |
 |---|---|---|
-| Controllers/validators backend | `backend/tests/unit/` | En curso |
-| Generadores PDF/Excel y repos de vistas | `backend/tests/unit/` | En curso |
-| Seguridad (HTTP, RBAC exhaustivo, `npm audit`) | `tests/unit/seguridad-http`, `tests/integration/seguridad.test.js`, job `seguridad` | En curso |
-| Carga y estrés (k6) | `backend/tests/load`, `.github/workflows/carga.yml` | En curso |
-| Frontend capa `application` | `frontend/src/application/**/__tests__` | En curso |
-| Frontend `presentation` + E2E Playwright | `frontend/e2e`, `.github/workflows/e2e.yml` | En curso |
+| Controllers y validators backend | #59 | 94–100 % en los módulos medidos |
+| Seguridad (HTTP, JWT, inyección, IDOR, subidas, rate limit) | #60 | 7 huecos reales corregidos; `npm audit` en rojo (backend 21, frontend 8) |
+| Use cases y controllers academico/configuracion/pagos | #61 | 90–100 % |
+| Excel, PDF y repositorios de vistas | #62 | 93–99 % |
+| Frontend: componentes, RBAC y E2E Playwright | #63 | 448 pruebas + 20 E2E |
+| Carga y estrés (k6) | #64 | Scripts; nunca ejecutados |
+| Frontend capa `application` | #65 | 6 → 54 % de líneas; objetivo 70 % pendiente |
+| Backend ronda 2 (repos, middleware, rutas, dominio, contenedor) | #66 | Global ~87 % líneas, 73 % ramas |
+| Integración por dominio (8 dominios, MariaDB real) | #67 | 16 suites, 476 pruebas, validadas en local y en CI |
+
+Backend: ~8 700 pruebas unitarias. Frontend: ~1 200 pruebas de Vitest.
+
+## Pendiente de aplicar a mano (el token de la sesión automatizada no tiene permiso `workflow`)
+`docs/plan/workflows-pendientes/`: `seguridad-ci.patch` (paso `test:seguridad` y job `seguridad` en `ci.yml`), `e2e.yml.txt` y `carga.yml.txt` (copiar a `.github/workflows/`). Mientras no se apliquen, el E2E, la carga y la seguridad no corren en el CI.
+
+## Pendiente de decidir
+- `areaConocimiento` de Materia: la tabla `materias` no tiene la columna; guardarla exige DDL (aprobación de diseño de schema).
+- Contratos que cambian: asistencia con bimestre inválido 404→400; filtros de id inválidos 400 en vez de ignorarse; `UpdatePeriodoFechas` exige ambas fechas; la auditoría ahora registra al usuario real (`req.user = req.usuario`, PR #66).
+- `POST /proyectos-grado/:id/bitacora/:entradaId/confirmar` muta con permiso de lectura (`titulacion.bitacora` + `LISTAR`): confirmar si es intencional.
+- Deuda de seguridad no corregida: `/uploads` estático sin autenticación (incluye documentos de estudiantes), SVG servidos desde `/uploads`, `/api-docs` público, `X-Forwarded-For` sin validar; detrás de Nginx definir `TRUST_PROXY=true`.
+- Discrepancias entre `matriz-permisos-sistema.md` y lo sembrado (se siguen los seeds).
+
+## Siguiente
+- Pruebas de presentación por módulo del frontend (agente en curso).
+- Frontend `application`: matrícula (~10 %) y capacitación (~900 líneas sin cubrir) para llegar al 70 %; Providers y hooks de institucional.
+- Backend: `presentation/validators` (71 %).
+- Primera ejecución real de las pruebas de carga cuando se aplique `carga.yml`.
 
 ## Límites conocidos
-- El entorno de agentes no tiene MariaDB: las pruebas de integración y de carga solo se validan de verdad en el CI.
+- Los agentes pueden instalar MariaDB 10.11 con apt para validar la integración en local; k6 no se puede instalar (descarga bloqueada).
 - Seguimiento académico, Traspasos y Transitabilidad siguen fuera de alcance.

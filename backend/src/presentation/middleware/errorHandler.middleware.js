@@ -55,7 +55,8 @@ export function createErrorHandler(logger, errorFormatter) {
 
     // Error inesperado del sistema
     const statusCode = err.statusCode || 500;
-    const isProduction = process.env.NODE_ENV === 'production';
+    // Stack y mensaje internos solo en desarrollo; test/staging/producción responden genérico.
+    const isProduction = (process.env.NODE_ENV ?? 'development') !== 'development';
     const response = errorFormatter.formatUnexpectedError(err, req, isProduction);
     return res.status(statusCode).json(response);
   };
