@@ -196,3 +196,26 @@ export function parseTextoOpcional(value, nombre = 'valor', { max = Infinity, re
   if (texto.length > max) throw new ValidationError(`${nombre} no puede superar ${max} caracteres`);
   return texto;
 }
+
+/**
+ * Lectura tolerante de una columna id (filas de BD/vistas): entero positivo o `null`.
+ * `null`/`undefined`/`''`/`0`/`NaN` => `null` (no se convierten en 0). No lanza.
+ * @returns {number|null}
+ */
+export function idONull(value) {
+  if (value == null || value === '') return null;
+  const n = Number(value);
+  return Number.isSafeInteger(n) && n >= 1 ? n : null;
+}
+
+/**
+ * Año calendario entero (2000-2100). Rechaza '', null, 'abc', decimales y fuera de rango.
+ * @returns {number}
+ */
+export function parseAnio(value, nombre = 'anio') {
+  try {
+    return parseNumero(value, nombre, { min: 2000, max: 2100, entero: true });
+  } catch {
+    throw new ValidationError(`${nombre} debe ser un año válido`);
+  }
+}

@@ -13,6 +13,7 @@
 
 import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
 import { TIPOS_GESTION_VALUES } from '../../../domain/constants/gestion.constants.js';
+import { parseFechaISO, parseIdPositivo, parseAnio } from '../../utils/validacionEntrada.js';
 import { entityToPresentation } from '../../mappers/academico/ManagementMapper.js';
 
 export class UpdateGestionUseCase {
@@ -34,7 +35,8 @@ export class UpdateGestionUseCase {
    * @param {number|null} userId - Usuario que edita (auditoría)
    * @returns {Promise<{gestion: Object}>} Gestión actualizada en formato de presentación
    */
-  async execute(gestionId, body = {}, userId = null) {
+  async execute(gestionIdRaw, body = {}, userId = null) {
+    const gestionId = parseIdPositivo(gestionIdRaw, 'gestionId');
     const gestion = await this.managementRepository.findById(gestionId);
     if (!gestion || gestion.active === false) {
       throw new NotFoundError('gestión académica');
@@ -47,7 +49,7 @@ export class UpdateGestionUseCase {
       if (!codigo) throw new ValidationError('codigo no puede estar vacío');
       // Unicidad lógica del código entre gestiones activas, excluyendo la propia.
       const existente = await this.managementRepository.findBy({ code: codigo });
-      if (existente && existente.id !== gestionId) {
+      if (existente && Number(existente.id) !== gestionId) {
         throw new ValidationError(`Ya existe una gestión activa con el código ${codigo}`);
       }
       data.code = codigo;
@@ -60,10 +62,7 @@ export class UpdateGestionUseCase {
     }
 
     if (body.anio !== undefined || body.year !== undefined) {
-      const anio = Number(body.anio ?? body.year);
-      if (!Number.isFinite(anio) || anio < 2000 || anio > 2100) {
-        throw new ValidationError('anio debe ser un año válido');
-      }
+      const anio = parseAnio(body.anio ?? body.year, 'anio');
       data.year = anio;
     }
 
@@ -76,16 +75,16 @@ export class UpdateGestionUseCase {
     }
 
     if (body.fecha_inicio !== undefined || body.fechaInicio !== undefined) {
-      data.startDate = body.fecha_inicio ?? body.fechaInicio;
+      data.startDate = parseFechaISO(body.fecha_inicio ?? body.fechaInicio, 'fecha_inicio');
     }
     if (body.fecha_fin !== undefined || body.fechaFin !== undefined) {
-      data.endDate = body.fecha_fin ?? body.fechaFin;
+      data.endDate = parseFechaISO(body.fecha_fin ?? body.fechaFin, 'fecha_fin');
     }
 
     // Coherencia de fechas con los valores que quedarían vigentes tras el update.
-    const fechaInicioFinal = data.startDate ?? gestion.startDate;
-    const fechaFinFinal = data.endDate ?? gestion.endDate;
-    if (fechaInicioFinal && fechaFinFinal && new Date(fechaFinFinal) < new Date(fechaInicioFinal)) {
+    const fechaInicioFinal = data.startDate ?? (gestion.startDate ? parseFechaISO(gestion.startDate, 'fecha_inicio') : null);
+    const fechaFinFinal = data.endDate ?? (gestion.endDate ? parseFechaISO(gestion.endDate, 'fecha_fin') : null);
+    if (fechaInicioFinal && fechaFinFinal && fechaFinFinal < fechaInicioFinal) {
       throw new ValidationError('fecha_fin no puede ser anterior a fecha_inicio');
     }
 

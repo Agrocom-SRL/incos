@@ -14,6 +14,7 @@ describe('UpdateEvaluacionCuadernoUseCase', () => {
       },
       calificacionContextoRepository: {
         obtenerContextoVigente: jest.fn().mockResolvedValue({ gestion_id: 3, bimestre_vigente: 2 }),
+        obtenerEstadoInstitucionalBimestre: jest.fn().mockResolvedValue('EN_CURSO'),
       },
       cuadernoRepository: {
         obtenerPeriodoAcademicoId: jest.fn().mockResolvedValue(11),
@@ -149,14 +150,16 @@ describe('UpdateEvaluacionCuadernoUseCase', () => {
 
   it('bloquea bimestres que no son el vigente ni están reabiertos', async () => {
     const { useCase, deps } = crear();
+    deps.calificacionContextoRepository.obtenerEstadoInstitucionalBimestre.mockResolvedValue('CERRADO');
     await expect(useCase.execute(entrada({ nombre: 'X' }, { bimestre: 1 }))).rejects.toThrow(
-      /bimestre vigente o reabierto/
+      /está cerrado/
     );
     expect(deps.cuadernoRepository.obtenerEvaluacionDeAsignacion).not.toHaveBeenCalled();
   });
 
   it('permite editar un bimestre no vigente si está reabierto', async () => {
     const { useCase, deps } = crear();
+    deps.calificacionContextoRepository.obtenerEstadoInstitucionalBimestre.mockResolvedValue('CERRADO');
     deps.subjectEnrollmentBimesterRepository.contarBimestreReabiertoCurso.mockResolvedValue(2);
     await expect(useCase.execute(entrada({ nombre: 'X' }, { bimestre: 1 }))).resolves.toMatchObject({
       nombre: 'X',

@@ -91,7 +91,8 @@ del proyecto para subir el listón visual sin abandonar Ant Design. Úsalas como
 # Alcance de esta versión
 
 - **Fuera de alcance, no se codifica:** seguimiento académico (avance académico, deserción,
-  acompañamiento), **Traspasos** y **Transitabilidad**. El seed 59 los mantiene desactivados
+  acompañamiento), **Traspasos**, **Transitabilidad** y **licencias de docentes** (permisos
+  `docentes.licencia.*` retirados del seed 60; las licencias de estudiantes sí existen). El seed 59 los mantiene desactivados
   (`/avance-academico`, `/desercion`, `/acompanamiento` dan 403 a todos los roles). No contarlos
   como pendientes ni como deuda; si vuelven, se reactivan en el seed y se documentan en la matriz.
 - Documentación de entrada: `README.md` (raíz), `docs/README.md`, `docs/guias/pruebas.md`,
