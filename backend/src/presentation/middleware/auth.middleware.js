@@ -38,6 +38,9 @@ export async function authenticate(req, res, next) {
       rolCodigo: sesion.rol_codigo,
       rolIsSystem: Boolean(sesion.rol_is_system),
     };
+    // Alias: ~35 controllers (docentes, calificaciones, nivelaciones, horarios...) leen `req.user?.id`
+    // para auditoría (createdBy/updatedBy) y siempre recibían null porque solo existía `req.usuario`.
+    req.user = req.usuario;
     req.sesionData = sesion;
     req.token = token;
 
