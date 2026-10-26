@@ -17,11 +17,23 @@ const crear = ({ offer = { id: 4, state: 'PROGRAMADA' } } = {}) => {
 };
 
 describe('UpdateOfertaCursoEstadoUseCase', () => {
-  it.each(['PROGRAMADA', 'ACTIVA', 'CERRADA', 'CANCELADA'])('acepta estado %s', async (estado) => {
-    const { deps, useCase } = crear();
+  it.each([
+    ['PROGRAMADA', 'ACTIVA'], ['PROGRAMADA', 'CANCELADA'],
+    ['ACTIVA', 'CERRADA'], ['ACTIVA', 'CANCELADA'],
+  ])('permite %s -> %s', async (desde, estado) => {
+    const { deps, useCase } = crear({ offer: { id: 4, state: desde } });
     const res = await useCase.execute(4, { estado }, 2);
     expect(deps.courseOfferRepository.update).toHaveBeenCalledWith(4, { state: estado }, 2);
     expect(res.ofertaCurso).toMatchObject({ id: 4, estado: 'ACTIVA' });
+  });
+
+  it.each([
+    ['PROGRAMADA', 'CERRADA'], ['ACTIVA', 'PROGRAMADA'], ['CERRADA', 'ACTIVA'],
+    ['CERRADA', 'CANCELADA'], ['CANCELADA', 'PROGRAMADA'], ['CANCELADA', 'ACTIVA'],
+  ])('rechaza %s -> %s', async (desde, estado) => {
+    const { deps, useCase } = crear({ offer: { id: 4, state: desde } });
+    await expect(useCase.execute(4, { estado })).rejects.toBeInstanceOf(ValidationError);
+    expect(deps.courseOfferRepository.update).not.toHaveBeenCalled();
   });
 
   it.each([undefined, null, '', 'OFERTADO', 'activa'])('rechaza estado inválido %p', async (estado) => {
