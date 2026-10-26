@@ -12,6 +12,7 @@
 
 import { ValidationError } from '../../../domain/errors/AppError.js';
 import { TIPOS_GESTION_VALUES } from '../../../domain/constants/gestion.constants.js';
+import { parseFechaISO, parseAnio } from '../../utils/validacionEntrada.js';
 import { entityToPresentation } from '../../mappers/academico/ManagementMapper.js';
 
 export class CreateGestionUseCase {
@@ -35,23 +36,23 @@ export class CreateGestionUseCase {
   async execute(body = {}, userId = null) {
     const codigo = String(body.codigo ?? body.code ?? '').trim();
     const nombre = String(body.nombre ?? body.name ?? '').trim();
-    const anio = Number(body.anio ?? body.year);
+    const anioRaw = body.anio ?? body.year;
     const tipo = body.tipo ?? body.type;
-    const fechaInicio = body.fecha_inicio ?? body.fechaInicio;
-    const fechaFin = body.fecha_fin ?? body.fechaFin;
+    const fechaInicioRaw = body.fecha_inicio ?? body.fechaInicio;
+    const fechaFinRaw = body.fecha_fin ?? body.fechaFin;
 
-    if (!codigo || !nombre || !tipo || !fechaInicio || !fechaFin) {
+    if (!codigo || !nombre || !tipo || !fechaInicioRaw || !fechaFinRaw) {
       throw new ValidationError(
         'codigo, nombre, anio, tipo, fecha_inicio y fecha_fin son requeridos'
       );
     }
-    if (!Number.isFinite(anio) || anio < 2000 || anio > 2100) {
-      throw new ValidationError('anio debe ser un año válido');
-    }
+    const anio = parseAnio(anioRaw, 'anio');
     if (!TIPOS_GESTION_VALUES.includes(tipo)) {
       throw new ValidationError(`tipo debe ser uno de: ${TIPOS_GESTION_VALUES.join(', ')}`);
     }
-    if (new Date(fechaFin) < new Date(fechaInicio)) {
+    const fechaInicio = parseFechaISO(fechaInicioRaw, 'fecha_inicio');
+    const fechaFin = parseFechaISO(fechaFinRaw, 'fecha_fin');
+    if (fechaFin < fechaInicio) {
       throw new ValidationError('fecha_fin no puede ser anterior a fecha_inicio');
     }
 

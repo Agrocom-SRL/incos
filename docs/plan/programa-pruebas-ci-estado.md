@@ -31,6 +31,8 @@ Cerrar el backlog de `correcciones-hallazgos-pruebas.md` y ampliar las pruebas d
 ## Cobertura backend (unitarias) al 2026-10-26
 Global 50 % líneas / 37 % ramas, 4105 pruebas. Menor cobertura: `infrastructure/external/excel` 5 %, `views` 3 %, `external/pdf` 26 %, controllers 17–36 %, `presentation/validators/estudiantes` 2 %.
 
+Segunda ronda (misma fecha, rama de trabajo del agente): global 86,7 % líneas / 72,7 % ramas, 7231 pruebas. Repositorios 95 % (contrato común con Sequelize simulado en `tests/unit/infrastructure/repositories`), middleware 99 %, rutas 99 % (invariantes RBAC y cableado de las 457 rutas reales), entidades y interfaces de dominio ~100 %, container 100 % (todo proveedor se resuelve y todo `resolve(TOKEN)` del código existe), mappers de infraestructura 91 %. Pendiente de menor cobertura: `infrastructure/external` 49 % (generadores PDF/Excel) y `presentation/validators` 71 %.
+
 ## Frentes de pruebas
 | Frente | Dónde | Estado |
 |---|---|---|

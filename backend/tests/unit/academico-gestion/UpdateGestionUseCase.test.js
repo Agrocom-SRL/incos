@@ -75,4 +75,23 @@ describe('UpdateGestionUseCase', () => {
     await expect(useCase.execute(3, {})).rejects.toThrow('No se envió ningún campo editable');
     await expect(useCase.execute(3, { vigente: true })).rejects.toThrow('No se envió ningún campo editable');
   });
+
+  it.each([['abc'], ['2026-02-31']])('fecha_inicio/fecha_fin inválida (%p) => 400 sin actualizar', async (f) => {
+    const { useCase, deps } = crear();
+    await expect(useCase.execute(3, { fecha_inicio: f })).rejects.toMatchObject({ statusCode: 400 });
+    await expect(useCase.execute(3, { fecha_fin: f })).rejects.toMatchObject({ statusCode: 400 });
+    expect(deps.managementRepository.update).not.toHaveBeenCalled();
+  });
+
+  it('id inválido => 400 sin consultar el repositorio', async () => {
+    const { useCase, deps } = crear();
+    await expect(useCase.execute('abc', { nombre: 'x' })).rejects.toMatchObject({ statusCode: 400 });
+    expect(deps.managementRepository.findById).not.toHaveBeenCalled();
+  });
+
+  it('el código de la propia gestión no cuenta como duplicado aunque el id llegue como string', async () => {
+    const { useCase, deps } = crear({ porCodigo: { id: 3 } });
+    await useCase.execute('3', { codigo: 'G-1' });
+    expect(deps.managementRepository.update).toHaveBeenCalledWith(3, { code: 'G-1' }, null);
+  });
 });

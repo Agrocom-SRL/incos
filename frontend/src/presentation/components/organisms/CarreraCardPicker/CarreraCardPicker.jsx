@@ -94,7 +94,7 @@ const CarreraCardPicker = ({
             <Radio.Button
               key={carrera.id}
               value={carrera.id}
-              disabled={isUnavailable}
+              disabled={disabled || isUnavailable}
               className={cardClassName}
               style={{
                 borderColor: isSelected ? accent : undefined,

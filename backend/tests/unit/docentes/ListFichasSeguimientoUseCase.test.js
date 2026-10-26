@@ -1,6 +1,8 @@
 import { describe, it, expect, jest } from '@jest/globals';
 import { ListFichasSeguimientoUseCase } from '../../../src/application/use-cases/docentes/supervision/ListFichasSeguimientoUseCase.js';
 
+import { ValidationError } from '../../../src/domain/errors/AppError.js';
+
 describe('ListFichasSeguimientoUseCase', () => {
   const crear = () => {
     const deps = {
@@ -60,5 +62,28 @@ fechaHasta: '2026-12-31',
     deps.fichaSeguimientoListadoViewRepository.findListado.mockResolvedValue({ rows: [], total: 0 });
     const res = await useCase.execute({}, 1, 10, {});
     expect(res).toMatchObject({ fichasSeguimiento: [], total: 0, totalPages: 0 });
+  });
+});
+
+describe('ListFichasSeguimientoUseCase filtros inválidos', () => {
+  const crear = () => {
+    const fichaSeguimientoListadoViewRepository = { findListado: jest.fn().mockResolvedValue({ rows: [], total: 0 }) };
+    const logger = { info: jest.fn() };
+    return {
+      fichaSeguimientoListadoViewRepository,
+      useCase: new ListFichasSeguimientoUseCase({ fichaSeguimientoListadoViewRepository, logger }),
+    };
+  };
+
+  it.each([
+    [{ docenteId: 'abc' }],
+    [{ gestionId: '2x' }],
+    [{ docenteId: '0' }],
+    [{ fechaDesde: '2026-02-31' }],
+    [{ fechaHasta: 'ayer' }],
+  ])('rechaza %p sin consultar', async (query) => {
+    const { useCase, fichaSeguimientoListadoViewRepository } = crear();
+    await expect(useCase.execute({}, 1, 10, query)).rejects.toBeInstanceOf(ValidationError);
+    expect(fichaSeguimientoListadoViewRepository.findListado).not.toHaveBeenCalled();
   });
 });

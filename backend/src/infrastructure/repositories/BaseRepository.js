@@ -326,14 +326,17 @@ export class BaseRepository extends IRepository {
    *
    * @param {number} id - ID del registro a eliminar
    * @param {number} userId - ID del usuario que elimina (opcional)
+   * @param {Object} [options] - `{ transaction }`: participa en una transacción abierta. Sin esto, un
+   *   borrado hecho dentro de una transacción que ya bloqueó la fila espera su propio lock (deadlock).
    * @returns {Promise<boolean>} true si se eliminó correctamente, false si no se encontró
    */
-  async delete(id, userId = null) {
+  async delete(id, userId = null, options = {}) {
     const Model = this.getModel();
+    const txOptions = options.transaction ? { transaction: options.transaction } : {};
 
     // Sequelize con paranoid: true usa destroy() para soft delete
     // Esto automáticamente establece deletedAt
-    const model = await Model.findByPk(id);
+    const model = await Model.findByPk(id, txOptions);
     if (!model) {
       return false;
     }
@@ -349,10 +352,11 @@ export class BaseRepository extends IRepository {
 
     await Model.update(updateData, {
       where: { id },
+      ...txOptions,
     });
 
     // destroy() con paranoid: true hace soft delete (establece deletedAt)
-    await model.destroy();
+    await model.destroy(txOptions);
 
     return true;
   }

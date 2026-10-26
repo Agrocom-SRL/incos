@@ -1,3 +1,4 @@
+import { NotFoundError } from '../../../domain/errors/AppError.js';
 import { DisabilityTypeMapper, mergeUsosComplementarios } from '../../mappers/referencia/index.js';
 
 export class GetDiscapacidadByIdUseCase {
@@ -15,7 +16,7 @@ export class GetDiscapacidadByIdUseCase {
 
   async execute(id) {
     const entity = await this.disabilityTypeRepository.findById(id, { paranoid: false });
-    if (!entity) return null;
+    if (!entity) throw new NotFoundError('tipo de discapacidad');
 
     const presentation = DisabilityTypeMapper.entityToPresentation(entity);
 

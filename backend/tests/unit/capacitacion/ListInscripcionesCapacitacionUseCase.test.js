@@ -1,6 +1,8 @@
 import { describe, it, expect, jest } from '@jest/globals';
 import { ListInscripcionesCapacitacionUseCase } from '../../../src/application/use-cases/capacitacion/ListInscripcionesCapacitacionUseCase.js';
 
+import { ValidationError } from '../../../src/domain/errors/AppError.js';
+
 describe('ListInscripcionesCapacitacionUseCase', () => {
   const crear = (rows = [], total = rows.length) => {
     const deps = {
@@ -45,4 +47,21 @@ includeInactive: false,
     );
     expect(res).toMatchObject({ page: 1, limit: 50, totalPages: 0, inscripcionesCapacitacion: [] });
   });
+});
+
+describe('ListInscripcionesCapacitacionUseCase filtros inválidos', () => {
+  it.each([[{ capacitacionId: 'abc' }], [{ participanteId: '5x' }], [{ capacitacionId: '0' }]])(
+    'rechaza %p sin consultar con NaN',
+    async (query) => {
+      const inscripcionCapacitacionRepository = { findListadoRows: jest.fn() };
+      const capacitacionCompromisoRepository = { marcarVencidosComoIncumplidos: jest.fn() };
+      const useCase = new ListInscripcionesCapacitacionUseCase({
+        inscripcionCapacitacionRepository,
+        capacitacionCompromisoRepository,
+        logger: { info: jest.fn() },
+      });
+      await expect(useCase.execute({}, 1, 10, query)).rejects.toBeInstanceOf(ValidationError);
+      expect(inscripcionCapacitacionRepository.findListadoRows).not.toHaveBeenCalled();
+    }
+  );
 });

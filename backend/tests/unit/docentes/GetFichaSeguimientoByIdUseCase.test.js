@@ -1,6 +1,6 @@
 import { describe, it, expect, jest } from '@jest/globals';
 import { GetFichaSeguimientoByIdUseCase } from '../../../src/application/use-cases/docentes/supervision/GetFichaSeguimientoByIdUseCase.js';
-import { NotFoundError } from '../../../src/domain/errors/AppError.js';
+import { NotFoundError, ValidationError } from '../../../src/domain/errors/AppError.js';
 
 describe('GetFichaSeguimientoByIdUseCase', () => {
   const crear = () => {
@@ -58,5 +58,18 @@ otrasObservaciones: null,
     deps.fichaSeguimientoClaseRepository.findById.mockResolvedValue(null);
     await expect(useCase.execute(70)).rejects.toBeInstanceOf(NotFoundError);
     expect(deps.fichaSeguimientoListadoViewRepository.findListadoById).not.toHaveBeenCalled();
+  });
+});
+
+describe('GetFichaSeguimientoByIdUseCase id inválido', () => {
+  it.each([['abc'], ['12abc'], [0], [-1], [1.5]])('id %p lanza ValidationError sin consultar', async (id) => {
+    const fichaSeguimientoClaseRepository = { findById: jest.fn() };
+    const useCase = new GetFichaSeguimientoByIdUseCase({
+      fichaSeguimientoClaseRepository,
+      fichaSeguimientoListadoViewRepository: { findListadoById: jest.fn() },
+      logger: { info: jest.fn() },
+    });
+    await expect(useCase.execute(id)).rejects.toBeInstanceOf(ValidationError);
+    expect(fichaSeguimientoClaseRepository.findById).not.toHaveBeenCalled();
   });
 });
