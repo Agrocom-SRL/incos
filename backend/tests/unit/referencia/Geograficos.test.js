@@ -3,6 +3,7 @@ import { ListPaisesUseCase } from '../../../src/application/use-cases/geografico
 import { ListDepartamentosUseCase } from '../../../src/application/use-cases/geograficos/ListDepartamentosUseCase.js';
 import { ListProvinciasUseCase } from '../../../src/application/use-cases/geograficos/ListProvinciasUseCase.js';
 import { ListMunicipiosUseCase } from '../../../src/application/use-cases/geograficos/ListMunicipiosUseCase.js';
+import { ValidationError } from '../../../src/domain/errors/AppError.js';
 
 const familias = [
   { nombre: 'Paises', UseCase: ListPaisesUseCase, repoKey: 'countryRepository', collection: 'countries', dataKey: 'paises' },
@@ -62,4 +63,17 @@ describe.each(familias)('List$nombre', (f) => {
       expect(repo.findAll).toHaveBeenCalledWith({}, 1, 10);
     });
   }
+});
+
+describe('Filtros geográficos no numéricos', () => {
+  it.each([
+    [ListProvinciasUseCase, 'provinceRepository', 'departamentoId'],
+    [ListMunicipiosUseCase, 'municipalityRepository', 'provinciaId'],
+  ])('%p rechaza %s inválido con ValidationError', (UseCase, repoKey, param) => {
+    const useCase = new UseCase({ [repoKey]: {}, logger: { info: jest.fn() } });
+    for (const valor of ['abc', '3x', '0', '-1']) {
+      expect(() => useCase.buildSpecificFilters({ [param]: valor }, {})).toThrow(ValidationError);
+    }
+    expect(useCase.buildSpecificFilters({ [param]: '' }, { search: 's' })).toEqual({ search: 's' });
+  });
 });

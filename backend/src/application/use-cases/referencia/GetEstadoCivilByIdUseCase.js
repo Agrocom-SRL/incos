@@ -1,3 +1,4 @@
+import { NotFoundError } from '../../../domain/errors/AppError.js';
 import { CivilStatusMapper, mergeUsosComplementarios } from '../../mappers/referencia/index.js';
 
 export class GetEstadoCivilByIdUseCase {
@@ -15,7 +16,7 @@ export class GetEstadoCivilByIdUseCase {
 
   async execute(id) {
     const entity = await this.civilStatusRepository.findById(id, { paranoid: false });
-    if (!entity) return null;
+    if (!entity) throw new NotFoundError('estado civil');
 
     const presentation = CivilStatusMapper.entityToPresentation(entity);
 

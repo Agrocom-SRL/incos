@@ -1,6 +1,6 @@
 import { describe, it, expect, jest } from '@jest/globals';
 import { GetTeacherDetailUseCase } from '../../../src/application/use-cases/docentes/GetTeacherDetailUseCase.js';
-import { NotFoundError } from '../../../src/domain/errors/AppError.js';
+import { NotFoundError, ValidationError } from '../../../src/domain/errors/AppError.js';
 
 describe('GetTeacherDetailUseCase', () => {
   const bundle = {
@@ -53,5 +53,14 @@ maxHorasMes: 80,
     await expect(useCase.execute(8)).rejects.toBeInstanceOf(NotFoundError);
     deps.teacherRepository.findDetailBundleByTeacherId.mockResolvedValue(null);
     await expect(useCase.execute(8)).rejects.toBeInstanceOf(NotFoundError);
+  });
+});
+
+describe('GetTeacherDetailUseCase id inválido', () => {
+  it.each([['abc'], ['12abc'], [0], [-1], [1.5]])('id %p lanza ValidationError sin consultar', async (id) => {
+    const teacherRepository = { findDetailBundleByTeacherId: jest.fn() };
+    const useCase = new GetTeacherDetailUseCase({ teacherRepository, logger: { info: jest.fn() } });
+    await expect(useCase.execute(id)).rejects.toBeInstanceOf(ValidationError);
+    expect(teacherRepository.findDetailBundleByTeacherId).not.toHaveBeenCalled();
   });
 });
