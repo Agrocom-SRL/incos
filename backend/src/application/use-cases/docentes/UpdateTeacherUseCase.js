@@ -1,4 +1,5 @@
 import { NotFoundError } from '../../../domain/errors/AppError.js';
+import { parseIdPositivo } from '../../utils/validacionEntrada.js';
 import { teacherDomainFromApiBody } from '../../mappers/docentes/TeacherPayloadMapper.js';
 
 /**
@@ -21,7 +22,8 @@ export class UpdateTeacherUseCase {
    * @param {number|null} userId
    * @returns {Promise<{ docente: { id: number } }>}
    */
-  async execute(id, body, userId = null) {
+  async execute(rawId, body, userId = null) {
+    const id = parseIdPositivo(rawId, 'id');
     this.logger.info('[Docentes] Actualizar docente', { id, userId });
     const existing = await this.teacherRepository.findById(id);
     if (!existing) {

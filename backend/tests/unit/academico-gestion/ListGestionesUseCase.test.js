@@ -60,4 +60,28 @@ describe('ListGestionesUseCase', () => {
       expect(deps.logger.warn).toHaveBeenCalled();
     });
   });
+
+  describe('buildSpecificFilters (Bloque 4)', () => {
+    const { useCase } = crear();
+
+    it.each([['true', true], ['false', false], ['1', true], ['0', false], [true, true]])('?vigente=%p => %p', (v, esperado) => {
+      expect(useCase.buildSpecificFilters({ vigente: v }).vigente).toBe(esperado);
+    });
+
+    it('?vigente basura => ValidationError; vacío se ignora', () => {
+      expect(() => useCase.buildSpecificFilters({ vigente: 'quizas' })).toThrow(/vigente/);
+      expect(useCase.buildSpecificFilters({ vigente: '' })).toEqual({});
+    });
+
+    it('filtros JSON: booleanos estrictos ("false" no es true) y year válido', () => {
+      const f = useCase.buildSpecificFilters({ filtros: JSON.stringify({ vigente: 'false', active: true, year: '2026', type: 'REGULAR' }) });
+      expect(f).toEqual({ vigente: false, isActive: true, year: 2026, type: 'REGULAR' });
+      expect(() => useCase.buildSpecificFilters({ filtros: JSON.stringify({ year: 'abc' }) })).toThrow(/year/);
+      expect(() => useCase.buildSpecificFilters({ filtros: JSON.stringify({ vigente: 'zzz' }) })).toThrow(/vigente/);
+    });
+
+    it('JSON malformado se ignora con aviso', () => {
+      expect(useCase.buildSpecificFilters({ filtros: '{no' })).toEqual({});
+    });
+  });
 });

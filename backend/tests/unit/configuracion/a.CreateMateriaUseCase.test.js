@@ -16,7 +16,7 @@ describe('CreateMateriaUseCase', () => {
         sigla: 'MAT-101',
         nombre: 'Matemática',
         objetivos: 'o',
-        areaConocimiento: 'Exactas',
+        areaConocimiento: 'Exactas', // la tabla materias no tiene esa columna: se ignora
         clasificacion: 'BASICA',
         tipo: 'TEORICA',
         activo: false,
@@ -29,7 +29,6 @@ describe('CreateMateriaUseCase', () => {
         acronym: 'MAT-101',
         name: 'Matemática',
         objectives: 'o',
-        knowledgeArea: 'Exactas',
         classification: 'BASICA',
         type: 'TEORICA',
         active: false,
