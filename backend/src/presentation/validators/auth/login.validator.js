@@ -3,6 +3,9 @@ import { UnprocessableEntityError } from '../../../domain/errors/AppError.js';
 
 export const loginValidator = [
   body('username')
+    .isString()
+    .withMessage('username debe ser texto')
+    .bail()
     .trim()
     .notEmpty()
     .withMessage('username es requerido')
