@@ -46,6 +46,18 @@ export const ESTADOS_OFERTA_CURSO = {
 
 export const ESTADOS_OFERTA_CURSO_VALUES = Object.values(ESTADOS_OFERTA_CURSO);
 
+/**
+ * Transiciones permitidas de `oferta_cursos.estado` (mismo patrón que TRANSICIONES_NIVELACION):
+ * PROGRAMADA → ACTIVA → CERRADA; CANCELADA desde PROGRAMADA o ACTIVA. CERRADA y CANCELADA son terminales.
+ * PENDIENTE DE CONFIRMAR con el dueño del proyecto (aún no validada por negocio).
+ */
+export const TRANSICIONES_OFERTA_CURSO = {
+  [ESTADOS_OFERTA_CURSO.PROGRAMADA]: [ESTADOS_OFERTA_CURSO.ACTIVA, ESTADOS_OFERTA_CURSO.CANCELADA],
+  [ESTADOS_OFERTA_CURSO.ACTIVA]: [ESTADOS_OFERTA_CURSO.CERRADA, ESTADOS_OFERTA_CURSO.CANCELADA],
+  [ESTADOS_OFERTA_CURSO.CERRADA]: [],
+  [ESTADOS_OFERTA_CURSO.CANCELADA]: [],
+};
+
 /** Estados en los que se permite cambiar el turno del paralelo-gestión */
 export const TURNOS_EDITABLES_PARALELO_GESTION = [
   ESTADOS_PARALELO_GESTION.BORRADOR,

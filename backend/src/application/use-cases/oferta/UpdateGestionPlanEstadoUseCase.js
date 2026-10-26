@@ -1,5 +1,8 @@
 import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
-import { ESTADOS_GESTION_PLAN_VALUES } from '../../../domain/constants/cursos.constants.js';
+import {
+  ESTADOS_GESTION_PLAN_VALUES,
+  TRANSICIONES_GESTION_PLAN,
+} from '../../../domain/constants/cursos.constants.js';
 import { entityToPresentation } from '../../mappers/oferta/ManagementPlanPresentationMapper.js';
 
 export class UpdateGestionPlanEstadoUseCase {
@@ -15,6 +18,17 @@ export class UpdateGestionPlanEstadoUseCase {
 
     const plan = await this.managementPlanRepository.findById(gestionPlanId);
     if (!plan) throw new NotFoundError('plan habilitado en gestión');
+
+    const actual = plan.state ?? plan.estado ?? null;
+    if (actual !== null && actual !== estado) {
+      const permitidos = TRANSICIONES_GESTION_PLAN[actual] ?? [];
+      if (!permitidos.includes(estado)) {
+        throw new ValidationError(
+          `Transición no permitida: un plan ${actual} no puede pasar a ${estado}`,
+          { estadoActual: actual, estadoSolicitado: estado, permitidos }
+        );
+      }
+    }
 
     const updated = await this.managementPlanRepository.update(
       gestionPlanId,
