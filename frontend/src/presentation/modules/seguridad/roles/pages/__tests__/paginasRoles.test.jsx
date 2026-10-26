@@ -168,7 +168,7 @@ describe('RolFormPage', () => {
       breadcrumbItems: bc,
       submitLoading: false,
       submitError: null,
-      formSections: { datosRol: { title: 'Datos del rol', description: 'Defina el rol', fields: [{ name: 'nombre', label: 'Nombre', type: 'text' }] } },
+      formSections: { datosRol: { title: 'Datos del rol', description: 'Defina el rol', fields: [{ name: 'nombre', label: 'Nombre', type: 'input' }] } },
       handleVolver: vi.fn(),
       handleSubmit: vi.fn(),
       ...props,

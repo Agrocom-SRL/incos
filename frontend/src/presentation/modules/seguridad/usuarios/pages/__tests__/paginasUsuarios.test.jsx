@@ -239,7 +239,7 @@ describe('UsuarioCreatePage', () => {
       wizardFormMountKey: 'k',
       breadcrumbItems: bc,
       wizardSteps: [
-        { title: 'Paso uno', formTitle: 'Primero', sections: ['otra'], config: { otra: { title: 'Sección', fields: [{ name: 'x', label: 'Campo X', type: 'text' }] } } },
+        { title: 'Paso uno', formTitle: 'Primero', sections: ['otra'], config: { otra: { title: 'Sección', fields: [{ name: 'x', label: 'Campo X', type: 'input' }] } } },
       ],
       usuarioAltaInitialValues: {},
       onValidateBeforeNext: vi.fn().mockResolvedValue(true),

@@ -161,7 +161,7 @@ describe('DocentesForm', () => {
           title: 'Datos personales',
           formTitle: 'Identificación',
           sections: ['identidad'],
-          config: { identidad: { title: 'Identidad', fields: [{ name: 'nombres', label: 'Nombres', type: 'text', rules: [{ required: true, message: 'Ingrese los nombres' }] }] } },
+          config: { identidad: { title: 'Identidad', fields: [{ name: 'nombres', label: 'Nombres', type: 'input', rules: [{ required: true, message: 'Ingrese los nombres' }] }] } },
         },
       ],
       wizardInitialValues: {},

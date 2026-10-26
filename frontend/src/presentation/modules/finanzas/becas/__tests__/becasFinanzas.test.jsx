@@ -219,8 +219,8 @@ describe('BecaDescuentoFormPage', () => {
       error: null,
       initialValues: {},
       formSections: {
-        datosBeca: { title: 'Datos', description: 'Datos generales', fields: [{ name: 'nombre', label: 'Nombre', type: 'text' }] },
-        reglasAplicacion: { title: 'Reglas', description: 'Reglas', fields: [{ name: 'codigo', label: 'Código', type: 'text' }] },
+        datosBeca: { title: 'Datos', description: 'Datos generales', fields: [{ name: 'nombre', label: 'Nombre', type: 'input' }] },
+        reglasAplicacion: { title: 'Reglas', description: 'Reglas', fields: [{ name: 'codigo', label: 'Código', type: 'input' }] },
       },
       handleVolver: vi.fn(),
       handleSubmit: vi.fn(),
