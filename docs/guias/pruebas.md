@@ -76,6 +76,48 @@ mysql -e "DROP DATABASE incos_ci_test"   # al terminar
 - Vista nueva en `03-views` → `vistas.test.js` la cubre sola (la detecta por `CREATE VIEW`).
 - Si la prueba necesita datos de negocio, agrégalos al seed de `04-test-seeds` (nunca a los seeds de producción).
 
+## Pruebas de carga y estrés (k6)
+
+Scripts en `backend/tests/load/`. Solo **lecturas** (login, `/auth/me`, dashboard, 7 listados principales y una
+exportación Excel) con los usuarios `test.*` del seed de pruebas. **Nunca contra producción**: `lib/config.js`
+aborta si `BASE_URL` apunta al dominio productivo, y el workflow usa una BD efímera `incos_ci_test`.
+
+| Perfil | Qué hace | Thresholds |
+|---|---|---|
+| `smoke.js` | 1 VU, 1 min; valida los escenarios | p95 < 800 ms, errores < 1 % |
+| `load.js` | rampa a 50 VUs, meseta 3 min | p95 < 800 ms, errores < 1 % |
+| `stress.js` | rampa 50 → 300 VUs hasta romper | laxos (p95 < 5 s; aborta si errores > 30 %) |
+| `spike.js` | salto 5 → 150 VUs y recuperación | laxos (p95 < 3 s, errores < 10 %) |
+
+Los tokens se obtienen en `setup()` (un login por rol) y los VU los reutilizan, porque el login hace bcrypt y
+domina la CPU; un login real se ejecuta 1 de cada 10 iteraciones para medirlo (`incos_login_ms`).
+Métricas propias: `incos_login_ms`, `incos_listado_ms`, `incos_export_ms`. Cada script escribe
+`resumen-<perfil>.json` (cambiar con `K6_RESUMEN`).
+
+### Correr en local
+```bash
+# 1) BD descartable + backend (ver "Correr en local" arriba para las variables DB_*)
+cd backend && bash scripts/ci-cargar-bd.sh
+JWT_SECRET=local DB_NAME=incos_ci_test npm start      # en otra terminal, puerto 3000
+
+# 2) k6 (https://grafana.com/docs/k6/latest/set-up/install-k6/): brew install k6 | apt install k6
+K6_PASSWORD=Test-Incos-2026 BASE_URL=http://127.0.0.1:3000 k6 run tests/load/smoke.js
+K6_PASSWORD=Test-Incos-2026 k6 run tests/load/load.js     # también stress.js / spike.js
+```
+Variables: `BASE_URL` (sin `/api/v1`, por defecto `http://127.0.0.1:3000`), `K6_PASSWORD` (obligatoria),
+`K6_RESUMEN` (ruta del JSON). Medir en una máquina que no sea la del backend para no falsear resultados.
+
+### En CI
+Workflow `.github/workflows/carga.yml` (separado de `ci.yml`, no forma parte de la compuerta de merge):
+- **Manual:** Actions → «Carga y estrés» → Run workflow → elegir `perfil` (smoke|load|stress|spike).
+- **Semanal:** lunes 07:00 UTC, perfil `load`.
+- **PR:** corre `smoke` (no bloqueante, `continue-on-error`) solo si cambian `backend/tests/load/**` o el workflow.
+
+Levanta MariaDB 10.11, carga la BD con `scripts/ci-cargar-bd.sh`, arranca el backend (`npm start`), espera
+`/health`, instala k6 (`grafana/setup-k6-action`), corre el perfil y sube `resumen-<perfil>.json` como artifact
+(`k6-resumen-<perfil>`). El job falla si no se cumplen los thresholds. En `stress` un fallo es esperable: sirve para
+ubicar el punto de quiebre. Los runners compartidos son ruidosos: usar los resultados como tendencia, no como SLA.
+
 ## Qué NO hacer
 - No bajar la cobertura ni borrar pruebas para que pase el CI.
 - No `skip`/`only` en lo que se fusiona.
