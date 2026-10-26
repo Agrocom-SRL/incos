@@ -495,7 +495,7 @@ Este catalogo define las capacidades reales del sistema para evitar ambiguedad e
 |---|---|---|
 | MATRICULA | `matricula.*` | admision, inscripcion, becas, documentos, aportes |
 | ACADEMICO | `academico.*` | calificaciones, asistencia (y licencias estudiantiles), nivelacion, historial, libros de registro |
-| DOCENTES | `docentes.*` | docentes, asignacion, supervision (licencias docentes apagadas) |
+| DOCENTES | `docentes.*` | docentes, asignacion, supervision |
 | FINANZAS | `finanzas.*` | pagos, aportes, compromisos, reportes, recibos, configuracion |
 | INSTITUCIONAL | `institucional.*` | gestiones, oferta, horarios, configuraciones |
 | TITULACION | `titulacion.*` | proyectos de grado, bitacora, avances, pasantias |
@@ -806,7 +806,6 @@ Permisos: `docentes.*` (seed `60-seed-permisos-doc.sql` — la numeración corri
 | CREAR | Nuevo docente / nueva ficha de seguimiento | ADM, REC, DIRA |
 | EDITAR | Ficha docente / ficha de seguimiento | ADM, REC, DIRA |
 | EXPORTAR | PDF de la ficha de seguimiento | ADM, REC, DIRA |
-| APROBAR | Licencias docentes (deshabilitado: página en construcción) | ADM, REC, DIRA |
 
 > **Supervisión docente (2026-07-30, permiso único):** operan **REC** y **DIRA**
 > (+ADM por herencia de vista) — la ficha real lleva firma y sello de la
