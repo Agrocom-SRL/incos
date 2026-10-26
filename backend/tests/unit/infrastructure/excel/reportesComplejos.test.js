@@ -44,6 +44,17 @@ describe('CentralizadorExcelBuilder', () => {
     expect(contiene(wb.worksheets[0], 'Sin estudiantes matriculados')).toBe(true);
   });
 
+  it.each([
+    ['sin asignaturas ni estudiantes', { asignaturas: [], estudiantes: [] }],
+    ['con estudiantes pero sin asignaturas', { asignaturas: [] }],
+    ['con una sola asignatura', { asignaturas: [{ ofertaCursoId: 1, sigla: 'INF-101', nombre: 'Programación I' }] }],
+  ])('paralelo con cabecera completa y %s genera un libro válido (sin "Cannot merge already merged cells")', async (_caso, extra) => {
+    const buffer = await new CentralizadorExcelBuilder().generarCentralizadorParaleloBimestre(datosCentralizador(extra));
+    const wb = await leerXlsx(buffer);
+    expect(nombresHojas(wb)).toEqual(['A']);
+    expect(contiene(wb.worksheets[0], 'NÓMINA DE ESTUDIANTES')).toBe(true);
+  });
+
   it('carrera: una hoja por paralelo con nombres únicos y saneados', async () => {
     const hojas = [
       { nombreHoja: 'A/1?', datos: datosCentralizador() },
