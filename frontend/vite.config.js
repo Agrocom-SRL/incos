@@ -115,6 +115,14 @@ export default defineConfig({
         // Los smoke de Playwright viven en e2e/ y corren con `npm run test:e2e`.
         exclude: ['e2e/**', 'node_modules/**'],
         css: false,
+        // Las pruebas de formularios de AntD (tipeo + validación async) tardan más bajo cobertura/CI.
+        testTimeout: 20000,
+        coverage: {
+            provider: 'v8',
+            reporter: ['text-summary', 'json-summary'],
+            include: ['src/presentation/modules/**/*.{js,jsx}'],
+            exclude: ['**/__tests__/**', '**/*.test.{js,jsx}', '**/design/**', '**/studio/**'],
+        },
     },
 
     server: {
