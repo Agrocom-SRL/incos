@@ -49,7 +49,7 @@ export const ESTADOS_OFERTA_CURSO_VALUES = Object.values(ESTADOS_OFERTA_CURSO);
 /**
  * Transiciones permitidas de `oferta_cursos.estado` (mismo patrón que TRANSICIONES_NIVELACION):
  * PROGRAMADA → ACTIVA → CERRADA; CANCELADA desde PROGRAMADA o ACTIVA. CERRADA y CANCELADA son terminales.
- * PENDIENTE DE CONFIRMAR con el dueño del proyecto (aún no validada por negocio).
+ * Confirmada por el dueño del proyecto (2026-10-26).
  */
 export const TRANSICIONES_OFERTA_CURSO = {
   [ESTADOS_OFERTA_CURSO.PROGRAMADA]: [ESTADOS_OFERTA_CURSO.ACTIVA, ESTADOS_OFERTA_CURSO.CANCELADA],
