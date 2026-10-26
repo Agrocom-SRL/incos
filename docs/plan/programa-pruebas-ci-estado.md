@@ -41,8 +41,15 @@ Cerrar el backlog de `correcciones-hallazgos-pruebas.md` y ampliar las pruebas d
 | Frontend capa `application` | #65 | 6 → 54 % de líneas; objetivo 70 % pendiente |
 | Backend ronda 2 (repos, middleware, rutas, dominio, contenedor) | #66 | Global ~87 % líneas, 73 % ramas |
 | Integración por dominio (8 dominios, MariaDB real) | #67 | 16 suites, 476 pruebas, validadas en local y en CI |
+| `presentation/validators` backend | rama `test/validators-cobertura` | 72 % → 98 % de líneas (89,6 % de ramas), +680 pruebas; 5 correcciones de validators/use cases con su prueba |
 
 Backend: ~8 700 pruebas unitarias. Frontend: ~1 200 pruebas de Vitest.
+
+## Correcciones de la ronda de validators (rama `test/validators-cobertura`)
+- Estudiantes: `registerStudentValidator` acepta `null` explícito en los ids opcionales (igual que update); la regla ANTIGUO (gestión y carrera) ya no queda saltada por `optional()` y los use cases de registro y actualización también la exigen; los ids de update usan validación estricta (`'3abc'`, `'1.5'` y `0` se rechazan).
+- Asignaciones docentes: `docenteId`, `ofertaCursoId` (y `gestionPlanId` en el alta) son requeridos en `createTeacherAssignmentValidator` y `assignTeacherToCourseValidator`.
+- Carreras: `UpdateCarreraUseCase` lanza `ConflictError` si el código ya lo usa otra carrera; el límite de `codigo` pasa de 50 a 20 (VARCHAR(20)).
+- Pagos: en registro y edición de cuota, la cuenta de pago y el comprobante exigidos por método (QR, transferencia, depósito) ya no se saltan cuando el campo no viaja.
 
 ## Pendiente de aplicar a mano (el token de la sesión automatizada no tiene permiso `workflow`)
 `docs/plan/workflows-pendientes/`: `seguridad-ci.patch` (paso `test:seguridad` y job `seguridad` en `ci.yml`), `e2e.yml.txt` y `carga.yml.txt` (copiar a `.github/workflows/`). Mientras no se apliquen, el E2E, la carga y la seguridad no corren en el CI.
@@ -50,14 +57,13 @@ Backend: ~8 700 pruebas unitarias. Frontend: ~1 200 pruebas de Vitest.
 ## Pendiente de decidir
 - `areaConocimiento` de Materia: la tabla `materias` no tiene la columna; guardarla exige DDL (aprobación de diseño de schema).
 - Contratos que cambian: asistencia con bimestre inválido 404→400; filtros de id inválidos 400 en vez de ignorarse; `UpdatePeriodoFechas` exige ambas fechas; la auditoría ahora registra al usuario real (`req.user = req.usuario`, PR #66).
-- `POST /proyectos-grado/:id/bitacora/:entradaId/confirmar` muta con permiso de lectura (`titulacion.bitacora` + `LISTAR`): confirmar si es intencional.
+- `POST /proyectos-grado/:id/bitacora/:entradaId/confirmar` muta con permiso de lectura (`titulacion.bitacora` + `LISTAR`): confirmar si es intencional. Comentado en `proyectos-grado.routes.js`; no se tocó el permiso.
 - Deuda de seguridad no corregida: `/uploads` estático sin autenticación (incluye documentos de estudiantes), SVG servidos desde `/uploads`, `/api-docs` público, `X-Forwarded-For` sin validar; detrás de Nginx definir `TRUST_PROXY=true`.
 - Discrepancias entre `matriz-permisos-sistema.md` y lo sembrado (se siguen los seeds).
 
 ## Siguiente
 - Pruebas de presentación por módulo del frontend (agente en curso).
 - Frontend `application`: matrícula (~10 %) y capacitación (~900 líneas sin cubrir) para llegar al 70 %; Providers y hooks de institucional.
-- Backend: `presentation/validators` (71 %).
 - Primera ejecución real de las pruebas de carga cuando se aplique `carga.yml`.
 
 ## Límites conocidos

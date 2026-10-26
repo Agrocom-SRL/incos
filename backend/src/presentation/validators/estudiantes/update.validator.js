@@ -1,4 +1,5 @@
 import { body } from 'express-validator';
+import { esEnteroPositivoEstricto } from './enteros.js';
 
 /**
  * Validador para actualización de estudiantes (PUT /api/v1/estudiantes/:id)
@@ -176,8 +177,7 @@ export const updateStudentValidator = [
     .custom((value) => {
       // Si se proporciona y no es null/undefined, validar
       if (value !== null && value !== undefined) {
-        const numValue = parseInt(value, 10);
-        if (Number.isNaN(Number(numValue)) || numValue < 1) {
+        if (!esEnteroPositivoEstricto(value)) {
           throw new Error('Estado civil ID debe ser un número entero mayor a 0');
         }
       }
@@ -257,8 +257,7 @@ export const updateStudentValidator = [
     .custom((value) => {
       // Si se proporciona, debe ser un número entero válido
       if (value !== null && value !== undefined && value !== '') {
-        const numValue = parseInt(value, 10);
-        if (Number.isNaN(Number(numValue)) || numValue < 1) {
+        if (!esEnteroPositivoEstricto(value)) {
           throw new Error('Municipio de residencia ID debe ser un número entero mayor a 0');
         }
       }
@@ -273,8 +272,7 @@ export const updateStudentValidator = [
     .custom((value) => {
       // Si se proporciona, debe ser un número entero válido
       if (value !== null && value !== undefined && value !== '') {
-        const numValue = parseInt(value, 10);
-        if (Number.isNaN(Number(numValue)) || numValue < 1) {
+        if (!esEnteroPositivoEstricto(value)) {
           throw new Error('Departamento de residencia ID debe ser un número entero mayor a 0');
         }
       }
@@ -286,8 +284,7 @@ export const updateStudentValidator = [
     .custom((value) => {
       // Si se proporciona, debe ser un número entero válido
       if (value !== null && value !== undefined && value !== '') {
-        const numValue = parseInt(value, 10);
-        if (Number.isNaN(Number(numValue)) || numValue < 1) {
+        if (!esEnteroPositivoEstricto(value)) {
           throw new Error('Provincia de residencia ID debe ser un número entero mayor a 0');
         }
       }
@@ -307,8 +304,7 @@ export const updateStudentValidator = [
     .custom((value) => {
       // Si se proporciona, debe ser un número entero válido
       if (value !== null && value !== undefined && value !== '') {
-        const numValue = parseInt(value, 10);
-        if (Number.isNaN(Number(numValue)) || numValue < 1) {
+        if (!esEnteroPositivoEstricto(value)) {
           throw new Error('Tipo de discapacidad ID debe ser un número entero mayor a 0');
         }
       }
@@ -353,8 +349,7 @@ export const updateStudentValidator = [
     .custom((value) => {
       // Si se proporciona, debe ser un número entero válido
       if (value !== null && value !== undefined && value !== '') {
-        const numValue = parseInt(value, 10);
-        if (Number.isNaN(Number(numValue)) || numValue < 1) {
+        if (!esEnteroPositivoEstricto(value)) {
           throw new Error('País ID debe ser un número entero mayor a 0');
         }
       }
@@ -381,8 +376,7 @@ export const updateStudentValidator = [
     .custom((value) => {
       // Si se proporciona, debe ser un número entero válido
       if (value !== null && value !== undefined && value !== '') {
-        const numValue = parseInt(value, 10);
-        if (Number.isNaN(Number(numValue)) || numValue < 1) {
+        if (!esEnteroPositivoEstricto(value)) {
           throw new Error('Idioma materno ID debe ser un número entero mayor a 0');
         }
       }
@@ -394,8 +388,7 @@ export const updateStudentValidator = [
     .custom((value) => {
       // Si se proporciona, debe ser un número entero válido
       if (value !== null && value !== undefined && value !== '') {
-        const numValue = parseInt(value, 10);
-        if (Number.isNaN(Number(numValue)) || numValue < 1) {
+        if (!esEnteroPositivoEstricto(value)) {
           throw new Error('Idioma secundario ID debe ser un número entero mayor a 0');
         }
       }
@@ -431,8 +424,7 @@ export const updateStudentValidator = [
     .custom((value) => {
       // Si se proporciona y no es null/undefined/vacío, validar
       if (value !== null && value !== undefined && value !== '') {
-        const numValue = parseInt(value, 10);
-        if (Number.isNaN(Number(numValue)) || numValue < 1) {
+        if (!esEnteroPositivoEstricto(value)) {
           throw new Error('Tipo de parentesco ID debe ser un número entero mayor a 0');
         }
       }
@@ -598,41 +590,39 @@ export const updateStudentValidator = [
 
   body('gestionIngresoId')
     .customSanitizer((value) => (value === '' ? null : value))
-    .optional({ nullable: true, checkFalsy: true })
+    .optional({ nullable: true })
     .custom((value) => {
-      if (value !== null && value !== undefined) {
-        const numValue = parseInt(value, 10);
-        if (Number.isNaN(Number(numValue)) || numValue < 1) {
-          throw new Error('Gestión de ingreso ID debe ser un número entero mayor a 0');
-        }
-      }
-      return true;
-    })
-    .custom((value, { req }) => {
-      if (req.body.tipoAdmision === 'ANTIGUO' && (value == null || value === '')) {
-        throw new Error('Gestión de ingreso es requerida para estudiantes antiguos');
+      if (!esEnteroPositivoEstricto(value)) {
+        throw new Error('Gestión de ingreso ID debe ser un número entero mayor a 0');
       }
       return true;
     }),
 
   body('carreraId')
     .customSanitizer((value) => (value === '' ? null : value))
-    .optional({ nullable: true, checkFalsy: true })
+    .optional({ nullable: true })
     .custom((value) => {
-      if (value !== null && value !== undefined) {
-        const numValue = parseInt(value, 10);
-        if (Number.isNaN(Number(numValue)) || numValue < 1) {
-          throw new Error('Carrera ID debe ser un número entero mayor a 0');
-        }
-      }
-      return true;
-    })
-    .custom((value, { req }) => {
-      if (req.body.tipoAdmision === 'ANTIGUO' && (value == null || value === '')) {
-        throw new Error('Carrera es requerida para estudiantes antiguos');
+      if (!esEnteroPositivoEstricto(value)) {
+        throw new Error('Carrera ID debe ser un número entero mayor a 0');
       }
       return true;
     }),
+
+  // ANTIGUO exige gestión y carrera. Si el campo no viaja (undefined) se conserva lo guardado y el use case
+  // lo comprueba; si viaja explícito como null, '' o 0 no se acepta. Cadena aparte porque `optional` saltaría la regla.
+  body('gestionIngresoId').custom((value, { req }) => {
+    if (req.body.tipoAdmision === 'ANTIGUO' && value !== undefined && !esEnteroPositivoEstricto(value)) {
+      throw new Error('Gestión de ingreso es requerida para estudiantes antiguos');
+    }
+    return true;
+  }),
+
+  body('carreraId').custom((value, { req }) => {
+    if (req.body.tipoAdmision === 'ANTIGUO' && value !== undefined && !esEnteroPositivoEstricto(value)) {
+      throw new Error('Carrera es requerida para estudiantes antiguos');
+    }
+    return true;
+  }),
 
   // ============================================
   // OBSERVACIONES (OPCIONAL)
