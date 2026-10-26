@@ -88,10 +88,13 @@ export { colFractionAtWidth } from '../../shared/index.js';
 export function computeTresZonasFirmas(layout) {
   const { lastCol, firstAsigCol } = layout;
   const clamp = (col) => Math.min(Math.max(col, COL_NOMBRE_END), lastCol);
+  const zona2 = [clamp(firstAsigCol), clamp(firstAsigCol + 3)];
+  // Con pocas asignaturas la 3.ª zona invadía la 2.ª (celdas ya combinadas): arranca después.
+  const zona3Inicio = Math.max(clamp(lastCol - 5), zona2[1] + 1);
   return [
     [COL_NOMBRE_END, COL_NOMBRE_END],
-    [clamp(firstAsigCol), clamp(firstAsigCol + 3)],
-    [clamp(lastCol - 5), clamp(lastCol - 2)],
+    zona2,
+    [zona3Inicio, Math.max(clamp(lastCol - 2), zona3Inicio)],
   ];
 }
 
@@ -112,10 +115,13 @@ export function computeTresZonasFirmas(layout) {
 export function computeTresZonasDocentes(layout) {
   const { lastCol, firstAsigCol } = layout;
   const clamp = (col) => Math.min(Math.max(col, COL_NOMBRE_END), lastCol);
+  const zona2Inicio = clamp(firstAsigCol + 1);
+  const zona2 = [zona2Inicio, Math.max(clamp(lastCol - 6), zona2Inicio)];
+  const zona3Inicio = Math.max(clamp(lastCol - 4), zona2[1] + 1);
   return [
     [COL_NOMBRE_END, COL_CI],
-    [clamp(firstAsigCol + 1), clamp(lastCol - 6)],
-    [clamp(lastCol - 4), lastCol],
+    zona2,
+    [Math.min(zona3Inicio, lastCol), lastCol],
   ];
 }
 

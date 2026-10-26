@@ -1,0 +1,1 @@
+Copiar `carga.yml.txt` a `.github/workflows/carga.yml` (el token automatizado no tiene permiso `workflow`) y borrar este archivo. Ejecuta las pruebas de carga y estrés k6 (manual y semanal).
