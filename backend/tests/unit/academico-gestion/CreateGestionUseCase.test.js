@@ -92,4 +92,11 @@ describe('CreateGestionUseCase', () => {
     await expect(useCase.execute(body())).rejects.toThrow('Ya existe una gestión activa con el código 2026-R');
     expect(deps.managementRepository.create).not.toHaveBeenCalled();
   });
+
+  it.each([['abc'], ['2026-02-31']])('fecha inválida (%p) => 400 sin crear', async (f) => {
+    const { useCase, deps } = crear();
+    await expect(useCase.execute(body({ fecha_inicio: f }))).rejects.toMatchObject({ statusCode: 400 });
+    await expect(useCase.execute(body({ fecha_fin: f }))).rejects.toMatchObject({ statusCode: 400 });
+    expect(deps.managementRepository.create).not.toHaveBeenCalled();
+  });
 });

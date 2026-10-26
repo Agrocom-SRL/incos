@@ -1,5 +1,6 @@
 import { ValidationError } from '../../../domain/errors/AppError.js';
 import { TIPOS_DOCUMENTO_SISTEMA_VALUES } from '../../../domain/constants/index.js';
+import { parseIdOpcional, primerDefinido } from '../../utils/validacionEntrada.js';
 
 export class CreateDocumentacionUseCase {
   constructor({ documentacionRepository, logger }) {
@@ -19,8 +20,9 @@ export class CreateDocumentacionUseCase {
       );
     }
 
-    const documentoPadreId = body.documentoPadreId ?? body.parentDocumentId ?? null;
-    if (documentoPadreId) {
+    // null / '' / ausente = sin padre; 0, negativos o texto no numérico son inválidos (ValidationError)
+    const documentoPadreId = parseIdOpcional(primerDefinido(body, 'documentoPadreId', 'parentDocumentId'), 'documentoPadreId');
+    if (documentoPadreId !== null) {
       await this.validarDocumentoPadre(documentoPadreId, tipoDocumento);
     }
 

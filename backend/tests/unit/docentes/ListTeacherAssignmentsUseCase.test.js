@@ -1,6 +1,8 @@
 import { describe, it, expect, jest } from '@jest/globals';
 import { ListTeacherAssignmentsUseCase } from '../../../src/application/use-cases/docentes/ListTeacherAssignmentsUseCase.js';
 
+import { ValidationError } from '../../../src/domain/errors/AppError.js';
+
 describe('ListTeacherAssignmentsUseCase', () => {
   const crear = () => {
     const deps = {
@@ -36,12 +38,18 @@ describe('ListTeacherAssignmentsUseCase', () => {
     expect(res.asignaciones[0]).toMatchObject({ oferta_curso_id: 5, docente_id: 2 });
   });
 
-  it.each([
-    ['abc'], [0], [-3], [''],
-  ])('ids no numéricos o no positivos (%p) se ignoran como filtro', async (valor) => {
+  it('un id vacío se ignora como filtro', async () => {
     const { useCase, deps } = crear();
-    await useCase.execute({}, 1, 10, { docenteId: valor, gestionPlanId: valor, cursoId: valor });
+    await useCase.execute({}, 1, 10, { docenteId: '', gestionPlanId: '', cursoId: '' });
     expect(deps.teacherAssignmentRepository.findEnriched).toHaveBeenCalledWith({}, 1, 10);
+  });
+
+  it.each([['abc'], ['12abc'], [0], [-3]])('ids no numéricos o no positivos (%p) lanzan ValidationError', async (valor) => {
+    const { useCase, deps } = crear();
+    for (const campo of ['docenteId', 'gestionPlanId', 'cursoId', 'paralelo_gestion_id']) {
+      await expect(useCase.execute({}, 1, 10, { [campo]: valor })).rejects.toBeInstanceOf(ValidationError);
+    }
+    expect(deps.teacherAssignmentRepository.findEnriched).not.toHaveBeenCalled();
   });
 
   it.each([['false', false], ['0', false], ['1', true], ['talvez', undefined]])(

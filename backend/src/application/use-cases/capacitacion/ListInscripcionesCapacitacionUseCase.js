@@ -1,3 +1,4 @@
+import { parseFiltroId } from '../../utils/validacionEntrada.js';
 import { InscripcionCapacitacionMapper } from '../../mappers/capacitacion/index.js';
 import { ESTADOS_INSCRIPCION_CAPACITACION_VALUES } from '../../../domain/constants/capacitacion.constants.js';
 
@@ -37,8 +38,8 @@ export class ListInscripcionesCapacitacionUseCase {
   async execute(baseFilters = {}, page = 1, limit = 50, queryParams = {}) {
     const filters = {
       search: baseFilters.search,
-      capacitacionId: queryParams.capacitacionId ? Number(queryParams.capacitacionId) : undefined,
-      participanteId: queryParams.participanteId ? Number(queryParams.participanteId) : undefined,
+      capacitacionId: parseFiltroId(queryParams.capacitacionId, 'capacitacionId'),
+      participanteId: parseFiltroId(queryParams.participanteId, 'participanteId'),
       estado: ESTADOS_INSCRIPCION_CAPACITACION_VALUES.includes(queryParams.estado)
         ? queryParams.estado
         : undefined,

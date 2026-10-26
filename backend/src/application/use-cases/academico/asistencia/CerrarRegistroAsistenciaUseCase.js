@@ -1,4 +1,5 @@
 import { NotFoundError } from '../../../../domain/errors/AppError.js';
+import { parseNumero, parseFechaISO } from '../../../utils/validacionEntrada.js';
 import { assertAsistenciaCursoAccess } from '../../../utils/asistenciaCursoAccess.js';
 import { ESTADOS_REGISTRO_ASISTENCIA } from '../../../../domain/constants/asistencia.constants.js';
 
@@ -28,10 +29,9 @@ export class CerrarRegistroAsistenciaUseCase {
   }
 
   async execute({ usuarioId, asignacionId, bimestre, fecha }) {
-    const bimestreNum = Number(bimestre);
-    if (!Number.isFinite(bimestreNum) || bimestreNum < 1 || bimestreNum > 4) {
-      throw new NotFoundError('Bimestre');
-    }
+    const bimestreNum = parseNumero(bimestre, 'bimestre', { min: 1, max: 4, entero: true });
+    const hayFecha = fecha !== undefined && fecha !== null && String(fecha).trim() !== '';
+    const fechaDia = hayFecha ? parseFechaISO(fecha, 'fecha') : null;
 
     const { gestionId } = await assertAsistenciaCursoAccess({
       calificacionCoordinacionRepository: this.calificacionCoordinacionRepository,
@@ -52,19 +52,19 @@ export class CerrarRegistroAsistenciaUseCase {
     }
 
     // Cierre por DÍA (preferido): firma una sola sesión; si no existe (día sin marcas), la crea.
-    if (fecha) {
+    if (fechaDia) {
       const sesion = await this.sesionClaseRepository.cerrarSesionDia(
         Number(asignacionId),
-        fecha,
+        fechaDia,
         { periodoAcademicoId },
         usuarioId,
       );
       this.logger.info('[Asistencia] Día cerrado', {
         asignacionId: Number(asignacionId),
         bimestre: bimestreNum,
-        fecha,
+        fecha: fechaDia,
       });
-      return { bimestre: bimestreNum, fecha, sesionEstado: sesion.sesionEstado };
+      return { bimestre: bimestreNum, fecha: fechaDia, sesionEstado: sesion.sesionEstado };
     }
 
     // Cierre en LOTE por bimestre (legacy / acción masiva).

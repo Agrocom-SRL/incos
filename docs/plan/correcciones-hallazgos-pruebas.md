@@ -1,6 +1,6 @@
 # Backlog de correcciones hallado por las pruebas unitarias
 
-**Estado:** pendiente de aplicar — registrado 2026-10-20.
+**Estado:** en ejecución — Bloques 1, 2, 3, 5 y 7 aplicados (PR #34 a #39); 4 y 6 en curso. Estado vivo en `programa-pruebas-ci-estado.md`.
 **Origen:** las pruebas unitarias del backend (tandas 2 a 5) y su revisión. Los agentes **reportaron** los bugs sin corregirlos y no dejaron pruebas que fijen el comportamiento erróneo (salvo tres `it.failing` en `tests/unit/configuracion/b.*`, que hay que pasar a `it` al corregir).
 **Método de corrección:** un PR por bloque, cada bug con la prueba que lo reproduce (skill `incos-testing`), PR hacia `develop` y de uno en uno (el auto-merge falla con "Base branch was modified" si dos PR se fusionan a la vez).
 

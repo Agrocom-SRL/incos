@@ -111,4 +111,28 @@ periodoNombre: 'Segundo',
       expect(res[0].estadisticas).toEqual({ totalInscritos: 0, totalHombres: 0, totalMujeres: 0 });
     });
   });
+
+  describe('filtros inválidos (Bloque 4)', () => {
+    const { useCase } = crear();
+
+    it.each([['abc'], ['0'], ['5x']])('periodo_id/carrera_id %p => ValidationError (no NaN)', (v) => {
+      expect(() => useCase.buildSpecificFilters({ periodo_id: v })).toThrow(/periodo_id/);
+      expect(() => useCase.buildSpecificFilters({ carrera_id: v })).toThrow(/carrera_id/);
+    });
+
+    it('ids vacíos no generan filtro', () => {
+      expect(useCase.buildSpecificFilters({ periodo_id: '', carrera_id: '' })).toEqual({});
+    });
+
+    it('incluirInactivos basura => ValidationError; vacío se ignora', () => {
+      expect(() => useCase.buildSpecificFilters({ incluirInactivos: 'quizas' })).toThrow(/incluirInactivos/);
+      expect(useCase.buildSpecificFilters({ incluirInactivos: '' })).toEqual({});
+    });
+
+    it('periodo no numérico => ValidationError sin consultar periodos', async () => {
+      const { useCase: uc, deps } = crear();
+      await expect(uc.prepareFilters({}, { periodo: 'abc' })).rejects.toThrow(/periodo/);
+      expect(deps.periodRepository.findAll).not.toHaveBeenCalled();
+    });
+  });
 });
