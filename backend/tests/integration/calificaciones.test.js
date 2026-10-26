@@ -9,7 +9,7 @@
  * (`inscribirEstudiantePrueba`), lo que se limpia al terminar.
  */
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
-import { iniciarSistema, cerrarSistema, como, sequelize } from './helpers/sistema.js';
+import { iniciarSistema, cerrarSistema, como, descargarComo, sequelize } from './helpers/sistema.js';
 import {
   esperarValidacion,
   esperarNoEncontrado,
@@ -116,6 +116,23 @@ describe('Calificaciones · gestión de bimestres y cronograma', () => {
     expect(res.body.data.bloqueos.length).toBeGreaterThan(0);
   });
 
+  it('los 404 y 400 del cronograma conservan su mensaje y nunca incluyen stack', async () => {
+    const noExiste = await como('RECTOR', 'get', `/calificaciones/cronograma/${ID_INEXISTENTE}`);
+    esperarNoEncontrado(noExiste);
+    expect(noExiste.body.error.message).toBe('La actividad de cronograma no existe');
+    for (const res of [
+      noExiste,
+      await como('RECTOR', 'get', '/calificaciones/cronograma/abc'),
+      await enviarComo('RECTOR', 'post', '/calificaciones/cronograma', {}),
+      await como('RECTOR', 'get', '/calificaciones/asignaciones/999999/cuaderno/1'),
+    ]) {
+      expect(res.status).toBeGreaterThanOrEqual(400);
+      expect(res.body.error.stack).toBeUndefined();
+      expect(res.body.error.name).toBeUndefined();
+      expect(res.text).not.toMatch(/stack|node_modules|\sat .*\.js:\d+/);
+    }
+  });
+
   it('cronograma: detalle 404, id inválido 400 y cuerpo inválido 400', async () => {
     esperarNoEncontrado(await como('RECTOR', 'get', `/calificaciones/cronograma/${ID_INEXISTENTE}`));
     esperarValidacion(await como('RECTOR', 'get', '/calificaciones/cronograma/abc'), 'id');
@@ -150,6 +167,20 @@ describe('Calificaciones · centralizador', () => {
         'LISTAR'
       );
     }
+  });
+
+  it('export por bimestre: 404 si el paralelo no existe y un Excel válido si existe aunque no tenga inscritos', async () => {
+    esperarNoEncontrado(await como('RECTOR', 'get', `/calificaciones/centralizador/${ID_INEXISTENTE}/bimestre/1/export`));
+    esperarNoEncontrado(
+      await como('RECTOR', 'get', `/calificaciones/centralizador/carrera-de/${ID_INEXISTENTE}/bimestre/1/export`)
+    );
+    esperarValidacion(await como('RECTOR', 'get', `/calificaciones/centralizador/${PARALELO_GESTION_PRUEBA}/bimestre/9/export`));
+
+    const vacio = await descargarComo('RECTOR', `/calificaciones/centralizador/${PARALELO_GESTION_PRUEBA}/bimestre/1/export`);
+    expect(vacio.status).toBe(200);
+    expect(vacio.headers['content-type']).toContain('spreadsheetml');
+    expect(Buffer.isBuffer(vacio.body)).toBe(true);
+    expect(vacio.body.subarray(0, 2).toString()).toBe('PK');
   });
 
   it('el export anual exige folios generados en el libro de la gestión', async () => {

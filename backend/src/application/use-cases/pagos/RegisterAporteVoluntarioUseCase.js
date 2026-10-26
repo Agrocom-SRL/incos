@@ -124,10 +124,18 @@ export class RegisterAporteVoluntarioUseCase {
             const management = await this._getManagementForPayment(data.management_id ?? data.managementId);
             const managementId = management.id ?? management.toPlainObject?.().id;
 
-            const cabecera = await this._getOrCreateCabecera(studentId, managementId);
+            // Todo lo que puede rechazar el pago (monto, saldo, método de pago) se valida ANTES de
+            // escribir: la cabecera nueva solo se crea justo antes de insertar la cuota, para no dejar
+            // un pago_aporte huérfano cuando la petición se rechaza con 400.
+            const previa = await this._prepararCabecera(studentId, managementId);
+            const cabeceraPrevia = previa.cabecera;
 
-            const totalPagado = await this._totalPagadoCabecera(cabecera.id);
-            const montoObligatorio = Number(cabecera.mandatoryAmount ?? cabecera.montoObligatorio ?? 0);
+            const totalPagado = cabeceraPrevia ? await this._totalPagadoCabecera(cabeceraPrevia.id) : 0;
+            const montoObligatorio = Number(
+                cabeceraPrevia
+                    ? (cabeceraPrevia.mandatoryAmount ?? cabeceraPrevia.montoObligatorio ?? 0)
+                    : previa.datosNueva.mandatoryAmount
+            );
             const saldoRestante = Math.max(0, montoObligatorio - totalPagado);
 
             if (amount != null && amount < 0) {
@@ -158,6 +166,9 @@ export class RegisterAporteVoluntarioUseCase {
             const finalPaymentAccountId = (esPagoGratuito && esMetodoEfectivo) ? null : paymentAccountId;
             const finalTransactionNumber = (esPagoGratuito && esMetodoEfectivo) ? null : transactionNumber;
             const finalCodigoComprobante = (esPagoGratuito && esMetodoEfectivo) ? null : (codigoComprobante ?? null);
+
+            // Validado todo: recién ahora se crea la cabecera (si no existía) y se escribe la cuota.
+            const cabecera = cabeceraPrevia ?? await this._crearCabecera(previa.datosNueva);
 
             // Crear cuota con numero_recibo temporal (NOT NULL); luego se reemplaza por ID a 6 dígitos (unicidad en lógica)
             const cuotaData = {
@@ -406,16 +417,20 @@ export class RegisterAporteVoluntarioUseCase {
     }
 
     /**
-     * Obtiene o crea la cabecera pago_aporte para (estudiante, gestión).
+     * Resuelve la cabecera pago_aporte para (estudiante, gestión) SIN escribir en BD.
+     * Si existe la devuelve; si no, calcula los datos con los que se creará (monto base de la
+     * configuración activa, descuento por beca y monto obligatorio) para poder validar el pago
+     * antes de crearla (`_crearCabecera`).
      * @private
+     * @returns {Promise<{ cabecera: Object|null, datosNueva: Object|null }>}
      */
-    async _getOrCreateCabecera(studentId, managementId) {
-        let cabecera = await this.contributionPaymentRepository.findBy({
+    async _prepararCabecera(studentId, managementId) {
+        const cabecera = await this.contributionPaymentRepository.findBy({
             studentId,
             managementId,
         });
         if (cabecera) {
-            return cabecera;
+            return { cabecera, datosNueva: null };
         }
         const config = await this._getActiveContributionConfiguration(managementId);
         const totalAmount = config?.montoBase ?? config?.baseAmount ?? 400;
@@ -426,17 +441,31 @@ export class RegisterAporteVoluntarioUseCase {
         );
         const montoObligatorio = Math.max(0, totalAmount - scholarshipDiscount);
 
-        const cabeceraData = {
-            studentId,
-            managementId,
-            studentScholarshipId,
-            baseAmount: totalAmount,
-            scholarshipDiscount,
-            mandatoryAmount: montoObligatorio,
-            state: ESTADOS_PAGO_APORTE.PENDIENTE,
+        return {
+            cabecera: null,
+            datosNueva: {
+                studentId,
+                managementId,
+                studentScholarshipId,
+                baseAmount: totalAmount,
+                scholarshipDiscount,
+                mandatoryAmount: montoObligatorio,
+                state: ESTADOS_PAGO_APORTE.PENDIENTE,
+            },
         };
-        cabecera = await this.contributionPaymentRepository.create(cabeceraData);
-        this.logger.info('[Pagos] Cabecera pago_aporte creada', { studentId, managementId, cabeceraId: cabecera.id });
+    }
+
+    /**
+     * Crea la cabecera pago_aporte con los datos calculados por `_prepararCabecera`.
+     * @private
+     */
+    async _crearCabecera(cabeceraData) {
+        const cabecera = await this.contributionPaymentRepository.create(cabeceraData);
+        this.logger.info('[Pagos] Cabecera pago_aporte creada', {
+            studentId: cabeceraData.studentId,
+            managementId: cabeceraData.managementId,
+            cabeceraId: cabecera.id,
+        });
         return cabecera;
     }
 

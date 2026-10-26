@@ -1,10 +1,13 @@
 import { describe, it, expect, jest } from '@jest/globals';
 import { CreateCarreraUseCase } from '../../../src/application/use-cases/configuracion/CreateCarreraUseCase.js';
-import { ValidationError } from '../../../src/domain/errors/AppError.js';
+import { ConflictError, ValidationError } from '../../../src/domain/errors/AppError.js';
 
 describe('CreateCarreraUseCase', () => {
   const crear = () => {
-    const careerRepository = { create: jest.fn().mockResolvedValue({ id: 11 }) };
+    const careerRepository = {
+      create: jest.fn().mockResolvedValue({ id: 11 }),
+      findBy: jest.fn().mockResolvedValue(null),
+    };
     const logger = { info: jest.fn() };
     return { careerRepository, logger, useCase: new CreateCarreraUseCase({ careerRepository, logger }) };
   };
@@ -61,5 +64,19 @@ describe('CreateCarreraUseCase', () => {
     await expect(useCase.execute({})).rejects.toBeInstanceOf(ValidationError);
     await expect(useCase.execute(null)).rejects.toBeInstanceOf(ValidationError);
     expect(careerRepository.create).not.toHaveBeenCalled();
+  });
+
+  it('rechaza un código ya usado por otra carrera (409) sin crear nada', async () => {
+    const { useCase, careerRepository } = crear();
+    careerRepository.findBy.mockResolvedValue({ id: 2, code: 'SIS' });
+    await expect(useCase.execute({ codigo: ' SIS ', nombre: 'Otra' })).rejects.toBeInstanceOf(ConflictError);
+    expect(careerRepository.findBy).toHaveBeenCalledWith({ code: 'SIS' }, { includeInactive: true });
+    expect(careerRepository.create).not.toHaveBeenCalled();
+  });
+
+  it('sin código no consulta duplicados', async () => {
+    const { useCase, careerRepository } = crear();
+    await useCase.execute({ nombre: 'Sin código' });
+    expect(careerRepository.findBy).not.toHaveBeenCalled();
   });
 });
