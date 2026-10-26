@@ -1,4 +1,5 @@
 import { ValidationError } from '../../../../domain/errors/AppError.js';
+import { parseIdPositivo } from '../../../utils/validacionEntrada.js';
 import { FichaSeguimientoMapper } from '../../../mappers/docentes/FichaSeguimientoMapper.js';
 import {
   assertAsignacionDocenteVigente,
@@ -34,10 +35,10 @@ export class CreateFichaSeguimientoUseCase {
    * @returns {Promise<{fichaSeguimiento: Object}>}
    */
   async execute(data, usuarioId = null) {
-    const asignacionId = Number(data.asignacionDocenteId);
-    if (!Number.isFinite(asignacionId) || asignacionId < 1) {
+    if (data.asignacionDocenteId === undefined || data.asignacionDocenteId === null) {
       throw new ValidationError('asignacionDocenteId es requerido');
     }
+    const asignacionId = parseIdPositivo(data.asignacionDocenteId, 'asignacionDocenteId');
     await assertAsignacionDocenteVigente({
       teacherAssignmentRepository: this.teacherAssignmentRepository,
       asignacionDocenteId: asignacionId,

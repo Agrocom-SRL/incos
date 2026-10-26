@@ -1,6 +1,6 @@
 import { describe, it, expect, jest } from '@jest/globals';
 import { DeletePrerrequisitoUseCase } from '../../../src/application/use-cases/configuracion/DeletePrerrequisitoUseCase.js';
-import { NotFoundError } from '../../../src/domain/errors/AppError.js';
+import { NotFoundError, ValidationError } from '../../../src/domain/errors/AppError.js';
 
 describe('DeletePrerrequisitoUseCase', () => {
   const crear = (resultado) => {
@@ -31,15 +31,24 @@ describe('DeletePrerrequisitoUseCase', () => {
     expect(logger.info).not.toHaveBeenCalled();
   });
 
-  it('con id no numérico (NaN) delega al repositorio y respeta su resultado', async () => {
-    const { useCase, prerequisiteRepository } = crear(false);
-    await expect(useCase.execute(Number('abc'))).rejects.toBeInstanceOf(NotFoundError);
-    expect(prerequisiteRepository.delete).toHaveBeenCalledWith(NaN, null);
+  it('rechaza id no numérico sin llamar al repositorio', async () => {
+    const { useCase, prerequisiteRepository } = crear(true);
+    await expect(useCase.execute(Number('abc'))).rejects.toBeInstanceOf(ValidationError);
+    expect(prerequisiteRepository.delete).not.toHaveBeenCalled();
   });
 
   it('propaga errores del repositorio', async () => {
     const { useCase, prerequisiteRepository } = crear(true);
     prerequisiteRepository.delete.mockRejectedValue(new Error('fk'));
     await expect(useCase.execute(1)).rejects.toThrow('fk');
+  });
+});
+
+describe('DeletePrerrequisitoUseCase log', () => {
+  it('registra el log al eliminar', async () => {
+    const prerequisiteRepository = { delete: jest.fn().mockResolvedValue(true) };
+    const logger = { info: jest.fn() };
+    await new DeletePrerrequisitoUseCase({ prerequisiteRepository, logger }).execute(3, 1);
+    expect(logger.info).toHaveBeenCalledWith('Prerrequisito eliminado', { id: 3 });
   });
 });

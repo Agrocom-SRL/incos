@@ -83,3 +83,32 @@ describe('UpdateFichaSeguimientoUseCase', () => {
     expect(deps.fichaSeguimientoClaseRepository.update).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('UpdateFichaSeguimientoUseCase entradas inválidas', () => {
+  const crear = () => {
+    const fichaSeguimientoClaseRepository = {
+      findById: jest.fn().mockResolvedValue({ id: 70, asignacionDocenteId: 4, estudiantesEnPlanilla: 20, estudiantesAsistentes: 15 }),
+      update: jest.fn().mockResolvedValue({ id: 70 }),
+    };
+    return {
+      fichaSeguimientoClaseRepository,
+      useCase: new UpdateFichaSeguimientoUseCase({
+        fichaSeguimientoClaseRepository,
+        teacherAssignmentRepository: { findById: jest.fn() },
+        logger: { info: jest.fn() },
+      }),
+    };
+  };
+
+  it.each([['abc'], ['12abc'], [0], [-1], [1.5]])('id %p lanza ValidationError sin consultar', async (id) => {
+    const { useCase, fichaSeguimientoClaseRepository } = crear();
+    await expect(useCase.execute(id, {}, 1)).rejects.toBeInstanceOf(ValidationError);
+    expect(fichaSeguimientoClaseRepository.findById).not.toHaveBeenCalled();
+  });
+
+  it.each([['abc'], [-1], [1.5]])('estudiantesAsistentes %p lanza ValidationError', async (valor) => {
+    const { useCase, fichaSeguimientoClaseRepository } = crear();
+    await expect(useCase.execute(70, { estudiantesAsistentes: valor }, 1)).rejects.toBeInstanceOf(ValidationError);
+    expect(fichaSeguimientoClaseRepository.update).not.toHaveBeenCalled();
+  });
+});

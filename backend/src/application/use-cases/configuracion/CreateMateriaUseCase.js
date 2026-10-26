@@ -17,7 +17,6 @@ export class CreateMateriaUseCase {
         acronym: sigla,
         name: nombre,
         objectives: body.objetivos ?? body.objectives ?? undefined,
-        knowledgeArea: body.areaConocimiento ?? body.knowledgeArea ?? undefined,
         classification: body.clasificacion ?? body.classification ?? undefined,
         type: body.tipo ?? body.type ?? undefined,
         active: body.activo ?? body.active ?? true,
