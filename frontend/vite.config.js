@@ -113,6 +113,12 @@ export default defineConfig({
         setupFiles: ['./src/test/setup.js'],
         include: ['src/**/*.test.{js,jsx}'],
         css: false,
+        coverage: {
+            provider: 'v8',
+            reporter: ['text-summary', 'lcov', 'json-summary'],
+            include: ['src/application/**/*.{js,jsx}'],
+            exclude: ['**/*.test.{js,jsx}', '**/__tests__/**', 'src/application/**/design/**', 'src/application/**/studio/**'],
+        },
     },
 
     server: {
