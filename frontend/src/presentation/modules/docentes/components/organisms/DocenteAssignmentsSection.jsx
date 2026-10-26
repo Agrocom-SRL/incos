@@ -56,8 +56,9 @@ const DocenteAssignmentsSection = ({
         <Empty
           image={Empty.PRESENTED_IMAGE_SIMPLE}
           description="Sin materias ofertadas vinculadas a este docente"
-          extra={emptyExtra}
-        />
+        >
+          {emptyExtra}
+        </Empty>
       ) : (
         <div className="docente-asignaciones-cobertura">
           {grouped.map(({ carrera, carreraColorHex, periodos }, carreraIdx) => (

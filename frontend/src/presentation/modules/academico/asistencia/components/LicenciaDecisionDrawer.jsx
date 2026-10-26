@@ -231,7 +231,9 @@ const LicenciaDecisionDrawer = ({
   const cambiarModo = (nuevo) => setModo(nuevo);
 
   const handleConfirmar = async () => {
-    const values = await form.validateFields();
+    // Validación fallida: los errores ya se muestran en el formulario; no propagar el rechazo.
+    const values = await form.validateFields().catch(() => null);
+    if (!values) return;
     const observaciones = values.observaciones?.trim();
     let result;
     if (modo === MODO.APROBAR) {
