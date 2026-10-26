@@ -58,6 +58,18 @@ contra un MariaDB 10.11 que existe solo durante el job. **Nunca usan datos reale
 | `listados.test.js` | smoke de listados por módulo |
 | `vistas.test.js` | cada vista de `03-views` existe y responde `SELECT … LIMIT 1`; toda vista citada en `src/` existe |
 | `exportaciones.test.js` | 2 Excel (`PK`) y 1 PDF (`%PDF-`) no vacíos, y 403 sin permiso EXPORTAR |
+| `titulacion.test.js` | proyectos de grado: listado paginado/filtros, modalidades, reportes, detalle y sub-recursos (bitácora, avances, dictámenes, actas) con 404/400, validaciones de escritura, 403 por rol |
+| `libros.test.js` | libros de registro: listado, ficha y folios (404/400), validaciones, abrir→leer→editar→limpiar, 403 (APROBAR solo directivos) |
+| `capacitacion.test.js` | cursos, participantes, inscripciones y pagos: paginación/filtros, 404/400, ELIMINAR/ACTIVAR solo RECTOR/DIR_ADMIN, flujo participante→curso→inscripción→pago→eliminar |
+| `pagos.test.js` | aportes, cuotas, ingresos, reportes, configuración de aportes, catálogos de pago y becas: lectura, validaciones, cuota de efectivo registrar→anular, CRUD de beca `ci-`, 403 por rol |
+| `horarios.test.js` | paralelo en gestión, grilla, bloques, conflictos, cobertura y carga docente sobre los datos sembrados; reglas de paralelo PUBLICADO; docente solo su grilla |
+| `calificaciones.test.js` | coordinación, mis cursos, política, bimestres, cronograma, centralizador y cuaderno (con un estudiante inscrito: evaluación y nota crear→eliminar) |
+| `matricula.test.js` | estudiantes e inscripciones: listados, contexto de matrícula, validaciones, 403 por rol y flujo cuota→inscribir→eliminar |
+| `configuracion-academica.test.js` | carreras, materias, planes (matriz, periodos, asignaturas), gestiones, aulas, tipos de evaluación y actividades; CRUD `ci-` con limpieza |
+
+Las pruebas por dominio comparten `helpers/respuestas.js` (aserciones de contrato 400/404/403, `enviarComo`, `conLimpieza`) y
+`helpers/escenarios.js` (`inscribirEstudiantePrueba`). Regla de las escrituras: crear con la API, leer, y eliminar/anular en el
+mismo caso (siempre en `finally`, vía `conLimpieza`); datos con prefijo `ci-`; las aserciones no dependen de conteos exactos.
 
 ### Correr en local (BD descartable, nunca la de trabajo)
 ```bash

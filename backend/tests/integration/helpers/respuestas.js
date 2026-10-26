@@ -76,3 +76,12 @@ export async function enviarComo(rol, metodo, ruta, cuerpo) {
   const peticion = request(app)[metodo](`${API}${ruta}`).set('Authorization', `Bearer ${token}`);
   return cuerpo === undefined ? peticion : peticion.send(cuerpo);
 }
+
+/**
+ * Id de un recurso recién creado: `data.id` o `data.<clave>.id` (los controllers envuelven la entidad
+ * con nombres distintos: `carrera`, `materia`, `aula`, ...).
+ */
+export function idDe(res, clave) {
+  const data = res.body?.data ?? {};
+  return data.id ?? data[clave]?.id ?? Object.values(data).find((v) => v && typeof v === 'object' && v.id)?.id;
+}

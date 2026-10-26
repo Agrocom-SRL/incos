@@ -6,9 +6,9 @@
  * (`matricula.pago.aporte.ver`); el DOCENTE no tiene acceso. El listado de aportes también lo abre
  * `matricula.pago.aporte.ver` (SEC_ACADEMICA/DIR_ACADEMICO), por eso no es un 403 para ellos.
  *
- * Nota: la cabecera de aporte del estudiante de prueba se genera al consultar `mis-aportes`, así que las
- * aserciones no dependen de cuántas cabeceras existan. Las cuotas de prueba se crean y se anulan en el
- * mismo caso (soft delete).
+ * Nota: la cabecera de aporte del estudiante de prueba nace al registrar su primera cuota, así que las
+ * aserciones no dependen de cuántas cabeceras existan en la BD. Las cuotas de prueba se crean y se anulan en
+ * el mismo caso (soft delete).
  */
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import { iniciarSistema, cerrarSistema, como, sequelize } from './helpers/sistema.js';
@@ -49,20 +49,8 @@ describe('Pagos · listado de aportes', () => {
     esperarValidacion(await como(CAJA, 'get', '/pagos-aportes/abc'), 'id');
   });
 
-  it('el estudiante ve sus aportes y el detalle de uno propio; uno inexistente da 404', async () => {
-    const mis = await como('ESTUDIANTE', 'get', '/pagos-aportes/mis-aportes');
-    expect(mis.status).toBe(200);
-    expect(mis.body.data.aportes.length).toBeGreaterThan(0);
-    const [aporte] = mis.body.data.aportes;
-    expect(aporte.student_id).toBeDefined();
-
-    const detalle = await como('ESTUDIANTE', 'get', `/pagos-aportes/mis-aportes/${aporte.id}`);
-    expect(detalle.status).toBe(200);
+  it('mis-aportes inexistente da 404 para el estudiante', async () => {
     esperarNoEncontrado(await como('ESTUDIANTE', 'get', `/pagos-aportes/mis-aportes/${ID_INEXISTENTE}`));
-
-    // El mismo aporte es visible para caja por su id
-    const porCaja = await como(CAJA, 'get', `/pagos-aportes/${aporte.id}`);
-    expect(porCaja.status).toBe(200);
   });
 
   it('mis-aportes exige un usuario vinculado a un estudiante (403 de negocio para el personal)', async () => {
@@ -137,15 +125,17 @@ describe('Pagos · registrar cuota (validaciones)', () => {
 
 describe('Pagos · cuota de efectivo: registrar -> leer -> anular', () => {
   it('registra una cuota del estudiante de prueba y la anula al terminar', async () => {
-    // Garantiza que exista la cabecera de aporte del estudiante (se genera al consultar mis-aportes)
-    const mis = await como('ESTUDIANTE', 'get', '/pagos-aportes/mis-aportes');
-    expect(mis.status).toBe(200);
-    const cabecera = mis.body.data.aportes[0];
+    const [estudiante] = await sequelize.query("SELECT id FROM estudiantes WHERE ci = 'TEST-EST-001'", {
+      type: sequelize.QueryTypes.SELECT,
+    });
+    const [gestion] = await sequelize.query('SELECT id FROM gestiones WHERE vigente = 1 ORDER BY id LIMIT 1', {
+      type: sequelize.QueryTypes.SELECT,
+    });
 
     await conLimpieza(async (limpiar) => {
       const registra = await enviarComo(CAJA, 'post', '/pagos-aportes', {
-        student_id: cabecera.student_id,
-        management_id: cabecera.management_id,
+        student_id: estudiante.id,
+        management_id: gestion.id,
         amount: 10,
         payment_method_id: 1,
         payment_date: '2026-03-01',
@@ -164,7 +154,16 @@ describe('Pagos · cuota de efectivo: registrar -> leer -> anular', () => {
 
       const recibo = await como(CAJA, 'get', `/pagos-aportes/${cuota.id}/recibo`);
       expect([200, 404]).toContain(recibo.status);
-      const detalle = await como(CAJA, 'get', `/pagos-aportes/${cabecera.id}`);
+
+      // El estudiante ve su aporte (cabecera creada con la primera cuota) y su detalle; caja lo ve por id
+      const mis = await como('ESTUDIANTE', 'get', '/pagos-aportes/mis-aportes');
+      expect(mis.status).toBe(200);
+      expect(mis.body.data.aportes.length).toBeGreaterThan(0);
+      const [aporte] = mis.body.data.aportes;
+      expect(aporte.student_id).toBe(estudiante.id);
+      const detalleEstudiante = await como('ESTUDIANTE', 'get', `/pagos-aportes/mis-aportes/${aporte.id}`);
+      expect(detalleEstudiante.status).toBe(200);
+      const detalle = await como(CAJA, 'get', `/pagos-aportes/${aporte.id}`);
       expect(detalle.status).toBe(200);
     });
 
