@@ -104,7 +104,7 @@ export class SubjectRepository extends BaseRepository {
    * @returns {string[]} Array de nombres de campos del modelo Sequelize
    */
   getSearchFields() {
-    return ['codigo', 'nombre', 'nombreCorto', 'descripcion'];
+    return ['sigla', 'nombre', 'objetivos'];
   }
 
   /**
