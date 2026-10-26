@@ -109,6 +109,9 @@ describe('authenticate', () => {
       rolCodigo: 'DOCENTE',
       rolIsSystem: true,
     });
+    // Regresión: los controllers que leen `req.user?.id` (auditoría) recibían siempre null.
+    expect(req.user).toBe(req.usuario);
+    expect(req.user.id).toBe(7);
     expect(req.sesionData).toBe(sesion);
     expect(req.token).toBe(t);
     expect(next).toHaveBeenCalledWith();
