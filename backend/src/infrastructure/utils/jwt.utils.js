@@ -5,6 +5,9 @@ import jwt from 'jsonwebtoken';
  * La validez operativa depende de la fila activa en sesiones (AuthRepository.findSesionActiva).
  */
 
+/** Algoritmo fijo: evita confusión de algoritmos (alg=none / HS384 / RS256). */
+const JWT_ALGORITHM = 'HS256';
+
 function getSecret() {
   const secret = process.env.JWT_SECRET;
   if (!secret || String(secret).trim() === '') {
@@ -18,12 +21,13 @@ function getSecret() {
  */
 export function generarToken(payload) {
   return jwt.sign(payload, getSecret(), {
+    algorithm: JWT_ALGORITHM,
     expiresIn: process.env.JWT_EXPIRES_IN || '8h',
   });
 }
 
 export function verificarToken(token) {
-  return jwt.verify(token, getSecret());
+  return jwt.verify(token, getSecret(), { algorithms: [JWT_ALGORITHM] });
 }
 
 /**

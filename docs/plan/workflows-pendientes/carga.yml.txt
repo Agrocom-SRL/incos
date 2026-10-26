@@ -1,0 +1,101 @@
+name: Carga y estrés
+
+# Pruebas de carga (k6) contra un backend local con MariaDB efímera. Nunca contra producción:
+# la BD se crea vacía, se carga con los SQL del repo + el seed de pruebas y se destruye al terminar.
+# Ver docs/guias/pruebas.md ("Pruebas de carga y estrés").
+on:
+  workflow_dispatch:
+    inputs:
+      perfil:
+        description: Perfil de k6
+        type: choice
+        options: [smoke, load, stress, spike]
+        default: smoke
+  schedule:
+    # Lunes 07:00 UTC (03:00 Bolivia): perfil load
+    - cron: '0 7 * * 1'
+  # Smoke barato y no bloqueante cuando cambian los scripts de carga o este workflow.
+  pull_request:
+    paths:
+      - 'backend/tests/load/**'
+      - '.github/workflows/carga.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: carga-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  carga:
+    name: Carga (${{ inputs.perfil || (github.event_name == 'pull_request' && 'smoke') || 'load' }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    # En PR es informativo: un fallo no bloquea el merge.
+    continue-on-error: ${{ github.event_name == 'pull_request' }}
+    services:
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MARIADB_ROOT_PASSWORD: ci-solo-pruebas
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      PERFIL: ${{ inputs.perfil || (github.event_name == 'pull_request' && 'smoke') || 'load' }}
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: ci-solo-pruebas
+      DB_NAME: incos_ci_test
+      PORT: 3000
+      NODE_ENV: development
+      JWT_SECRET: secreto-solo-para-carga-ci
+      JWT_EXPIRES_IN: 2h
+      LOG_LEVEL: error
+      # Clave literal del seed de pruebas (no es un secreto)
+      K6_PASSWORD: Test-Incos-2026
+      BASE_URL: http://127.0.0.1:3000
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - name: Cliente de BD
+        run: command -v mysql || command -v mariadb || (sudo apt-get update && sudo apt-get install -y mariadb-client)
+      - name: Cargar BD de pruebas (esquema + seeders + vistas + seed de pruebas)
+        run: bash scripts/ci-cargar-bd.sh
+      - name: Arrancar backend
+        run: |
+          nohup npm start > backend.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:3000/health > /dev/null; then echo "backend listo"; exit 0; fi
+            sleep 2
+          done
+          echo "El backend no respondió en /health"; cat backend.log; exit 1
+      - uses: grafana/setup-k6-action@v1
+      - name: k6 ${{ env.PERFIL }}
+        env:
+          K6_RESUMEN: resumen-${{ env.PERFIL }}.json
+        run: k6 run tests/load/${{ env.PERFIL }}.js
+      - name: Subir resumen JSON
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-resumen-${{ env.PERFIL }}
+          path: backend/resumen-${{ env.PERFIL }}.json
+          if-no-files-found: warn
+      - name: Log del backend (si falla)
+        if: failure()
+        run: tail -n 100 backend.log || true
