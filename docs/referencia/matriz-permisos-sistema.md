@@ -798,7 +798,6 @@ Permisos: `docentes.*` (seed `60-seed-permisos-doc.sql` — la numeración corri
 | `docentes.crear` | CREAR | Alta `/docentes/registrar` |
 | `docentes.editar` | EDITAR, ELIMINAR | Formulario edicion ficha; baja (DELETE API pendiente) |
 | `docentes.asignar` | CREAR, EDITAR, ELIMINAR | Asignacion docente-curso (`/docentes/asignar`, API `POST /docentes/asignaciones/curso`, modal en armado paralelo) |
-| `docentes.licencia.ver`, `docentes.licencia.crear`, `docentes.licencia.aprobar` | LISTAR+DETALLE / CREAR / APROBAR | Licencias docentes (`/docentes/licencias/listar`, grupo `doc_licencias`). **Apagados en el seed 60** hasta que exista la tabla `licencias_docentes`. Roles sembrados: REC y DIRA (ver, crear, aprobar); DOC (ver LISTAR, crear CREAR) |
 | `docentes.supervision.ficha` | LISTAR, DETALLE, CREAR, EDITAR, EXPORTAR | **Supervisión docente** (`/docentes/supervision`, grupo `doc_supervision` orden 3): fichas de seguimiento en la clase presencial (schema 27, API `/api/v1/supervision-docente`, vista 174). Sin ELIMINAR ni APROBAR: la ficha realizada no se borra. EXPORTAR = `GET /:id/pdf` (réplica del formulario físico) |
 
 | Accion | Descripcion | Roles |
@@ -839,8 +838,8 @@ Permisos: `docentes.*` (seed `60-seed-permisos-doc.sql` — la numeración corri
   `institucional.horario.conflictos` LISTAR + `docenteSelfOnlyGuard('docenteId')` (solo su propia grilla).
 - Licencias estudiantiles: `academico.asistencia.licencia.crear` EDITAR + ELIMINAR con guard
   created_by + estado PENDIENTE en servidor (ver ACA-Asistencia).
-- `docentes.licencia.ver` LISTAR + `docentes.licencia.crear` CREAR (menú Licencias docentes;
-  deshabilitados temporalmente: página en construcción). Pasantías docentes: retiradas del seed
+- Licencias de docentes: **eliminadas del alcance** (permisos retirados del seed 60; no hay tabla
+  `licencias_docentes`). Pasantías docentes: retiradas del seed
   2026-07-29 (el dominio vive en Titulación (`titulacion.pasantia*`); lo docente entra por wrappers del portal).
 - Supervisión docente: **sin permisos** — tab/wrapper self `GET /supervision-docente/mis-fichas`
   (gate solo `authenticate` + `resolveDocenteIdForUsuario`; solo fichas de SUS cursos).
@@ -850,10 +849,9 @@ Permisos: `docentes.*` (seed `60-seed-permisos-doc.sql` — la numeración corri
 > con vínculo docente solo accede a su propio `:id` (resuelto en servidor); staff sin restricción.
 > Los endpoints de escritura de Docentes NO se abren al rol DOCENTE.
 
-> **Licencias de docentes (pendiente):** los permisos `docentes.licencia.*` existen, pero la
-> **tabla `licencias_docentes` aún no está creada** (solo licencias de estudiante en schema 17).
-> Se diseñará en el dominio Docentes y Asistencia la consumirá para clases no dictadas
-> (ver `docs/plan/MODULO-ASISTENCIA.md` §7).
+> **Licencias de docentes (fuera de alcance):** los permisos `docentes.licencia.*` se retiraron del
+> seed 60 y no se implementa el módulo. Solo existen licencias de estudiante
+> (`academico.asistencia.licencia.*`, schema 17).
 
 ### INST - Institucional (`/institucional/*`)
 Permisos: `institucional.*`
