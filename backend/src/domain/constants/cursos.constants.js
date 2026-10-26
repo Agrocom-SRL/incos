@@ -125,7 +125,7 @@ export const ESTADOS_GESTION_PLAN_VALUES = Object.values(ESTADOS_GESTION_PLAN);
  * Transiciones permitidas de `gestiones_planes.estado` (mismo patrón que TRANSICIONES_NIVELACION):
  * PROPUESTO → APROBADO → VIGENTE → CERRADO; CANCELADO desde cualquier estado no final.
  * CERRADO y CANCELADO son terminales.
- * PENDIENTE DE CONFIRMAR con el dueño del proyecto (aún no validada por negocio).
+ * Confirmada por el dueño del proyecto (2026-10-26).
  */
 export const TRANSICIONES_GESTION_PLAN = {
   [ESTADOS_GESTION_PLAN.PROPUESTO]: [ESTADOS_GESTION_PLAN.APROBADO, ESTADOS_GESTION_PLAN.CANCELADO],

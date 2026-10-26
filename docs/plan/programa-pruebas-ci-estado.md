@@ -22,11 +22,11 @@ Cerrar el backlog de `correcciones-hallazgos-pruebas.md` y ampliar las pruebas d
 | 4 Fechas y asistencia | En curso |
 | 6 Configuración y catálogos | En curso |
 
-## Decisiones tomadas y pendientes de confirmar
-- Compuerta de bimestre única (`assertBimestreEditable`): editable EN_CURSO o REABIERTO; cerrado solo tras reapertura, que exige gestión vigente y permiso de gestión de bimestres (RECTOR, DIR_ACADEMICO; ADMIN_SISTEMA por herencia). Confirmar si ese es el conjunto de roles deseado.
-- Licencias de docente: fuera de alcance (quitadas del seed 60, la matriz y las rutas). Las bases ya sembradas conservan los registros viejos, apagados: re-sembrar el seed 60 al desplegar.
-- `paralelos_gestion`: BORRADOR→OFERTADO; OFERTADO→PUBLICADO|BORRADOR; PUBLICADO→OFERTADO|BORRADOR|CERRADO; CERRADO terminal. Pendiente: confirmar PUBLICADO→CERRADO y el significado de PUBLICADO.
-- `OfertaCurso`: PROGRAMADA→ACTIVA|CANCELADA; ACTIVA→CERRADA|CANCELADA. `GestionPlan`: PROPUESTO→APROBADO|CANCELADO; APROBADO→VIGENTE|CANCELADO; VIGENTE→CERRADO|CANCELADO. **Pendiente de confirmar con el dueño.**
+## Decisiones tomadas
+- Compuerta de bimestre única (`assertBimestreEditable`): editable EN_CURSO o REABIERTO; cerrado solo tras reapertura, que exige gestión vigente y permiso de gestión de bimestres (RECTOR, DIR_ACADEMICO; ADMIN_SISTEMA por herencia). 
+- Licencias de docente: fuera de alcance (quitadas del seed 60, la matriz y las rutas). Las bases ya sembradas conservan los registros viejos, apagados: **es obligatorio re-sembrar el seed 60 (permisos) al desplegar** (confirmado).
+- `paralelos_gestion`: BORRADOR→OFERTADO; OFERTADO→PUBLICADO|BORRADOR; PUBLICADO→OFERTADO|BORRADOR|CERRADO; CERRADO terminal. **Confirmado por el dueño (2026-10-26)**, incluido PUBLICADO→CERRADO.
+- `OfertaCurso`: PROGRAMADA→ACTIVA|CANCELADA; ACTIVA→CERRADA|CANCELADA. `GestionPlan`: PROPUESTO→APROBADO|CANCELADO; APROBADO→VIGENTE|CANCELADO; VIGENTE→CERRADO|CANCELADO. **Confirmado por el dueño (2026-10-26)**: CANCELADO desde VIGENTE permitido y sin vuelta a PROPUESTO.
 
 ## Cobertura backend (unitarias) al 2026-10-26
 Global 50 % líneas / 37 % ramas, 4105 pruebas. Menor cobertura: `infrastructure/external/excel` 5 %, `views` 3 %, `external/pdf` 26 %, controllers 17–36 %, `presentation/validators/estudiantes` 2 %.
