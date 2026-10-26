@@ -7,6 +7,7 @@ import {
   MOTIVOS_LICENCIAS_VALUES,
   ESTADOS_LICENCIAS,
 } from '../../../../domain/constants/licencias.constants.js';
+import { parseFechaISO } from '../../../utils/validacionEntrada.js';
 import { toLicenciaDTO } from './licenciaDTO.js';
 
 /** Tope de días de licencia por gestión (formulario INCOS, schema 17). */
@@ -51,7 +52,7 @@ export class EditarLicenciaUseCase {
    * @returns {Promise<{licencia: Object}>}
    */
   async execute({ usuarioId, rolCodigo, id, body = {} }) {
-    const { fechaInicio, fechaFin, motivo, detalleMotivo } = body;
+    const { motivo, detalleMotivo } = body;
 
     const licencia = await this.licenseRepository.findById(id);
     if (!licencia) {
@@ -74,10 +75,12 @@ export class EditarLicenciaUseCase {
       throw new ValidationError('Solo se pueden editar licencias en estado PENDIENTE');
     }
 
-    if (!fechaInicio || !fechaFin) {
+    if (!body.fechaInicio || !body.fechaFin) {
       throw new ValidationError('El rango de fechas es obligatorio');
     }
-    if (new Date(`${fechaFin}T00:00:00`) < new Date(`${fechaInicio}T00:00:00`)) {
+    const fechaInicio = parseFechaISO(body.fechaInicio, 'fechaInicio');
+    const fechaFin = parseFechaISO(body.fechaFin, 'fechaFin');
+    if (fechaFin < fechaInicio) {
       throw new ValidationError('La fecha de fin no puede ser anterior a la de inicio');
     }
     if (!motivo || !MOTIVOS_LICENCIAS_VALUES.includes(motivo)) {
