@@ -73,7 +73,6 @@ export class ListMateriasUseCase extends BaseListUseCase {
     // Si hay filtro por periodo_id, obtener IDs de materias primero
     const periodoId = parseFiltroId(queryParams.periodo_id, 'periodo_id');
     if (periodoId !== undefined) {
-
       // Obtener todas las asignaturas_plan con ese periodo_id
       // Usar el repositorio de la misma forma que ListParalelosUseCase usa periodRepository
       const asignaturasPlanResult = await this.planSubjectRepository.findAll(
