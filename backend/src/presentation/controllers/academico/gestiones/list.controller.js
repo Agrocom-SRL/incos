@@ -49,7 +49,7 @@ export class ListGestionesController extends BaseListController {
    * Soporta filtros adicionales como 'active' y 'vigente'
    */
   buildFilters(query) {
-    const filters = super.buildFilters(query);
+    const filters = super.buildFilters ? super.buildFilters(query) : {};
 
     // Si se proporciona filtros en el query, parsearlos
     if (query.filtros) {
