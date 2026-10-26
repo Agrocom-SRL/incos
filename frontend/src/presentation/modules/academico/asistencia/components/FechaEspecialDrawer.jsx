@@ -111,7 +111,9 @@ const FechaEspecialDrawer = ({
   }, [abierto, fechaInicial, sesion, form]);
 
   const handleConfirmar = async () => {
-    const values = await form.validateFields();
+    // Validación fallida: los errores ya se muestran en el formulario; no propagar el rechazo.
+    const values = await form.validateFields().catch(() => null);
+    if (!values) return;
     const ok = await onConfirmar({
       fecha: values.fecha?.format('YYYY-MM-DD'),
       motivo: values.motivo?.trim(),
