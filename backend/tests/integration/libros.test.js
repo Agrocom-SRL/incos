@@ -64,6 +64,17 @@ describe('Libros · validaciones de escritura', () => {
     esperarValidacion(await enviarComo(GESTOR, 'post', '/libros', cuerpo), campo);
   });
 
+  it('abrir libro con una gestión inexistente responde 404 (no 500 por la FK) y no crea nada', async () => {
+    esperarNoEncontrado(
+      await enviarComo(GESTOR, 'post', '/libros', { gestionId: ID_INEXISTENTE, numeroLibro: 1 })
+    );
+    const [{ n }] = await sequelize.query('SELECT COUNT(*) AS n FROM libros_registro WHERE gestion_id = :g', {
+      replacements: { g: ID_INEXISTENTE },
+      type: sequelize.QueryTypes.SELECT,
+    });
+    expect(Number(n)).toBe(0);
+  });
+
   it('editar libro: estado inválido (400) e inexistente (404)', async () => {
     esperarValidacion(await enviarComo(GESTOR, 'patch', `/libros/${ID_INEXISTENTE}`, { estado: 'XX' }), 'estado');
     esperarNoEncontrado(await enviarComo(GESTOR, 'patch', `/libros/${ID_INEXISTENTE}`, { observaciones: 'ci-x' }));
