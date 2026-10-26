@@ -39,8 +39,9 @@ Respondidas por el dueño del proyecto:
 
 - **Licencias del docente (pregunta 6):** se eliminan. `docentes.licencia.{ver,crear,aprobar}` (sembrados y apagados en el seed 60; no existe la tabla `licencias_docentes`) pasan a "fuera de alcance"; hay que quitarlos del seed y de la matriz. Las licencias de **estudiantes** (`academico.asistencia.licencia.*`) no cambian.
 
+- **Compuertas de bimestre (pregunta 1), resuelta:** para editar una evaluación de un bimestre cerrado hay que **reabrirlo**. La reapertura **no se puede hacer fuera de una gestión vigente** y la hace el **administrativo**, no los docentes. → Unificar las seis acciones del cuaderno (Create/Update/Delete/ResetNotas/Upsert/Guardar) con una sola regla: editable si el bimestre está en curso o reabierto; un bimestre cerrado solo se edita tras la reapertura. Comprobar además que `ReabrirBimestreCursoUseCase`/`ReabrirBimestreGestion` exijan gestión vigente y rol administrativo (no docente), y cubrirlo con prueba. Consultar notas de cualquier bimestre es lectura y siempre es válido.
+
 Aún sin resolver:
-1. **Compuertas de bimestre.** Hoy `Update/Delete/ResetNotas` de evaluación exigen "bimestre vigente o reabierto" y `Create/Upsert/Guardar` usan `assertBimestreEditable` (estado institucional EN_CURSO o REABIERTO). La pregunta es si las seis acciones de *editar* deben usar la misma regla. El dueño respondió pensando en *consultar* las notas de todos los bimestres aunque no sea el vigente (eso ya es lectura y es válido); falta aclarar que **editar** un bimestre cerrado sigue requiriendo reapertura.
 - **Estados de `paralelos_gestion`:** el dueño explicó el sentido de BORRADOR y OFERTADO (OFERTADO = ya pueden empezar las inscripciones) pero el mensaje quedó cortado antes de definir PUBLICADO; completar antes de implementar la máquina de estados.
 
 ## Bloque 1 — Dinero y recibos (pagos)
