@@ -43,16 +43,16 @@ describe('DeleteInscripcionCapacitacionUseCase', () => {
       8,
       { transaction: 'TX' }
     );
-    expect(deps.pagoCapacitacionRepository.delete).toHaveBeenCalledWith(1, 8);
-    expect(deps.pagoCapacitacionRepository.delete).toHaveBeenCalledWith(2, 8);
-    expect(deps.inscripcionCapacitacionRepository.delete).toHaveBeenCalledWith(5, 8);
+    expect(deps.pagoCapacitacionRepository.delete).toHaveBeenCalledWith(1, 8, { transaction: 'TX' });
+    expect(deps.pagoCapacitacionRepository.delete).toHaveBeenCalledWith(2, 8, { transaction: 'TX' });
+    expect(deps.inscripcionCapacitacionRepository.delete).toHaveBeenCalledWith(5, 8, { transaction: 'TX' });
   });
 
   it('sin pagos solo elimina la inscripción', async () => {
     const { deps, useCase } = crear({ pagos: {} });
     await useCase.execute(5);
     expect(deps.pagoCapacitacionRepository.delete).not.toHaveBeenCalled();
-    expect(deps.inscripcionCapacitacionRepository.delete).toHaveBeenCalledWith(5, null);
+    expect(deps.inscripcionCapacitacionRepository.delete).toHaveBeenCalledWith(5, null, { transaction: 'TX' });
   });
 
   it('lanza NotFoundError si la inscripción no existe', async () => {
