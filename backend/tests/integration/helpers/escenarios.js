@@ -6,7 +6,7 @@
  */
 import { expect } from '@jest/globals';
 import { como, sequelize } from './sistema.js';
-import { enviarComo } from './respuestas.js';
+import { enviarComo, idDe } from './respuestas.js';
 
 export const PARALELO_GESTION_PRUEBA = 1;
 
@@ -59,3 +59,98 @@ export async function inscribirEstudiantePrueba(limpiar, { etiqueta = 'ci-escena
 
   return { inscripcionId, estudianteId: estudiante.id, gestionId: gestion.id };
 }
+
+const GESTOR_TITULACION = 'DIR_ACADEMICO';
+
+/**
+ * Crea un proyecto de grado (modalidad PG, individual) del estudiante de prueba con una inscripción
+ * vigente creada por el propio escenario. Limpieza: borra por SQL el proyecto y sus satélites
+ * (los PDF de dictámenes quedan en `uploads/`, que está fuera del control de versiones).
+ *
+ * @returns {Promise<{ proyectoId: number, estudianteId: number, inscripcionId: number, gestionId: number }>}
+ */
+export async function crearProyectoGradoPrueba(limpiar, { etiqueta = 'ci-titulacion' } = {}) {
+  const base = await inscribirEstudiantePrueba(limpiar, { etiqueta });
+  const [modalidad] = await sequelize.query("SELECT id FROM modalidades_grado WHERE codigo = 'PG'", {
+    type: sequelize.QueryTypes.SELECT,
+  });
+  const res = await enviarComo(GESTOR_TITULACION, 'post', '/proyectos-grado', {
+    titulo: `${etiqueta} proyecto de prueba`,
+    modalidadId: modalidad.id,
+    estudianteIds: [base.estudianteId],
+  });
+  expect([res.status, res.body.error?.message]).toEqual([201, undefined]);
+  const proyectoId = idDe(res, 'proyectoGrado');
+  expect(proyectoId).toBeGreaterThan(0);
+  limpiar.push(async () => {
+    const r = { replacements: { id: proyectoId } };
+    await sequelize.query(
+      'DELETE FROM tribunal_acta_defensa WHERE acta_defensa_id IN (SELECT id FROM actas_defensa WHERE proyecto_grado_id = :id)',
+      r
+    );
+    for (const tabla of [
+      'actas_defensa',
+      'avances_proyecto',
+      'bitacora_proyecto',
+      'dictamenes_proyecto',
+      'integrantes_proyecto',
+    ]) {
+      await sequelize.query(`DELETE FROM ${tabla} WHERE proyecto_grado_id = :id`, r);
+    }
+    await sequelize.query('DELETE FROM proyectos_grado WHERE id = :id', r);
+  });
+  return { ...base, proyectoId };
+}
+
+const GESTOR_OFERTA = 'DIR_ACADEMICO';
+const GESTION_NO_VIGENTE = 2;
+const PLAN_SISTEMAS = 1;
+
+/**
+ * Habilita el plan 1 en una gestión NO vigente (la 2025 del seed) y genera sus paralelos en gestión
+ * (BORRADOR). El primero es el paralelo de la prueba; el segundo sirve para conflictos entre paralelos. Todo es propio de la prueba y se borra por SQL
+ * al terminar (la API no expone borrado de gestión-plan ni de paralelo en gestión).
+ *
+ * @returns {Promise<{ gestionPlanId: number, paraleloGestionId: number, turno: string, otroParaleloGestionId: number }>}
+ */
+export async function crearParaleloGestionPrueba(limpiar, { gestionId = GESTION_NO_VIGENTE } = {}) {
+  const habilita = await enviarComo(GESTOR_OFERTA, 'post', '/gestiones-planes', {
+    gestion_id: gestionId,
+    plan_estudio_id: PLAN_SISTEMAS,
+  });
+  expect([habilita.status, habilita.body.error?.message]).toEqual([201, undefined]);
+  const gestionPlanId = idDe(habilita, 'gestionPlan');
+  expect(gestionPlanId).toBeGreaterThan(0);
+  limpiar.push(async () => {
+    const r = { replacements: { id: gestionPlanId } };
+    const delPg = '(SELECT id FROM paralelos_gestion WHERE gestion_plan_id = :id)';
+    const delOc = `(SELECT id FROM oferta_cursos WHERE paralelo_gestion_id IN ${delPg})`;
+    const delAd = `(SELECT id FROM asignaciones_docentes WHERE oferta_curso_id IN ${delOc})`;
+    await sequelize.query(`DELETE FROM asignacion_horarios WHERE asignacion_docente_id IN ${delAd}`, r);
+    await sequelize.query(`DELETE FROM asignaciones_docentes WHERE oferta_curso_id IN ${delOc}`, r);
+    await sequelize.query(`DELETE FROM oferta_cursos WHERE paralelo_gestion_id IN ${delPg}`, r);
+    await sequelize.query('DELETE FROM paralelos_gestion WHERE gestion_plan_id = :id', r);
+    await sequelize.query('DELETE FROM gestiones_planes WHERE id = :id', r);
+  });
+
+  const genera = await enviarComo(GESTOR_OFERTA, 'post', `/gestiones-planes/${gestionPlanId}/generar-paralelos-gestion`);
+  expect([genera.status, genera.body.error?.message]).toEqual([200, undefined]);
+  const paralelos = await sequelize.query(
+    'SELECT id, turno FROM paralelos_gestion WHERE gestion_plan_id = :id ORDER BY id',
+    { replacements: { id: gestionPlanId }, type: sequelize.QueryTypes.SELECT }
+  );
+  return {
+    gestionPlanId,
+    paraleloGestionId: paralelos[0].id,
+    turno: paralelos[0].turno,
+    otroParaleloGestionId: paralelos[1].id,
+  };
+}
+
+/** Datos mínimos del informe de suficiencia que exige DESARROLLO -> SUFICIENCIA. */
+export const INFORME_SUFICIENCIA_PRUEBA = {
+  aspectosFormato: 'ci-formato correcto',
+  contenidoProyecto: 'ci-contenido completo',
+  procesoTutoria: 'ci-tutoria cumplida',
+  resultadoSuficiencia: 'APROBADO',
+};
