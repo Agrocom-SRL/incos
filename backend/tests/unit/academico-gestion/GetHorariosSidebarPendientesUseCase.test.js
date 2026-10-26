@@ -81,4 +81,17 @@ describe('GetHorariosSidebarPendientesUseCase', () => {
     deps.parallelRepository.obtenerCursosSinDocenteDashboard.mockRejectedValue(new Error('db'));
     await expect(useCase.execute()).rejects.toThrow('db');
   });
+
+  it('paralelo_id/docente_id nulos no se agrupan como 0', async () => {
+    const { useCase } = crear({
+      bloques: [{ paralelo_id: null, paralelo_nombre: 'X', curso_horario_id: 1 }],
+      cursos: [{ paralelo_id: null, curso_id: 1 }, { paralelo_id: 3, paralelo_nombre: 'C', curso_id: 2 }],
+      docentes: [{ docente_id: null, detalle_linea: 'l' }],
+    });
+    const res = await useCase.execute();
+    expect(res.bloquesSinAulaPorParalelo).toEqual([]);
+    expect(res.cursosSinDocentePorParalelo).toHaveLength(1);
+    expect(res.cursosSinDocentePorParalelo[0].paraleloId).toBe(3);
+    expect(res.docentesConConflictosOperativos).toEqual([]);
+  });
 });
