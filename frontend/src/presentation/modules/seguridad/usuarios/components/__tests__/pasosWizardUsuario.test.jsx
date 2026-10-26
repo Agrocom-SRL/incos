@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -11,10 +12,12 @@ import {
   getWizardRoleResumenVisual,
 } from '../../constants/usuarioCargoInstitucionalVisual';
 
-let formRef;
+const formRef = { current: null };
 const Host = ({ initialValues, children }) => {
   const [form] = Form.useForm();
-  formRef = form;
+  useEffect(() => {
+    formRef.current = form;
+  }, [form]);
   return (
     <Form form={form} initialValues={initialValues}>
       {children(form)}
@@ -29,12 +32,12 @@ describe('UsuarioCategoriaCreacionStepContent', () => {
         {(form) => <UsuarioCategoriaCreacionStepContent form={form} />}
       </Host>,
     );
-    await waitFor(() => expect(formRef.getFieldValue('categoria_creacion')).toBe('ACCESO_SISTEMA'));
+    await waitFor(() => expect(formRef.current.getFieldValue('categoria_creacion')).toBe('ACCESO_SISTEMA'));
     expect(screen.getAllByRole('radio')).toHaveLength(4);
 
     await userEvent.click(screen.getByText('Docente'));
-    expect(formRef.getFieldValue('categoria_creacion')).toBe('ASIGNAR_DOCENTE');
-    expect(formRef.getFieldValue('rol_id')).toBeUndefined();
+    expect(formRef.current.getFieldValue('categoria_creacion')).toBe('ASIGNAR_DOCENTE');
+    expect(formRef.current.getFieldValue('rol_id')).toBeUndefined();
   });
 
   it('en modo edición las opciones están bloqueadas', () => {
@@ -85,9 +88,9 @@ describe('UsuarioWizardCredencialesStepContent', () => {
     );
     expect(screen.getAllByText('Pérez Ana').length).toBeGreaterThan(0);
     expect(screen.getByText(/Sin correo registrado en la ficha/)).toBeInTheDocument();
-    await waitFor(() => expect(formRef.getFieldValue('username')).toBe('1234567'));
-    expect(formRef.getFieldValue('password')).toBe('1234567');
-    expect(formRef.getFieldValue('password_confirm')).toBe('1234567');
+    await waitFor(() => expect(formRef.current.getFieldValue('username')).toBe('1234567'));
+    expect(formRef.current.getFieldValue('password')).toBe('1234567');
+    expect(formRef.current.getFieldValue('password_confirm')).toBe('1234567');
   });
 
   it('no pisa credenciales ya escritas ni precarga en edición', async () => {
@@ -102,8 +105,8 @@ describe('UsuarioWizardCredencialesStepContent', () => {
         {(form) => <UsuarioWizardCredencialesStepContent form={form} rolesCatalog={roles} isEditMode />}
       </Host>,
     );
-    expect(formRef.getFieldValue('username')).toBe('ana');
-    expect(formRef.getFieldValue('password')).toBeUndefined();
+    expect(formRef.current.getFieldValue('username')).toBe('ana');
+    expect(formRef.current.getFieldValue('password')).toBeUndefined();
     expect(screen.getByText(/La contraseña es opcional/)).toBeInTheDocument();
   });
 });
