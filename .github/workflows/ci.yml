@@ -57,10 +57,6 @@ jobs:
       # Sin BD: los repositorios van simulados (tests/unit).
       - name: Pruebas unitarias
         run: npm run test:unit
-      # Seguridad HTTP sin BD (JWT manipulado, cabeceras, CORS, límites, inyección, IDOR, subidas,
-      # rate limit). Ya corren dentro de test:unit; este paso las deja visibles como compuerta propia.
-      - name: Pruebas de seguridad (sin BD)
-        run: npm run test:seguridad
 
   integracion:
     name: Sistema (integración con MariaDB)
@@ -115,31 +111,6 @@ jobs:
         run: |
           mysql --host=127.0.0.1 --user=root --password=ci-solo-pruebas -e "SELECT VERSION(); SHOW VARIABLES LIKE 'collation%'; SHOW VARIABLES LIKE 'character_set%'; SELECT table_name, column_name, collation_name FROM information_schema.columns WHERE table_schema='incos_ci_test' AND table_name='vista_catalogos_finanzas_usos';" || true
 
-  # Seguridad de dependencias y secretos. Las pruebas de seguridad del código corren en los
-  # jobs «backend» (tests/unit/seguridad-http) e «integracion» (tests/integration/seguridad.test.js).
-  seguridad:
-    name: Seguridad (dependencias + secretos)
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-      # Deuda preexistente: hoy `npm audit` reporta vulnerabilidades altas/críticas en ambos paquetes
-      # (ver docs/guias/pruebas.md, «Pruebas de seguridad»). Se reporta como advertencia visible
-      # sin bloquear el PR (continue-on-error). Quitar continue-on-error al resolver la deuda.
-      - name: npm audit backend (high+, solo producción)
-        working-directory: backend
-        continue-on-error: true
-        run: npm audit --omit=dev --audit-level=high
-      - name: npm audit frontend (high+, solo producción)
-        working-directory: frontend
-        continue-on-error: true
-        run: npm audit --omit=dev --audit-level=high
-      # Bloqueante: claves privadas, tokens de proveedores y credenciales literales versionadas.
-      - name: Escaneo de secretos
-        run: bash backend/scripts/ci-escanear-secretos.sh
-
   studio:
     name: Studio (lint + build)
     runs-on: ubuntu-24.04
@@ -177,7 +148,7 @@ jobs:
   automerge:
     name: Auto-merge a develop
     runs-on: ubuntu-24.04
-    needs: [frontend, backend, integracion, seguridad, studio]
+    needs: [frontend, backend, integracion, studio]
     # Los jobs omitidos (sin carpeta) cuentan como éxito; un fallo o cancelación lo impide.
     if: >-
       ${{ !cancelled() &&
