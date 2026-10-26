@@ -64,11 +64,16 @@ contra un MariaDB 10.11 que existe solo durante el job. **Nunca usan datos reale
 | `pagos.test.js` | aportes, cuotas, ingresos, reportes, configuración de aportes, catálogos de pago y becas: lectura, validaciones, cuota de efectivo registrar→anular, CRUD de beca `ci-`, 403 por rol |
 | `horarios.test.js` | paralelo en gestión, grilla, bloques, conflictos, cobertura y carga docente sobre los datos sembrados; reglas de paralelo PUBLICADO; docente solo su grilla |
 | `calificaciones.test.js` | coordinación, mis cursos, política, bimestres, cronograma, centralizador y cuaderno (con un estudiante inscrito: evaluación y nota crear→eliminar) |
+| `titulacion-escrituras.test.js` | proyecto de grado creado sobre una inscripción propia: PERFIL→…→DEFENSA, acta de defensa (tribunal de 3 docentes distintos, nota nula/duplicados rechazados, REPRUEBA, anular), integrantes en estado final |
+| `horarios-escrituras.test.js` | paralelo en gestión propio (plan habilitado en la gestión 2025): BORRADOR→OFERTADO→PUBLICADO→CERRADO, aula/cupos/turno bloqueados en PUBLICADO/CERRADO, bloques, conflictos y publicación |
+| `oferta-estados.test.js` | transiciones de `OfertaCurso` (PROGRAMADA→ACTIVA→CERRADA, CANCELADA) y `GestionPlan` (PROPUESTO→APROBADO→VIGENTE→CERRADO, CANCELADO), terminales y saltos rechazados |
+| `calificaciones-bimestres.test.js` | reabrir/cerrar el bimestre de un curso (solo administrativo; docente 403): evaluación rechazada con el bimestre cerrado y permitida tras reabrir; cierre de gestión bloqueado |
+| `libros-folios.test.js` | generar folios por paralelo y por gestión, regenerar, anular (APROBAR), editar fila, cierre forzado del libro y exportación Excel |
 | `matricula.test.js` | estudiantes e inscripciones: listados, contexto de matrícula, validaciones, 403 por rol y flujo cuota→inscribir→eliminar |
 | `configuracion-academica.test.js` | carreras, materias, planes (matriz, periodos, asignaturas), gestiones, aulas, tipos de evaluación y actividades; CRUD `ci-` con limpieza |
 
 Las pruebas por dominio comparten `helpers/respuestas.js` (aserciones de contrato 400/404/403, `enviarComo`, `conLimpieza`) y
-`helpers/escenarios.js` (`inscribirEstudiantePrueba`). Regla de las escrituras: crear con la API, leer, y eliminar/anular en el
+`helpers/escenarios.js` (`inscribirEstudiantePrueba`, `crearProyectoGradoPrueba`, `crearParaleloGestionPrueba`). Regla de las escrituras: crear con la API, leer, y eliminar/anular en el
 mismo caso (siempre en `finally`, vía `conLimpieza`); datos con prefijo `ci-`; las aserciones no dependen de conteos exactos.
 
 ### Correr en local (BD descartable, nunca la de trabajo)
