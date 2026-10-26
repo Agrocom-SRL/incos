@@ -1,5 +1,5 @@
 # Matriz de Permisos - Instituto INCOS
-## Ultima actualizacion: 2026-10-20
+## Ultima actualizacion: 2026-10-26
 
 Documento de auditoria funcional (frontend + backend + seeds) sobre permisos por accion.
 
@@ -9,6 +9,45 @@ Documento de auditoria funcional (frontend + backend + seeds) sobre permisos por
 > permisos por módulo: `58` MAT · `59` ACA · `60` DOC · `61` FIN · `62` INST · `63` REP (tombstone: solo
 > limpieza, no siembra permisos) · `64` CAP · `65` TIT · `66` CFG · `67` SEG(+SYS).
 > Las menciones a otras numeraciones en el texto son históricas.
+
+## Nota de verificación contra los seeds (2026-10-26)
+
+Contraste de esta matriz con la BD cargada desde `backend/database/02-seeders/` (rol × permiso × acción
+efectivos, tomados de `roles_permisos`). **Solo se documenta la diferencia; no se cambió ningún permiso ni
+seed.** Donde la matriz y el seed discrepan, rige el seed (ver «Fuente de verdad» arriba). Las tablas de
+abajo no se reescribieron: esta nota es la corrección.
+
+1. **SEC_ACADEMICA en Calificaciones y Asistencia.** Las tablas «ACA - Calificaciones» y «ACA - Asistencia»
+   (y la frase «Roles con `…coordinacion` (RECTOR, DIR_ACADEMICO, SEC_ACADEMICA)») listan a `SECA`, pero el
+   seed 59 **no le asigna** estos permisos: `academico.calificacion.{ingreso, coordinacion, mis_cursos,
+   cuaderno, politica, gestion_bimestres, cuaderno.evaluaciones, cuaderno.notas, cuaderno.guardar,
+   bimestre.ajuste_admin}` y `academico.asistencia.{registro.ver, registro.cuaderno, consolidado.ver}`.
+   SEC_ACADEMICA solo tiene en este bloque `academico.asistencia.clase_no_dictada.ver`
+   (LISTAR/CREAR/EDITAR) y `academico.asistencia.licencia.{ver, crear, aprobar}`, más `academico.libro` e
+   `academico.historial.academico`. Hoy esas pantallas responden 403 a SEC_ACADEMICA.
+2. **Acciones del cuaderno por rol.** En el seed: `academico.calificacion.cuaderno` da a DOCENTE
+   LISTAR + EXPORTAR + GENERAR_PDF, y a RECTOR/DIR_ACADEMICO solo LISTAR (sin EXPORTAR);
+   `cuaderno.evaluaciones` da a DOCENTE CREAR/EDITAR/ELIMINAR y a RECTOR/DIR_ACADEMICO solo CREAR;
+   `cuaderno.notas` y `cuaderno.guardar` (EDITAR) son **solo de DOCENTE**. La matriz indica REC, DIRA, SECA y DOC
+   para todas esas filas. `academico.asistencia.registro.cuaderno` en el seed: DOCENTE LISTAR+EDITAR,
+   RECTOR/DIR_ACADEMICO solo LISTAR, SEC_ACADEMICA sin permiso.
+3. **Permisos desactivados en los seeds pero descritos como vigentes.** `finanzas.pago.adicionales`
+   (sección «FIN - Pagos adicionales», seed 61) y `configuracion.convenios` (fila «Convenios» de CFG, seed 66)
+   se siembran con `activo = 0` y `deleted_at` informado «hasta que la pantalla exista»: no figuran en
+   `/auth/me`, no hay menú ni ruta que los use y sus endpoints no están expuestos. Los roles y acciones que
+   detallan las tablas son la intención de diseño, no el estado real. Lo mismo vale para avance, deserción,
+   acompañamiento, traspasos y transitabilidad (ver «Fuera de alcance de esta versión»).
+4. **Vocabulario antiguo en tablas.** Varias tablas de «Matriz de permisos por pagina» (p. ej. MAT - Admisiones,
+   Matrículas, Becas, Aportes/Pagos) usan la acción `VER` y códigos de seeds anteriores (`matricula.admision.ver`,
+   `matricula.beca.*`). El vocabulario vigente es LISTAR/DETALLE/… (`VER` está deprecado y las pruebas de
+   integración exigen que no aparezca); para el detalle por acción rigen los seeds 58-67.
+5. **Qué sí coincide.** Todo código de permiso activo de los seeds está citado en esta matriz. Se contrastaron
+   con `roles_permisos` las filas de tabla que citan un único código y enumeran roles con las abreviaturas de
+   la convención (el resto, en prosa o con matices entre paréntesis, no se contrastó automáticamente); fuera de
+   los puntos 1 a 3 coinciden (las diferencias aparentes en filas por
+   acción, p. ej. APROBAR de `academico.libro` solo REC/DIRA, o ELIMINAR del compromiso sin SEC_ADMIN, son
+   correctas: el seed concede esa acción únicamente a esos roles). La suite `tests/integration/rbac.test.js`
+   fija los permisos efectivos por rol.
 
 ## Historial de renombres
 
