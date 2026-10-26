@@ -85,6 +85,34 @@ describe('Configuración · carreras', () => {
   });
 });
 
+describe('Configuración · carreras · código único', () => {
+  it('rechaza repetir el código (409), también con otro nombre, y lo libera al eliminar (soft delete)', async () => {
+    const codigo = `ci-${String(Date.now()).slice(-8)}`;
+    await conLimpieza(async (limpiar) => {
+      const crea = await enviarComo(ADMIN_ACAD, 'post', '/carreras', { codigo, nombre: `ci-carrera ${codigo}` });
+      expect(crea.status).toBe(201);
+      const id = idDe(crea, 'carrera');
+      limpiar.push(async () => {
+        await como(ADMIN_ACAD, 'delete', `/carreras/${id}`);
+      });
+
+      const repetida = await enviarComo(ADMIN_ACAD, 'post', '/carreras', { codigo, nombre: `ci-otra ${codigo}` });
+      expect(repetida.status).toBe(409);
+      expect(repetida.body.error.code).toBe('CONFLICT');
+      const busca = await como(ADMIN_ACAD, 'get', `/carreras?search=ci-otra ${codigo}`);
+      expect(busca.body.data).toEqual([]);
+
+      expect((await como(ADMIN_ACAD, 'delete', `/carreras/${id}`)).status).toBe(200);
+      const reutiliza = await enviarComo(ADMIN_ACAD, 'post', '/carreras', { codigo, nombre: `ci-reuso ${codigo}` });
+      expect(reutiliza.status).toBe(201);
+      const idReuso = idDe(reutiliza, 'carrera');
+      limpiar.push(async () => {
+        await como(ADMIN_ACAD, 'delete', `/carreras/${idReuso}`);
+      });
+    });
+  });
+});
+
 describe('Configuración · materias', () => {
   it('listado paginado y búsqueda por sigla/nombre (sin resultados y con resultados)', async () => {
     esperarListadoPaginado(await como(ADMIN_ACAD, 'get', '/materias?page=1&limit=2'), { limit: 2 });
