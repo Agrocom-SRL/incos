@@ -50,7 +50,7 @@ describe('GetStudentByIdUseCase', () => {
   it('lanza error si el estudiante no existe', async () => {
     const { useCase, deps } = crear();
     deps.studentRepository.obtenerDatosPersonales.mockResolvedValue([]);
-    await expect(useCase.execute(99)).rejects.toThrow('No se encontró un estudiante con ID 99');
+    await expect(useCase.execute(99)).rejects.toMatchObject({ statusCode: 404, code: 'NOT_FOUND', message: 'estudiante con ID 99 no encontrado' });
     expect(deps.studentDocumentDeliveryRepository.obtenerEntregasConDetalle).not.toHaveBeenCalled();
     expect(deps.logger.error).toHaveBeenCalled();
   });
@@ -58,7 +58,7 @@ describe('GetStudentByIdUseCase', () => {
   it('lanza error si la vista devuelve null', async () => {
     const { useCase, deps } = crear();
     deps.studentRepository.obtenerDatosPersonales.mockResolvedValue(null);
-    await expect(useCase.execute(1)).rejects.toThrow('No se encontró un estudiante');
+    await expect(useCase.execute(1)).rejects.toMatchObject({ statusCode: 404, code: 'NOT_FOUND' });
   });
 
   it('marca documentos faltantes si un documento raíz de INSCRIPCION no está entregado', async () => {
