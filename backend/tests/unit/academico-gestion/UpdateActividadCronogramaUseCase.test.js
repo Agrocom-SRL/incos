@@ -38,16 +38,30 @@ describe('UpdateActividadCronogramaUseCase', () => {
   it('mapea todos los campos editables', async () => {
     const { useCase, deps } = crear();
     await useCase.execute(4, {
-      periodoAcademicoId: 1, actividadId: 2, nombrePersonalizado: 'N', fechaInicio: 'a', fechaFin: 'b', suspendeClases: false, carrerasIds: [3],
+      periodoAcademicoId: 1, actividadId: 2, nombrePersonalizado: 'N', fechaInicio: '2026-03-01', fechaFin: '2026-03-05', suspendeClases: false, carrerasIds: [3],
     });
     expect(deps.calendarActivityRepository.update.mock.calls[0][1]).toEqual({
-      academicPeriodId: 1, activityId: 2, customName: 'N', startDate: 'a', endDate: 'b', suspendsClasses: false, careerIds: [3],
+      academicPeriodId: 1, activityId: 2, customName: 'N', startDate: '2026-03-01', endDate: '2026-03-05', suspendsClasses: false, careerIds: [3],
     });
   });
 
   it('404 si la actividad no existe', async () => {
     const { useCase, deps } = crear(null);
-    await expect(useCase.execute(4, { fechaInicio: 'x' })).rejects.toMatchObject({ statusCode: 404, code: 'NOT_FOUND' });
+    await expect(useCase.execute(4, { fechaInicio: '2026-03-01' })).rejects.toMatchObject({ statusCode: 404, code: 'NOT_FOUND' });
     expect(deps.calendarActivityRepository.update).not.toHaveBeenCalled();
+  });
+
+  it.each([['abc'], ['2026-02-31'], ['']])('fechaInicio inválida (%p) => 400 sin actualizar', async (fechaInicio) => {
+    const { useCase, deps } = crear();
+    await expect(useCase.execute(4, { fechaInicio })).rejects.toMatchObject({ statusCode: 400 });
+    expect(deps.calendarActivityRepository.update).not.toHaveBeenCalled();
+  });
+
+  it('valida el rango contra las fechas ya guardadas', async () => {
+    const { useCase, deps } = crear({ id: 4, startDate: '2026-03-10', endDate: null });
+    await expect(useCase.execute(4, { fechaFin: '2026-03-01' })).rejects.toMatchObject({ statusCode: 400 });
+    expect(deps.calendarActivityRepository.update).not.toHaveBeenCalled();
+    await useCase.execute(4, { fechaFin: '2026-03-12' });
+    expect(deps.calendarActivityRepository.update).toHaveBeenCalled();
   });
 });

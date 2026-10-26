@@ -5,6 +5,7 @@ import {
 } from '../../../domain/errors/AppError.js';
 import { ESTADOS_USUARIOS_VALUES } from '../../../domain/constants/usuarios.constants.js';
 import { mapUsuarioAdminRow } from './usuario-admin.mapper.js';
+import { ROL_ADMIN_SISTEMA_CODIGO, exigirActorAdminSistema } from './rol-admin-sistema.guard.js';
 
 export class CambiarEstadoUsuarioUseCase {
   /**
@@ -26,6 +27,10 @@ export class CambiarEstadoUsuarioUseCase {
     const current = await this.userRepository.findByIdWithRoleForAdmin(usuarioId);
     if (!current) {
       throw new NotFoundError('Usuario');
+    }
+
+    if (current.rol_codigo === ROL_ADMIN_SISTEMA_CODIGO) {
+      await exigirActorAdminSistema(this.userRepository, actorId);
     }
 
     if (!Object.prototype.hasOwnProperty.call(body, 'estado')) {

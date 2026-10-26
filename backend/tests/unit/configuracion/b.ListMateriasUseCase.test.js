@@ -1,6 +1,8 @@
 import { describe, it, expect, jest } from '@jest/globals';
 import { ListMateriasUseCase } from '../../../src/application/use-cases/configuracion/ListMateriasUseCase.js';
 
+import { ValidationError } from '../../../src/domain/errors/AppError.js';
+
 describe('ListMateriasUseCase', () => {
   const crear = ({ subjects = [{ id: 1, name: 'Mate' }], planSubjects = [] } = {}) => {
     const subjectRepository = { findAll: jest.fn().mockResolvedValue({ subjects, total: subjects.length }) };
@@ -38,13 +40,10 @@ describe('ListMateriasUseCase', () => {
     expect(subjectRepository.findAll).toHaveBeenCalledWith({ search: 's', id: [] }, 1, 10);
   });
 
-  // BUG conocido (ListMateriasUseCase.js:74): periodo_id no numérico da parseInt NaN y se consulta con periodId NaN.
-  // it.failing pasa mientras exista; al corregirlo, cambiar a it.
-  it.failing('ignora periodo_id no numérico en vez de consultar con NaN', async () => {
+  it.each([['abc'], ['3x'], ['0'], ['-1']])('rechaza periodo_id %p sin consultar con NaN', async (valor) => {
     const { useCase, planSubjectRepository } = crear();
-    await useCase.execute({}, 1, 10, { periodo_id: 'abc' });
-    const filtro = planSubjectRepository.findAll.mock.calls[0]?.[0];
-    expect(filtro === undefined || !Number.isNaN(filtro.periodId)).toBe(true);
+    await expect(useCase.execute({}, 1, 10, { periodo_id: valor })).rejects.toBeInstanceOf(ValidationError);
+    expect(planSubjectRepository.findAll).not.toHaveBeenCalled();
   });
 
   it('propaga el error del repositorio de asignaturas_plan', async () => {

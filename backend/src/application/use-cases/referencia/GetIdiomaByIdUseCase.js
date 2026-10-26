@@ -1,3 +1,4 @@
+import { NotFoundError } from '../../../domain/errors/AppError.js';
 import { LanguageMapper, mergeUsosComplementarios } from '../../mappers/referencia/index.js';
 
 export class GetIdiomaByIdUseCase {
@@ -15,7 +16,7 @@ export class GetIdiomaByIdUseCase {
 
   async execute(id) {
     const entity = await this.languageRepository.findById(id, { paranoid: false });
-    if (!entity) return null;
+    if (!entity) throw new NotFoundError('idioma');
 
     const presentation = LanguageMapper.entityToPresentation(entity);
 

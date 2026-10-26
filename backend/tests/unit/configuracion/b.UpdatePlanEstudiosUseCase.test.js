@@ -1,6 +1,6 @@
 import { describe, it, expect, jest } from '@jest/globals';
 import { UpdatePlanEstudiosUseCase } from '../../../src/application/use-cases/configuracion/UpdatePlanEstudiosUseCase.js';
-import { NotFoundError } from '../../../src/domain/errors/AppError.js';
+import { NotFoundError, ValidationError } from '../../../src/domain/errors/AppError.js';
 
 describe('UpdatePlanEstudiosUseCase', () => {
   const crear = ({ existing = { id: 3 } } = {}) => {
@@ -43,5 +43,39 @@ describe('UpdatePlanEstudiosUseCase', () => {
     const { useCase, studyPlanRepository } = crear();
     studyPlanRepository.update.mockRejectedValue(new Error('db'));
     await expect(useCase.execute(3, {})).rejects.toThrow('db');
+  });
+});
+
+describe('UpdatePlanEstudiosUseCase validación y vaciado', () => {
+  const crear = () => {
+    const studyPlanRepository = {
+      findById: jest.fn().mockResolvedValue({ id: 3 }),
+      update: jest.fn().mockResolvedValue({ id: 3 }),
+    };
+    return { studyPlanRepository, useCase: new UpdatePlanEstudiosUseCase({ studyPlanRepository, logger: { info: jest.fn() } }) };
+  };
+
+  it.each([
+    [{ carrera_id: 'abc' }],
+    [{ nombre_plan: '' }],
+    [{ duracion_anios: -1 }],
+    [{ horas_mes: 'x' }],
+    [{ vigente: 'x' }],
+    [{ activo: 'x' }],
+  ])('rechaza %p sin actualizar', async (body) => {
+    const { useCase, studyPlanRepository } = crear();
+    await expect(useCase.execute(3, body)).rejects.toBeInstanceOf(ValidationError);
+    expect(studyPlanRepository.update).not.toHaveBeenCalled();
+  });
+
+  it('null vacía observaciones y resolución; ausente no las toca', async () => {
+    const { useCase, studyPlanRepository } = crear();
+    await useCase.execute(3, { observaciones: null, resolucion_ministerial: null, duracion_anios: null });
+    const patch = studyPlanRepository.update.mock.calls[0][1];
+    expect(patch.observations).toBeNull();
+    expect(patch.ministerialResolution).toBeNull();
+    expect(patch.durationYears).toBeNull();
+    await useCase.execute(3, {});
+    expect(studyPlanRepository.update.mock.calls[1][1].observations).toBeUndefined();
   });
 });

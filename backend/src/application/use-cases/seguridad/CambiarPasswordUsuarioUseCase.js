@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import { NotFoundError } from '../../../domain/errors/AppError.js';
 import { validarPasswordNueva } from '../../utils/passwordPolicy.js';
 import { mapUsuarioAdminRow } from './usuario-admin.mapper.js';
+import { ROL_ADMIN_SISTEMA_CODIGO, exigirActorAdminSistema } from './rol-admin-sistema.guard.js';
 
 export class CambiarPasswordUsuarioUseCase {
   /**
@@ -14,10 +15,19 @@ export class CambiarPasswordUsuarioUseCase {
     this.authRepository = authRepository;
   }
 
-  async execute(usuarioId, passwordNuevo) {
+  /**
+   * @param {number} usuarioId
+   * @param {string} passwordNuevo
+   * @param {number|null} actorId usuario autenticado (solo un ADMIN_SISTEMA puede tocar a otro ADMIN_SISTEMA)
+   */
+  async execute(usuarioId, passwordNuevo, actorId = null) {
     const current = await this.userRepository.findByIdWithRoleForAdmin(usuarioId);
     if (!current) {
       throw new NotFoundError('Usuario');
+    }
+
+    if (current.rol_codigo === ROL_ADMIN_SISTEMA_CODIGO) {
+      await exigirActorAdminSistema(this.userRepository, actorId);
     }
 
     validarPasswordNueva(passwordNuevo, 'password_nuevo');

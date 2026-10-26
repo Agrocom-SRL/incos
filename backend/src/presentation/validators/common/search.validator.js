@@ -27,6 +27,9 @@ import { query } from 'express-validator';
 export const searchValidator = [
   // Término de búsqueda: requerido, texto libre
   query('query')
+    .isString()
+    .withMessage('El término de búsqueda debe ser texto')
+    .bail()
     .trim()
     .notEmpty()
     .withMessage('El término de búsqueda es requerido y no puede estar vacío')

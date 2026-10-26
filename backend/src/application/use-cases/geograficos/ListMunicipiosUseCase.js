@@ -5,6 +5,7 @@
  *
  * Filtros específicos: provinciaId
  */
+import { parseFiltroId } from '../../utils/validacionEntrada.js';
 import { BaseListUseCase } from '../base/BaseListUseCase.js';
 import { MunicipalityMapper } from '../../mappers/geograficos/index.js';
 
@@ -46,8 +47,9 @@ export class ListMunicipiosUseCase extends BaseListUseCase {
   buildSpecificFilters(queryParams = {}, baseFilters = {}) {
     const filters = { ...baseFilters };
 
-    if (queryParams.provinciaId) {
-      filters.provinceId = Number(queryParams.provinciaId);
+    const provinciaId = parseFiltroId(queryParams.provinciaId, 'provinciaId');
+    if (provinciaId !== undefined) {
+      filters.provinceId = provinciaId;
     }
 
     return filters;
