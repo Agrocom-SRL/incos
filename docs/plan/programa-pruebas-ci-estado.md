@@ -50,7 +50,7 @@ Backend: ~8 700 pruebas unitarias. Frontend: ~1 200 pruebas de Vitest.
 ## Pendiente de decidir
 - `areaConocimiento` de Materia: la tabla `materias` no tiene la columna; guardarla exige DDL (aprobación de diseño de schema).
 - Contratos que cambian: asistencia con bimestre inválido 404→400; filtros de id inválidos 400 en vez de ignorarse; `UpdatePeriodoFechas` exige ambas fechas; la auditoría ahora registra al usuario real (`req.user = req.usuario`, PR #66).
-- `POST /proyectos-grado/:id/bitacora/:entradaId/confirmar` muta con permiso de lectura (`titulacion.bitacora` + `LISTAR`): confirmar si es intencional.
+- `POST /proyectos-grado/:id/bitacora/:entradaId/confirmar` muta con permiso de lectura (`titulacion.bitacora` + `LISTAR`): confirmar si es intencional. Comentado en `proyectos-grado.routes.js`; no se tocó el permiso.
 - Deuda de seguridad no corregida: `/uploads` estático sin autenticación (incluye documentos de estudiantes), SVG servidos desde `/uploads`, `/api-docs` público, `X-Forwarded-For` sin validar; detrás de Nginx definir `TRUST_PROXY=true`.
 - Discrepancias entre `matriz-permisos-sistema.md` y lo sembrado (se siguen los seeds).
 
