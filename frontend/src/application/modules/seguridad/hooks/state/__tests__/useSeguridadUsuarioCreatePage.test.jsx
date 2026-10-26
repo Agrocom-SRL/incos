@@ -30,7 +30,9 @@ function montar() {
   const ref = { current: null };
   function Arnes() {
     const h = useSeguridadUsuarioCreatePage();
-    ref.current = h;
+    React.useEffect(() => {
+      ref.current = h;
+    });
     return (
       <Form form={h.form} key={h.wizardFormMountKey} initialValues={h.usuarioAltaInitialValues}>
         {['categoria_creacion', 'rol_id', 'username', 'password', 'password_confirm', 'docente_id', 'estudiante_id'].map((n) => (
