@@ -39,6 +39,9 @@ export const listValidator = [
 
   query('search')
     .optional()
+    .isString()
+    .withMessage('La búsqueda debe ser texto')
+    .bail()
     .trim()
     .isLength({ min: 2, max: 100 })
     .withMessage('La búsqueda debe tener entre 2 y 100 caracteres'),

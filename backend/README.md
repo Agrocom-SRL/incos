@@ -103,7 +103,7 @@ Plantilla en `.env.example`. Las que lee el código:
 | Swagger | `API_TITLE`, `API_VERSION`, `API_DESCRIPTION`, `API_CONTACT_NAME`, `API_CONTACT_EMAIL`, `API_LICENSE_NAME`, `API_PRODUCTION_URL` |
 | Opcional | `REDIS_URL` (hoy solo se consulta; la caché aún no está conectada) |
 
-`.env` y `.env.*` están ignorados por git (solo se versiona `.env.example`). Nunca subir credenciales reales. Las variables `RATE_LIMIT_*`, `BCRYPT_SALT_ROUNDS`, `SMTP_*`, `SESSION_*` y `BACKUP_*` de la plantilla no las usa el código actual.
+`.env` y `.env.*` están ignorados por git (solo se versiona `.env.example`). Nunca subir credenciales reales. `RATE_LIMIT_LOGIN_MAX` y `RATE_LIMIT_WINDOW_MS` limitan los intentos fallidos de login (ver `docs/guias/pruebas.md`). Las variables `RATE_LIMIT_MAX_REQUESTS`, `BCRYPT_SALT_ROUNDS`, `SMTP_*`, `SESSION_*` y `BACKUP_*` de la plantilla no las usa el código actual.
 
 ## Base de datos
 
