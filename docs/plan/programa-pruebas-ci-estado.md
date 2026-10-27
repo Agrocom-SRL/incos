@@ -21,7 +21,7 @@ Cerrar el backlog de `correcciones-hallazgos-pruebas.md` y ampliar las pruebas d
 | Decisiones de negocio (bimestres, licencias docente, estados) | Fusionado (PR #56) |
 | 4 Fechas y asistencia | Fusionado (PR #57) |
 | 6 Configuración y catálogos | Fusionado (PR #58) |
-| Hallazgos de la integración (centralizador vacío, `POST /libros`, `POST /carreras` duplicada, aporte huérfano, `stack` en 404) | En curso |
+| Hallazgos de la integración (centralizador inexistente, `POST /libros`, `POST /carreras` duplicada, aporte huérfano, `stack` en 4xx) | Fusionado (PR #71; el #69 se fusionó vacío por un error de ref y se rehízo) |
 
 ## Decisiones tomadas
 - Compuerta de bimestre única (`assertBimestreEditable`): editable EN_CURSO o REABIERTO; cerrado solo tras reapertura, que exige gestión vigente y permiso de gestión de bimestres (RECTOR, DIR_ACADEMICO; ADMIN_SISTEMA por herencia). 
@@ -39,14 +39,17 @@ Cerrar el backlog de `correcciones-hallazgos-pruebas.md` y ampliar las pruebas d
 | Frontend: componentes, RBAC y E2E Playwright | #63 | 448 pruebas + 20 E2E |
 | Carga y estrés (k6) | #64 | Scripts; nunca ejecutados |
 | Frontend capa `application` | #65 | 6 → 54 % de líneas |
-| Frontend `application`: matrícula, capacitación, helpers de oferta y control de bimestres | rama `test/frontend-cobertura-application` | 54 → 72,7 % de líneas (objetivo 70 % cumplido); matrícula ~10 → ~94 %; 1 556 pruebas |
+| Frontend `application`: matrícula, capacitación, helpers de oferta y control de bimestres | #74 | 54 → 72,7 % de líneas (objetivo 70 % cumplido); matrícula ~10 → ~94 %; 1 556 pruebas |
 | Backend ronda 2 (repos, middleware, rutas, dominio, contenedor) | #66 | Global ~87 % líneas, 73 % ramas |
 | Integración por dominio (8 dominios, MariaDB real) | #67 | 16 suites, 476 pruebas, validadas en local y en CI |
-| `presentation/validators` backend | rama `test/validators-cobertura` | 72 % → 98 % de líneas (89,6 % de ramas), +680 pruebas; 5 correcciones de validators/use cases con su prueba |
+| Frontend `presentation/modules` (once dominios) | #70 | ≈35 % de líneas de `modules/**`; 4 bugs corregidos |
+| Integración de escrituras (titulación, horarios, oferta/plan, bimestres, libros) | #73 | 22 suites, 1075 pruebas contra MariaDB real |
+| Frontend `presentation/modules` (horarios, matrícula, académico, supervisión) | #75 | 35,7 → 83,2 % de `modules/**`; 64,7 % de todo `src`; 217 archivos, 3163 pruebas |
+| `presentation/validators` backend | #72 | 72 % → 98 % de líneas (89,6 % de ramas), +680 pruebas; 5 correcciones de validators/use cases con su prueba |
 
-Backend: ~8 700 pruebas unitarias. Frontend: ~1 200 pruebas de Vitest.
+Backend: ~9 400 pruebas unitarias (global ~87 % líneas) y 22 suites de integración (1075 pruebas). Frontend: ~3 160 pruebas de Vitest y 20 E2E.
 
-## Correcciones de la ronda de validators (rama `test/validators-cobertura`)
+## Correcciones de la ronda de validators (PR #72)
 - Estudiantes: `registerStudentValidator` acepta `null` explícito en los ids opcionales (igual que update); la regla ANTIGUO (gestión y carrera) ya no queda saltada por `optional()` y los use cases de registro y actualización también la exigen; los ids de update usan validación estricta (`'3abc'`, `'1.5'` y `0` se rechazan).
 - Asignaciones docentes: `docenteId`, `ofertaCursoId` (y `gestionPlanId` en el alta) son requeridos en `createTeacherAssignmentValidator` y `assignTeacherToCourseValidator`.
 - Carreras: `UpdateCarreraUseCase` lanza `ConflictError` si el código ya lo usa otra carrera; el límite de `codigo` pasa de 50 a 20 (VARCHAR(20)).
@@ -63,8 +66,10 @@ Backend: ~8 700 pruebas unitarias. Frontend: ~1 200 pruebas de Vitest.
 - Discrepancias entre `matriz-permisos-sistema.md` y lo sembrado (se siguen los seeds).
 
 ## Siguiente
-- Pruebas de presentación por módulo del frontend (agente en curso).
-- Frontend `application` (ya en 72,7 %): quedan sin cubrir los hooks grandes de institucional (`useGestionHorariosArmadoState`, `useGestionHorariosConflictosState`, `useOfertaGestionPlanesState`), `usePlanBuilder`, `useCuadernoCurso` y `useParaleloForm`.
+- Horarios: `HorarioConflictosService.validarPropuesta` solo ve choques ya guardados; un bloque que pone al mismo docente en el mismo horario de otro paralelo se guarda con 200 y el conflicto aparece al publicar (422). Decidir si se previene al guardar (la prueba de integración fija el comportamiento actual).
+- AntD 6 sin corregir: `Spin tip` sin hijos en `DocentesListConnector.jsx`, `ParaleloDetailOfertaSection.jsx` y `GestionHorariosConflictosPage.jsx`; `Text type="primary"` inválido en `HorariosGestionSidebarResumen`. Deuda de diseño: `<style>` en línea y px/hex en duro en matrícula y política de asistencia.
+- Frontend `application` (72,7 %): quedan sin cubrir los hooks grandes de institucional (`useGestionHorariosArmadoState`, `useGestionHorariosConflictosState`, `useOfertaGestionPlanesState`), `usePlanBuilder`, `useCuadernoCurso` y `useParaleloForm`.
+- Frontend `presentation/modules` (83 %): quedan las piezas más pesadas de montar (menú y sidebar, cubiertos por el E2E).
 - Primera ejecución real de las pruebas de carga cuando se aplique `carga.yml`.
 
 ## Límites conocidos
