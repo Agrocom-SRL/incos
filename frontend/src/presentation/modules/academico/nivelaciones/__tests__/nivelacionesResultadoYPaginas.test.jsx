@@ -155,7 +155,7 @@ describe('ResultadoNivelacionDrawer', () => {
     expect((await screen.findAllByText(/irreversible/)).length).toBeGreaterThan(0);
     expect(props.onRegistrarDecision).not.toHaveBeenCalled();
     const botones = [...document.querySelectorAll('.ant-modal-confirm-btns')].at(-1);
-    await userEvent.click(within(botones).getByRole('button', { name: 'Registrar' }));
+    await userEvent.click(await within(botones).findByRole('button', { name: 'Registrar' }));
     await waitFor(() => expect(props.onRegistrarDecision).toHaveBeenCalled());
     expect(props.onRegistrarDecision).toHaveBeenCalledWith({
       subjectEnrollmentId: 33,
@@ -173,7 +173,7 @@ describe('ResultadoNivelacionDrawer', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Registrar decisión administrativa' }));
     await screen.findAllByText(/irreversible/);
     const botones = [...document.querySelectorAll('.ant-modal-confirm-btns')].at(-1);
-    await userEvent.click(within(botones).getByRole('button', { name: 'Registrar' }));
+    await userEvent.click(await within(botones).findByRole('button', { name: 'Registrar' }));
     expect(await screen.findByText('Sin permiso')).toBeInTheDocument();
   });
 

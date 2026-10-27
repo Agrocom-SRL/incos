@@ -67,7 +67,7 @@ describe('AbrirLibroModal', () => {
     render(<AbrirLibroModal open gestiones={gestiones} onGuardar={onGuardar} onCancelar={vi.fn()} />);
     await userEvent.click(screen.getByRole('button', { name: 'Abrir libro' }));
     expect(await screen.findByText('Seleccione la gestión')).toBeInTheDocument();
-    expect(screen.getByText('Ingrese el número de libro')).toBeInTheDocument();
+    expect(await screen.findByText('Ingrese el número de libro')).toBeInTheDocument();
     expect(onGuardar).not.toHaveBeenCalled();
   });
 

@@ -182,7 +182,7 @@ describe('EvaluacionDrawer · asistencia', () => {
 const confirmarEliminar = async () => {
   await screen.findAllByText('Eliminar actividad', { selector: '.ant-modal-confirm-title' });
   const botones = [...document.querySelectorAll('.ant-modal-confirm-btns')].at(-1);
-  await userEvent.click(within(botones).getByRole('button', { name: 'Eliminar' }));
+  await userEvent.click(await within(botones).findByRole('button', { name: 'Eliminar' }));
 };
 
 describe('EvaluacionDrawer · editar', () => {
