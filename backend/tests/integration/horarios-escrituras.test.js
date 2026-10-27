@@ -88,7 +88,7 @@ async function prepararParaleloOfertado(limpiar, conservar = [INGLES]) {
   const base = await crearParaleloGestionPrueba(limpiar);
   const pgId = base.paraleloGestionId;
   await generarOferta(pgId, conservar);
-  const aula = await enviarComo(ARMADOR, 'put', `/paralelos-gestion/${pgId}`, { aula_id: 14 });
+  const aula = await enviarComo(ARMADOR, 'put', `/paralelos-gestion/${pgId}`, { aula_id: 11 });
   expect(aula.status).toBe(200);
   const ofertado = await cambiarEstado(pgId, 'OFERTADO');
   expect([ofertado.status, ofertado.body.error?.message]).toEqual([200, undefined]);
@@ -119,9 +119,9 @@ describe('Horarios · máquina de estados del paralelo en gestión', () => {
       esperarValidacion(sinAula);
       expect(sinAula.body.error.message).toContain('aula');
       // Cupos incoherentes
-      esperarValidacion(await enviarComo(ARMADOR, 'put', `/paralelos-gestion/${pgId}`, { aula_id: 14, cupo_maximo: 5, cupo_minimo: 9 }));
+      esperarValidacion(await enviarComo(ARMADOR, 'put', `/paralelos-gestion/${pgId}`, { aula_id: 11, cupo_maximo: 5, cupo_minimo: 9 }));
       // Con aula pero sin oferta de cursos generada
-      expect((await enviarComo(ARMADOR, 'put', `/paralelos-gestion/${pgId}`, { aula_id: 14, cupo_maximo: 30 })).status).toBe(200);
+      expect((await enviarComo(ARMADOR, 'put', `/paralelos-gestion/${pgId}`, { aula_id: 11, cupo_maximo: 30 })).status).toBe(200);
       const sinOferta = await cambiarEstado(pgId, 'OFERTADO');
       esperarValidacion(sinOferta);
       expect(sinOferta.body.error.message).toContain('oferta');
