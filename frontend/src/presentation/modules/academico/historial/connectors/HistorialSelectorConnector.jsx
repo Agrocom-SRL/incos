@@ -19,7 +19,8 @@ const MiHistorialRedirect = () => {
   const { estudianteId, loading, error } = useMiEstudianteId();
 
   if (loading) {
-    return <Spin spinning size="large" tip="Abriendo su historial…" style={{ width: '100%' }} />;
+    // `tip` solo se pinta en modo anidado o pantalla completa (AntD 6): sin esto el texto nunca aparece.
+    return <Spin spinning fullscreen size="large" tip="Abriendo su historial…" />;
   }
   if (error || !estudianteId) {
     return (
