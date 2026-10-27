@@ -75,7 +75,9 @@ const TransicionPasantiaModal = ({
   };
 
   const handleOk = async () => {
-    const values = await form.validateFields();
+    // Validación fallida: los errores ya se muestran en el formulario; no propagar el rechazo.
+    const values = await form.validateFields().catch(() => null);
+    if (!values) return;
     if (ESTADOS_TRANSICION_PASANTIA_IRREVERSIBLES.includes(values.estado)) {
       modal.confirm({
         title: `¿Confirma ${values.estado === 'RECHAZADA' ? 'rechazar' : 'cancelar'} el trámite?`,

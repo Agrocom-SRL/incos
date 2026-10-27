@@ -52,11 +52,15 @@ export class ExportCentralizadorParaleloBimestreExcelUseCase {
       throw new NotFoundError('Bimestre');
     }
 
-    // Matriz (misma fuente que la pantalla) + cabecera del paralelo (vista 87).
-    const [matriz, cabeceraRow] = await Promise.all([
-      this.getCentralizadorParaleloUseCase.execute({ paraleloGestionId: pgId }),
-      this.parallelRepository.obtenerCabeceraParaleloGestion(pgId)
-    ]);
+    // Cabecera del paralelo (vista 87): si no existe, el paralelo no existe -> 404.
+    const cabeceraRow = await this.parallelRepository.obtenerCabeceraParaleloGestion(pgId);
+    if (!cabeceraRow) {
+      throw new NotFoundError('Paralelo');
+    }
+
+    // Matriz (misma fuente que la pantalla). Un paralelo sin matriculados produce un
+    // libro válido con la cabecera y sin filas de estudiantes.
+    const matriz = await this.getCentralizadorParaleloUseCase.execute({ paraleloGestionId: pgId });
 
     const { datos, carrera, periodo, paralelo, gestionAnio } =
       construirDatosCentralizadorParalelo({ matriz, cabeceraRow, bimestre: bimestreNum });

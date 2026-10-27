@@ -19,6 +19,15 @@
  */
 import { ValidationError, UnprocessableEntityError } from '../../domain/errors/AppError.js';
 
+function esErrorDeClienteExplicito(err) {
+  return (
+    Number.isInteger(err.statusCode) &&
+    err.statusCode >= 400 &&
+    err.statusCode < 500 &&
+    !('expose' in err)
+  );
+}
+
 export function createErrorHandler(logger, errorFormatter) {
   return function errorHandler(err, req, res, _next) {
     // Extraer información del error para logging
@@ -53,10 +62,19 @@ export function createErrorHandler(logger, errorFormatter) {
       return res.status(422).json(response);
     }
 
+    // Error 4xx lanzado a mano por un use case (`Error` con `statusCode`/`code`, sin ser AppError):
+    // es un error de cliente deliberado, se responde con su mensaje y NUNCA con stack, en ningún entorno.
+    // Los errores de http-errors/body-parser (tienen `expose`) siguen la ruta genérica de abajo.
+    if (esErrorDeClienteExplicito(err)) {
+      const response = errorFormatter.formatOperationalError(err, req);
+      return res.status(err.statusCode).json(response);
+    }
+
     // Error inesperado del sistema
     const statusCode = err.statusCode || 500;
     // Stack y mensaje internos solo en desarrollo; test/staging/producción responden genérico.
-    const isProduction = (process.env.NODE_ENV ?? 'development') !== 'development';
+    // Ningún 4xx expone stack, ni siquiera en desarrollo.
+    const isProduction = (process.env.NODE_ENV ?? 'development') !== 'development' || statusCode < 500;
     const response = errorFormatter.formatUnexpectedError(err, req, isProduction);
     return res.status(statusCode).json(response);
   };
