@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 const R = vi.hoisted(() => ({
@@ -201,35 +201,23 @@ describe('StudentRegisterProvider', () => {
     const { StudentRegisterProvider } = await import('../nuevo/providers/StudentRegisterProvider');
     const { StudentRegisterContext } = await import('../nuevo/context/StudentRegisterContext');
 
-    let ctx;
-    const Consumidor = () => {
-      ctx = useContext(StudentRegisterContext);
-      return null;
-    };
-    const { unmount } = render(
-      <StudentRegisterProvider mode="create">
-        <Consumidor />
-      </StudentRegisterProvider>,
-    );
+    const conProvider = (props) => ({ children }) => <StudentRegisterProvider {...props}>{children}</StudentRegisterProvider>;
+    const { result, unmount } = renderHook(() => useContext(StudentRegisterContext), { wrapper: conProvider({ mode: 'create' }) });
     expect(S.ref.loadTiposParentesco).toHaveBeenCalledTimes(1);
-    expect(ctx).toMatchObject({ resolveOptions: 'resolveOptions', gestiones: [{ id: 1 }], carreras: [{ id: 2 }], contactosIndices: [0], instituciones: [] });
-    expect(ctx.documentacionRaw).toEqual([{ id: 1 }]);
-    act(() => ctx.cargarGestiones('ANTIGUO'));
+    expect(result.current).toMatchObject({ resolveOptions: 'resolveOptions', gestiones: [{ id: 1 }], carreras: [{ id: 2 }], contactosIndices: [0], instituciones: [] });
+    expect(result.current.documentacionRaw).toEqual([{ id: 1 }]);
+    act(() => result.current.cargarGestiones('ANTIGUO'));
     expect(S.gest.fetch).toHaveBeenLastCalledWith({ params: { vigente: 0 } });
-    act(() => ctx.cargarGestiones('TRASPASO'));
+    act(() => result.current.cargarGestiones('TRASPASO'));
     expect(S.gest.fetch).toHaveBeenLastCalledWith();
     S.gest.fetch.mockClear();
-    act(() => ctx.cargarGestiones('NUEVO'));
+    act(() => result.current.cargarGestiones('NUEVO'));
     expect(S.gest.fetch).not.toHaveBeenCalled();
     unmount();
 
     vi.useFakeTimers();
     S.ref.loadTiposParentesco.mockClear();
-    render(
-      <StudentRegisterProvider mode="edit" studentId={3}>
-        <Consumidor />
-      </StudentRegisterProvider>,
-    );
+    const edit = renderHook(() => useContext(StudentRegisterContext), { wrapper: conProvider({ mode: 'edit', studentId: 3 }) });
     expect(S.catalogArgs).toContain(300);
     expect(S.ref.loadTiposParentesco).not.toHaveBeenCalled();
     await act(async () => {
@@ -237,6 +225,6 @@ describe('StudentRegisterProvider', () => {
     });
     expect(S.ref.loadTiposParentesco).toHaveBeenCalledTimes(1);
     vi.useRealTimers();
-    await waitFor(() => expect(ctx).toBeTruthy());
+    await waitFor(() => expect(edit.result.current).toBeTruthy());
   });
 });
