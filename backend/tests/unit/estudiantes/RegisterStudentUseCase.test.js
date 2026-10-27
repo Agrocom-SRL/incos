@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import { ConflictError, NotFoundError } from '../../../src/domain/errors/AppError.js';
+import { ConflictError, NotFoundError, ValidationError } from '../../../src/domain/errors/AppError.js';
 import { RegisterStudentUseCase } from '../../../src/application/use-cases/estudiantes/RegisterStudentUseCase.js';
 
 describe('RegisterStudentUseCase', () => {
@@ -149,10 +149,23 @@ describe('RegisterStudentUseCase', () => {
     });
   });
 
+  it.each([
+    ['sin gestión', { tipoAdmision: 'ANTIGUO', carreraId: 4 }, 'Gestión de ingreso es requerida'],
+    ['gestión 0', { tipoAdmision: 'ANTIGUO', gestionIngresoId: 0, carreraId: 4 }, 'Gestión de ingreso es requerida'],
+    ['sin carrera', { tipoAdmision: 'ANTIGUO', gestionIngresoId: 5 }, 'Carrera es requerida'],
+    ['carrera null', { tipoAdmision: 'ANTIGUO', gestionIngresoId: 5, carreraId: null }, 'Carrera es requerida'],
+    ['solo gestión (infiere ANTIGUO)', { gestionIngresoId: 5 }, 'Carrera es requerida'],
+  ])('ANTIGUO exige gestión y carrera: %s', async (_, extra, mensaje) => {
+    const { useCase, deps } = crear();
+    await expect(useCase.execute({ student: { ci: '1' }, ...extra })).rejects.toThrow(ValidationError);
+    await expect(useCase.execute({ student: { ci: '1' }, ...extra })).rejects.toThrow(mensaje);
+    expect(deps.studentRepository.create).not.toHaveBeenCalled();
+  });
+
   it('falla si la gestión de ingreso no existe', async () => {
     const { useCase } = crear();
     useCase.managementRepository.findById.mockResolvedValue(null);
-    await expect(useCase.execute({ student: { ci: '1' }, gestionIngresoId: 77 }))
+    await expect(useCase.execute({ student: { ci: '1' }, gestionIngresoId: 77, carreraId: 4 }))
       .rejects.toThrow(new NotFoundError('Gestión con ID 77'));
   });
 

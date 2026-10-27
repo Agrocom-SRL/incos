@@ -103,6 +103,25 @@ describe('ExportCentralizadorParaleloBimestreExcelUseCase', () => {
     await expect(useCase.execute({ paraleloGestionId: 1, bimestre: 5 })).rejects.toBeInstanceOf(NotFoundError);
     await expect(useCase.execute({ paraleloGestionId: 1, bimestre: 'x' })).rejects.toBeInstanceOf(NotFoundError);
   });
+
+  it('un paralelo inexistente (sin cabecera) es NotFound y no arma el Excel', async () => {
+    const { useCase, deps } = crear();
+    deps.parallelRepository.obtenerCabeceraParaleloGestion.mockResolvedValue(null);
+    await expect(useCase.execute({ paraleloGestionId: 999999, bimestre: 1 })).rejects.toBeInstanceOf(NotFoundError);
+    expect(deps.getCentralizadorParaleloUseCase.execute).not.toHaveBeenCalled();
+    expect(deps.centralizadorExcelGenerator.generarCentralizadorParaleloBimestre).not.toHaveBeenCalled();
+  });
+
+  it('un paralelo existente sin matriculados igual genera el Excel', async () => {
+    const { useCase, deps } = crear();
+    deps.getCentralizadorParaleloUseCase.execute.mockResolvedValue({ asignaturas: [], estudiantes: [] });
+    mockConstruirCentralizador.mockReturnValue({
+      datos: { estudiantes: [], asignaturas: [] }, carrera: 'Mec', periodo: 'Primero', paralelo: 'A', gestionAnio: '2026',
+    });
+    const r = await useCase.execute({ paraleloGestionId: 4, bimestre: 1 });
+    expect(deps.centralizadorExcelGenerator.generarCentralizadorParaleloBimestre).toHaveBeenCalled();
+    expect(r.mimeType).toBe(XLSX);
+  });
 });
 
 describe('ExportCentralizadorCarreraBimestreExcelUseCase', () => {

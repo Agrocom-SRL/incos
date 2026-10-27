@@ -230,6 +230,32 @@ describe.each([
 });
 
 describe('registerStudentValidator: reglas propias', () => {
+  it.each(['estadoCivilId', 'municipioResidenciaId', 'paisId', 'gestionIngresoId', 'carreraId', 'departamentoResidenciaId', 'provinciaResidenciaId', 'tipoDiscapacidadId', 'idiomaMaternoId', 'idiomaSecundarioId'])(
+    'acepta %s=null explícito (igual que en update)',
+    async (campo) => {
+      expect(await camposInvalidos(v.registerStudentValidator, { body: { ...estudianteValido(), [campo]: null } })).toEqual([]);
+      expect(await camposInvalidos(v.updateStudentValidator, { body: { [campo]: null } })).toEqual([]);
+    }
+  );
+
+  it.each([
+    ['ausentes', {}],
+    ['null', { gestionIngresoId: null, carreraId: null }],
+    ['cadena vacía', { gestionIngresoId: '', carreraId: '' }],
+    ['cero', { gestionIngresoId: 0, carreraId: 0 }],
+  ])('ANTIGUO exige gestión y carrera (%s)', async (_, extra) => {
+    const campos = await camposInvalidos(v.registerStudentValidator, { body: { ...estudianteValido(), tipoAdmision: 'ANTIGUO', ...extra } });
+    expect(campos).toEqual(expect.arrayContaining(['gestionIngresoId', 'carreraId']));
+  });
+
+  it('ANTIGUO con solo la gestión rechaza únicamente la carrera', async () => {
+    expect(await camposInvalidos(v.registerStudentValidator, { body: { ...estudianteValido(), tipoAdmision: 'ANTIGUO', gestionIngresoId: 3 } })).toEqual(['carreraId']);
+  });
+
+  it('NUEVO no exige gestión ni carrera', async () => {
+    expect(await camposInvalidos(v.registerStudentValidator, { body: { ...estudianteValido(), tipoAdmision: 'NUEVO' } })).toEqual([]);
+  });
+
   it('gestionIngresoId y carreraId presentes deben ser enteros positivos (la obligatoriedad para ANTIGUO la impone el use case)', async () => {
     const campos = await camposInvalidos(v.registerStudentValidator, {
       body: { ...estudianteValido(), tipoAdmision: 'ANTIGUO', gestionIngresoId: 0, carreraId: 0 },
@@ -389,5 +415,45 @@ describe.each(['createBecaDescuentoValidator', 'updateBecaDescuentoValidator'])(
   it('payloads maliciosos', async () => {
     const campos = await camposInvalidos(v[nombre], { body: { nombre: { $ne: 1 }, porcentaje: SQLI, tipoAutomatica: XSS } });
     expect(campos).toEqual(expect.arrayContaining(['nombre', 'porcentaje', 'tipoAutomatica']));
+  });
+});
+
+describe('updateStudentValidator: ids estrictos y regla ANTIGUO', () => {
+  const idsNumericos = ['estadoCivilId', 'municipioResidenciaId', 'departamentoResidenciaId', 'provinciaResidenciaId', 'tipoDiscapacidadId', 'paisId', 'idiomaMaternoId', 'idiomaSecundarioId', 'gestionIngresoId', 'carreraId'];
+
+  it.each(idsNumericos)('%s rechaza texto con basura, decimales, ceros, espacios y tipos no escalares', async (campo) => {
+    for (const valor of ['3abc', '1.5', '0', 0, -2, ' 3', '3 ', '1e3', '0x1', true, [3], { $gt: 0 }, 1.5]) {
+      expect(await camposInvalidos(v.updateStudentValidator, { body: { [campo]: valor } })).toContain(campo);
+    }
+  });
+
+  it.each(idsNumericos)('%s acepta enteros positivos como número o cadena', async (campo) => {
+    expect(await camposInvalidos(v.updateStudentValidator, { body: { [campo]: 7 } })).toEqual([]);
+    expect(await camposInvalidos(v.updateStudentValidator, { body: { [campo]: '7' } })).toEqual([]);
+  });
+
+  it('el id de parentesco de un contacto también es estricto', async () => {
+    const body = (tipoParentescoId) => ({ contactosEmergencia: [{ tipoParentescoId }] });
+    expect(await camposInvalidos(v.updateStudentValidator, { body: body('3abc') })).toContain('contactosEmergencia[0].tipoParentescoId');
+    expect(await camposInvalidos(v.updateStudentValidator, { body: body('3') })).toEqual([]);
+    expect(await camposInvalidos(v.updateStudentValidator, { body: body('') })).toEqual([]);
+  });
+
+  it.each([
+    ['null', { gestionIngresoId: null, carreraId: null }],
+    ['cadena vacía', { gestionIngresoId: '', carreraId: '' }],
+    ['cero', { gestionIngresoId: 0, carreraId: 0 }],
+  ])('ANTIGUO con gestión y carrera explícitas inválidas (%s) se rechaza', async (_, extra) => {
+    const campos = await camposInvalidos(v.updateStudentValidator, { body: { tipoAdmision: 'ANTIGUO', ...extra } });
+    expect(campos).toEqual(expect.arrayContaining(['gestionIngresoId', 'carreraId']));
+  });
+
+  it('ANTIGUO sin enviar gestión ni carrera conserva lo guardado (el use case lo comprueba)', async () => {
+    expect(await camposInvalidos(v.updateStudentValidator, { body: { tipoAdmision: 'ANTIGUO' } })).toEqual([]);
+  });
+
+  it('ANTIGUO con gestión y carrera válidas pasa; otros tipos aceptan null', async () => {
+    expect(await camposInvalidos(v.updateStudentValidator, { body: { tipoAdmision: 'ANTIGUO', gestionIngresoId: '2', carreraId: 3 } })).toEqual([]);
+    expect(await camposInvalidos(v.updateStudentValidator, { body: { tipoAdmision: 'NUEVO', gestionIngresoId: null, carreraId: '' } })).toEqual([]);
   });
 });
