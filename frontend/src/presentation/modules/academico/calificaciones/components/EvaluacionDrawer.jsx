@@ -595,7 +595,7 @@ const EvaluacionDrawer = ({
       size={520}
       open={abierto}
       onClose={handleCerrar}
-      destroyOnClose
+      destroyOnHidden
       footer={
         <EvaluacionDrawerFooter
           esEditar={esEditar}
