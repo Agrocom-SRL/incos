@@ -306,6 +306,16 @@ describe('GestionHorariosConflictosPage', () => {
     expect(s.setVistaModo).toHaveBeenCalledWith(72);
   });
 
+  it('pestaña de paralelo cargando muestra el texto de carga (Spin anidado de AntD 6)', async () => {
+    conflictosMock.mockReturnValue(estado({
+      vistaActivaKey: '72',
+      vistaOpciones: [{ key: 'docente', label: 'Docente' }, { key: '72', label: 'Paralelo B' }],
+      paraleloStates: { 72: { draftSchedules: [], loading: true } },
+    }));
+    renderWithProviders(<GestionHorariosConflictosPage />);
+    expect(await screen.findByText('Cargando grilla…')).toBeInTheDocument();
+  });
+
   it('pestaña de paralelo con error muestra la alerta', async () => {
     conflictosMock.mockReturnValue(estado({
       vistaActivaKey: '71',

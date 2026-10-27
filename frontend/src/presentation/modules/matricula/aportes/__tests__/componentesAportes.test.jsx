@@ -52,6 +52,8 @@ describe('moléculas de aportes', () => {
   it('ConfigurationCardContent: monto con formato y nombre opcional', () => {
     const { rerender } = render(<ConfigurationCardContent configuracion={{ montoBase: 1500, nombre: 'Aporte 2026' }} />);
     expect(screen.getByText(/Bs\.\s*1[.,\s]?500/)).toBeInTheDocument();
+    // `type="primary"` no existe en Typography.Text de AntD 6: el énfasis viene del color del tema.
+    expect(screen.getByText(/Bs\.\s*1[.,\s]?500/)).toHaveStyle({ color: 'var(--color-primary)' });
     expect(screen.getByText('Aporte 2026')).toBeInTheDocument();
     rerender(<ConfigurationCardContent configuracion={{}} />);
     expect(screen.getByText('N/A')).toBeInTheDocument();
@@ -66,6 +68,7 @@ describe('moléculas de aportes', () => {
     expect(screen.getByText('N/A')).toBeInTheDocument();
     rerender(<PaymentMethodCardContent metodoPago={{ codigo: 'QR', nombre: 'Pago QR' }} />);
     expect(screen.getByText('QR')).toBeInTheDocument();
+    expect(screen.getByText('QR')).toHaveStyle({ color: 'var(--color-primary)' });
     expect(screen.getByText('Pago QR')).toBeInTheDocument();
     rerender(<PaymentMethodCardContent metodoPago={{ nombre: 'Otro' }} />);
     expect(screen.getByText('N/A')).toBeInTheDocument();
