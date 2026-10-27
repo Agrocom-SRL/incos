@@ -222,6 +222,37 @@ state: 'PENDIENTE',
       );
     });
 
+    it.each([
+      ['monto mayor al monto obligatorio', { amount: 500 }, 'no puede superar el saldo pendiente'],
+      ['monto negativo', { amount: -1 }, 'no puede ser negativo'],
+      ['QR sin código de comprobante', { payment_method_id: 2 }, 'código de comprobante'],
+      ['TRANSFERENCIA sin cuenta', { payment_method_id: 3, codigo_comprobante: 'X1' }, 'cuenta de pago'],
+      ['EFECTIVO con cuenta', { payment_account_id: 4 }, 'EFECTIVO no debe tener cuenta'],
+    ])('rechazo por %s no deja una cabecera huérfana (nada se escribe)', async (_caso, extra, mensaje) => {
+      const { useCase, deps } = crear({ cabecera: null });
+      await expect(useCase.execute(pago(extra))).rejects.toThrow(mensaje);
+      expect(deps.contributionPaymentRepository.create).not.toHaveBeenCalled();
+      expect(deps.contributionPaymentInstallmentRepository.create).not.toHaveBeenCalled();
+    });
+
+    it('un método de pago inexistente no deja una cabecera huérfana', async () => {
+      const { useCase, deps } = crear({ cabecera: null });
+      deps.paymentMethodRepository.findById.mockResolvedValue(null);
+      await expect(useCase.execute(pago({ payment_method_id: 99 }))).rejects.toBeInstanceOf(NotFoundError);
+      expect(deps.contributionPaymentRepository.create).not.toHaveBeenCalled();
+    });
+
+    it('con todo válido crea la cabecera antes de insertar la cuota', async () => {
+      const { useCase, deps } = crear({ cabecera: null });
+      await useCase.execute(pago());
+      const ordenCabecera = deps.contributionPaymentRepository.create.mock.invocationCallOrder[0];
+      const ordenCuota = deps.contributionPaymentInstallmentRepository.create.mock.invocationCallOrder[0];
+      expect(ordenCabecera).toBeLessThan(ordenCuota);
+      expect(deps.contributionPaymentInstallmentRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({ contributionPaymentId: 1 })
+      );
+    });
+
     it('sin beca la obligación es el monto base completo', async () => {
       const { useCase, deps } = crear({ cabecera: null });
       await useCase.execute(pago({ amount: 100 }));

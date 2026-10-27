@@ -458,7 +458,7 @@ describe('UpdateStudentUseCase · execute', () => {
   it('si falla la regeneración del código, el error se propaga con contexto', async () => {
     const { useCase, deps } = crear();
     jest.spyOn(useCase, 'generateStudentCode').mockRejectedValue(new Error('sin correlativo'));
-    await expect(useCase.execute(5, { tipoAdmision: 'ANTIGUO', gestionIngresoId: 2 })).rejects.toThrow(
+    await expect(useCase.execute(5, { tipoAdmision: 'ANTIGUO', gestionIngresoId: 2, carreraId: 4 })).rejects.toThrow(
       'No se pudo actualizar el código del estudiante: sin correlativo'
     );
     expect(deps.logger.error).toHaveBeenCalled();

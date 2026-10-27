@@ -240,6 +240,63 @@ describe('createErrorHandler', () => {
     expect(res.status).toHaveBeenCalledWith(503);
   });
 
+  describe('stack y mensajes internos', () => {
+    const conEntorno = (nodeEnv, fn) => {
+      const previo = process.env.NODE_ENV;
+      process.env.NODE_ENV = nodeEnv;
+      try {
+        return fn();
+      } finally {
+        process.env.NODE_ENV = previo;
+      }
+    };
+    const cuerpoDe = (err, nodeEnv) =>
+      conEntorno(nodeEnv, () => {
+        const res = crearRes();
+        handler(err, req, res, jest.fn());
+        return { status: res.status.mock.calls[0][0], body: res.json.mock.calls[0][0] };
+      });
+    const err404Manual = () =>
+      Object.assign(new Error('La actividad de cronograma no existe'), { statusCode: 404, code: 'NOT_FOUND' });
+
+    it.each(['development', 'test', 'production', 'staging'])(
+      'un 404 lanzado a mano por un use case conserva su mensaje y no expone stack (NODE_ENV=%s)',
+      (nodeEnv) => {
+        const { status, body } = cuerpoDe(err404Manual(), nodeEnv);
+        expect(status).toBe(404);
+        expect(body.error.code).toBe('NOT_FOUND');
+        expect(body.error.message).toBe('La actividad de cronograma no existe');
+        expect(JSON.stringify(body)).not.toContain('stack');
+      }
+    );
+
+    it.each(['development', 'test', 'production'])('un 4xx de http-errors no expone stack (NODE_ENV=%s)', (nodeEnv) => {
+      const { status, body } = cuerpoDe(
+        Object.assign(new Error('request entity too large'), { statusCode: 413, expose: true }),
+        nodeEnv
+      );
+      expect(status).toBe(413);
+      expect(body.error.stack).toBeUndefined();
+      expect(body.error.name).toBeUndefined();
+    });
+
+    it('un 500 inesperado expone stack solo en development', () => {
+      expect(cuerpoDe(new Error('boom'), 'development').body.error.stack).toEqual(expect.any(String));
+      for (const nodeEnv of ['test', 'production', 'staging']) {
+        const { status, body } = cuerpoDe(new Error('boom'), nodeEnv);
+        expect(status).toBe(500);
+        expect(body.error.stack).toBeUndefined();
+        expect(body.error.message).toBe('Error interno del servidor');
+      }
+    });
+
+    it('errores operacionales (AppError) nunca llevan stack', () => {
+      for (const nodeEnv of ['development', 'test', 'production']) {
+        expect(cuerpoDe(new NotFoundError('Algo'), nodeEnv).body.error.stack).toBeUndefined();
+      }
+    });
+  });
+
   it('ForbiddenError (operacional) sale como 403', () => {
     const res = crearRes();
     handler(new ForbiddenError('no'), req, res, jest.fn());

@@ -175,6 +175,61 @@ describe('Pagos · cuota de efectivo: registrar -> leer -> anular', () => {
   });
 });
 
+describe('Pagos · un pago rechazado no deja cabecera de aporte huérfana', () => {
+  it('transferencia sin cuenta, QR sin comprobante y monto sobre el saldo (400) no crean pago_aporte', async () => {
+    const [estudiante] = await sequelize.query("SELECT id FROM estudiantes WHERE ci = 'TEST-EST-001'", {
+      type: sequelize.QueryTypes.SELECT,
+    });
+    const [gestion] = await sequelize.query('SELECT id FROM gestiones WHERE vigente = 1 ORDER BY id LIMIT 1', {
+      type: sequelize.QueryTypes.SELECT,
+    });
+    const par = { e: estudiante.id, g: gestion.id };
+    const contar = async () => {
+      const [{ n }] = await sequelize.query(
+        'SELECT COUNT(*) AS n FROM pago_aporte WHERE estudiante_id = :e AND gestion_id = :g',
+        { replacements: par, type: sequelize.QueryTypes.SELECT }
+      );
+      return Number(n);
+    };
+
+    await conLimpieza(async (limpiar) => {
+      // Parte de "sin cabecera": oculta (soft delete) la que dejaron otras pruebas y la restaura al terminar.
+      const previas = await sequelize.query(
+        'SELECT id FROM pago_aporte WHERE estudiante_id = :e AND gestion_id = :g AND deleted_at IS NULL',
+        { replacements: par, type: sequelize.QueryTypes.SELECT }
+      );
+      const ids = previas.map((f) => f.id);
+      if (ids.length) {
+        await sequelize.query('UPDATE pago_aporte SET deleted_at = NOW() WHERE id IN (:ids)', { replacements: { ids } });
+        limpiar.push(async () => {
+          await sequelize.query('UPDATE pago_aporte SET deleted_at = NULL WHERE id IN (:ids)', { replacements: { ids } });
+        });
+      }
+      const antes = await contar();
+      limpiar.push(async () => {
+        // Si la corrección regresara, no deja basura en la BD
+        await sequelize.query(
+          'DELETE FROM pago_aporte WHERE estudiante_id = :e AND gestion_id = :g AND id NOT IN (:ids) AND id NOT IN (SELECT pago_aporte_id FROM pago_cuotas)',
+          { replacements: { ...par, ids: ids.length ? ids : [0] } }
+        );
+      });
+
+      const base = { student_id: estudiante.id, management_id: gestion.id, payment_date: '2026-03-01' };
+      const rechazos = [
+        { ...base, amount: 10, payment_method_id: 3, codigo_comprobante: 'CI-1' }, // falta cuenta
+        { ...base, amount: 10, payment_method_id: 2 }, // falta comprobante
+        { ...base, amount: 999999, payment_method_id: 1 }, // supera el monto obligatorio
+      ];
+      for (const cuerpo of rechazos) {
+        const res = await enviarComo(CAJA, 'post', '/pagos-aportes', cuerpo);
+        expect(res.status).toBe(400);
+        expect(res.body.error.code).toBe('VALIDATION_ERROR');
+      }
+      expect(await contar()).toBe(antes);
+    });
+  });
+});
+
 describe('Pagos · ingresos y reportes', () => {
   it('ingresos: paginación, validación de filtros y 403 sin finanzas', async () => {
     esperarListadoPaginado(await como(CAJA, 'get', '/ingresos?page=1&limit=2'), { limit: 2 });

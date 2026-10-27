@@ -74,6 +74,26 @@ export const registerPagoAporteValidator = [
     // ============================================
     // CAMPOS CONDICIONALES (según método de pago)
     // ============================================
+    // Cadena aparte y sin `optional`: con el campo ausente o null la regla que depende del método debe ejecutarse.
+    body('payment_account_id').custom((value, { req }) => {
+        const methodId = req.body.payment_method_id;
+        if ((methodId === 3 || methodId === 4) && !value) {
+            throw new Error('La cuenta de pago es requerida para método TRANSFERENCIA o DEPOSITO');
+        }
+        if (methodId === 1 && value) {
+            throw new Error('La cuenta de pago debe ser NULL para método EFECTIVO');
+        }
+        return true;
+    }),
+
+    body('codigo_comprobante').custom((value, { req }) => {
+        const methodId = req.body.payment_method_id;
+        if ((methodId === 2 || methodId === 3 || methodId === 4) && !value) {
+            throw new Error('El código de comprobante es requerido para método QR, TRANSFERENCIA o DEPOSITO');
+        }
+        return true;
+    }),
+
     body('payment_account_id')
         .optional({ nullable: true })
         .custom((value, { req }) => {
