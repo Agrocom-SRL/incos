@@ -38,7 +38,8 @@ Cerrar el backlog de `correcciones-hallazgos-pruebas.md` y ampliar las pruebas d
 | Excel, PDF y repositorios de vistas | #62 | 93–99 % |
 | Frontend: componentes, RBAC y E2E Playwright | #63 | 448 pruebas + 20 E2E |
 | Carga y estrés (k6) | #64 | Scripts; nunca ejecutados |
-| Frontend capa `application` | #65 | 6 → 54 % de líneas; objetivo 70 % pendiente |
+| Frontend capa `application` | #65 | 6 → 54 % de líneas |
+| Frontend `application`: matrícula, capacitación, helpers de oferta y control de bimestres | rama `test/frontend-cobertura-application` | 54 → 72,7 % de líneas (objetivo 70 % cumplido); matrícula ~10 → ~94 %; 1 556 pruebas |
 | Backend ronda 2 (repos, middleware, rutas, dominio, contenedor) | #66 | Global ~87 % líneas, 73 % ramas |
 | Integración por dominio (8 dominios, MariaDB real) | #67 | 16 suites, 476 pruebas, validadas en local y en CI |
 | `presentation/validators` backend | rama `test/validators-cobertura` | 72 % → 98 % de líneas (89,6 % de ramas), +680 pruebas; 5 correcciones de validators/use cases con su prueba |
@@ -63,7 +64,7 @@ Backend: ~8 700 pruebas unitarias. Frontend: ~1 200 pruebas de Vitest.
 
 ## Siguiente
 - Pruebas de presentación por módulo del frontend (agente en curso).
-- Frontend `application`: matrícula (~10 %) y capacitación (~900 líneas sin cubrir) para llegar al 70 %; Providers y hooks de institucional.
+- Frontend `application` (ya en 72,7 %): quedan sin cubrir los hooks grandes de institucional (`useGestionHorariosArmadoState`, `useGestionHorariosConflictosState`, `useOfertaGestionPlanesState`), `usePlanBuilder`, `useCuadernoCurso` y `useParaleloForm`.
 - Primera ejecución real de las pruebas de carga cuando se aplique `carga.yml`.
 
 ## Límites conocidos
