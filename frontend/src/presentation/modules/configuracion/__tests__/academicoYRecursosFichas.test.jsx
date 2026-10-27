@@ -176,6 +176,8 @@ describe('organismos de paralelo', () => {
   it('ParaleloDetailOfertaSection: carga, vacío y lista de instancias', () => {
     const { unmount, container } = renderWithProviders(<ParaleloDetailOfertaSection loading />);
     expect(container.querySelector('.ant-spin')).not.toBeNull();
+    // AntD 6 solo pinta `tip` si el Spin envuelve contenido (modo anidado) o es fullscreen.
+    expect(screen.getByText('Cargando instancias en gestión…')).toBeInTheDocument();
     unmount();
     const { unmount: u2 } = renderWithProviders(<ParaleloDetailOfertaSection />);
     expect(screen.getByText(/aún no fue copiado a ninguna gestión/)).toBeInTheDocument();

@@ -3,6 +3,7 @@ import { Alert, Flex, Spin, Tabs, Typography } from 'antd';
 import { ArrowLeftOutlined, CheckCircleOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader, ListPanelHeader } from '@molecules';
+import { Spinner } from '@atoms';
 import { useHorariosConflictosContext } from '@application-institucional/horarios/hooks/context/useHorariosConflictosContext';
 import {
     conflictHorarioIdsForParaleloTab,
@@ -238,7 +239,7 @@ const GestionHorariosConflictosPage = () => {
                 children: wrapTabPanel(
                     panelLoading ? (
                         <Flex justify="center" style={{ padding: 24 }}>
-                            <Spin tip="Cargando grilla…" />
+                            <Spinner size="default" text="Cargando grilla…" />
                         </Flex>
                     ) : panelError ? (
                         <Alert type="error" showIcon title={panelError} />

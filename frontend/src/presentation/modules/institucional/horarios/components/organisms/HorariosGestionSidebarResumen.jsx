@@ -536,7 +536,7 @@ const HorariosGestionSidebarResumen = ({
                                             </Text><Text type="secondary" style={{ fontSize: typography.fontSizeSM }}>
                                                 Paralelo: {row.paraleloNombre} - {row.paraleloTurno}
                                             </Text>
-                                            <Text type="primary" strong style={{ fontSize: typography.fontSizeSM }}>
+                                            <Text strong style={{ color: 'var(--color-primary)', fontSize: typography.fontSizeSM }}>
                                                 Materia: {row.materiaLabel }
                                             </Text>
                                         </Flex>

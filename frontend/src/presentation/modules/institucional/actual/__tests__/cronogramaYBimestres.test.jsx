@@ -163,6 +163,15 @@ describe('CronogramaActividadSelectorModal', () => {
     expect(onSelect).toHaveBeenCalledWith(catalogo[1]);
   });
 
+  it('no usa props obsoletas de AntD 6 (Space direction)', () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    renderWithProviders(<CronogramaActividadSelectorModal open catalogo={catalogo} />);
+    expect(screen.getByText('Inscripciones')).toBeInTheDocument();
+    const avisosAntd = error.mock.calls.map((c) => String(c[0])).filter((m) => m.includes('[antd: Space]'));
+    error.mockRestore();
+    expect(avisosAntd).toEqual([]);
+  });
+
   it('catálogo vacío y alta deshabilitada sin callback', () => {
     renderWithProviders(<CronogramaActividadSelectorModal open catalogo={[]} />);
     expect(screen.getByText('Sin actividades en el catálogo')).toBeInTheDocument();

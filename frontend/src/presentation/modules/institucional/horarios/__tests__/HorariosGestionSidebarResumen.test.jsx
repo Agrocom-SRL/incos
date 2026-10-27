@@ -93,6 +93,8 @@ describe('HorariosGestionSidebarResumen', () => {
     await userEvent.click(screen.getByText('Docencia'));
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByText(/Materia: Contabilidad/)).toBeInTheDocument();
+    // La materia se resalta con el color primario del tema (`Text type="primary"` no es un tipo válido de AntD 6).
+    expect(within(dialog).getByText(/Materia: Contabilidad/)).toHaveStyle({ color: 'var(--color-primary)' });
     expect(within(dialog).getByText(/Materia: Curso/)).toBeInTheDocument();
     const botones = within(dialog).getAllByRole('button', { name: /Asignar materia/ });
     expect(botones).toHaveLength(2);

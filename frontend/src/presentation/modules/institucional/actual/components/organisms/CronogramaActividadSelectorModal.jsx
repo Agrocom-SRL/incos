@@ -107,7 +107,7 @@ const CronogramaActividadSelectorModal = ({
                   <span className="crono-selector__icon" aria-hidden>
                     {createElement(getActivityIconComponent(item.icono))}
                   </span>
-                  <Space direction="vertical" size={0} style={{ minWidth: 0, flex: 1 }}>
+                  <Space orientation="vertical" size={0} style={{ minWidth: 0, flex: 1 }}>
                     <Text strong ellipsis>
                       {item.nombre}
                     </Text>

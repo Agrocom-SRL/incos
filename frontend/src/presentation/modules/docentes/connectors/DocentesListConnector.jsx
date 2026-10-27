@@ -19,7 +19,8 @@ const MiFichaDocenteRedirect = () => {
   const { docenteId, loading, error } = useMiDocenteId();
 
   if (loading) {
-    return <Spin spinning size="large" tip="Abriendo su ficha…" style={{ width: '100%' }} />;
+    // `tip` solo se pinta en modo anidado o fullscreen (AntD 6): fullscreen como Historial.
+    return <Spin spinning fullscreen size="large" tip="Abriendo su ficha…" />;
   }
   if (error || !docenteId) {
     return (
