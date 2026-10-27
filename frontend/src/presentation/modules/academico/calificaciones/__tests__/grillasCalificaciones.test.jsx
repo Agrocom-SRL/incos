@@ -3,7 +3,7 @@
  * resumen de política y drawer de vista previa.
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen, within, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '../../../../../test/renderWithProviders.jsx';
 

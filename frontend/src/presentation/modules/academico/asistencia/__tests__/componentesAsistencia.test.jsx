@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { renderWithProviders, permiso } from '@/test/renderWithProviders';
+import { permiso } from '@/test/renderWithProviders';
 import { findColumn, renderCell, renderCells } from '@/test/renderColumns';
 import ActividadesSinClaseList from '../components/ActividadesSinClaseList';
 import CabeceraSemanaAsistencia from '../components/CabeceraSemanaAsistencia';

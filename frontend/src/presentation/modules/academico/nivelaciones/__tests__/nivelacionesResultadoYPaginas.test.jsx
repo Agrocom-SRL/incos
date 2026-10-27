@@ -4,6 +4,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { Modal } from 'antd';
 import { renderWithProviders, permiso } from '../../../../../test/renderWithProviders.jsx';
 
 const mocks = vi.hoisted(() => ({
@@ -61,6 +62,7 @@ beforeEach(() => {
 });
 afterEach(() => {
   window.matchMedia = matchMediaOriginal;
+  Modal.destroyAll();
 });
 
 const con = (...pares) => ({ auth: { permisos: pares.map(([c, ...a]) => permiso(c, ...a)) } });

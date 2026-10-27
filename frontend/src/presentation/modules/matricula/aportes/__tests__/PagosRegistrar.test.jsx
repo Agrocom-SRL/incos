@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useState } from 'react';
 import { Form } from 'antd';
 import { renderWithProviders, permiso } from '@/test/renderWithProviders';
 import PagosRegistrar from '../pages/PagosRegistrar';
@@ -59,14 +60,14 @@ describe('PagosRegistrar', () => {
   beforeEach(() => estadoHook.mockReset());
 
   it('muestra el título, el estado del aporte y las acciones de la cabecera', async () => {
-    let s;
     const Wrapper = () => {
       const [form] = Form.useForm();
-      s = hook(form);
-      estadoHook.mockReturnValue(s);
+      const [estado] = useState(() => hook(form));
+      estadoHook.mockReturnValue(estado);
       return <PagosRegistrar />;
     };
     renderWithProviders(<Wrapper />, { auth });
+    const s = estadoHook();
     expect(screen.getByRole('heading', { name: 'Registrar pago de Pérez Ana' })).toBeInTheDocument();
     expect(screen.getByText('Verifique el estado del aporte')).toBeInTheDocument();
     expect(screen.getByText('Aporte académico - Gestión 2026')).toBeInTheDocument();
@@ -96,14 +97,14 @@ describe('PagosRegistrar', () => {
   });
 
   it('avanza al paso de datos del pago validándolo y al de confirmación', async () => {
-    let s;
     const Wrapper = () => {
       const [form] = Form.useForm();
-      s = hook(form);
-      estadoHook.mockReturnValue(s);
+      const [estado] = useState(() => hook(form));
+      estadoHook.mockReturnValue(estado);
       return <PagosRegistrar />;
     };
     renderWithProviders(<Wrapper />, { auth });
+    const s = estadoHook();
     await userEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
     expect(await screen.findByText('Registre los datos del pago')).toBeInTheDocument();
     expect(screen.getByText('Método de pago')).toBeInTheDocument();
@@ -124,14 +125,14 @@ describe('PagosRegistrar', () => {
   });
 
   it('en confirmación el botón registra el pago con los valores del formulario', async () => {
-    let s;
     const Wrapper = () => {
       const [form] = Form.useForm();
-      s = hook(form, { esPagoGratuito: true });
-      estadoHook.mockReturnValue(s);
+      const [estado] = useState(() => hook(form, { esPagoGratuito: true }));
+      estadoHook.mockReturnValue(estado);
       return <PagosRegistrar />;
     };
     renderWithProviders(<Wrapper />, { auth });
+    const s = estadoHook();
     await userEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
     expect(await screen.findByText('Revise el resumen y registre el pago del aporte cubierto por la beca.')).toBeInTheDocument();
     await userEvent.type(screen.getByPlaceholderText(/Ej\.: plazo de entrega/), 'Sin novedades');

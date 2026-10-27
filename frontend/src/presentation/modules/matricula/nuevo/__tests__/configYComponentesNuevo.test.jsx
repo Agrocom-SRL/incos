@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -26,7 +27,9 @@ const conForm = (ui, initialValues) => {
   let formRef;
   const Wrapper = () => {
     const [form] = Form.useForm();
-    formRef = form;
+    useEffect(() => {
+      formRef = form;
+    }, [form]);
     return <Form form={form} initialValues={initialValues}>{ui(form)}</Form>;
   };
   const view = render(<Wrapper />);

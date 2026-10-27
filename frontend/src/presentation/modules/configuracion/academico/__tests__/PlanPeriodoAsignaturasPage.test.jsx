@@ -2,9 +2,10 @@
  * PlanPeriodoAsignaturasPage: builder drag & drop de asignaturas y prerrequisitos de un periodo.
  * El hook de estado se simula; el arrastre se ejerce invocando los handlers de DndContext.
  */
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { Modal } from 'antd';
 import { renderWithProviders, permiso } from '../../../../../test/renderWithProviders.jsx';
 
 const state = vi.hoisted(() => ({ builder: vi.fn(), dnd: { current: null } }));
@@ -282,4 +283,9 @@ describe('PlanPeriodoAsignaturasPage', () => {
     renderWithProviders(<PlanPeriodoAsignaturasConnector />);
     expect(screen.getByText('Identificador de plan o periodo inválido')).toBeInTheDocument();
   });
+});
+
+// Los Modal.confirm son estáticos: se destruyen para que un diálogo previo no contamine la prueba siguiente.
+afterEach(() => {
+  Modal.destroyAll();
 });

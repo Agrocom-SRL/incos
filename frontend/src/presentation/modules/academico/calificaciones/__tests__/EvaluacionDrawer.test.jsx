@@ -1,9 +1,10 @@
 /**
  * EvaluacionDrawer: crear / editar / eliminar actividad del cuaderno (validación y cuota).
  */
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { Modal } from 'antd';
 import { renderWithProviders } from '../../../../../test/renderWithProviders.jsx';
 
 const tiposState = vi.hoisted(() => ({ current: { tipos: [], isLoading: false } }));
@@ -232,4 +233,9 @@ describe('EvaluacionDrawer · editar', () => {
     expect(await screen.findByText('Tiene notas bloqueadas')).toBeInTheDocument();
     expect(props.onCerrar).not.toHaveBeenCalled();
   });
+});
+
+// Los Modal.confirm son estáticos: se destruyen para que un diálogo previo no contamine la prueba siguiente.
+afterEach(() => {
+  Modal.destroyAll();
 });

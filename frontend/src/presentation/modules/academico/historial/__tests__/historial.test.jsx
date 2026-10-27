@@ -2,7 +2,7 @@
  * Historial académico: cabecera, resumen, transcript, columnas, páginas y conectores.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders, permiso } from '../../../../../test/renderWithProviders.jsx';
 import { renderCell, renderCells, findColumn } from '../../../../../test/renderColumns.jsx';
