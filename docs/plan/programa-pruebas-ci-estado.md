@@ -45,9 +45,11 @@ Cerrar el backlog de `correcciones-hallazgos-pruebas.md` y ampliar las pruebas d
 | Frontend `presentation/modules` (once dominios) | #70 | ≈35 % de líneas de `modules/**`; 4 bugs corregidos |
 | Integración de escrituras (titulación, horarios, oferta/plan, bimestres, libros) | #73 | 22 suites, 1075 pruebas contra MariaDB real |
 | Frontend `presentation/modules` (horarios, matrícula, académico, supervisión) | #75 | 35,7 → 83,2 % de `modules/**`; 64,7 % de todo `src`; 217 archivos, 3163 pruebas |
+| Dependencias vulnerables (`npm audit`) | #77 | Backend 21 → 3 moderadas (uuid anidado en exceljs/sequelize, sin parche compatible); frontend 8 → 0 |
+| Frontend hooks de `application` restantes, providers y AntD 6 | rama `test/frontend-ronda4` | `src` 76,8 → 81,7 %; `application` 73,5 → 80,9 %; 11 hooks grandes de 0–2 % a 97–100 %; 3401 pruebas; 3 pruebas intermitentes estabilizadas |
 | `presentation/validators` backend | #72 | 72 % → 98 % de líneas (89,6 % de ramas), +680 pruebas; 5 correcciones de validators/use cases con su prueba |
 
-Backend: ~9 400 pruebas unitarias (global ~87 % líneas) y 22 suites de integración (1075 pruebas). Frontend: ~3 160 pruebas de Vitest y 20 E2E.
+Backend: ~9 400 pruebas unitarias (global ~87 % líneas) y 22 suites de integración (1075 pruebas). Frontend: ~3 400 pruebas de Vitest (81,7 % de líneas de `src`) y 20 E2E.
 
 ## Correcciones de la ronda de validators (PR #72)
 - Estudiantes: `registerStudentValidator` acepta `null` explícito en los ids opcionales (igual que update); la regla ANTIGUO (gestión y carrera) ya no queda saltada por `optional()` y los use cases de registro y actualización también la exigen; los ids de update usan validación estricta (`'3abc'`, `'1.5'` y `0` se rechazan).
@@ -67,10 +69,13 @@ Backend: ~9 400 pruebas unitarias (global ~87 % líneas) y 22 suites de integrac
 
 ## Siguiente
 - Horarios: `HorarioConflictosService.validarPropuesta` solo ve choques ya guardados; un bloque que pone al mismo docente en el mismo horario de otro paralelo se guarda con 200 y el conflicto aparece al publicar (422). Decidir si se previene al guardar (la prueba de integración fija el comportamiento actual).
-- AntD 6 sin corregir: `Spin tip` sin hijos en `DocentesListConnector.jsx`, `ParaleloDetailOfertaSection.jsx` y `GestionHorariosConflictosPage.jsx`; `Text type="primary"` inválido en `HorariosGestionSidebarResumen`. Deuda de diseño: `<style>` en línea y px/hex en duro en matrícula y política de asistencia.
-- Frontend `application` (72,7 %): quedan sin cubrir los hooks grandes de institucional (`useGestionHorariosArmadoState`, `useGestionHorariosConflictosState`, `useOfertaGestionPlanesState`), `usePlanBuilder`, `useCuadernoCurso` y `useParaleloForm`.
+- Deuda de diseño: `<style>` en línea y px/hex en duro en matrícula y política de asistencia; el átomo `Spinner` trae `minHeight: '200px'` en línea.
+- Frontend: quedan ~20 providers con lógica propia sin probar (titulación, acompañamiento, parte de finanzas y docentes).
 - Frontend `presentation/modules` (83 %): quedan las piezas más pesadas de montar (menú y sidebar, cubiertos por el E2E).
 - Primera ejecución real de las pruebas de carga cuando se aplique `carga.yml`.
+
+## Nota sobre dependencias
+Tras el PR #77, `jsdom 30` exige Node `^22.22.2 || ^24.15.0 || >=26`: si algún workflow fija un 22.x menor, hay que subirlo. Las 3 vulnerabilidades moderadas restantes del backend (uuid anidado) esperan un parche de exceljs/sequelize o la migración a sequelize 7.
 
 ## Límites conocidos
 - Los agentes pueden instalar MariaDB 10.11 con apt para validar la integración en local; k6 no se puede instalar (descarga bloqueada).
