@@ -108,7 +108,7 @@ const VistaPreviaDrawer = ({
       size={640}
       open={abierto}
       onClose={onCerrar}
-      destroyOnClose
+      destroyOnHidden
       footer={footer}
       className="cal-preview-drawer cal-eval-drawer"
     >

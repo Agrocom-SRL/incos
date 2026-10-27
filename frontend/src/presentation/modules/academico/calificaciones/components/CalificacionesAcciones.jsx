@@ -17,6 +17,8 @@ export const AccionVolverCoordinacion = ({ to }) => {
   return (
     <PermisoGuard codigo={CALIFICACIONES_PERMISOS.coordinacion} accion="LISTAR">
       <ActionButton
+        permiso={CALIFICACIONES_PERMISOS.coordinacion}
+        accion="LISTAR"
         variant="back"
         icon={<ArrowLeftOutlined />}
         onClick={() => navigate(to)}

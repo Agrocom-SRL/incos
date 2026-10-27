@@ -107,7 +107,7 @@ const MisFichasSeguimientoTab = ({ enabled = true }) => {
         width={640}
         open={Boolean(fichaSeleccionada)}
         onClose={cerrarFicha}
-        destroyOnClose
+        destroyOnHidden
       >
         {fichaSeleccionada ? <FichaSeguimientoFichaView ficha={fichaSeleccionada} /> : null}
       </Drawer>
