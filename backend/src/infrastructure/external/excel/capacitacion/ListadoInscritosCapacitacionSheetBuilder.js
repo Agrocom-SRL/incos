@@ -60,13 +60,11 @@ export class ListadoInscritosCapacitacionSheetBuilder {
     c.colWidths({ [colRequisitos]: 20, [colFechaInscripcion]: 24 });
 
     // ---- Banda de título + cabecera institucional + datos del curso ----
-    c.bandTitle(
-      `B1:${L(lastCol)}1`,
-      `LISTADO DE INSCRITOS — ${String(curso.titulo ?? '').toUpperCase() || 'CURSO DE CAPACITACIÓN'}`
-        + (grupo === null
-          ? ''
-          : ` — ${/^grupo\b/i.test(grupo) ? '' : 'GRUPO '}${String(grupo).toUpperCase()}`)
-    );
+    const tituloCurso = String(curso.titulo ?? '').toUpperCase() || 'CURSO DE CAPACITACIÓN';
+    // El nombre del grupo ya suele empezar con «Grupo»: no repetir la palabra.
+    const sufijoGrupo =
+      grupo === null ? '' : ` — ${/^grupo\b/i.test(grupo) ? '' : 'GRUPO '}${String(grupo).toUpperCase()}`;
+    c.bandTitle(`B1:${L(lastCol)}1`, `LISTADO DE INSCRITOS — ${tituloCurso}${sufijoGrupo}`);
     const titleCell = c.ws.getCell('B1');
     titleCell.font = { ...titleCell.font, size: title + 1 };
     c.merge(`B2:${L(lastCol)}2`, 'INSTITUTO TÉCNICO INCOS SANTA CRUZ', {
