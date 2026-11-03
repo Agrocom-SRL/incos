@@ -92,14 +92,16 @@ describe('ListadoInscritosCapacitacionExcelBuilder', () => {
 
   it('lista participantes, formatea fechas y totaliza saldo', async () => {
     const wb = await leerXlsx(await new ListadoInscritosCapacitacionExcelBuilder().generarListadoInscritos(datos));
-    const ws = wb.worksheets[0];
-    expect(nombresHojas(wb)).toEqual(['INSCRITOS']);
-    expect(contiene(ws, 'LISTADO DE INSCRITOS — EXCEL AVANZADO Ñ')).toBe(true);
+    // Una hoja por grupo (sin hoja general); los inscritos sin grupo van a «SIN GRUPO».
+    expect(nombresHojas(wb)).toEqual(['G1', 'SIN GRUPO']);
+    const ws = wb.getWorksheet('G1');
+    expect(contiene(ws, 'LISTADO DE INSCRITOS — EXCEL AVANZADO Ñ — GRUPO G1')).toBe(true);
     expect(contiene(ws, 'MARÍA NÚÑEZ')).toBe(true);
     expect(contiene(ws, '10/02/2026')).toBe(true);
     expect(contiene(ws, '02/03/2026 – 30/04/2026')).toBe(true);
-    expect(contiene(ws, 'TOTAL INSCRITOS: 2')).toBe(true);
+    expect(contiene(ws, 'TOTAL INSCRITOS: 1')).toBe(true);
     expect(contiene(ws, 'SALDO PENDIENTE TOTAL')).toBe(true);
+    expect(contiene(wb.getWorksheet('SIN GRUPO'), 'TOTAL INSCRITOS: 1')).toBe(true);
   });
 
   it('sin datos usa valores por defecto', async () => {

@@ -177,9 +177,19 @@ export class ExcelSheetComposer {
    * Campo de cabecera institucional: etiqueta en negrita con fondo + valor.
    * Ambos parámetros son rangos ('B2:C2'); se fusionan para alinear el bloque.
    */
-  infoField(labelRange, label, valueRange, value) {
-    this.merge(labelRange, label, { bold: true, align: 'left', fill: EXCEL_COLOR.infoLabel });
-    this.merge(valueRange, value ?? '', { align: 'left', fontColor: EXCEL_COLOR.inkSoft });
+  infoField(labelRange, label, valueRange, value, { size } = {}) {
+    const sizeStyle = size ? { size } : {};
+    this.merge(labelRange, label, {
+      bold: true,
+      align: 'left',
+      fill: EXCEL_COLOR.infoLabel,
+      ...sizeStyle,
+    });
+    this.merge(valueRange, value ?? '', {
+      align: 'left',
+      fontColor: EXCEL_COLOR.inkSoft,
+      ...sizeStyle,
+    });
   }
 
   /** Define anchos por índice de columna: { 2: 5, 3: 35, ... }. */

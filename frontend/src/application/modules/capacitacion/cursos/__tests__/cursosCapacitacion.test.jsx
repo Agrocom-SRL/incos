@@ -215,6 +215,17 @@ describe('useCursoCapacitacionDetailPage', () => {
     expect(result.current.procesandoTransicion).toBe(false);
   });
 
+  it('exportar inscritos delega en el curso de la ficha y avisa si falla', async () => {
+    const { result } = renderHook(() => useCursoCapacitacionDetailPage(), { wrapper: conRuta() });
+    R.exportar.mockResolvedValueOnce({ success: true });
+    await act(async () => result.current.handleExportarInscritos());
+    expect(R.exportar).toHaveBeenLastCalledWith(R.ctxDetail.cursoId);
+    expect(R.app.notification.error).not.toHaveBeenCalled();
+    R.exportar.mockResolvedValueOnce({ success: false, error: 'Sin permiso' });
+    await act(async () => result.current.handleExportarInscritos());
+    expect(R.app.notification.error).toHaveBeenLastCalledWith(expect.objectContaining({ description: 'Sin permiso' }));
+  });
+
   it('cancelar pide confirmación y ejecuta la transición', async () => {
     const { result } = renderHook(() => useCursoCapacitacionDetailPage(), { wrapper: conRuta() });
     act(() => result.current.handleCancelarCurso());
