@@ -170,6 +170,50 @@ describe('UpdateDocumentacionUseCase', () => {
   });
 });
 
+describe('documentoPadreId: 0, null y vaciado', () => {
+  const makeCreate = () => {
+    const repo = { findById: jest.fn(), create: jest.fn().mockResolvedValue({ id: 10 }) };
+    return { repo, useCase: new CreateDocumentacionUseCase({ documentacionRepository: repo, logger: { info: jest.fn() } }) };
+  };
+  const makeUpdate = () => {
+    const repo = {
+      findById: jest.fn().mockResolvedValue({ id: 1, documentType: TIPO }),
+      update: jest.fn().mockResolvedValue({ id: 1 }),
+    };
+    return { repo, useCase: new UpdateDocumentacionUseCase({ documentacionRepository: repo, logger: { info: jest.fn() } }) };
+  };
+
+  it.each([[0], ['0'], [-1], ['abc']])('Create rechaza documentoPadreId %p', async (padre) => {
+    const { useCase, repo } = makeCreate();
+    await expect(useCase.execute({ nombre: 'CI', tipoDocumento: TIPO, documentoPadreId: padre })).rejects.toBeInstanceOf(ValidationError);
+    expect(repo.create).not.toHaveBeenCalled();
+  });
+
+  it.each([[null], ['']])('Create trata documentoPadreId %p como sin padre', async (padre) => {
+    const { useCase, repo } = makeCreate();
+    await useCase.execute({ nombre: 'CI', tipoDocumento: TIPO, documentoPadreId: padre });
+    expect(repo.create.mock.calls[0][0].parentDocumentId).toBeUndefined();
+  });
+
+  it.each([[0], ['abc']])('Update rechaza documentoPadreId %p', async (padre) => {
+    const { useCase, repo } = makeUpdate();
+    await expect(useCase.execute(1, { documentoPadreId: padre })).rejects.toBeInstanceOf(ValidationError);
+    expect(repo.update).not.toHaveBeenCalled();
+  });
+
+  it('Update con documentoPadreId null quita el padre', async () => {
+    const { useCase, repo } = makeUpdate();
+    await useCase.execute(1, { documentoPadreId: null });
+    expect(repo.update.mock.calls[0][1]).toHaveProperty('parentDocumentId', null);
+  });
+
+  it('Update sin documentoPadreId no toca el padre', async () => {
+    const { useCase, repo } = makeUpdate();
+    await useCase.execute(1, { nombre: 'X' });
+    expect(repo.update.mock.calls[0][1]).not.toHaveProperty('parentDocumentId');
+  });
+});
+
 describe('DeleteDocumentacionUseCase', () => {
   const crear = (resultado) => {
     const repo = { delete: jest.fn().mockResolvedValue(resultado) };
@@ -228,9 +272,9 @@ describe('GetDocumentacionByIdUseCase', () => {
     expect(res).toMatchObject({ id: 4, nombre: 'CI', activo: true });
   });
 
-  it.each([[99], [NaN]])('devuelve null si id=%p no existe', async (id) => {
+  it.each([[99], [NaN]])('lanza NotFoundError si id=%p no existe', async (id) => {
     const { useCase } = crear(null);
-    await expect(useCase.execute(id)).resolves.toBeNull();
+    await expect(useCase.execute(id)).rejects.toBeInstanceOf(NotFoundError);
   });
 });
 

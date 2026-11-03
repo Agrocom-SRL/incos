@@ -1,7 +1,8 @@
 /**
  * Tab Oferta académica — instancias del paralelo maestro en gestiones.
  */
-import { Alert, Empty, Flex, Spin } from 'antd';
+import { Alert, Empty, Flex } from 'antd';
+import { Spinner } from '@atoms';
 import ParaleloDetalleInstanciaCard from './ParaleloDetalleInstanciaCard';
 
 const ParaleloDetailOfertaSection = ({
@@ -13,7 +14,8 @@ const ParaleloDetailOfertaSection = ({
   if (loading) {
     return (
       <Flex justify="center" className="cfg-paralelo-detalle-oferta__loading">
-        <Spin tip="Cargando instancias en gestión…" />
+        {/* `Spinner` activa el modo anidado de Spin: sin hijos `tip` no se pinta (AntD 6). */}
+        <Spinner size="default" text="Cargando instancias en gestión…" />
       </Flex>
     );
   }

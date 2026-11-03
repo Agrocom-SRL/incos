@@ -16,7 +16,9 @@ const EtapaFormModal = ({ open, onCancel, onSubmit, confirmLoading = false }) =>
   }, [open, form]);
 
   const handleOk = async () => {
-    const values = await form.validateFields();
+    // Validación fallida: los errores ya se muestran en el formulario; no propagar el rechazo.
+    const values = await form.validateFields().catch(() => null);
+    if (!values) return;
     const [ini, fin] = values.rango ?? [];
     const color = values.colorHex;
     const hex =

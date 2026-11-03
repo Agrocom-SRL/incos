@@ -17,11 +17,31 @@ const crear = ({ plan = { id: 1, state: 'PROPUESTO' } } = {}) => {
 };
 
 describe('UpdateGestionPlanEstadoUseCase', () => {
-  it.each(['PROPUESTO', 'APROBADO', 'VIGENTE', 'CERRADO', 'CANCELADO'])('acepta estado %s', async (estado) => {
-    const { deps, useCase } = crear();
+  it.each([
+    ['PROPUESTO', 'APROBADO'], ['PROPUESTO', 'CANCELADO'],
+    ['APROBADO', 'VIGENTE'], ['APROBADO', 'CANCELADO'],
+    ['VIGENTE', 'CERRADO'], ['VIGENTE', 'CANCELADO'],
+  ])('permite %s -> %s', async (desde, estado) => {
+    const { deps, useCase } = crear({ plan: { id: 1, state: desde } });
     const res = await useCase.execute(1, { estado }, 3);
     expect(deps.managementPlanRepository.update).toHaveBeenCalledWith(1, { state: estado }, 3);
     expect(res.gestionPlan).toMatchObject({ id: 1, estado: 'APROBADO' });
+  });
+
+  it.each([
+    ['PROPUESTO', 'VIGENTE'], ['PROPUESTO', 'CERRADO'], ['APROBADO', 'PROPUESTO'],
+    ['APROBADO', 'CERRADO'], ['VIGENTE', 'PROPUESTO'], ['VIGENTE', 'APROBADO'],
+    ['CERRADO', 'VIGENTE'], ['CERRADO', 'CANCELADO'], ['CANCELADO', 'PROPUESTO'], ['CANCELADO', 'VIGENTE'],
+  ])('rechaza %s -> %s', async (desde, estado) => {
+    const { deps, useCase } = crear({ plan: { id: 1, state: desde } });
+    await expect(useCase.execute(1, { estado })).rejects.toBeInstanceOf(ValidationError);
+    expect(deps.managementPlanRepository.update).not.toHaveBeenCalled();
+  });
+
+  it('repetir el mismo estado no es una transición y se acepta', async () => {
+    const { deps, useCase } = crear({ plan: { id: 1, state: 'CERRADO' } });
+    await useCase.execute(1, { estado: 'CERRADO' });
+    expect(deps.managementPlanRepository.update).toHaveBeenCalled();
   });
 
   it.each([undefined, null, '', 'BORRADOR', 'vigente'])('rechaza estado inválido %p', async (estado) => {

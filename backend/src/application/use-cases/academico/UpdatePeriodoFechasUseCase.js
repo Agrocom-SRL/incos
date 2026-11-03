@@ -3,6 +3,7 @@ import {
   UnprocessableEntityError,
   ValidationError,
 } from '../../../domain/errors/AppError.js';
+import { parseFechaISO, parseIdPositivo } from '../../utils/validacionEntrada.js';
 
 /**
  * Edita las fechas (inicio/fin) de un periodo/etapa de la gestión vigente.
@@ -30,12 +31,14 @@ export class UpdatePeriodoFechasUseCase {
    * @param {{ id: number, fechaInicio: string, fechaFin: string }} params
    * @param {number|null} userId
    */
-  async execute({ id, fechaInicio, fechaFin }, userId = null) {
-    const periodoId = Number(id);
-    if (!Number.isFinite(periodoId) || periodoId < 1) {
-      throw new ValidationError('id de periodo inválido');
+  async execute({ id, fechaInicio: inicioRaw, fechaFin: finRaw }, userId = null) {
+    const periodoId = parseIdPositivo(id, 'id de periodo');
+    if (inicioRaw == null || inicioRaw === '' || finRaw == null || finRaw === '') {
+      throw new ValidationError('fechaInicio y fechaFin son obligatorias');
     }
-    if (fechaFin && fechaInicio && String(fechaFin) < String(fechaInicio)) {
+    const fechaInicio = parseFechaISO(inicioRaw, 'fechaInicio');
+    const fechaFin = parseFechaISO(finRaw, 'fechaFin');
+    if (fechaFin < fechaInicio) {
       throw new UnprocessableEntityError('La fecha de fin no puede ser anterior a la de inicio.', [
         { field: 'fechaFin', message: 'Rango de fechas inválido' },
       ]);

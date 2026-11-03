@@ -1,6 +1,6 @@
 import { describe, it, expect, jest } from '@jest/globals';
 import { UpdatePeriodoUseCase } from '../../../src/application/use-cases/configuracion/UpdatePeriodoUseCase.js';
-import { NotFoundError } from '../../../src/domain/errors/AppError.js';
+import { NotFoundError, ValidationError } from '../../../src/domain/errors/AppError.js';
 
 describe('UpdatePeriodoUseCase', () => {
   const crear = ({ existing = { id: 3 } } = {}) => {
@@ -43,5 +43,32 @@ describe('UpdatePeriodoUseCase', () => {
     const { useCase, periodRepository } = crear();
     periodRepository.update.mockRejectedValue(new Error('db'));
     await expect(useCase.execute(3, {})).rejects.toThrow('db');
+  });
+});
+
+describe('UpdatePeriodoUseCase validación y vaciado', () => {
+  const crear = () => {
+    const periodRepository = {
+      findById: jest.fn().mockResolvedValue({ id: 3 }),
+      update: jest.fn().mockResolvedValue({ id: 3 }),
+    };
+    return { periodRepository, useCase: new UpdatePeriodoUseCase({ periodRepository, logger: { info: jest.fn() } }) };
+  };
+
+  it.each([[{ numero: 'abc' }], [{ numero: -1 }], [{ nombre: '   ' }], [{ orden_visualizacion: -3 }], [{ activo: 'x' }]])(
+    'rechaza %p sin actualizar',
+    async (body) => {
+      const { useCase, periodRepository } = crear();
+      await expect(useCase.execute(3, body)).rejects.toBeInstanceOf(ValidationError);
+      expect(periodRepository.update).not.toHaveBeenCalled();
+    }
+  );
+
+  it('descripcion null vacía el campo; ausente no lo toca', async () => {
+    const { useCase, periodRepository } = crear();
+    await useCase.execute(3, { descripcion: null });
+    expect(periodRepository.update.mock.calls[0][1].description).toBeNull();
+    await useCase.execute(3, {});
+    expect(periodRepository.update.mock.calls[1][1].description).toBeUndefined();
   });
 });

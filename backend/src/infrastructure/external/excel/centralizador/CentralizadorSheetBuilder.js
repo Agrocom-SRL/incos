@@ -159,7 +159,10 @@ export class CentralizadorSheetBuilder {
     );
 
     // N° BIMESTRE destacado: bloque verde sobre las últimas columnas (filas 4-6).
-    c.merge(`${L(bimStartCol)}4:${L(lastCol)}6`, cab.bimestreLabel ?? `BIMESTRE ${cab.bimestre ?? ''}`, {
+    // Con pocas asignaturas lastCol < bimStartCol y el rango quedaba invertido
+    // (celdas ya combinadas). El bloque de bimestre nunca termina antes de empezar.
+    const bimEndCol = Math.max(bimStartCol, lastCol);
+    c.merge(`${L(bimStartCol)}4:${L(bimEndCol)}6`, cab.bimestreLabel ?? `BIMESTRE ${cab.bimestre ?? ''}`, {
       size: fonts.title,
       bold: true,
       fontColor: EXCEL_COLOR.bandText,

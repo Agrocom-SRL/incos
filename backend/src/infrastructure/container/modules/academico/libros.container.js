@@ -56,6 +56,7 @@ export function registerLibrosResource(container) {
       new AbrirLibroUseCase({
         libroRegistroRepository: c.resolve(REPOSITORIOS_TOKENS.libroRegistroRepository),
         libroRegistroViewRepository: c.resolve(REPOSITORIOS_TOKENS.libroRegistroViewRepository),
+        managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       }),
   );

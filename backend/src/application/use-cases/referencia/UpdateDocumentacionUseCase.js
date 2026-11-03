@@ -1,5 +1,6 @@
 import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
 import { TIPOS_DOCUMENTO_SISTEMA_VALUES } from '../../../domain/constants/index.js';
+import { parseIdOpcional, primerDefinido } from '../../utils/validacionEntrada.js';
 
 export class UpdateDocumentacionUseCase {
   constructor({ documentacionRepository, logger }) {
@@ -19,8 +20,11 @@ export class UpdateDocumentacionUseCase {
     }
     const tipoDocumentoEfectivo = tipoDocumento ?? existing.documentType;
 
-    const documentoPadreId = body.documentoPadreId ?? body.parentDocumentId ?? undefined;
-    if (documentoPadreId !== undefined && documentoPadreId !== null) {
+    // undefined = no tocar el padre; null / '' = quitar el padre; 0, negativos o texto ⇒ ValidationError
+    const padreRaw = primerDefinido(body, 'documentoPadreId', 'parentDocumentId');
+    const cambiaPadre = padreRaw !== undefined;
+    const documentoPadreId = cambiaPadre ? parseIdOpcional(padreRaw, 'documentoPadreId') : undefined;
+    if (documentoPadreId) {
       await this.validarDocumentoPadre(documentoPadreId, tipoDocumentoEfectivo, id);
     }
 
@@ -33,7 +37,7 @@ export class UpdateDocumentacionUseCase {
         required: body.requerido ?? body.required ?? undefined,
         order: body.orden ?? body.order ?? undefined,
         description: body.descripcion ?? body.description ?? undefined,
-        parentDocumentId: documentoPadreId,
+        ...(cambiaPadre ? { parentDocumentId: documentoPadreId } : {}),
         active: body.activo ?? body.active ?? undefined,
       },
       userId

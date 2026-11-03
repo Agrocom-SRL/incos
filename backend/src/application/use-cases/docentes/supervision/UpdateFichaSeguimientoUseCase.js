@@ -1,4 +1,5 @@
-import { NotFoundError, ValidationError } from '../../../../domain/errors/AppError.js';
+import { NotFoundError } from '../../../../domain/errors/AppError.js';
+import { parseIdPositivo } from '../../../utils/validacionEntrada.js';
 import { FichaSeguimientoMapper } from '../../../mappers/docentes/FichaSeguimientoMapper.js';
 import {
   assertAsignacionDocenteVigente,
@@ -32,7 +33,8 @@ export class UpdateFichaSeguimientoUseCase {
    * @param {number|null} usuarioId - Usuario de la sesión (auditoría updated_by)
    * @returns {Promise<{fichaSeguimiento: Object}>}
    */
-  async execute(id, data, usuarioId = null) {
+  async execute(rawId, data, usuarioId = null) {
+    const id = parseIdPositivo(rawId, 'id');
     const current = await this.fichaSeguimientoClaseRepository.findById(id);
     if (!current) {
       throw new NotFoundError(`ficha de seguimiento con ID ${id}`);
@@ -42,10 +44,7 @@ export class UpdateFichaSeguimientoUseCase {
       data.asignacionDocenteId !== undefined &&
       Number(data.asignacionDocenteId) !== Number(current.asignacionDocenteId)
     ) {
-      const asignacionId = Number(data.asignacionDocenteId);
-      if (!Number.isFinite(asignacionId) || asignacionId < 1) {
-        throw new ValidationError('asignacionDocenteId debe ser un entero positivo');
-      }
+      const asignacionId = parseIdPositivo(data.asignacionDocenteId, 'asignacionDocenteId');
       await assertAsignacionDocenteVigente({
         teacherAssignmentRepository: this.teacherAssignmentRepository,
         asignacionDocenteId: asignacionId,

@@ -4,7 +4,7 @@
  * IListadoInscritosCapacitacionExcelGenerator y se registra en el container DI;
  * el use case nunca lo importa de forma concreta.
  *
- * Responsabilidad: crear el workbook (UNA sola hoja) y delegar la construcción en
+ * Responsabilidad: crear el workbook (una hoja por grupo) y delegar la construcción en
  * ListadoInscritosCapacitacionSheetBuilder. No contiene lógica de pintado de celdas.
  */
 
@@ -25,9 +25,28 @@ export class ListadoInscritosCapacitacionExcelBuilder extends (
     workbook.creator = 'INCOS Santa Cruz';
     workbook.created = new Date();
 
-    ListadoInscritosCapacitacionSheetBuilder.build({
-      composer: new ExcelSheetComposer(workbook.addWorksheet('INSCRITOS')),
-      datos: datos ?? {},
+    const payload = datos ?? {};
+    const participantes = payload.participantes ?? [];
+
+    // Una hoja por grupo (sin hoja general). Los inscritos sin grupo van a «SIN GRUPO».
+    // Nombre válido de hoja Excel: ≤31 chars, sin []:*?/\ y único.
+    const usados = new Set();
+    const nombresGrupo = [...new Set(participantes.map((p) => p.grupo ?? null))];
+    if (nombresGrupo.length === 0) nombresGrupo.push(null); // curso sin inscritos: hoja vacía
+    nombresGrupo.forEach((grupo) => {
+      const base =
+        String(grupo ?? 'SIN GRUPO').replace(/[[\]:*?/\\]/g, ' ').trim().slice(0, 31) || 'GRUPO';
+      let nombre = base;
+      for (let i = 2; usados.has(nombre.toUpperCase()); i += 1) {
+        nombre = `${base.slice(0, 28)} ${i}`;
+      }
+      usados.add(nombre.toUpperCase());
+      ListadoInscritosCapacitacionSheetBuilder.build({
+        composer: new ExcelSheetComposer(workbook.addWorksheet(nombre)),
+        datos: payload,
+        participantes: participantes.filter((p) => (p.grupo ?? null) === grupo),
+        grupo,
+      });
     });
 
     const buffer = await workbook.xlsx.writeBuffer();

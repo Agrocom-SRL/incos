@@ -1,5 +1,6 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
+import { createLoginRateLimiter } from '../middleware/rateLimit.middleware.js';
 import { loginValidator, validateLoginRequest } from '../validators/auth/login.validator.js';
 import {
   cambiarMiPasswordValidator,
@@ -12,9 +13,11 @@ import {
  */
 export function buildAuthRouter({ authController }) {
   const router = express.Router();
+  const loginRateLimiter = createLoginRateLimiter();
 
   router.post(
     '/login',
+    loginRateLimiter,
     loginValidator,
     validateLoginRequest,
     (req, res, next) => authController.login(req, res, next)

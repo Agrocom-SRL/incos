@@ -2,12 +2,12 @@
  * GET — listado enriquecido de asignaciones docentes (oferta + materia + paralelo).
  */
 
+import { parseFiltroId } from '../../utils/validacionEntrada.js';
 import { TeacherAssignmentPresentationMapper } from '../../mappers/docentes/TeacherAssignmentPresentationMapper.js';
 
-function parsePositiveInt(value) {
-  if (value === undefined || value === null || value === '') return null;
-  const n = parseInt(String(value), 10);
-  return Number.isFinite(n) && n > 0 ? n : null;
+/** Filtro por id: vacío ⇒ null (sin filtro); '5x', 0, -1 o 'abc' ⇒ ValidationError. */
+function parsePositiveInt(value, nombre) {
+  return parseFiltroId(value, nombre) ?? null;
 }
 
 function parseBoolQuery(value) {
@@ -63,7 +63,8 @@ export class ListTeacherAssignmentsUseCase {
     const filters = {};
 
     const gestionPlanId = parsePositiveInt(
-      queryParams.gestionPlanId ?? queryParams.gestion_plan_id
+      queryParams.gestionPlanId ?? queryParams.gestion_plan_id,
+      'gestionPlanId'
     );
     if (gestionPlanId) filters.managementPlanId = gestionPlanId;
 
@@ -72,16 +73,18 @@ export class ListTeacherAssignmentsUseCase {
         queryParams.oferta_curso_id ??
         queryParams.ofertaCursoId ??
         queryParams.cursoId ??
-        queryParams.curso_id
+        queryParams.curso_id,
+      'ofertaCursoId'
     );
     if (offerCourseId) filters.offerCourseId = offerCourseId;
 
     const parallelManagementId = parsePositiveInt(
-      queryParams.parallelManagementId ?? queryParams.paralelo_gestion_id
+      queryParams.parallelManagementId ?? queryParams.paralelo_gestion_id,
+      'paraleloGestionId'
     );
     if (parallelManagementId) filters.parallelManagementId = parallelManagementId;
 
-    const docenteId = parsePositiveInt(queryParams.docenteId ?? queryParams.docente_id);
+    const docenteId = parsePositiveInt(queryParams.docenteId ?? queryParams.docente_id, 'docenteId');
     if (docenteId) filters.teacherId = docenteId;
 
     const vig = parseBoolQuery(queryParams.vigente);

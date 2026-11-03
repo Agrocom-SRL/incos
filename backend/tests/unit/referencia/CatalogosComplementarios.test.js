@@ -254,9 +254,9 @@ describe.each(catalogos)('Catálogo complementario $nombre', (c) => {
       expect(res).toMatchObject({ cantidadEstudiantes: 0, cantidadDocentes: 0, cantidadPersonal: 0 });
     });
 
-    it.each([[99], [NaN]])('devuelve null y no consulta usos si id=%p no existe', async (id) => {
+    it.each([[99], [NaN]])('lanza NotFoundError y no consulta usos si id=%p no existe', async (id) => {
       const { useCase, usosRepo } = crear(null);
-      await expect(useCase.execute(id)).resolves.toBeNull();
+      await expect(useCase.execute(id)).rejects.toBeInstanceOf(NotFoundError);
       expect(usosRepo.getUsosByCatalogo).not.toHaveBeenCalled();
     });
   });

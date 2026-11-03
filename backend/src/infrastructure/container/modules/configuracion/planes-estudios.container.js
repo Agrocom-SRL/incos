@@ -141,6 +141,7 @@ export function registerPlanesEstudiosResource(container) {
 
   registerComponent(container, CONFIGURACION_TOKENS.deletePeriodoUseCase, (c) => new DeletePeriodoUseCase({
     periodRepository: c.resolve(REPOSITORIOS_TOKENS.periodRepository),
+    planSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.planSubjectRepository),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
   }));
 
@@ -185,6 +186,7 @@ export function registerPlanesEstudiosResource(container) {
     CONFIGURACION_TOKENS.deleteAsignaturaPlanUseCase,
     (c) => new DeleteAsignaturaPlanUseCase({
     planSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.planSubjectRepository),
+    prerequisiteRepository: c.resolve(REPOSITORIOS_TOKENS.prerequisiteRepository),
     logger: c.resolve(SERVICIOS_TOKENS.logger),
   }),
   );

@@ -16,7 +16,6 @@ export class UpdateMateriaUseCase {
         acronym: body.sigla ?? body.acronym ?? undefined,
         name: body.nombre ?? body.name ?? undefined,
         objectives: body.objetivos ?? body.objectives ?? undefined,
-        knowledgeArea: body.areaConocimiento ?? body.knowledgeArea ?? undefined,
         classification: body.clasificacion ?? body.classification ?? undefined,
         type: body.tipo ?? body.type ?? undefined,
         active: body.activo ?? body.active ?? undefined,

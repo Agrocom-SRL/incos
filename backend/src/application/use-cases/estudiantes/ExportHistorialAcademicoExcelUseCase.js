@@ -41,7 +41,9 @@ export class ExportHistorialAcademicoExcelUseCase {
     const buffer =
       await this.historialAcademicoExcelGenerator.generarHistorialAcademico(payload);
 
-    const matricula = sanitizarFilePart(payload.estudiante?.matricula) || `est_${estudianteId}`;
+    const matricula = payload.estudiante?.matricula
+      ? sanitizarFilePart(payload.estudiante.matricula)
+      : `est_${estudianteId}`;
     const fileName = `Historial_Academico_${matricula}.xlsx`;
 
     this.logger.info('[Estudiantes] Historial académico exportado a Excel', {

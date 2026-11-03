@@ -84,7 +84,10 @@ export function lineasConflictoDocente(paresConflicto = [], bloqueNombreMap) {
 
 /** «13:45» → minutos desde medianoche (825). */
 export function horaInicioToMinutes(horaInicio) {
-    const [h, m] = String(horaInicio || '')
+    // Number('') === 0: una hora vacía no debe interpretarse como medianoche.
+    const texto = String(horaInicio ?? '').trim();
+    if (!texto) return null;
+    const [h, m] = texto
         .split(':')
         .map((n) => Number(n));
     if (!Number.isFinite(h)) return null;

@@ -21,7 +21,13 @@ export const useDocentesConTutoriaCatalogApi = () => {
   useEffect(() => {
     let activo = true;
     (async () => {
-      const result = await proyectoGradoRepository.obtenerSeguimientoTutoriaDocentes({});
+      let result = null;
+      try {
+        result = await proyectoGradoRepository.obtenerSeguimientoTutoriaDocentes({});
+      } catch {
+        // Sin catálogo: el filtro queda vacío en lugar de dejar la carga colgada.
+        result = null;
+      }
       if (!activo) return;
       const raw = result?.success ? result.data?.[SEGUIMIENTO_TUTORIA_DOCENTES_DATA_KEY] : null;
       const opciones = Array.isArray(raw?.docentes)

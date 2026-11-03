@@ -81,4 +81,15 @@ examDate: '2026-05-10',
     expect(() => new ProgramarNivelacionUseCase({ registrarEventoHistorialMatriculaUseCase: {}, logger: {} })).toThrow(/requerido/);
     expect(() => new ProgramarNivelacionUseCase({ registrarEventoHistorialMatriculaUseCase: {}, levelingRepository: {} })).toThrow(/requerido/);
   });
+
+  it.each([
+    [{ managementId: 'abc' }], [{ evaluatorTeacherId: '5x' }], [{ examDate: 'abc' }], [{ examDate: '2026-02-31' }],
+  ])('rechaza datos de nivelación inválidos %p antes de abrir la transacción', async (extra) => {
+    const { useCase, levelingRepository: repo } = crear();
+    await expect(
+      useCase.execute({ usuarioId: 10, subjectEnrollmentId: 9, stateType: 'NIVELACION_1RA', ...extra }),
+    ).rejects.toBeInstanceOf(ValidationError);
+    expect(mockTransaction).not.toHaveBeenCalled();
+    expect(repo.create).not.toHaveBeenCalled();
+  });
 });

@@ -1,4 +1,5 @@
 import multer from 'multer';
+import { ValidationError } from '../../domain/errors/AppError.js';
 import path from 'path';
 import fs from 'fs';
 import { multerConfig } from '../../infrastructure/config/multer.config.js';
@@ -54,7 +55,7 @@ export function createUploadMiddleware(fieldName = 'documentoRespaldo') {
         // Validar extensión
         if (!multerConfig.allowedFileTypes.includes(ext)) {
             return cb(
-                new Error(
+                new ValidationError(
                     `Tipo de archivo no permitido. Tipos permitidos: ${multerConfig.allowedFileTypes.join(', ')}`
                 ),
                 false
@@ -64,7 +65,7 @@ export function createUploadMiddleware(fieldName = 'documentoRespaldo') {
         // Validar MIME type
         if (!multerConfig.allowedMimeTypes.includes(mimeType)) {
             return cb(
-                new Error(
+                new ValidationError(
                     `Tipo MIME no permitido. Tipos permitidos: ${multerConfig.allowedMimeTypes.join(', ')}`
                 ),
                 false
@@ -139,7 +140,7 @@ export function createCarreraImageUploadMiddleware(fieldName = 'imagen') {
     const ext = path.extname(file.originalname).toLowerCase();
     if (!CARRERA_IMAGE_EXTENSIONS.includes(ext)) {
       return cb(
-        new Error(`Solo imágenes permitidas: ${CARRERA_IMAGE_EXTENSIONS.join(', ')}`),
+        new ValidationError(`Solo imágenes permitidas: ${CARRERA_IMAGE_EXTENSIONS.join(', ')}`),
         false,
       );
     }
@@ -149,7 +150,7 @@ export function createCarreraImageUploadMiddleware(fieldName = 'imagen') {
       mime.startsWith('image/') ||
       CARRERA_IMAGE_MIME_TYPES.includes(mime);
     if (!mimeOk) {
-      return cb(new Error('Tipo MIME de imagen no permitido'), false);
+      return cb(new ValidationError('Tipo MIME de imagen no permitido'), false);
     }
     cb(null, true);
   };
@@ -202,12 +203,12 @@ export function createCuentaPagoQrUploadMiddleware(fieldName = 'qr') {
   const fileFilter = (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
     if (!CARRERA_IMAGE_EXTENSIONS.includes(ext)) {
-      return cb(new Error(`Solo imágenes permitidas: ${CARRERA_IMAGE_EXTENSIONS.join(', ')}`), false);
+      return cb(new ValidationError(`Solo imágenes permitidas: ${CARRERA_IMAGE_EXTENSIONS.join(', ')}`), false);
     }
     const mime = file.mimetype || '';
     const mimeOk = !mime || mime.startsWith('image/') || CARRERA_IMAGE_MIME_TYPES.includes(mime);
     if (!mimeOk) {
-      return cb(new Error('Tipo MIME de imagen no permitido'), false);
+      return cb(new ValidationError('Tipo MIME de imagen no permitido'), false);
     }
     cb(null, true);
   };
@@ -274,14 +275,14 @@ export function createAvanceProyectoUploadMiddleware(fieldName = 'archivo') {
     const ext = path.extname(file.originalname).toLowerCase();
     if (!UPLOAD.avanceProyectoExtensions.includes(ext)) {
       return cb(
-        new Error(
+        new ValidationError(
           `Tipo de archivo no permitido. Tipos permitidos: ${UPLOAD.avanceProyectoExtensions.join(', ')}`
         ),
         false
       );
     }
     if (!AVANCE_PROYECTO_MIME_TYPES.includes(file.mimetype)) {
-      return cb(new Error('Tipo MIME no permitido (solo PDF o Word)'), false);
+      return cb(new ValidationError('Tipo MIME no permitido (solo PDF o Word)'), false);
     }
     cb(null, true);
   };
@@ -349,14 +350,14 @@ export function createComprobanteCapacitacionUploadMiddleware(fieldName = 'compr
     const ext = path.extname(file.originalname).toLowerCase();
     if (!UPLOAD.comprobanteCapacitacionExtensions.includes(ext)) {
       return cb(
-        new Error(
+        new ValidationError(
           `Tipo de archivo no permitido. Tipos permitidos: ${UPLOAD.comprobanteCapacitacionExtensions.join(', ')}`
         ),
         false
       );
     }
     if (!COMPROBANTE_CAPACITACION_MIME_TYPES.includes(file.mimetype)) {
-      return cb(new Error('Tipo MIME no permitido (solo imagen o PDF)'), false);
+      return cb(new ValidationError('Tipo MIME no permitido (solo imagen o PDF)'), false);
     }
     cb(null, true);
   };

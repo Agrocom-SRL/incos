@@ -18,7 +18,7 @@ export const estudianteFormMapper = (studentDetail) => {
     return null;
   }
 
-  const { student, guardians, disabilities, origins, documentDeliveries, academicData, transitability, transfer } = studentDetail;
+  const { student, guardians, disabilities, origins = [], documentDeliveries, academicData, transitability, transfer } = studentDetail;
 
   // Tipo de admisión y datos académicos (paso 0): usar valor persistido o inferir por gestión de ingreso
   const hasGestionIngreso = academicData?.gestionIngresoId != null && academicData?.gestionIngresoId !== '';

@@ -1,5 +1,5 @@
 # Matriz de Permisos - Instituto INCOS
-## Ultima actualizacion: 2026-10-20
+## Ultima actualizacion: 2026-10-26
 
 Documento de auditoria funcional (frontend + backend + seeds) sobre permisos por accion.
 
@@ -9,6 +9,45 @@ Documento de auditoria funcional (frontend + backend + seeds) sobre permisos por
 > permisos por módulo: `58` MAT · `59` ACA · `60` DOC · `61` FIN · `62` INST · `63` REP (tombstone: solo
 > limpieza, no siembra permisos) · `64` CAP · `65` TIT · `66` CFG · `67` SEG(+SYS).
 > Las menciones a otras numeraciones en el texto son históricas.
+
+## Nota de verificación contra los seeds (2026-10-26)
+
+Contraste de esta matriz con la BD cargada desde `backend/database/02-seeders/` (rol × permiso × acción
+efectivos, tomados de `roles_permisos`). **Solo se documenta la diferencia; no se cambió ningún permiso ni
+seed.** Donde la matriz y el seed discrepan, rige el seed (ver «Fuente de verdad» arriba). Las tablas de
+abajo no se reescribieron: esta nota es la corrección.
+
+1. **SEC_ACADEMICA en Calificaciones y Asistencia.** Las tablas «ACA - Calificaciones» y «ACA - Asistencia»
+   (y la frase «Roles con `…coordinacion` (RECTOR, DIR_ACADEMICO, SEC_ACADEMICA)») listan a `SECA`, pero el
+   seed 59 **no le asigna** estos permisos: `academico.calificacion.{ingreso, coordinacion, mis_cursos,
+   cuaderno, politica, gestion_bimestres, cuaderno.evaluaciones, cuaderno.notas, cuaderno.guardar,
+   bimestre.ajuste_admin}` y `academico.asistencia.{registro.ver, registro.cuaderno, consolidado.ver}`.
+   SEC_ACADEMICA solo tiene en este bloque `academico.asistencia.clase_no_dictada.ver`
+   (LISTAR/CREAR/EDITAR) y `academico.asistencia.licencia.{ver, crear, aprobar}`, más `academico.libro` e
+   `academico.historial.academico`. Hoy esas pantallas responden 403 a SEC_ACADEMICA.
+2. **Acciones del cuaderno por rol.** En el seed: `academico.calificacion.cuaderno` da a DOCENTE
+   LISTAR + EXPORTAR + GENERAR_PDF, y a RECTOR/DIR_ACADEMICO solo LISTAR (sin EXPORTAR);
+   `cuaderno.evaluaciones` da a DOCENTE CREAR/EDITAR/ELIMINAR y a RECTOR/DIR_ACADEMICO solo CREAR;
+   `cuaderno.notas` y `cuaderno.guardar` (EDITAR) son **solo de DOCENTE**. La matriz indica REC, DIRA, SECA y DOC
+   para todas esas filas. `academico.asistencia.registro.cuaderno` en el seed: DOCENTE LISTAR+EDITAR,
+   RECTOR/DIR_ACADEMICO solo LISTAR, SEC_ACADEMICA sin permiso.
+3. **Permisos desactivados en los seeds pero descritos como vigentes.** `finanzas.pago.adicionales`
+   (sección «FIN - Pagos adicionales», seed 61) y `configuracion.convenios` (fila «Convenios» de CFG, seed 66)
+   se siembran con `activo = 0` y `deleted_at` informado «hasta que la pantalla exista»: no figuran en
+   `/auth/me`, no hay menú ni ruta que los use y sus endpoints no están expuestos. Los roles y acciones que
+   detallan las tablas son la intención de diseño, no el estado real. Lo mismo vale para avance, deserción,
+   acompañamiento, traspasos y transitabilidad (ver «Fuera de alcance de esta versión»).
+4. **Vocabulario antiguo en tablas.** Varias tablas de «Matriz de permisos por pagina» (p. ej. MAT - Admisiones,
+   Matrículas, Becas, Aportes/Pagos) usan la acción `VER` y códigos de seeds anteriores (`matricula.admision.ver`,
+   `matricula.beca.*`). El vocabulario vigente es LISTAR/DETALLE/… (`VER` está deprecado y las pruebas de
+   integración exigen que no aparezca); para el detalle por acción rigen los seeds 58-67.
+5. **Qué sí coincide.** Todo código de permiso activo de los seeds está citado en esta matriz. Se contrastaron
+   con `roles_permisos` las filas de tabla que citan un único código y enumeran roles con las abreviaturas de
+   la convención (el resto, en prosa o con matices entre paréntesis, no se contrastó automáticamente); fuera de
+   los puntos 1 a 3 coinciden (las diferencias aparentes en filas por
+   acción, p. ej. APROBAR de `academico.libro` solo REC/DIRA, o ELIMINAR del compromiso sin SEC_ADMIN, son
+   correctas: el seed concede esa acción únicamente a esos roles). La suite `tests/integration/rbac.test.js`
+   fija los permisos efectivos por rol.
 
 ## Historial de renombres
 
@@ -495,7 +534,7 @@ Este catalogo define las capacidades reales del sistema para evitar ambiguedad e
 |---|---|---|
 | MATRICULA | `matricula.*` | admision, inscripcion, becas, documentos, aportes |
 | ACADEMICO | `academico.*` | calificaciones, asistencia (y licencias estudiantiles), nivelacion, historial, libros de registro |
-| DOCENTES | `docentes.*` | docentes, asignacion, supervision (licencias docentes apagadas) |
+| DOCENTES | `docentes.*` | docentes, asignacion, supervision |
 | FINANZAS | `finanzas.*` | pagos, aportes, compromisos, reportes, recibos, configuracion |
 | INSTITUCIONAL | `institucional.*` | gestiones, oferta, horarios, configuraciones |
 | TITULACION | `titulacion.*` | proyectos de grado, bitacora, avances, pasantias |
@@ -798,7 +837,6 @@ Permisos: `docentes.*` (seed `60-seed-permisos-doc.sql` — la numeración corri
 | `docentes.crear` | CREAR | Alta `/docentes/registrar` |
 | `docentes.editar` | EDITAR, ELIMINAR | Formulario edicion ficha; baja (DELETE API pendiente) |
 | `docentes.asignar` | CREAR, EDITAR, ELIMINAR | Asignacion docente-curso (`/docentes/asignar`, API `POST /docentes/asignaciones/curso`, modal en armado paralelo) |
-| `docentes.licencia.ver`, `docentes.licencia.crear`, `docentes.licencia.aprobar` | LISTAR+DETALLE / CREAR / APROBAR | Licencias docentes (`/docentes/licencias/listar`, grupo `doc_licencias`). **Apagados en el seed 60** hasta que exista la tabla `licencias_docentes`. Roles sembrados: REC y DIRA (ver, crear, aprobar); DOC (ver LISTAR, crear CREAR) |
 | `docentes.supervision.ficha` | LISTAR, DETALLE, CREAR, EDITAR, EXPORTAR | **Supervisión docente** (`/docentes/supervision`, grupo `doc_supervision` orden 3): fichas de seguimiento en la clase presencial (schema 27, API `/api/v1/supervision-docente`, vista 174). Sin ELIMINAR ni APROBAR: la ficha realizada no se borra. EXPORTAR = `GET /:id/pdf` (réplica del formulario físico) |
 
 | Accion | Descripcion | Roles |
@@ -807,7 +845,6 @@ Permisos: `docentes.*` (seed `60-seed-permisos-doc.sql` — la numeración corri
 | CREAR | Nuevo docente / nueva ficha de seguimiento | ADM, REC, DIRA |
 | EDITAR | Ficha docente / ficha de seguimiento | ADM, REC, DIRA |
 | EXPORTAR | PDF de la ficha de seguimiento | ADM, REC, DIRA |
-| APROBAR | Licencias docentes (deshabilitado: página en construcción) | ADM, REC, DIRA |
 
 > **Supervisión docente (2026-07-30, permiso único):** operan **REC** y **DIRA**
 > (+ADM por herencia de vista) — la ficha real lleva firma y sello de la
@@ -839,8 +876,8 @@ Permisos: `docentes.*` (seed `60-seed-permisos-doc.sql` — la numeración corri
   `institucional.horario.conflictos` LISTAR + `docenteSelfOnlyGuard('docenteId')` (solo su propia grilla).
 - Licencias estudiantiles: `academico.asistencia.licencia.crear` EDITAR + ELIMINAR con guard
   created_by + estado PENDIENTE en servidor (ver ACA-Asistencia).
-- `docentes.licencia.ver` LISTAR + `docentes.licencia.crear` CREAR (menú Licencias docentes;
-  deshabilitados temporalmente: página en construcción). Pasantías docentes: retiradas del seed
+- Licencias de docentes: **eliminadas del alcance** (permisos retirados del seed 60; no hay tabla
+  `licencias_docentes`). Pasantías docentes: retiradas del seed
   2026-07-29 (el dominio vive en Titulación (`titulacion.pasantia*`); lo docente entra por wrappers del portal).
 - Supervisión docente: **sin permisos** — tab/wrapper self `GET /supervision-docente/mis-fichas`
   (gate solo `authenticate` + `resolveDocenteIdForUsuario`; solo fichas de SUS cursos).
@@ -850,10 +887,9 @@ Permisos: `docentes.*` (seed `60-seed-permisos-doc.sql` — la numeración corri
 > con vínculo docente solo accede a su propio `:id` (resuelto en servidor); staff sin restricción.
 > Los endpoints de escritura de Docentes NO se abren al rol DOCENTE.
 
-> **Licencias de docentes (pendiente):** los permisos `docentes.licencia.*` existen, pero la
-> **tabla `licencias_docentes` aún no está creada** (solo licencias de estudiante en schema 17).
-> Se diseñará en el dominio Docentes y Asistencia la consumirá para clases no dictadas
-> (ver `docs/plan/MODULO-ASISTENCIA.md` §7).
+> **Licencias de docentes (fuera de alcance):** los permisos `docentes.licencia.*` se retiraron del
+> seed 60 y no se implementa el módulo. Solo existen licencias de estudiante
+> (`academico.asistencia.licencia.*`, schema 17).
 
 ### INST - Institucional (`/institucional/*`)
 Permisos: `institucional.*`

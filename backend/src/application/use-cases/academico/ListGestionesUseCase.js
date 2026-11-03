@@ -5,6 +5,7 @@
  */
 
 import { BaseListUseCase } from '../base/BaseListUseCase.js';
+import { parseBooleano, parseNumero } from '../../utils/validacionEntrada.js';
 import { ManagementMapper } from '../../mappers/academico/ManagementMapper.js';
 
 export class ListGestionesUseCase extends BaseListUseCase {
@@ -43,23 +44,28 @@ export class ListGestionesUseCase extends BaseListUseCase {
 
     // Query directo: ?vigente=0 | ?vigente=1
     if (queryParams.vigente !== undefined && queryParams.vigente !== '') {
-      const v = queryParams.vigente;
-      filters.vigente = v === true || v === '1' || v === 1;
+      filters.vigente = parseBooleano(queryParams.vigente, 'vigente');
     }
 
     // Filtros en JSON: ?filtros={"vigente":false,"active":true}
     if (queryParams.filtros) {
+      let parsed = null;
       try {
-        const parsed = typeof queryParams.filtros === 'string'
+        parsed = typeof queryParams.filtros === 'string'
           ? JSON.parse(queryParams.filtros)
           : queryParams.filtros;
-        if (parsed.isActive !== undefined) filters.isActive = !!parsed.isActive;
-        if (parsed.active !== undefined) filters.isActive = !!parsed.active;
-        if (parsed.vigente !== undefined) filters.vigente = !!parsed.vigente;
-        if (parsed.year !== undefined) filters.year = Number(parsed.year);
-        if (parsed.type !== undefined) filters.type = parsed.type;
       } catch (e) {
         this.logger.warn('[ListGestionesUseCase] Error al parsear filtros', { error: e.message });
+      }
+      // Los valores se validan fuera del try: un valor inválido es 400, no se ignora en silencio.
+      if (parsed && typeof parsed === 'object') {
+        if (parsed.isActive !== undefined) filters.isActive = parseBooleano(parsed.isActive, 'isActive');
+        if (parsed.active !== undefined) filters.isActive = parseBooleano(parsed.active, 'active');
+        if (parsed.vigente !== undefined) filters.vigente = parseBooleano(parsed.vigente, 'vigente');
+        if (parsed.year !== undefined) {
+          filters.year = parseNumero(parsed.year, 'year', { min: 2000, max: 2100, entero: true });
+        }
+        if (parsed.type !== undefined) filters.type = parsed.type;
       }
     }
 

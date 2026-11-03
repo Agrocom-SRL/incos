@@ -59,7 +59,6 @@ export class SubjectRepository extends BaseRepository {
    * Ejemplos de uso:
    * - findBy({ acronym: 'MAT-101' }) → Busca por sigla
    * - findAll({ type: 'TEORICA' }) → Busca materias teóricas
-   * - findAll({ knowledgeArea: 'CIENCIAS' }) → Busca por área de conocimiento
    *
    * @param {Object} filters - Filtros de búsqueda
    *   - acronym: Sigla de la materia (búsqueda exacta, para búsqueda de texto usar search())
@@ -89,9 +88,6 @@ export class SubjectRepository extends BaseRepository {
     if (filters.type) {
       where.tipo = filters.type;
     }
-    if (filters.knowledgeArea) {
-      where.areaConocimiento = filters.knowledgeArea;
-    }
     // Filtro por IDs de materias (array) - usado cuando se filtra por periodo_id
     // Sequelize automáticamente convierte arrays a IN (1, 2, 3)
     if (filters.id) {
@@ -108,7 +104,7 @@ export class SubjectRepository extends BaseRepository {
    * @returns {string[]} Array de nombres de campos del modelo Sequelize
    */
   getSearchFields() {
-    return ['codigo', 'nombre', 'nombreCorto', 'descripcion'];
+    return ['sigla', 'nombre', 'objetivos'];
   }
 
   /**

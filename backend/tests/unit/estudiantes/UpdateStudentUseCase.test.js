@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 import { UpdateStudentUseCase } from '../../../src/application/use-cases/estudiantes/UpdateStudentUseCase.js';
-import { ConflictError, NotFoundError } from '../../../src/domain/errors/AppError.js';
+import { ConflictError, NotFoundError, ValidationError } from '../../../src/domain/errors/AppError.js';
 
 describe('UpdateStudentUseCase', () => {
   const repoVacio = () => ({
@@ -184,6 +184,25 @@ describe('UpdateStudentUseCase', () => {
       expect(deps.studentRepository.update).toHaveBeenCalledWith(5, { studentCode: '20230041' });
     });
 
+    it.each([
+      ['sin datos previos ni payload', null, {}, 'Gestión de ingreso es requerida'],
+      ['gestión 0', { id: 50, managementId: 5, careerId: 4 }, { gestionIngresoId: 0 }, 'Gestión de ingreso es requerida'],
+      ['gestión null', { id: 50, managementId: 5, careerId: 4 }, { gestionIngresoId: null }, 'Gestión de ingreso es requerida'],
+      ['carrera vacía', { id: 50, managementId: 5, careerId: 4 }, { carreraId: '' }, 'Carrera es requerida'],
+      ['carrera ausente y sin carrera guardada', { id: 50, managementId: 5 }, { gestionIngresoId: 5 }, 'Carrera es requerida'],
+    ])('ANTIGUO exige gestión y carrera: %s', async (_, existente, payload, mensaje) => {
+      const { useCase, academic } = conAcademico(existente);
+      await expect(useCase.execute(5, { tipoAdmision: 'ANTIGUO', ...payload })).rejects.toThrow(ValidationError);
+      await expect(useCase.execute(5, { tipoAdmision: 'ANTIGUO', ...payload })).rejects.toThrow(mensaje);
+      expect(academic.update).not.toHaveBeenCalled();
+      expect(academic.create).not.toHaveBeenCalled();
+    });
+
+    it('ANTIGUO sin enviar gestión ni carrera usa lo ya guardado', async () => {
+      const { useCase } = conAcademico({ id: 50, admissionType: 'ANTIGUO', managementId: 5, careerId: 4 });
+      await expect(useCase.execute(5, { tipoAdmision: 'ANTIGUO' })).resolves.toBeDefined();
+    });
+
     it('NUEVO usa la gestión vigente y anula la carrera', async () => {
       const { useCase, academic } = conAcademico({ id: 50, admissionType: 'ANTIGUO', managementId: 5, careerId: 4 });
       await useCase.execute(5, { tipoAdmision: 'NUEVO', carreraId: 4 });
@@ -206,7 +225,7 @@ describe('UpdateStudentUseCase', () => {
 
     it('si falla la generación del código lanza un error descriptivo', async () => {
       const { useCase } = conAcademico(null);
-      await expect(useCase.execute(5, { tipoAdmision: 'ANTIGUO', gestionIngresoId: 999 }))
+      await expect(useCase.execute(5, { tipoAdmision: 'ANTIGUO', gestionIngresoId: 999, carreraId: 4 }))
         .rejects.toThrow('No se pudo actualizar el código del estudiante');
     });
 
@@ -221,7 +240,7 @@ describe('UpdateStudentUseCase', () => {
           transferRepository: { findBy: jest.fn().mockResolvedValue({ id: 80 }), delete: jest.fn() },
         }
       );
-      await useCase.execute(5, { tipoAdmision: 'ANTIGUO', gestionIngresoId: 3 });
+      await useCase.execute(5, { tipoAdmision: 'ANTIGUO', gestionIngresoId: 3, carreraId: 4 });
       expect(useCase.transitabilityRepository.delete).toHaveBeenCalledWith(70);
       expect(useCase.transferRepository.delete).toHaveBeenCalledWith(80);
     });

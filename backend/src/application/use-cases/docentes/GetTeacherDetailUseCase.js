@@ -3,6 +3,7 @@
  */
 
 import { NotFoundError } from '../../../domain/errors/AppError.js';
+import { parseIdPositivo } from '../../utils/validacionEntrada.js';
 import { TeacherDetailPresentationMapper } from '../../mappers/docentes/TeacherDetailPresentationMapper.js';
 
 export class GetTeacherDetailUseCase {
@@ -20,7 +21,8 @@ export class GetTeacherDetailUseCase {
    * @param {number} teacherId
    * @returns {Promise<Object>}
    */
-  async execute(teacherId) {
+  async execute(rawTeacherId) {
+    const teacherId = parseIdPositivo(rawTeacherId, 'id');
     this.logger.info('[Docentes] Detalle docente', { teacherId });
     const bundle = await this.teacherRepository.findDetailBundleByTeacherId(teacherId);
     if (!bundle?.teacher) {

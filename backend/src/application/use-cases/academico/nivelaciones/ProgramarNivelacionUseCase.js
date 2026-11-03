@@ -1,3 +1,4 @@
+import { parseFechaISO, parseIdOpcional } from '../../../utils/validacionEntrada.js';
 import { ValidationError } from '../../../../domain/errors/AppError.js';
 import { TIPOS_INTENTO_ACADEMICO_VALUES } from '../../../../domain/constants/inscripciones.constants.js';
 import { ESTADOS_NIVELACION } from '../../../../domain/constants/evaluaciones.constants.js';
@@ -64,6 +65,11 @@ export class ProgramarNivelacionUseCase {
       );
     }
 
+    const managementIdValido = parseIdOpcional(managementId, 'managementId');
+    const evaluatorTeacherIdValido = parseIdOpcional(evaluatorTeacherId, 'evaluatorTeacherId');
+    const examDateValida =
+      examDate == null || examDate === '' ? null : parseFechaISO(examDate, 'examDate');
+
     let evento;
     let nivelacion;
     await sequelize.transaction(async (transaction) => {
@@ -83,9 +89,9 @@ export class ProgramarNivelacionUseCase {
       nivelacion = await this.levelingRepository.create(
         {
           subjectEnrollmentHistoryId: evento.id,
-          managementId: managementId ?? null,
-          evaluatorTeacherId: evaluatorTeacherId ?? null,
-          examDate: examDate ?? null,
+          managementId: managementIdValido,
+          evaluatorTeacherId: evaluatorTeacherIdValido,
+          examDate: examDateValida,
           status: ESTADOS_NIVELACION.PROGRAMADA,
         },
         usuarioId,

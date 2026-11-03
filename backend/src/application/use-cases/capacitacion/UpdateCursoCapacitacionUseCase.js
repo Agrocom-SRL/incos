@@ -1,4 +1,5 @@
 import { NotFoundError } from '../../../domain/errors/AppError.js';
+import { parseIdPositivo } from '../../utils/validacionEntrada.js';
 import { sequelize } from '../../../infrastructure/database/sequelize.js';
 import { CursoCapacitacionMapper } from '../../mappers/capacitacion/index.js';
 import {
@@ -89,7 +90,8 @@ export class UpdateCursoCapacitacionUseCase {
    * @param {number|null} userId - Usuario que edita (auditoría)
    * @returns {Promise<{cursoCapacitacion: Object}>}
    */
-  async execute(id, body = {}, userId = null) {
+  async execute(rawId, body = {}, userId = null) {
+    const id = parseIdPositivo(rawId, 'id');
     const existing = await this.cursoCapacitacionRepository.findById(id, { paranoid: false });
     if (!existing) throw new NotFoundError('curso de capacitación');
 

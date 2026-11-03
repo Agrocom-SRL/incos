@@ -1,7 +1,9 @@
 import { Form, Input, Modal, Select } from 'antd';
 
+const ESTADO_ACTIVO = '__ACTIVO__';
+
 const ESTADOS = [
-  { value: '__ACTIVO__', label: 'Activo' },
+  { value: ESTADO_ACTIVO, label: 'Activo' },
   { value: 'BLOQUEADO', label: 'Bloqueado' },
   { value: 'SUSPENDIDO', label: 'Suspendido' },
   { value: 'RETIRADO', label: 'Retirado' },
@@ -11,9 +13,11 @@ export default function CambiarEstadoModal({ open, loading, initialValues, onCan
   const [form] = Form.useForm();
 
   const handleOk = async () => {
-    const values = await form.validateFields();
+    // Validación fallida: los errores ya se muestran en el formulario; no propagar el rechazo.
+    const values = await form.validateFields().catch(() => null);
+    if (!values) return;
     await onSubmit({
-      estado: values.estado === '__ACTIVO__' || values.estado == null ? null : values.estado,
+      estado: values.estado === ESTADO_ACTIVO || values.estado == null ? null : values.estado,
       motivo: values.motivo || null,
     });
   };
@@ -33,7 +37,7 @@ export default function CambiarEstadoModal({ open, loading, initialValues, onCan
           const nextValues = initialValues || {};
           form.setFieldsValue({
             ...nextValues,
-            estado: nextValues.estado ?? '__ACTIVO__',
+            estado: nextValues.estado ?? ESTADO_ACTIVO,
           });
         }
       }}
@@ -41,7 +45,7 @@ export default function CambiarEstadoModal({ open, loading, initialValues, onCan
       <Form
         form={form}
         layout="vertical"
-        initialValues={{ ...(initialValues || {}), estado: initialValues?.estado ?? '__ACTIVO__' }}
+        initialValues={{ ...(initialValues || {}), estado: initialValues?.estado ?? ESTADO_ACTIVO }}
       >
         <Form.Item name="estado" label="Estado">
           <Select allowClear placeholder="Activo" options={ESTADOS} />
@@ -56,7 +60,7 @@ export default function CambiarEstadoModal({ open, loading, initialValues, onCan
               <Form.Item
                 name="motivo"
                 label="Motivo"
-                rules={estado ? [{ required: true, message: 'El motivo es obligatorio' }] : []}
+                rules={estado && estado !== ESTADO_ACTIVO ? [{ required: true, message: 'El motivo es obligatorio' }] : []}
               >
                 <Input.TextArea rows={3} placeholder="Motivo del cambio de estado" />
               </Form.Item>

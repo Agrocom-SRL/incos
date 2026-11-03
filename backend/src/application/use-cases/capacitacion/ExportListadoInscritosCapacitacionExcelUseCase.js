@@ -1,4 +1,5 @@
 import { NotFoundError } from '../../../domain/errors/AppError.js';
+import { InscripcionCapacitacionMapper } from '../../mappers/capacitacion/index.js';
 import { ESTADOS_INSCRIPCION_CAPACITACION } from '../../../domain/constants/capacitacion.constants.js';
 
 /** Inscripciones vigentes (ocupan cupo): PENDIENTE (pago parcial) e INSCRITO. */
@@ -11,11 +12,11 @@ const ESTADOS_VIGENTES = [
 const LIMITE_FILAS = 10000;
 
 /**
- * Exporta el Listado de Inscritos de un curso de capacitación a Excel (.xlsx,
- * una hoja): cabecera con datos del curso (título, costo, horario,
+ * Exporta el Listado de Inscritos de un curso de capacitación a Excel (.xlsx;
+ * hoja GENERAL + una hoja por grupo): cabecera con datos del curso (título, costo, horario,
  * fechas) + institucional, y una fila por participante VIGENTE (PENDIENTE o
  * INSCRITO — se excluyen RETIRADO/ANULADO, ya no forman parte del curso) con
- * cédula, nombre completo, correo, saldo pendiente, grupo, estado de pago de matrícula y
+ * cédula, nombre completo, correo, celular, grupo, monto total, total pagado, saldo pendiente, estado de pago de matrícula y
  * de curso, requisitos obligatorios pendientes y fecha de inscripción. La cabecera
  * incluye modalidad y costos del curso y de la matrícula.
  *
@@ -60,24 +61,32 @@ export class ExportListadoInscritosCapacitacionExcelUseCase {
       1,
       LIMITE_FILAS
     );
-    const participantes = rows
+    // Mapper de presentación: calcula saldos por concepto (las filas crudas no traen `saldo`).
+    const participantes = InscripcionCapacitacionMapper.rowsToPresentation(rows)
       .filter((row) => ESTADOS_VIGENTES.includes(row.estado))
       .map((row) => ({
-        ciCompleto: [row.participante_ci, row.participante_expedicion].filter(Boolean).join(' '),
-        nombreCompleto: [
-          row.participante_apellido_paterno,
-          row.participante_apellido_materno,
-          row.participante_nombres,
-        ]
-          .filter(Boolean)
-          .join(' '),
-        correo: row.participante_email ?? null,
-        grupo: row.grupo_nombre ?? null,
-        saldo: Number(row.saldo) || 0,
-        estadoPagoMatricula: row.estado_pago_matricula ?? null,
-        estadoPagoCurso: row.estado_pago_curso ?? null,
-        requisitosPendientes: Number(row.requisitos_pendientes) || 0,
-        fechaInscripcion: row.fecha_inscripcion,
+        ciCompleto: [row.participanteCi, row.participanteExpedicion].filter(Boolean).join(' '),
+        nombreCompleto: row.participanteNombreCompleto,
+        correo: row.participanteEmail ?? null,
+        celular: row.participanteCelular ?? null,
+        grupo: row.grupoNombre ?? null,
+        estado: row.estado,
+        pagoCursoExterno: row.pagoCursoExterno,
+        // Matrícula: snapshot de la inscripción (cada grupo puede tener su propia matrícula).
+        montoMatricula: row.montoMatricula,
+        // Curso con entidad certificadora: el aporte NO se cobra en el sistema (lo acredita el
+        // documento de respaldo), por eso no suma al monto total ni al pagado.
+        montoTotal: row.montoMatricula + (row.pagoCursoExterno ? 0 : row.montoObligatorio),
+        totalPagado: row.totalPagadoMatricula + (row.pagoCursoExterno ? 0 : row.totalPagadoCurso),
+        saldo: row.saldo,
+        estadoPagoMatricula: row.estadoPagoMatricula ?? null,
+        estadoPagoCurso: row.pagoCursoExterno
+          ? row.requisitoAcreditaPagoCurso?.entregado
+            ? 'RESPALDO ENTREGADO'
+            : 'RESPALDO PENDIENTE'
+          : (row.estadoPagoCurso ?? null),
+        requisitosPendientes: row.requisitosPendientes,
+        fechaInscripcion: row.fechaInscripcion,
       }));
 
     const datos = {
@@ -85,6 +94,7 @@ export class ExportListadoInscritosCapacitacionExcelUseCase {
         titulo: cursoRow.titulo,
         costo: cursoRow.costo,
         costoMatricula: cursoRow.costo_matricula,
+        entidadCertificadora: cursoRow.entidad_certificadora ?? null,
         modalidad: cursoRow.modalidad,
         horariosDetalle: cursoRow.horarios_detalle,
         fechaInicio: cursoRow.fecha_inicio,

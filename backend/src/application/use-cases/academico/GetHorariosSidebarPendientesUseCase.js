@@ -1,11 +1,12 @@
+import { idONull } from '../../utils/validacionEntrada.js';
 /**
  * Lista bloques sin aula, cursos sin docente (por paralelo) y docentes con conflictos operativos (panel lateral).
  */
 function groupBloquesSinAula(rows) {
   const map = new Map();
   for (const row of rows || []) {
-    const id = Number(row.paralelo_id);
-    if (!Number.isFinite(id)) continue;
+    const id = idONull(row.paralelo_id);
+    if (id == null) continue;
     if (!map.has(id)) {
       map.set(id, {
         paraleloId: id,
@@ -35,8 +36,8 @@ function groupBloquesSinAula(rows) {
 function groupCursosSinDocente(rows) {
   const map = new Map();
   for (const row of rows || []) {
-    const id = Number(row.paralelo_id);
-    if (!Number.isFinite(id)) continue;
+    const id = idONull(row.paralelo_id);
+    if (id == null) continue;
     if (!map.has(id)) {
       map.set(id, {
         paraleloId: id,
@@ -61,8 +62,8 @@ function groupCursosSinDocente(rows) {
 function groupDocentesConflictosDetalle(flatRows) {
   const map = new Map();
   for (const r of flatRows || []) {
-    const id = Number(r.docente_id);
-    if (!Number.isFinite(id)) continue;
+    const id = idONull(r.docente_id);
+    if (id == null) continue;
     const name =
       r.docente_nombre != null ? String(r.docente_nombre).replace(/\s+/g, ' ').trim() || null : null;
     const line = String(r.detalle_linea || '').trim();

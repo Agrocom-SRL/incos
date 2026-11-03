@@ -1,12 +1,13 @@
 import { body } from 'express-validator';
 
+// `codigo` es VARCHAR(20) en la tabla `carreras`.
 export const createCarreraValidator = [
   body('codigo')
     .optional()
     .isString()
     .trim()
-    .isLength({ min: 2, max: 50 })
-    .withMessage('codigo debe tener entre 2 y 50 caracteres'),
+    .isLength({ min: 2, max: 20 })
+    .withMessage('codigo debe tener entre 2 y 20 caracteres'),
   body('nombre')
     .notEmpty()
     .withMessage('nombre es requerido')
@@ -25,8 +26,8 @@ export const updateCarreraValidator = [
     .optional()
     .isString()
     .trim()
-    .isLength({ min: 2, max: 50 })
-    .withMessage('codigo debe tener entre 2 y 50 caracteres'),
+    .isLength({ min: 2, max: 20 })
+    .withMessage('codigo debe tener entre 2 y 20 caracteres'),
   body('nombre')
     .optional()
     .isString()

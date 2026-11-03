@@ -13,7 +13,6 @@ function pickBodyField(req, ...keys) {
  */
 export const createTeacherAssignmentValidator = [
   body('gestionPlanId')
-    .optional()
     .custom((_, { req }) => {
       const v = pickBodyField(req, 'gestionPlanId', 'gestion_plan_id');
       if (v === undefined) throw new Error('gestionPlanId es requerido');
@@ -23,7 +22,6 @@ export const createTeacherAssignmentValidator = [
     }),
 
   body('ofertaCursoId')
-    .optional()
     .custom((_, { req }) => {
       const v = pickBodyField(req, 'ofertaCursoId', 'oferta_curso_id', 'offerCourseId');
       if (v === undefined) throw new Error('ofertaCursoId es requerido');
@@ -33,7 +31,6 @@ export const createTeacherAssignmentValidator = [
     }),
 
   body('docenteId')
-    .optional()
     .custom((_, { req }) => {
       const v = pickBodyField(req, 'docenteId', 'docente_id');
       if (v === undefined) throw new Error('docenteId es requerido');

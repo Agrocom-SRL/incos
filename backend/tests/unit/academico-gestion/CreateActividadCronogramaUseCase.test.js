@@ -48,4 +48,19 @@ describe('CreateActividadCronogramaUseCase', () => {
     });
     expect(deps.calendarActivityRepository.create).not.toHaveBeenCalled();
   });
+
+  it.each([[undefined], [''], ['abc'], ['2026-02-31']])('fechaInicio inválida u omitida (%p) => 400', async (fechaInicio) => {
+    const { useCase, deps } = crear();
+    await expect(useCase.execute({ actividadId: 3, fechaInicio })).rejects.toMatchObject({ statusCode: 400 });
+    expect(deps.calendarActivityRepository.create).not.toHaveBeenCalled();
+  });
+
+  it('fechaFin inválida o anterior al inicio => 400; fechaFin vacía => null', async () => {
+    const { useCase, deps } = crear();
+    await expect(useCase.execute({ actividadId: 3, fechaInicio: '2026-03-05', fechaFin: 'abc' })).rejects.toMatchObject({ statusCode: 400 });
+    await expect(useCase.execute({ actividadId: 3, fechaInicio: '2026-03-05', fechaFin: '2026-03-01' })).rejects.toMatchObject({ statusCode: 400 });
+    expect(deps.calendarActivityRepository.create).not.toHaveBeenCalled();
+    await useCase.execute({ actividadId: 3, fechaInicio: '2026-03-05', fechaFin: '' });
+    expect(deps.calendarActivityRepository.create.mock.calls[0][0]).toMatchObject({ startDate: '2026-03-05', endDate: null });
+  });
 });

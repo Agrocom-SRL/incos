@@ -40,7 +40,9 @@ const AporteConfigPage = () => {
   } = useAportePage();
 
   const handleGuardar = async () => {
-    const values = await form.validateFields();
+    // Validación fallida: los errores ya se muestran en el formulario; no propagar el rechazo.
+    const values = await form.validateFields().catch(() => null);
+    if (!values) return;
     await guardarAporte(values);
   };
 

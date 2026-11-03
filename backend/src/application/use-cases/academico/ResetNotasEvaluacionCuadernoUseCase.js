@@ -1,4 +1,5 @@
 import { ForbiddenError, NotFoundError } from '../../../domain/errors/AppError.js';
+import { assertBimestreEditable } from '../../utils/assertBimestreEditable.js';
 import { assertCuadernoCursoAccess } from '../../utils/cuadernoCursoAccess.js';
 import { cargarCuotasPoliticaGestion } from '../../utils/obtenerCuotasDesdePolitica.js';
 import { recalcularNotasBimestreCurso } from '../../utils/recalcularNotasBimestreCurso.js';
@@ -35,7 +36,7 @@ export class ResetNotasEvaluacionCuadernoUseCase {
     const bimestreNum = Number(bimestre);
     const evalId = Number(evaluacionId);
 
-    const { bimestreVigente, gestionId } = await assertCuadernoCursoAccess({
+    const { gestionId } = await assertCuadernoCursoAccess({
       calificacionCoordinacionRepository: this.calificacionCoordinacionRepository,
       calificacionContextoRepository: this.calificacionContextoRepository,
       teacherRepository: this.teacherRepository,
@@ -45,15 +46,14 @@ export class ResetNotasEvaluacionCuadernoUseCase {
       asignacionId,
     });
 
-    const reabierto =
-      (await this.subjectEnrollmentBimesterRepository.contarBimestreReabiertoCurso(
-        Number(asignacionId),
-        bimestreNum,
-      )) > 0;
-
-    if (bimestreNum !== bimestreVigente && !reabierto) {
-      throw new ForbiddenError('Solo puede restablecer notas del bimestre vigente o reabierto.');
-    }
+    // Misma compuerta que Create/Upsert/Guardar: EN_CURSO o REABIERTO; cerrado solo tras reapertura.
+    const { reabierto } = await assertBimestreEditable({
+      calificacionContextoRepository: this.calificacionContextoRepository,
+      subjectEnrollmentBimesterRepository: this.subjectEnrollmentBimesterRepository,
+      gestionId,
+      asignacionId,
+      bimestreNum,
+    });
 
     const existente = await this.cuadernoRepository.obtenerEvaluacionDeAsignacion(
       evalId,

@@ -1,6 +1,6 @@
 import { describe, it, expect, jest } from '@jest/globals';
 import { CerrarRegistroAsistenciaUseCase } from '../../../src/application/use-cases/academico/asistencia/CerrarRegistroAsistenciaUseCase.js';
-import { ForbiddenError, NotFoundError } from '../../../src/domain/errors/AppError.js';
+import { ForbiddenError, NotFoundError, ValidationError } from '../../../src/domain/errors/AppError.js';
 import { crearDepsAcceso, crearLogger } from './asistenciaTestUtils.js';
 
 describe('CerrarRegistroAsistenciaUseCase', () => {
@@ -40,7 +40,7 @@ describe('CerrarRegistroAsistenciaUseCase', () => {
     'rechaza bimestre inválido (%p) sin consultar repositorios',
     async (bimestre) => {
       const { useCase, deps } = crear();
-      await expect(useCase.execute({ usuarioId: 10, asignacionId: 20, bimestre })).rejects.toBeInstanceOf(NotFoundError);
+      await expect(useCase.execute({ usuarioId: 10, asignacionId: 20, bimestre })).rejects.toBeInstanceOf(ValidationError);
       expect(deps.calificacionCoordinacionRepository.obtenerCursoPorAsignacion).not.toHaveBeenCalled();
     },
   );
@@ -87,4 +87,15 @@ describe('CerrarRegistroAsistenciaUseCase', () => {
     });
     await expect(useCase.execute({ usuarioId: 10, asignacionId: 20, bimestre: 1 })).rejects.toMatchObject({ statusCode: 404 });
   });
+  it.each([['abc'], ['2026-02-31'], ['31/01/2026']])(
+    'rechaza fecha inválida (%p) con ValidationError sin tocar repositorios',
+    async (fecha) => {
+      const { useCase, deps } = crear();
+      await expect(
+        useCase.execute({ usuarioId: 10, asignacionId: 20, bimestre: 1, fecha }),
+      ).rejects.toBeInstanceOf(ValidationError);
+      expect(deps.sesionClaseRepository.cerrarSesionDia).not.toHaveBeenCalled();
+      expect(deps.calificacionCoordinacionRepository.obtenerCursoPorAsignacion).not.toHaveBeenCalled();
+    },
+  );
 });

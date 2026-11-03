@@ -1,4 +1,5 @@
 import { DIA_SEMANA_A_INDICE } from '../../domain/constants/asistencia.constants.js';
+import { parseFechaISO } from './validacionEntrada.js';
 
 /**
  * Utilidades de calendario de asistencia. La EXPANSIÓN "día-de-semana del horario →
@@ -6,11 +7,16 @@ import { DIA_SEMANA_A_INDICE } from '../../domain/constants/asistencia.constants
  * y se conservan las fechas cuyo día de semana esté en el set del horario.
  */
 
-/** Normaliza un Date / 'YYYY-MM-DD' a 'YYYY-MM-DD' (UTC, sin desfase de zona). */
+/**
+ * Normaliza un Date / 'YYYY-MM-DD' a 'YYYY-MM-DD' (UTC, sin desfase de zona).
+ * `null`/`undefined` devuelven null; una fecha basura ('abc', '2026-02-31', Date inválido)
+ * lanza ValidationError en lugar de propagar 'NaN-NaN-NaN' o texto arbitrario.
+ */
 export function toISODate(value) {
   if (value == null) return null;
-  if (typeof value === 'string') return value.slice(0, 10);
+  if (typeof value === 'string') return parseFechaISO(value, 'fecha');
   const d = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(d.getTime())) parseFechaISO(d, 'fecha');
   const y = d.getUTCFullYear();
   const m = String(d.getUTCMonth() + 1).padStart(2, '0');
   const day = String(d.getUTCDate()).padStart(2, '0');

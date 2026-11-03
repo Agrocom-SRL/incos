@@ -96,7 +96,9 @@ const AprobarEtapaModal = ({
 
   const handleOk = async () => {
     if (sinDestino || bloqueadoPorRequisitos) return;
-    const values = await form.validateFields();
+    // Validación fallida: los errores ya se muestran en el formulario; no propagar el rechazo.
+    const values = await form.validateFields().catch(() => null);
+    if (!values) return;
     await onSubmit({
       estado: destino,
       observaciones: (values.observaciones || '').trim() || undefined,

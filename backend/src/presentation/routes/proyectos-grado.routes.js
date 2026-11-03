@@ -303,6 +303,8 @@ export function buildProyectosGradoRouter({ controllers, middlewares }) {
 
   // T17 POST /:id/bitacora/:entradaId/confirmar - Confirmación del estudiante
   // (acción LISTAR + guard de pertenencia en servidor, decisión del orquestador)
+  // PENDIENTE DE DECIDIR (docs/plan/programa-pruebas-ci-estado.md): es una mutación protegida con permiso de
+  // lectura (titulacion.bitacora + LISTAR). No se cambia el permiso hasta confirmar si es intencional.
   router.post(
     '/:id/bitacora/:entradaId/confirmar',
     ...bitacoraListar,

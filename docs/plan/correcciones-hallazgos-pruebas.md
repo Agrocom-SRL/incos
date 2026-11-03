@@ -1,6 +1,6 @@
 # Backlog de correcciones hallado por las pruebas unitarias
 
-**Estado:** pendiente de aplicar — registrado 2026-10-20.
+**Estado:** en ejecución — Bloques 1, 2, 3, 5 y 7 aplicados (PR #34 a #39); 4 y 6 en curso. Estado vivo en `programa-pruebas-ci-estado.md`.
 **Origen:** las pruebas unitarias del backend (tandas 2 a 5) y su revisión. Los agentes **reportaron** los bugs sin corregirlos y no dejaron pruebas que fijen el comportamiento erróneo (salvo tres `it.failing` en `tests/unit/configuracion/b.*`, que hay que pasar a `it` al corregir).
 **Método de corrección:** un PR por bloque, cada bug con la prueba que lo reproduce (skill `incos-testing`), PR hacia `develop` y de uno en uno (el auto-merge falla con "Base branch was modified" si dos PR se fusionan a la vez).
 
@@ -30,6 +30,9 @@ Bloque 3 completo: reactivar o mover una asignación docente retira a las demás
 Bloque 5 completo: `RegistrarActaDefensa` rechaza notas ausentes (`null`/`''` ya no se emiten como 0 que REPRUEBA), repetidas o fuera de 0-100, y tribunales con un docente repetido (3 distintos); `AprobarEtapaProyecto` valida `nota` (0-100) y `fecha` antes de escribir; `CreateProyectoGrado` exige `titulo` no vacío; `CreateBitacoraEntrada` valida `porcentajeAvance` 0-100 antes de la regla monotónica; `AddIntegranteProyecto` rechaza proyectos en estado final (APROBADO/REPROBADO/CANCELADO), valida `rol` y `fechaIncorporacion`; los listados de titulación (`ListProyectosGrado`, elegibles, seguimientos, avance por carrera) usan filtros de id estrictos, `mes` 1-12 y paginación acotada (helpers `parseFiltroId`, `parseAnioMes`, `normalizarPaginacionLista` en `validacionEntrada.js`).
 Confirmado sin cambio: `AsignarTutor`, `UpdateProyectoGrado`, `UpdateIntegrante` y `UpdateBitacora` ya validan ids, `rol`, `estado`, fechas y notas en `proyectos-grado.validator.js` (la ruta).
 
+## Corregido en `fix/defectos-integracion`
+Hallazgos de las pruebas de integración: el export del centralizador por bimestre responde 404 si el paralelo no existe (con cabecera pero sin matriculados da un Excel válido; el `Cannot merge already merged cells` ya estaba resuelto en `CentralizadorSheetBuilder`); `POST /libros` con gestión inexistente responde 404 (antes 500 por la FK); `POST /carreras` rechaza un `codigo` repetido con 409 (las eliminadas por soft delete liberan el código; **pendiente:** la misma comprobación en `PUT /carreras/:id`, y el validador admite 50 caracteres cuando la columna es `VARCHAR(20)`); `POST /pagos-aportes` valida monto, saldo y método de pago antes de crear la cabecera (ya no deja `pago_aporte` huérfano); el error handler responde con su mensaje a los `Error` con `statusCode` 4xx lanzados a mano por los use cases (antes salían como «Error interno del servidor») y ningún 4xx expone `stack` en ningún entorno (los 5xx solo en `NODE_ENV=development`; las pruebas corren con `NODE_ENV=test`).
+
 ## Decisiones y preguntas (actualizado 2026-10-20)
 Respondidas por el dueño del proyecto:
 - **Integrantes de proyecto de grado (pregunta 2):** no se pueden agregar integrantes a un proyecto en estado final (CANCELADO/APROBADO/REPROBADO). → `AddIntegranteProyecto` debe rechazarlo.
@@ -39,8 +42,9 @@ Respondidas por el dueño del proyecto:
 
 - **Licencias del docente (pregunta 6):** se eliminan. `docentes.licencia.{ver,crear,aprobar}` (sembrados y apagados en el seed 60; no existe la tabla `licencias_docentes`) pasan a "fuera de alcance"; hay que quitarlos del seed y de la matriz. Las licencias de **estudiantes** (`academico.asistencia.licencia.*`) no cambian.
 
+- **Compuertas de bimestre (pregunta 1), resuelta:** para editar una evaluación de un bimestre cerrado hay que **reabrirlo**. La reapertura **no se puede hacer fuera de una gestión vigente** y la hace el **administrativo**, no los docentes. → Unificar las seis acciones del cuaderno (Create/Update/Delete/ResetNotas/Upsert/Guardar) con una sola regla: editable si el bimestre está en curso o reabierto; un bimestre cerrado solo se edita tras la reapertura. Comprobar además que `ReabrirBimestreCursoUseCase`/`ReabrirBimestreGestion` exijan gestión vigente y rol administrativo (no docente), y cubrirlo con prueba. Consultar notas de cualquier bimestre es lectura y siempre es válido.
+
 Aún sin resolver:
-1. **Compuertas de bimestre.** Hoy `Update/Delete/ResetNotas` de evaluación exigen "bimestre vigente o reabierto" y `Create/Upsert/Guardar` usan `assertBimestreEditable` (estado institucional EN_CURSO o REABIERTO). La pregunta es si las seis acciones de *editar* deben usar la misma regla. El dueño respondió pensando en *consultar* las notas de todos los bimestres aunque no sea el vigente (eso ya es lectura y es válido); falta aclarar que **editar** un bimestre cerrado sigue requiriendo reapertura.
 - **Estados de `paralelos_gestion`:** el dueño explicó el sentido de BORRADOR y OFERTADO (OFERTADO = ya pueden empezar las inscripciones) pero el mensaje quedó cortado antes de definir PUBLICADO; completar antes de implementar la máquina de estados.
 
 ## Bloque 1 — Dinero y recibos (pagos)

@@ -11,6 +11,7 @@
  */
 import { BaseListUseCase } from '../base/BaseListUseCase.js';
 import { SubjectMapper } from '../../mappers/configuracion/index.js';
+import { parseFiltroId } from '../../utils/validacionEntrada.js';
 
 export class ListMateriasUseCase extends BaseListUseCase {
   /**
@@ -70,9 +71,8 @@ export class ListMateriasUseCase extends BaseListUseCase {
    */
   async prepareFilters(filters = {}, queryParams = {}) {
     // Si hay filtro por periodo_id, obtener IDs de materias primero
-    if (queryParams.periodo_id) {
-      const periodoId = parseInt(queryParams.periodo_id, 10);
-
+    const periodoId = parseFiltroId(queryParams.periodo_id, 'periodo_id');
+    if (periodoId !== undefined) {
       // Obtener todas las asignaturas_plan con ese periodo_id
       // Usar el repositorio de la misma forma que ListParalelosUseCase usa periodRepository
       const asignaturasPlanResult = await this.planSubjectRepository.findAll(

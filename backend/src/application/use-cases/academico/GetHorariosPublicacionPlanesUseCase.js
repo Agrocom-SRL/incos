@@ -1,3 +1,4 @@
+import { idONull, parseFiltroId } from '../../utils/validacionEntrada.js';
 /**
  * Planes de horario por paralelo para vista de publicación (una query, sin N+1).
  */
@@ -28,16 +29,16 @@ function mapParaleloDashboardRow(row) {
 function buildPlanes(rows) {
     const byParalelo = new Map();
     for (const r of rows || []) {
-        const pgId = r.paralelo_gestion_id != null ? Number(r.paralelo_gestion_id) : null;
-        const pid = Number(r.paralelo_id);
-        if (!Number.isFinite(pid)) continue;
+        const pgId = idONull(r.paralelo_gestion_id);
+        const pid = idONull(r.paralelo_id);
+        if (pid == null) continue;
         const groupKey =
-            Number.isFinite(pgId) && pgId > 0 ? `pg:${pgId}` : `p:${pid}`;
+            pgId ? `pg:${pgId}` : `p:${pid}`;
         if (!byParalelo.has(groupKey)) {
             byParalelo.set(groupKey, {
                 paralelo: {
                     id: pid,
-                    paraleloGestionId: Number.isFinite(pgId) && pgId > 0 ? pgId : null,
+                    paraleloGestionId: pgId,
                     paraleloGestionEstado: r.paralelo_gestion_estado ?? null,
                     nombre: r.paralelo_nombre ?? null,
                     turno: r.paralelo_turno ?? null,
@@ -51,8 +52,8 @@ function buildPlanes(rows) {
             });
         }
         const slot = byParalelo.get(groupKey);
-        const cid = Number(r.curso_id);
-        if (!Number.isFinite(cid)) continue;
+        const cid = idONull(r.curso_id);
+        if (cid == null) continue;
         if (!slot.courses.has(cid)) {
             slot.courses.set(cid, {
                 cursoId: cid,
@@ -112,7 +113,11 @@ export class GetHorariosPublicacionPlanesUseCase {
 
     async execute(filters = {}) {
         this.logger.info('[Academico] Horarios publicación — planes', { filters });
-        const rows = await this.parallelRepository.obtenerPublicacionBloques(filters);
+        const filtrosValidos = { ...filters };
+        if ('carrera_id' in filtrosValidos) {
+            filtrosValidos.carrera_id = parseFiltroId(filtrosValidos.carrera_id, 'carrera_id');
+        }
+        const rows = await this.parallelRepository.obtenerPublicacionBloques(filtrosValidos);
         const planes = buildPlanes(rows);
 
         const pgIds = planes

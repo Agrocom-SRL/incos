@@ -155,3 +155,7 @@ vite.config.ts.timestamp-*
 # Dump del servidor y su separación por tabla (datos reales/temporales: personales y hashes) — no versionar
 /backend/database/instituto_incos.sql
 /backend/database/instituto_incos/
+
+# Playwright
+frontend/playwright-report/
+frontend/test-results/

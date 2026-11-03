@@ -1,3 +1,4 @@
+import { parseFechaISO, parseFiltroId } from '../../../utils/validacionEntrada.js';
 import { FichaSeguimientoMapper } from '../../../mappers/docentes/FichaSeguimientoMapper.js';
 
 /**
@@ -35,10 +36,10 @@ export class ListFichasSeguimientoUseCase {
 
     const filters = {
       search: baseFilters.search,
-      docenteId: queryParams.docenteId ? Number(queryParams.docenteId) : undefined,
-      gestionId: queryParams.gestionId ? Number(queryParams.gestionId) : undefined,
-      fechaDesde: queryParams.fechaDesde || undefined,
-      fechaHasta: queryParams.fechaHasta || undefined,
+      docenteId: parseFiltroId(queryParams.docenteId, 'docenteId'),
+      gestionId: parseFiltroId(queryParams.gestionId, 'gestionId'),
+      fechaDesde: queryParams.fechaDesde ? parseFechaISO(queryParams.fechaDesde, 'fechaDesde') : undefined,
+      fechaHasta: queryParams.fechaHasta ? parseFechaISO(queryParams.fechaHasta, 'fechaHasta') : undefined,
     };
 
     const { rows, total } = await this.fichaSeguimientoListadoViewRepository.findListado(

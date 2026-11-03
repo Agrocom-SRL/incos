@@ -1,6 +1,6 @@
 import { describe, it, expect, jest } from '@jest/globals';
 import { AbrirLibroUseCase } from '../../../src/application/use-cases/academico/libros/AbrirLibroUseCase.js';
-import { ValidationError } from '../../../src/domain/errors/AppError.js';
+import { NotFoundError, ValidationError } from '../../../src/domain/errors/AppError.js';
 
 describe('AbrirLibroUseCase', () => {
   const crear = (existente = null) => {
@@ -9,6 +9,7 @@ describe('AbrirLibroUseCase', () => {
         findByGestion: jest.fn().mockResolvedValue(existente),
         create: jest.fn().mockResolvedValue({ id: 9 }),
       },
+      managementRepository: { findById: jest.fn().mockResolvedValue({ id: 2 }) },
       libroRegistroViewRepository: {
         obtenerLibroPorId: jest.fn().mockResolvedValue({ id: 9, numero_libro: 15, estado: 'ABIERTO' }),
       },
@@ -74,6 +75,20 @@ describe('AbrirLibroUseCase', () => {
     await expect(useCase.execute({ usuarioId: 1, body: { gestionId, numeroLibro: 1 } }))
       .rejects.toThrow(ValidationError);
     expect(deps.libroRegistroRepository.create).not.toHaveBeenCalled();
+  });
+
+  it('una gestión inexistente es NotFound y no escribe (antes daba 500 por la FK)', async () => {
+    const { useCase, deps } = crear();
+    deps.managementRepository.findById.mockResolvedValue(null);
+    await expect(useCase.execute({ usuarioId: 1, body: { gestionId: 999999, numeroLibro: 1 } }))
+      .rejects.toBeInstanceOf(NotFoundError);
+    expect(deps.managementRepository.findById).toHaveBeenCalledWith(999999);
+    expect(deps.libroRegistroRepository.create).not.toHaveBeenCalled();
+  });
+
+  it('exige managementRepository', () => {
+    const { deps } = crear();
+    expect(() => new AbrirLibroUseCase({ ...deps, managementRepository: null })).toThrow(/requerido/);
   });
 
   it('rechaza si la gestión ya tiene libro abierto', async () => {

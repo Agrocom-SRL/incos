@@ -8,6 +8,7 @@
  */
 
 import { NotFoundError, ValidationError } from '../../../../../domain/errors/AppError.js';
+import { parseNumero } from '../../../../utils/validacionEntrada.js';
 
 /**
  * La asignación observada debe existir y estar vigente (entidad
@@ -43,13 +44,15 @@ export async function assertAsignacionDocenteVigente({
  * @param {number|null|undefined} estudiantesAsistentes
  */
 export function assertAsistenciaCoherente(estudiantesEnPlanilla, estudiantesAsistentes) {
-  if (
-    estudiantesEnPlanilla !== undefined &&
-    estudiantesEnPlanilla !== null &&
-    estudiantesAsistentes !== undefined &&
-    estudiantesAsistentes !== null &&
-    Number(estudiantesAsistentes) > Number(estudiantesEnPlanilla)
-  ) {
+  const presente = (v) => v !== undefined && v !== null;
+  // Cada cantidad presente debe ser un entero >= 0 ('abc', -1 o 1.5 ⇒ ValidationError).
+  const enPlanilla = presente(estudiantesEnPlanilla)
+    ? parseNumero(estudiantesEnPlanilla, 'estudiantesEnPlanilla', { min: 0, entero: true })
+    : null;
+  const asistentes = presente(estudiantesAsistentes)
+    ? parseNumero(estudiantesAsistentes, 'estudiantesAsistentes', { min: 0, entero: true })
+    : null;
+  if (enPlanilla !== null && asistentes !== null && asistentes > enPlanilla) {
     throw new ValidationError(
       'La cantidad de estudiantes asistentes no puede superar a la cantidad en planilla.'
     );

@@ -59,3 +59,28 @@ describe('CreatePeriodoUseCase', () => {
     expect(periodRepository.create).not.toHaveBeenCalled();
   });
 });
+
+describe('CreatePeriodoUseCase validación de tipos', () => {
+  const crear = () => {
+    const periodRepository = { create: jest.fn().mockResolvedValue({ id: 1 }) };
+    return { periodRepository, useCase: new CreatePeriodoUseCase({ periodRepository, logger: { info: jest.fn() } }) };
+  };
+
+  it.each([['abc'], [-1], [1.5], [true]])('rechaza numero %p', async (numero) => {
+    const { useCase, periodRepository } = crear();
+    await expect(useCase.execute(4, { nombre: 'P', numero })).rejects.toBeInstanceOf(ValidationError);
+    expect(periodRepository.create).not.toHaveBeenCalled();
+  });
+
+  it('rechaza orden_visualizacion negativo y activo no booleano', async () => {
+    const { useCase } = crear();
+    await expect(useCase.execute(4, { nombre: 'P', numero: 1, orden_visualizacion: -2 })).rejects.toBeInstanceOf(ValidationError);
+    await expect(useCase.execute(4, { nombre: 'P', numero: 1, activo: 'quizas' })).rejects.toBeInstanceOf(ValidationError);
+  });
+
+  it('convierte numero de texto a número', async () => {
+    const { useCase, periodRepository } = crear();
+    await useCase.execute(4, { nombre: 'P', numero: '3' });
+    expect(periodRepository.create).toHaveBeenCalledWith(expect.objectContaining({ number: 3, displayOrder: 3 }), null);
+  });
+});

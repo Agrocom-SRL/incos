@@ -24,7 +24,7 @@ const ConfigurationCardContent = ({ configuracion }) => {
   return (
     <>
       <div style={{ marginBottom: '12px', textAlign: 'center' }}>
-        <Text strong type="primary" style={{ fontSize: '32px', fontWeight: 'bold', display: 'block' }}>
+        <Text strong style={{ color: 'var(--color-primary)', fontSize: '32px', fontWeight: 'bold', display: 'block' }}>
           {formatMonto(configuracion.montoBase)}
         </Text>
       </div>

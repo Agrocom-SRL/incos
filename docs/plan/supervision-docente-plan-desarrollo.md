@@ -84,7 +84,7 @@
   (rediseñar, NO crear seeder nuevo):
   1. `grupos_ui`: mantener `doc_supervision` («Supervisión», dominio DOCENTES,
      orden 3) y **sacarlo** del UPDATE de deshabilitación final (queda
-     `activo=1`; `doc_licencias` sigue apagado).
+     `activo=1`; el grupo `doc_licencias` fue retirado del seed al eliminarse las licencias docentes).
   2. Permisos: **eliminar** los 5 códigos legacy (`docentes.supervision.evaluar`,
      `.reporte`, `.programar`, `.ficha.crear`, `.ficha.editar`) y sus filas.
      **Crear un único permiso** `docentes.supervision.ficha` («Supervisión:

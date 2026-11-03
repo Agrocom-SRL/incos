@@ -46,7 +46,7 @@ Se documenta en `CLAUDE.md` y con diagrama en `docs/referencia/flujo-operativo-g
 
 ## Temporal — planes de trabajo (`docs/plan/`)
 
-Planes de desarrollo, diseños y diagnósticos por dominio. Se archivan o eliminan cuando el trabajo se cierra y se estabiliza en producción. Punto de entrada: `estado-avance-y-proximos-pasos.md`.
+Planes de desarrollo, diseños y diagnósticos por dominio. Se archivan o eliminan cuando el trabajo se cierra y se estabiliza en producción. Punto de entrada: `estado-avance-y-proximos-pasos.md` (histórico) y `programa-pruebas-ci-estado.md` (estado vivo del programa de pruebas).
 
 | Dominio | Archivos |
 |---------|----------|

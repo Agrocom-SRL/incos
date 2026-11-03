@@ -1,0 +1,1 @@
+Copiar `e2e.yml.txt` a `.github/workflows/e2e.yml` (el token automatizado no tiene permiso `workflow`) y borrar este archivo. Corre el E2E de Playwright en PRs.

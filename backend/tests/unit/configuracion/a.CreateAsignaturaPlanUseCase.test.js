@@ -70,3 +70,26 @@ describe('CreateAsignaturaPlanUseCase', () => {
     await expect(useCase.execute()).rejects.toBeInstanceOf(ValidationError);
   });
 });
+
+describe('CreateAsignaturaPlanUseCase validación de tipos', () => {
+  const base = { plan_estudio_id: 1, periodo_id: 2, materia_id: 3, horas_semanales: 4 };
+  const crear = () => {
+    const planSubjectRepository = { create: jest.fn().mockResolvedValue({ id: 1 }) };
+    return { planSubjectRepository, useCase: new CreateAsignaturaPlanUseCase({ planSubjectRepository, logger: { info: jest.fn() } }) };
+  };
+
+  it.each([
+    [{ plan_estudio_id: 'abc' }],
+    [{ periodo_id: -1 }],
+    [{ materia_id: '3x' }],
+    [{ horas_semanales: 'abc' }],
+    [{ horas_semanales: -4 }],
+    [{ horas_semanales: 0 }],
+    [{ orden_visualizacion: -1 }],
+    [{ activo: 'quizas' }],
+  ])('rechaza %p', async (cambio) => {
+    const { useCase, planSubjectRepository } = crear();
+    await expect(useCase.execute({ ...base, ...cambio })).rejects.toBeInstanceOf(ValidationError);
+    expect(planSubjectRepository.create).not.toHaveBeenCalled();
+  });
+});

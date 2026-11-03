@@ -102,10 +102,7 @@ logger,
     expect(logger.info).not.toHaveBeenCalled();
   });
 
-  // BUG conocido (paraleloPayload.js:37-39): normalizeParaleloBody deja name='' si no viene nombre y
-  // assertParaleloPayload(requireAll:false) lo rechaza. it.failing pasa mientras el bug exista;
-  // al corregirlo, cambiar a it.
-  it.failing('actualización parcial: solo cambiar el turno conserva el resto de campos', async () => {
+  it('actualización parcial: solo cambiar el turno conserva el resto de campos', async () => {
     const { useCase, parallelRepository } = crear();
     await useCase.execute(3, { turno: 'NOCHE' });
     expect(parallelRepository.update).toHaveBeenCalledWith(
@@ -115,9 +112,21 @@ logger,
     );
   });
 
-  it.failing('actualización parcial: body vacío conserva los valores actuales', async () => {
+  it('actualización parcial: body vacío conserva los valores actuales', async () => {
     const { useCase, parallelRepository } = crear();
     await useCase.execute(3, {});
     expect(parallelRepository.update).toHaveBeenCalledWith(3, expect.objectContaining({ name: 'A', shift: 'MAÑANA' }), null);
+  });
+
+  it('acepta nombre numérico (lo convierte a texto)', async () => {
+    const { useCase, parallelRepository } = crear();
+    await useCase.execute(3, { nombre: 5 });
+    expect(parallelRepository.update).toHaveBeenCalledWith(3, expect.objectContaining({ name: '5' }), null);
+  });
+
+  it.each([['12abc'], [1.5], [0], [-2]])('rechaza carrera_id %p', async (valor) => {
+    const { useCase, parallelRepository } = crear();
+    await expect(useCase.execute(3, { carrera_id: valor })).rejects.toBeInstanceOf(ValidationError);
+    expect(parallelRepository.update).not.toHaveBeenCalled();
   });
 });

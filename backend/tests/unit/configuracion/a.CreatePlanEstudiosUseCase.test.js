@@ -85,3 +85,26 @@ describe('CreatePlanEstudiosUseCase', () => {
     expect(studyPlanRepository.create).not.toHaveBeenCalled();
   });
 });
+
+describe('CreatePlanEstudiosUseCase validación de tipos', () => {
+  const base = { carrera_id: 1, nombre_plan: 'Plan' };
+  const crear = () => {
+    const studyPlanRepository = { create: jest.fn().mockResolvedValue({ id: 3 }) };
+    return { studyPlanRepository, useCase: new CreatePlanEstudiosUseCase({ studyPlanRepository, logger: { info: jest.fn() } }) };
+  };
+
+  it.each([
+    [{ carrera_id: 'abc' }],
+    [{ carrera_id: -1 }],
+    [{ nombre_plan: '   ' }],
+    [{ duracion_anios: -3 }],
+    [{ carga_horaria_total: 'mucho' }],
+    [{ horas_semana: -1 }],
+    [{ vigente: 'tal vez' }],
+    [{ activo: 'x' }],
+  ])('rechaza %p', async (cambio) => {
+    const { useCase, studyPlanRepository } = crear();
+    await expect(useCase.execute({ ...base, ...cambio })).rejects.toBeInstanceOf(ValidationError);
+    expect(studyPlanRepository.create).not.toHaveBeenCalled();
+  });
+});

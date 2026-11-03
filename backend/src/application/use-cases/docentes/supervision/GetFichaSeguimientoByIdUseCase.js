@@ -1,4 +1,5 @@
 import { NotFoundError } from '../../../../domain/errors/AppError.js';
+import { parseIdPositivo } from '../../../utils/validacionEntrada.js';
 import { FichaSeguimientoMapper } from '../../../mappers/docentes/FichaSeguimientoMapper.js';
 
 /**
@@ -29,7 +30,8 @@ export class GetFichaSeguimientoByIdUseCase {
    * @param {number} id
    * @returns {Promise<Object>} Ficha (presentación camelCase)
    */
-  async execute(id) {
+  async execute(rawId) {
+    const id = parseIdPositivo(rawId, 'id');
     const entity = await this.fichaSeguimientoClaseRepository.findById(id);
     if (!entity) {
       throw new NotFoundError(`ficha de seguimiento con ID ${id}`);

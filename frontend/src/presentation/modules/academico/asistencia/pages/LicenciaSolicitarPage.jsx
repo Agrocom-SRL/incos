@@ -259,7 +259,9 @@ const LicenciaSolicitarPage = () => {
 
   const handleSubmit = useCallback(async () => {
     setSubmitError(null);
-    const values = await form.validateFields();
+    // Validación fallida: los errores ya se muestran en el formulario; no propagar el rechazo.
+    const values = await form.validateFields().catch(() => null);
+    if (!values) return;
     // Un solo día (default): fechaFin = fechaInicio. Con rango: campo "fin" aparte.
     const fechaInicio = values.fechaInicio?.format('YYYY-MM-DD');
     const fechaFin = unSoloDia ? fechaInicio : values.fechaFin?.format('YYYY-MM-DD');

@@ -306,16 +306,6 @@ const accesosSecretariaAcademica = () => [
     path: '/academico/historial/academico',
     permiso: { codigo: 'academico.historial.academico', accion: 'LISTAR' },
   },
-  {
-    key: 'licencias-docentes',
-    icon: <FileProtectOutlined />,
-    ...ACCENT.success,
-    title: 'Licencias docentes',
-    description: 'Solicitudes y aprobación de licencias del plantel.',
-    actionLabel: 'Ver licencias',
-    path: '/docentes/licencias/listar',
-    permiso: { codigo: 'docentes.licencia.ver', accion: 'LISTAR' },
-  },
 ];
 
 /** DIR_ADMIN — dirección administrativa/financiera. */

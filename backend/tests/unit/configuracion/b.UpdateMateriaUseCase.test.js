@@ -16,14 +16,14 @@ describe('UpdateMateriaUseCase', () => {
     const { useCase, subjectRepository } = crear();
     const res = await useCase.execute(3, { sigla: 'MAT-1', nombre: 'Mate', objetivos: 'o', areaConocimiento: 'ac', clasificacion: 'cl', tipo: 'T', activo: false }, 9);
     expect(subjectRepository.findById).toHaveBeenCalledWith(3);
-    expect(subjectRepository.update).toHaveBeenCalledWith(3, { acronym: 'MAT-1', name: 'Mate', objectives: 'o', knowledgeArea: 'ac', classification: 'cl', type: 'T', active: false }, 9);
+    expect(subjectRepository.update).toHaveBeenCalledWith(3, { acronym: 'MAT-1', name: 'Mate', objectives: 'o', classification: 'cl', type: 'T', active: false }, 9);
     expect(res).toEqual({ materia: { id: 3, marca: 'ok' } });
   });
 
   it('acepta alias alternativos del body', async () => {
     const { useCase, subjectRepository } = crear();
     await useCase.execute(3, { acronym: 'S', name: 'N', type: 'X', active: true }, null);
-    expect(subjectRepository.update).toHaveBeenCalledWith(3, { acronym: 'S', name: 'N', objectives: undefined, knowledgeArea: undefined, classification: undefined, type: 'X', active: true }, null);
+    expect(subjectRepository.update).toHaveBeenCalledWith(3, { acronym: 'S', name: 'N', objectives: undefined, classification: undefined, type: 'X', active: true }, null);
   });
 
   it('con body vacío envía todos los campos undefined (no pisa nada)', async () => {

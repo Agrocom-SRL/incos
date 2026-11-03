@@ -5,6 +5,7 @@
  *
  * Filtros específicos: departamentoId
  */
+import { parseFiltroId } from '../../utils/validacionEntrada.js';
 import { BaseListUseCase } from '../base/BaseListUseCase.js';
 import { ProvinceMapper } from '../../mappers/geograficos/index.js';
 
@@ -46,8 +47,9 @@ export class ListProvinciasUseCase extends BaseListUseCase {
   buildSpecificFilters(queryParams = {}, baseFilters = {}) {
     const filters = { ...baseFilters };
 
-    if (queryParams.departamentoId) {
-      filters.departmentId = Number(queryParams.departamentoId);
+    const departamentoId = parseFiltroId(queryParams.departamentoId, 'departamentoId');
+    if (departamentoId !== undefined) {
+      filters.departmentId = departamentoId;
     }
 
     return filters;

@@ -175,7 +175,7 @@ const ResultadoNivelacionDrawer = ({
       size={520}
       open={abierto}
       onClose={handleCerrar}
-      destroyOnClose
+      destroyOnHidden
       footer={null}
       rootClassName={nivelacionDrawerRootClassName}
       className={`${nivelacionDrawerSectionClassName} niv-resultado-drawer`}

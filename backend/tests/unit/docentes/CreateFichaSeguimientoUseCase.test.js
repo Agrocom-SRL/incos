@@ -85,3 +85,25 @@ estudiantesEnPlanilla: 20,
     expect(deps.fichaSeguimientoClaseRepository.create).toHaveBeenCalledTimes(2);
   });
 });
+
+describe('CreateFichaSeguimientoUseCase cantidades inválidas', () => {
+  it.each([['abc'], [-1], [1.5], ['12x']])('estudiantesAsistentes %p lanza ValidationError', async (valor) => {
+    const fichaSeguimientoClaseRepository = { create: jest.fn() };
+    const useCase = new CreateFichaSeguimientoUseCase({
+      fichaSeguimientoClaseRepository,
+      teacherAssignmentRepository: { findById: jest.fn().mockResolvedValue({ id: 4, active: true }) },
+      logger: { info: jest.fn() },
+    });
+    await expect(useCase.execute({ asignacionDocenteId: 4, estudiantesAsistentes: valor }, 1)).rejects.toBeInstanceOf(ValidationError);
+    expect(fichaSeguimientoClaseRepository.create).not.toHaveBeenCalled();
+  });
+
+  it('asignacionDocenteId "12abc" lanza ValidationError', async () => {
+    const useCase = new CreateFichaSeguimientoUseCase({
+      fichaSeguimientoClaseRepository: { create: jest.fn() },
+      teacherAssignmentRepository: { findById: jest.fn() },
+      logger: { info: jest.fn() },
+    });
+    await expect(useCase.execute({ asignacionDocenteId: '12abc' }, 1)).rejects.toBeInstanceOf(ValidationError);
+  });
+});

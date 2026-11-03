@@ -98,4 +98,20 @@ current: true,
       useCase.execute({ usuarioId: 10, subjectEnrollmentId: 9, stateType: 'RETIRADO', forcedGrade: true }),
     ).rejects.toThrow(/resultingGrade/);
   });
+
+  it.each([
+    [{ subjectEnrollmentId: 'abc' }],
+    [{ subjectEnrollmentId: 0 }],
+    [{ subjectEnrollmentId: '9x' }],
+    [{ enrollmentId: 'abc', planSubjectId: 4 }],
+    [{ enrollmentId: 3, planSubjectId: 'x' }],
+  ])('rechaza ancla no numérica %p sin tocar el repositorio', async (ancla) => {
+    const { useCase, repo } = crear();
+    await expect(
+      useCase.execute({ usuarioId: 10, stateType: 'NIVELACION_1RA', transitionDate: '2026-05-01', ...ancla }),
+    ).rejects.toBeInstanceOf(ValidationError);
+    expect(repo.expireCurrentBySubjectEnrollmentId).not.toHaveBeenCalled();
+    expect(repo.expireCurrentByAlternateAnchor).not.toHaveBeenCalled();
+    expect(repo.create).not.toHaveBeenCalled();
+  });
 });

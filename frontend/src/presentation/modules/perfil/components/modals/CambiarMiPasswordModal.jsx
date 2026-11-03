@@ -8,7 +8,9 @@ export default function CambiarMiPasswordModal({ open, loading, onCancel, onSubm
   const [form] = Form.useForm();
 
   const handleOk = async () => {
-    const values = await form.validateFields();
+    // Validación fallida: los errores ya se muestran en el formulario; no propagar el rechazo.
+    const values = await form.validateFields().catch(() => null);
+    if (!values) return;
     const ok = await onSubmit({
       password_actual: values.password_actual,
       password_nuevo: values.password_nuevo,

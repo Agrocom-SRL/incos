@@ -19,7 +19,7 @@ const PaymentMethodCardContent = ({ metodoPago }) => {
   return (
     <>
       <div style={{ marginBottom: '12px', textAlign: 'center' }}>
-        <Text strong type="primary" style={{ fontSize: '24px', fontWeight: 'bold', display: 'block' }}>
+        <Text strong style={{ color: 'var(--color-primary)', fontSize: '24px', fontWeight: 'bold', display: 'block' }}>
           {metodoPago.codigo || 'N/A'}
         </Text>
       </div>

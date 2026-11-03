@@ -88,4 +88,20 @@ state: 'PENDIENTE',
     const { useCase } = crear();
     await expect(useCase.execute({ usuarioId: 10 })).rejects.toBeInstanceOf(ValidationError);
   });
+
+  it.each([['abc'], ['2026-02-31'], ['02/03/2026']])(
+    'rechaza fechas no parseables (%p) con ValidationError y sin tope NaN',
+    async (fecha) => {
+      const { useCase, licenseRepository } = crear();
+      await expect(useCase.execute({ usuarioId: 10, body: body({ fechaInicio: fecha }) })).rejects.toBeInstanceOf(ValidationError);
+      await expect(useCase.execute({ usuarioId: 10, body: body({ fechaFin: fecha }) })).rejects.toBeInstanceOf(ValidationError);
+      expect(licenseRepository.create).not.toHaveBeenCalled();
+    },
+  );
+
+  it('rechaza inscripcionId no numérico con ValidationError', async () => {
+    const { useCase, licenseRepository } = crear();
+    await expect(useCase.execute({ usuarioId: 10, body: body({ inscripcionId: 'abc' }) })).rejects.toBeInstanceOf(ValidationError);
+    expect(licenseRepository.getInscripcionInfo).not.toHaveBeenCalled();
+  });
 });

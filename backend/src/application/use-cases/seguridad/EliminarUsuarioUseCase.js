@@ -1,4 +1,5 @@
 import { ConflictError, NotFoundError } from '../../../domain/errors/AppError.js';
+import { ROL_ADMIN_SISTEMA_CODIGO, exigirActorAdminSistema } from './rol-admin-sistema.guard.js';
 
 /**
  * Baja lógica (soft delete) de un usuario del sistema (SEG).
@@ -28,6 +29,10 @@ export class EliminarUsuarioUseCase {
     const current = await this.userRepository.findByIdWithRoleForAdmin(id);
     if (!current) {
       throw new NotFoundError('Usuario');
+    }
+
+    if (current.rol_codigo === ROL_ADMIN_SISTEMA_CODIGO) {
+      await exigirActorAdminSistema(this.userRepository, actorId);
     }
 
     if (actorId != null && Number(actorId) === id) {

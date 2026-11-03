@@ -57,7 +57,7 @@ export class BaseEntity {
    * @returns {boolean}
    */
   isDeleted() {
-    return this.deletedAt !== null;
+    return this.deletedAt !== null && this.deletedAt !== undefined;
   }
 
   /**

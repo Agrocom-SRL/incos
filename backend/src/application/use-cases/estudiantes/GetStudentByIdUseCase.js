@@ -25,6 +25,7 @@
  * - Depende de Repositories (Infrastructure) a través de abstracciones
  */
 
+import { NotFoundError } from '../../../domain/errors/AppError.js';
 import { serverConfig } from '../../../infrastructure/config/server.config.js';
 import { StudentPersonalDataMapper, StudentDocumentDeliveryViewMapper } from '../../mappers/estudiantes/index.js';
 
@@ -129,7 +130,7 @@ export class GetStudentByIdUseCase {
       const rows = await this.studentRepository.obtenerDatosPersonales({ id: studentId });
 
       if (!rows || rows.length === 0) {
-        throw new Error(`No se encontró un estudiante con ID ${studentId}`);
+        throw new NotFoundError(`estudiante con ID ${studentId}`);
       }
 
       const { student, guardians, disabilities, origins, access } =

@@ -121,4 +121,20 @@ tablero_grupo: 'sin_docentes',
     });
     expect(planes[1].paraleloDashboard).toBeUndefined();
   });
+
+  it('ids nulos de la vista no se convierten en 0: sin paralelo o sin curso se omiten', async () => {
+    const { useCase } = crear({ rows: [fila({ paralelo_id: null }), fila({ curso_id: null }), fila({ paralelo_gestion_id: null })] });
+    const { planes } = await useCase.execute({});
+    expect(planes.some((p) => p.paralelo.id === 0)).toBe(false);
+    expect(planes.every((p) => p.paralelo.id === 1)).toBe(true);
+    expect(planes.find((p) => p.paralelo.paraleloGestionId == null)).toBeDefined();
+  });
+
+  it('carrera_id inválido => ValidationError sin consultar; vacío se descarta', async () => {
+    const { useCase, deps } = crear();
+    await expect(useCase.execute({ carrera_id: 'abc' })).rejects.toThrow(/carrera_id/);
+    expect(deps.parallelRepository.obtenerPublicacionBloques).not.toHaveBeenCalled();
+    await useCase.execute({ carrera_id: '', turno: 'MANANA' });
+    expect(deps.parallelRepository.obtenerPublicacionBloques).toHaveBeenCalledWith({ carrera_id: undefined, turno: 'MANANA' });
+  });
 });

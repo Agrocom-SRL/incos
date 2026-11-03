@@ -50,7 +50,9 @@ const SeguimientoPasantiaDrawer = ({
   }, [open, seguimiento, form]);
 
   const handleGuardar = async () => {
-    const values = await form.validateFields();
+    // Validación fallida: los errores ya se muestran en el formulario; no propagar el rechazo.
+    const values = await form.validateFields().catch(() => null);
+    if (!values) return;
     await onSubmit({
       fecha: values.fecha ? values.fecha.format('YYYY-MM-DD') : undefined,
       descripcionTrabajo: (values.descripcionTrabajo || '').trim() || null,

@@ -205,7 +205,7 @@ const EventoHistorialDrawer = ({ abierto, modo, contexto, ancla, detalle, onCerr
       size={520}
       open={abierto}
       onClose={handleCerrar}
-      destroyOnClose
+      destroyOnHidden
       footer={
         <EventoHistorialDrawerFooter
           modo={modo}

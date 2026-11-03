@@ -1,4 +1,5 @@
 import { body } from 'express-validator';
+import { esEnteroPositivoEstricto } from './enteros.js';
 
 /**
  * Validador para registro de estudiantes (POST /api/v1/estudiantes)
@@ -145,7 +146,7 @@ export const registerStudentValidator = [
     }),
 
   body('estadoCivilId')
-    .optional()
+    .optional({ nullable: true })
     .isInt({ min: 1 })
     .withMessage('Estado civil ID debe ser un número entero mayor a 0'),
 
@@ -225,17 +226,17 @@ export const registerStudentValidator = [
   // DATOS GEOGRÁFICOS (OPCIONALES)
   // ============================================
   body('municipioResidenciaId')
-    .optional()
+    .optional({ nullable: true })
     .isInt({ min: 1 })
     .withMessage('Municipio de residencia ID debe ser un número entero mayor a 0'),
 
   body('departamentoResidenciaId')
-    .optional()
+    .optional({ nullable: true })
     .isInt({ min: 1 })
     .withMessage('Departamento de residencia ID debe ser un número entero mayor a 0'),
 
   body('provinciaResidenciaId')
-    .optional()
+    .optional({ nullable: true })
     .isInt({ min: 1 })
     .withMessage('Provincia de residencia ID debe ser un número entero mayor a 0'),
 
@@ -253,7 +254,7 @@ export const registerStudentValidator = [
     .withMessage('esTraspaso debe ser un booleano'),
 
   body('tipoDiscapacidadId')
-    .optional()
+    .optional({ nullable: true })
     .isInt({ min: 1 })
     .withMessage('Tipo de discapacidad ID debe ser un número entero mayor a 0'),
 
@@ -295,7 +296,7 @@ export const registerStudentValidator = [
   // ORIGEN/NACIONALIDAD (OPCIONAL)
   // ============================================
   body('paisId')
-    .optional()
+    .optional({ nullable: true })
     .isInt({ min: 1 })
     .withMessage('País ID debe ser un número entero mayor a 0'),
 
@@ -317,12 +318,12 @@ export const registerStudentValidator = [
     }),
 
   body('idiomaMaternoId')
-    .optional()
+    .optional({ nullable: true })
     .isInt({ min: 1 })
     .withMessage('Idioma materno ID debe ser un número entero mayor a 0'),
 
   body('idiomaSecundarioId')
-    .optional()
+    .optional({ nullable: true })
     .isInt({ min: 1 })
     .withMessage('Idioma secundario ID debe ser un número entero mayor a 0'),
 
@@ -501,28 +502,29 @@ export const registerStudentValidator = [
     .withMessage('El tipo de admisión debe ser uno de: NUEVO, ANTIGUO, TRANSITABILIDAD, TRASPASO'),
 
   body('gestionIngresoId')
-    .optional()
+    .optional({ nullable: true })
     .isInt({ min: 1 })
     .withMessage('Gestión de ingreso ID debe ser un número entero mayor a 0')
-    .toInt()
-    .custom((value, { req }) => {
-      // Si tipoAdmision es ANTIGUO, gestionIngresoId es requerido
-      if (req.body.tipoAdmision === 'ANTIGUO' && !value) {
-        throw new Error('Gestión de ingreso es requerida para estudiantes antiguos');
-      }
-      return true;
-    }),
+    .toInt(),
 
   body('carreraId')
-    .optional()
+    .optional({ nullable: true })
     .isInt({ min: 1 })
     .withMessage('Carrera ID debe ser un número entero mayor a 0')
-    .toInt()
-    .custom((value, { req }) => {
-      // Si tipoAdmision es ANTIGUO, carreraId es requerido
-      if (req.body.tipoAdmision === 'ANTIGUO' && !value) {
-        throw new Error('Carrera es requerida para estudiantes antiguos');
-      }
-      return true;
-    }),
+    .toInt(),
+
+  // ANTIGUO exige gestión y carrera. Cadena aparte: `optional` saltaría la regla con valor ausente o null.
+  body('gestionIngresoId').custom((value, { req }) => {
+    if (req.body.tipoAdmision === 'ANTIGUO' && !esEnteroPositivoEstricto(value)) {
+      throw new Error('Gestión de ingreso es requerida para estudiantes antiguos');
+    }
+    return true;
+  }),
+
+  body('carreraId').custom((value, { req }) => {
+    if (req.body.tipoAdmision === 'ANTIGUO' && !esEnteroPositivoEstricto(value)) {
+      throw new Error('Carrera es requerida para estudiantes antiguos');
+    }
+    return true;
+  }),
 ];

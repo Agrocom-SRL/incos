@@ -3,7 +3,7 @@ import { ReabrirBimestreCursoUseCase } from '../../../src/application/use-cases/
 import { ForbiddenError, NotFoundError, ValidationError } from '../../../src/domain/errors/AppError.js';
 
 describe('ReabrirBimestreCursoUseCase', () => {
-  const crear = ({ curso = { docente_id: 7 }, esCoordinacion = false, reabiertos = 5 } = {}) => {
+  const crear = ({ curso = { docente_id: 7 }, esAdmin = true, reabiertos = 5 } = {}) => {
     const deps = {
       calificacionCoordinacionRepository: {
         obtenerCursoPorAsignacion: jest.fn().mockResolvedValue(curso),
@@ -20,38 +20,38 @@ describe('ReabrirBimestreCursoUseCase', () => {
       },
       teacherRepository: { findAll: jest.fn().mockResolvedValue([{ id: 7 }]) },
       userRepository: { findById: jest.fn() },
-      authRepository: { tienePermiso: jest.fn().mockResolvedValue(esCoordinacion) },
+      authRepository: { tienePermiso: jest.fn().mockResolvedValue(esAdmin) },
       logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn() },
     };
     return { deps, useCase: new ReabrirBimestreCursoUseCase(deps) };
   };
 
-  it('reabre el bimestre para el docente del curso', async () => {
+  it('reabre el bimestre cuando el usuario es administrativo', async () => {
     const { useCase, deps } = crear();
     const result = await useCase.execute({ usuarioId: 1, asignacionId: '10', bimestreNum: '1' });
 
     const repo = deps.subjectEnrollmentBimesterRepository;
-    expect(repo.asegurarBimestresMatriculaCurso).toHaveBeenCalledWith(10, 2, 1);
-    expect(repo.reabrirBimestreCurso).toHaveBeenCalledWith(10, 1, 1);
-    expect(repo.contarBimestreReabiertoCurso).toHaveBeenCalledWith(10, 1);
-    expect(result).toEqual({ bimestre: 1, reabierto: true, matriculasReabiertas: 5 });
-    expect(deps.authRepository.tienePermiso).not.toHaveBeenCalled();
-  });
-
-  it('permite reabrir a coordinación aunque no sea el docente del curso', async () => {
-    const { useCase, deps } = crear({ curso: { docente_id: 99 }, esCoordinacion: true });
-    const result = await useCase.execute({ usuarioId: 1, asignacionId: 10, bimestreNum: 3 });
-
     expect(deps.authRepository.tienePermiso).toHaveBeenCalledWith(
       1,
-      'academico.calificacion.coordinacion',
-      'LISTAR',
+      'academico.calificacion.gestion_bimestres',
+      'EDITAR',
     );
+    expect(repo.asegurarBimestresMatriculaCurso).toHaveBeenCalledWith(10, 2, 1);
+    expect(repo.reabrirBimestreCurso).toHaveBeenCalledWith(10, 1, 1);
+    expect(result).toEqual({ bimestre: 1, reabierto: true, matriculasReabiertas: 5 });
+  });
+
+  it('acepta el permiso ajuste_admin si no tiene gestion_bimestres', async () => {
+    const { useCase, deps } = crear();
+    deps.authRepository.tienePermiso.mockImplementation(async (_u, codigo) =>
+      codigo === 'academico.calificacion.bimestre.ajuste_admin',
+    );
+    const result = await useCase.execute({ usuarioId: 1, asignacionId: 10, bimestreNum: 3 });
     expect(result.reabierto).toBe(true);
   });
 
-  it('rechaza con Forbidden si no es docente del curso ni coordinación', async () => {
-    const { useCase, deps } = crear({ curso: { docente_id: 99 }, esCoordinacion: false });
+  it('el docente del curso (sin rol administrativo) NO puede reabrir', async () => {
+    const { useCase, deps } = crear({ curso: { docente_id: 7 }, esAdmin: false });
     await expect(
       useCase.execute({ usuarioId: 1, asignacionId: 10, bimestreNum: 1 }),
     ).rejects.toBeInstanceOf(ForbiddenError);

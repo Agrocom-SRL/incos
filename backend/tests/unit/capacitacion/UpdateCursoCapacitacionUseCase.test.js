@@ -68,6 +68,12 @@ describe('UpdateCursoCapacitacionUseCase', () => {
 
   beforeEach(() => mockTransaction.mockClear());
 
+  it.each([['abc'], ['2x'], [0], [-1]])('id %p lanza ValidationError sin consultar', async (id) => {
+    const { useCase, deps } = crear();
+    await expect(useCase.execute(id, { titulo: 'X' }, 1)).rejects.toBeInstanceOf(ValidationError);
+    expect(deps.cursoCapacitacionRepository.findById).not.toHaveBeenCalled();
+  });
+
   it('permite cambiar la edición pero nunca reasignar la oferta de origen', async () => {
     const { deps, useCase } = crear();
     await useCase.execute(2, { edicion: ' 2028 ', cursoOrigenId: 9 }, 3);

@@ -61,12 +61,13 @@ export const validateInscripcionSubmit = ({
     return { valid: false, errorMessage };
   }
 
-  const soloHistorial =
+  const soloHistorial = Boolean(
     allowSoloHistorialBypass &&
-    isEditMode &&
-    completarSoloHistorialPrevio &&
-    historialPrevioHasRows &&
-    validatePriorHistory;
+      isEditMode &&
+      completarSoloHistorialPrevio &&
+      historialPrevioHasRows &&
+      validatePriorHistory,
+  );
 
   if (!soloHistorial && !hasSelectionByPeriod && !parallelId) {
     return {

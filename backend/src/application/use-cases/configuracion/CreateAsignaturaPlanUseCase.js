@@ -1,4 +1,17 @@
 import { ValidationError } from '../../../domain/errors/AppError.js';
+import {
+  parseBooleanoOpcional,
+  parseIdPositivo,
+  parseNumero,
+  parseNumeroOpcional,
+  parseTextoOpcional,
+  primerDefinido,
+} from '../../utils/validacionEntrada.js';
+
+const requerido = (valor, nombre) => {
+  if (valor === undefined || valor === null || valor === '') throw new ValidationError(`${nombre} es requerido`);
+  return valor;
+};
 
 export class CreateAsignaturaPlanUseCase {
   constructor({ planSubjectRepository, logger }) {
@@ -7,14 +20,28 @@ export class CreateAsignaturaPlanUseCase {
   }
 
   async execute(body = {}, userId = null) {
-    const planEstudioId = body.plan_estudio_id ?? body.planEstudioId ?? null;
-    const periodoId = body.periodo_id ?? body.periodoId ?? null;
-    const materiaId = body.materia_id ?? body.materiaId ?? null;
-    const horas = body.horas_semanales ?? body.horasSemanales ?? null;
-    if (!planEstudioId) throw new ValidationError('plan_estudio_id es requerido');
-    if (!periodoId) throw new ValidationError('periodo_id es requerido');
-    if (!materiaId) throw new ValidationError('materia_id es requerido');
-    if (!horas) throw new ValidationError('horas_semanales es requerido');
+    const planEstudioId = parseIdPositivo(
+      requerido(primerDefinido(body, 'plan_estudio_id', 'planEstudioId'), 'plan_estudio_id'),
+      'plan_estudio_id'
+    );
+    const periodoId = parseIdPositivo(
+      requerido(primerDefinido(body, 'periodo_id', 'periodoId'), 'periodo_id'),
+      'periodo_id'
+    );
+    const materiaId = parseIdPositivo(
+      requerido(primerDefinido(body, 'materia_id', 'materiaId'), 'materia_id'),
+      'materia_id'
+    );
+    const horas = parseNumero(
+      requerido(primerDefinido(body, 'horas_semanales', 'horasSemanales'), 'horas_semanales'),
+      'horas_semanales',
+      { min: 1 }
+    );
+    const orden = parseNumeroOpcional(
+      primerDefinido(body, 'orden_visualizacion', 'ordenVisualizacion') ?? undefined,
+      'orden_visualizacion',
+      { min: 0, entero: true }
+    );
 
     const created = await this.planSubjectRepository.create(
       {
@@ -22,9 +49,9 @@ export class CreateAsignaturaPlanUseCase {
         periodId: periodoId,
         subjectId: materiaId,
         weeklyHours: horas,
-        modality: body.modalidad ?? body.modality ?? undefined,
-        displayOrder: body.orden_visualizacion ?? body.ordenVisualizacion ?? undefined,
-        active: body.activo ?? true,
+        modality: parseTextoOpcional(primerDefinido(body, 'modalidad', 'modality'), 'modalidad') ?? undefined,
+        displayOrder: orden ?? undefined,
+        active: parseBooleanoOpcional(body.activo, 'activo') ?? true,
       },
       userId
     );

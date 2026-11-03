@@ -1,4 +1,4 @@
-import { ConflictError, NotFoundError } from '../../../domain/errors/AppError.js';
+import { ConflictError, NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
 /**
  * Use Case: RegisterStudentUseCase
  * Módulo: Estudiantes
@@ -576,6 +576,14 @@ export class RegisterStudentUseCase {
           : 'NUEVO';
       const gestionIngresoId = data.gestionIngresoId || null;
       const carreraId = data.carreraId || null;
+      if (tipoAdmision === 'ANTIGUO') {
+        if (!gestionIngresoId) {
+          throw new ValidationError('Gestión de ingreso es requerida para estudiantes antiguos');
+        }
+        if (!carreraId) {
+          throw new ValidationError('Carrera es requerida para estudiantes antiguos');
+        }
+      }
 
       this.logger.info('[Estudiantes] Datos de admisión recibidos en RegisterStudentUseCase', {
         tipoAdmision,

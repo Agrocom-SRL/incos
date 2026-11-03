@@ -34,8 +34,11 @@ export default function AgregarOverrideModal({
   const esToggleRapido = Boolean(fixedValues);
 
   const handleOk = async () => {
+    // Validación fallida: los errores ya se muestran en el formulario; no propagar el rechazo.
+    const values = await form.validateFields().catch(() => null);
+    if (!values) return;
     if (esToggleRapido) {
-      const { motivo } = await form.validateFields();
+      const { motivo } = values;
       await onSubmit({
         permiso_id: fixedValues.permiso_id,
         accion: fixedValues.accion,
@@ -45,7 +48,6 @@ export default function AgregarOverrideModal({
       form.resetFields();
       return;
     }
-    const values = await form.validateFields();
     await onSubmit(values);
     form.resetFields();
   };

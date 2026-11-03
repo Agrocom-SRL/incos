@@ -94,6 +94,12 @@ export async function como(rol, metodo, ruta) {
 }
 
 /** Binario (Excel/PDF) como Buffer en `res.body`. */
+/** Como `como`, pero envía un cuerpo JSON (POST/PUT/PATCH/DELETE) y devuelve la respuesta. */
+export async function comoEnviando(rol, metodo, ruta, cuerpo = {}) {
+  const token = await tokenDe(rol);
+  return request(app)[metodo](`${API}${ruta}`).set('Authorization', `Bearer ${token}`).send(cuerpo);
+}
+
 export async function descargarComo(rol, ruta) {
   const token = await tokenDe(rol);
   return request(app)
