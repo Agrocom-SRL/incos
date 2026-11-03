@@ -131,6 +131,37 @@ describe('UpdateInscripcionCapacitacionUseCase', () => {
     expect(deps.updateParticipanteUseCase.execute).toHaveBeenCalledTimes(1);
   });
 
+  it('exonerarMatricula sin pagos: la matrícula queda en 0 y se recalculan los estados', async () => {
+    const { deps, useCase } = crear();
+    await useCase.execute(5, { exonerarMatricula: true }, 4);
+    expect(deps.inscripcionCapacitacionRepository.update).toHaveBeenCalledWith(
+      5, { capacitacionGrupoId: 10, montoMatricula: 0 }, 4, { transaction: 'TX' }
+    );
+    expect(deps.pagoCapacitacionRepository.sumMontosPorConcepto).toHaveBeenCalledWith(5, { transaction: 'TX' });
+  });
+
+  it('exonerarMatricula con pago parcial: la matrícula queda saldada con lo ya abonado', async () => {
+    const { deps, useCase } = crear();
+    deps.pagoCapacitacionRepository.sumMontosPorConcepto.mockResolvedValue({ MATRICULA: 60, CURSO: 0 });
+    await useCase.execute(5, { exonerarMatricula: 'true' }, 4);
+    expect(deps.inscripcionCapacitacionRepository.update).toHaveBeenCalledWith(
+      5, { capacitacionGrupoId: 10, montoMatricula: 60 }, 4, { transaction: 'TX' }
+    );
+  });
+
+  it('exonerarMatricula=false revierte a la matrícula vigente del grupo', async () => {
+    const { deps, useCase } = crear({ inscripcion: { ...inscripcionBase, capacitacionGrupoId: 11, montoMatricula: 0 } });
+    await useCase.execute(5, { exonerarMatricula: false }, 4);
+    expect(deps.inscripcionCapacitacionRepository.update).toHaveBeenCalledWith(
+      5, { capacitacionGrupoId: 11, montoMatricula: 200 }, 4, { transaction: 'TX' }
+    );
+  });
+
+  it('409 al exonerar la matrícula de una inscripción RETIRADA o ANULADA', async () => {
+    const { useCase } = crear({ inscripcion: { ...inscripcionBase, estado: 'ANULADO' } });
+    await expect(useCase.execute(5, { exonerarMatricula: true })).rejects.toBeInstanceOf(ConflictError);
+  });
+
   it('exige participante y/o capacitacionGrupoId y rechaza formas inválidas', async () => {
     const { useCase } = crear();
     await expect(useCase.execute(5, {})).rejects.toBeInstanceOf(ValidationError);

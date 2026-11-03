@@ -317,6 +317,7 @@ export const buildInscripcionPayload = ({
   participanteId = null,
   participanteNuevo = null,
   capacitacionGrupoId = null,
+  exonerarMatricula = false,
   requisitosEntregados = [],
   pagoInicial = null,
 }) => {
@@ -324,6 +325,7 @@ export const buildInscripcionPayload = ({
   if (participanteId != null) payload.participanteId = Number(participanteId);
   else if (participanteNuevo) payload.participante = participanteNuevo;
   if (capacitacionGrupoId != null) payload.capacitacionGrupoId = Number(capacitacionGrupoId);
+  if (exonerarMatricula) payload.exonerarMatricula = true;
   if (Array.isArray(requisitosEntregados) && requisitosEntregados.length > 0) {
     payload.requisitosEntregados = requisitosEntregados.map(Number);
   }

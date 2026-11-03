@@ -133,6 +133,28 @@ describe('CreateInscripcionCapacitacionUseCase', () => {
     });
   });
 
+  it('exonerarMatricula: inscribe con matrícula 0 en cualquier grupo y queda INSCRITO sin pagarla', async () => {
+    const { deps, useCase } = crear({
+      curso: cursoAbierto({ tieneCosto: false, costo: 0 }),
+      grupos: [
+        { id: 7, nombre: 'Intensivo', costoMatricula: 250 },
+        { id: 8, nombre: 'Regular', costoMatricula: 150 },
+      ],
+    });
+    await useCase.execute({ capacitacionId: 1, participanteId: 9, capacitacionGrupoId: 7, exonerarMatricula: true }, 5);
+    expect(deps.inscripcionCapacitacionRepository.create.mock.calls[0][0]).toMatchObject({
+      capacitacionGrupoId: 7,
+      montoMatricula: 0,
+      estadoPagoMatricula: 'CANCELADO',
+    });
+  });
+
+  it('sin exonerarMatricula se mantiene la matrícula del grupo', async () => {
+    const { deps, useCase } = crear({ grupos: [{ id: 7, nombre: 'Intensivo', costoMatricula: 250 }] });
+    await useCase.execute({ capacitacionId: 1, participanteId: 9 }, 5);
+    expect(deps.inscripcionCapacitacionRepository.create.mock.calls[0][0].montoMatricula).toBe(250);
+  });
+
   it('acepta cursoId como alias de capacitacionId', async () => {
     const { deps, useCase } = crear();
     await useCase.execute({ cursoId: 1, participanteId: 9 });
