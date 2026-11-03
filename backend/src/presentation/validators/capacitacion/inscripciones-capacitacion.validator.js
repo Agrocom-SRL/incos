@@ -92,6 +92,10 @@ export const createInscripcionCapacitacionValidator = [
     .optional({ nullable: true })
     .isInt({ min: 1 })
     .withMessage('capacitacionGrupoId debe ser un entero positivo'),
+  body('exonerarMatricula')
+    .optional({ nullable: true })
+    .isBoolean()
+    .withMessage('exonerarMatricula debe ser true o false'),
   body('requisitosEntregados')
     .optional({ nullable: true })
     .isArray()
@@ -193,6 +197,10 @@ export const updateInscripcionCapacitacionValidator = [
     .optional({ nullable: true })
     .isInt({ min: 1 })
     .withMessage('capacitacionGrupoId debe ser un entero positivo'),
+  body('exonerarMatricula')
+    .optional({ nullable: true })
+    .isBoolean()
+    .withMessage('exonerarMatricula debe ser true o false'),
 ];
 
 /**

@@ -109,6 +109,8 @@ export const useInscribirParticipantePage = () => {
   const [metodoPagoId, setMetodoPagoId] = useState(null);
   /** Paso «Horario y requisitos»: grupo elegido y requisitos ya entregados al inscribir. */
   const [capacitacionGrupoId, setCapacitacionGrupoId] = useState(null);
+  /** Exonera la matrícula de ESTE participante (cualquier grupo); no cambia el costo del grupo. */
+  const [exonerarMatricula, setExonerarMatricula] = useState(false);
   const [requisitosEntregados, setRequisitosEntregados] = useState([]);
   /** Pago inicial opcional: apagado por defecto. */
   const [registrarPagoInicial, setRegistrarPagoInicial] = useState(false);
@@ -300,14 +302,29 @@ export const useInscribirParticipantePage = () => {
    * Saldo máximo por concepto: solo los conceptos que el curso cobra (los demás valen 0).
    * Con costo del curso externo (entidad certificadora) solo se cobra la matrícula.
    */
-  const saldosPorConcepto = useMemo(() => montosCobradosCurso(cursoSeleccionado, grupoSeleccionado), [cursoSeleccionado, grupoSeleccionado]);
+  const saldosPorConcepto = useMemo(() => {
+    const montos = montosCobradosCurso(cursoSeleccionado, grupoSeleccionado);
+    return exonerarMatricula ? { ...montos, MATRICULA: 0 } : montos;
+  }, [cursoSeleccionado, grupoSeleccionado, exonerarMatricula]);
+  /**
+   * Alta: si el curso cobra matrícula. Edición: solo si la inscripción vigente aún
+   * debe matrícula (sin pagar o parcial).
+   */
+  const cobraMatricula =
+    Boolean(cursoFicha?.cobraMatricula ?? cursoSeleccionado?.cobraMatricula) ||
+    Number(grupoSeleccionado?.costoMatricula) > 0;
+  const puedeExonerarMatricula = esEdicion
+    ? cobraMatricula && Number(inscripcionEdit?.saldoMatricula) > 0
+    : Boolean(cursoSeleccionadoId) && cobraMatricula;
   const conceptoOptions = useMemo(() => buildConceptoOptions(saldosPorConcepto), [saldosPorConcepto]);
 
   /**
    * El paso «Pago inicial» solo existe si el curso cobra algo (no es
    * gratuito). Es siempre opcional: no hace falta pagar para inscribir.
    */
-  const ofrecePago = !esEdicion && conceptoOptions.length > 0;
+  const ofrecePago =
+    !esEdicion &&
+    buildConceptoOptions(montosCobradosCurso(cursoSeleccionado, grupoSeleccionado)).length > 0;
 
   /** Edición: por qué el grupo no se puede cambiar (inscripción retirada/anulada o curso sin grupos). */
   const grupoMotivoDeshabilitado = useMemo(
@@ -327,6 +344,23 @@ export const useInscribirParticipantePage = () => {
       }
     },
     [form, conceptoOptions],
+  );
+
+  /**
+   * Marca/desmarca «sin matrícula». Si tras exonerar ya no queda nada que cobrar (solo
+   * matrícula), apaga el pago inicial; si el concepto elegido era MATRICULA, lo limpia.
+   */
+  const handleExonerarMatriculaChange = useCallback(
+    (activo) => {
+      setExonerarMatricula(activo);
+      if (!activo) return;
+      const quedan = buildConceptoOptions({ ...saldosPorConcepto, MATRICULA: 0 });
+      if (quedan.length === 0) setRegistrarPagoInicial(false);
+      if (form.getFieldValue('concepto') === 'MATRICULA') {
+        form.setFieldsValue({ concepto: quedan[0]?.value, monto: undefined });
+      }
+    },
+    [form, saldosPorConcepto],
   );
 
   /** Al cambiar de método, limpia la cuenta (deja de aplicar). */
@@ -405,7 +439,7 @@ export const useInscribirParticipantePage = () => {
         }
         return Promise.resolve();
       }
-      if (stepNumber === 4 && ofrecePago && registrarPagoInicial) {
+      if (stepNumber === 4 && ofrecePago && registrarPagoInicial && conceptoOptions.length > 0) {
         return form
           .validateFields(['concepto', 'monto', 'fechaPago', 'metodoPagoId', 'cuentaPagoId'])
           .then(() => {
@@ -427,6 +461,7 @@ export const useInscribirParticipantePage = () => {
       capacitacionGrupoId,
       ofrecePago,
       registrarPagoInicial,
+      conceptoOptions,
     ],
   );
 
@@ -475,18 +510,22 @@ export const useInscribirParticipantePage = () => {
       const cambiaRequisitos =
         requisitosEntregados.length !== requisitosIniciales.length ||
         requisitosEntregados.some((id) => !requisitosIniciales.includes(id));
+      const cambiaExoneracion = exonerarMatricula && puedeExonerarMatricula;
       const irAlDetalle = () =>
         navigate(detallePath, { replace: true, state: { returnListPath, menuSidebarKey } });
 
-      if (!cambiaGrupo && !cambiaRequisitos) {
+      if (!cambiaGrupo && !cambiaRequisitos && !cambiaExoneracion) {
         message.info('No hay cambios que guardar.');
         irAlDetalle();
         return;
       }
-      if (cambiaGrupo) {
-        const result = await edicionCtx.actualizarInscripcion({ capacitacionGrupoId });
+      if (cambiaGrupo || cambiaExoneracion) {
+        const result = await edicionCtx.actualizarInscripcion({
+          ...(cambiaGrupo ? { capacitacionGrupoId } : {}),
+          ...(cambiaExoneracion ? { exonerarMatricula: true } : {}),
+        });
         if (!result?.success) {
-          message.error(result?.error || 'No se pudo cambiar el grupo', DURACION_MENSAJE_ERROR);
+          message.error(result?.error || 'No se pudo actualizar la inscripción', DURACION_MENSAJE_ERROR);
           return;
         }
       }
@@ -521,7 +560,7 @@ export const useInscribirParticipantePage = () => {
       return;
     }
 
-    if (ofrecePago && registrarPagoInicial) {
+    if (ofrecePago && registrarPagoInicial && conceptoOptions.length > 0) {
       try {
         await form.validateFields(['concepto', 'monto', 'fechaPago', 'metodoPagoId', 'cuentaPagoId']);
       } catch (err) {
@@ -534,7 +573,7 @@ export const useInscribirParticipantePage = () => {
     const values = form.getFieldsValue(true);
 
     let pagoInicial = null;
-    if (ofrecePago && registrarPagoInicial) {
+    if (ofrecePago && registrarPagoInicial && conceptoOptions.length > 0) {
       pagoInicial = mapFormValuesToPagoInicialPayload(values);
       if (!Number.isFinite(pagoInicial.monto) || pagoInicial.monto <= 0) {
         setStepError('Indique un monto válido para el pago inicial');
@@ -551,6 +590,7 @@ export const useInscribirParticipantePage = () => {
           ? mapFormValuesToParticipantePayload(values)
           : null,
       capacitacionGrupoId,
+      exonerarMatricula: exonerarMatricula && puedeExonerarMatricula,
       requisitosEntregados,
       pagoInicial,
     });
@@ -590,8 +630,11 @@ export const useInscribirParticipantePage = () => {
     participanteSeleccionado,
     ofrecePago,
     registrarPagoInicial,
+    conceptoOptions,
     gruposCurso,
     capacitacionGrupoId,
+    exonerarMatricula,
+    puedeExonerarMatricula,
     requisitosEntregados,
     form,
     inscribir,
@@ -652,6 +695,10 @@ export const useInscribirParticipantePage = () => {
     grupoMotivoDeshabilitado,
     capacitacionGrupoId,
     setCapacitacionGrupoId,
+    exonerarMatricula,
+    setExonerarMatricula: handleExonerarMatriculaChange,
+    puedeExonerarMatricula,
+    montoMatriculaGrupo: montosCobradosCurso(cursoSeleccionado, grupoSeleccionado).MATRICULA,
     requisitosEntregados,
     setRequisitosEntregados,
     // Paso 4: pago inicial opcional (omitido si el curso no cobra nada)

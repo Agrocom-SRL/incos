@@ -41,6 +41,9 @@ const esVacio = (valor) =>
  *    curso tiene 2 o más grupos, se asigna solo si tiene uno y es null si no
  *    tiene; debe pertenecer al curso. Si el grupo define su propio
  *    `cupoMaximo`, alcanzarlo bloquea la inscripción (409).
+ *    `exonerarMatricula: true` fija `montoMatricula` = 0 para ESTE participante (p. ej. personal
+ *    administrativo en el grupo Intensivo): se inscribe en cualquier grupo sin importar su
+ *    matrícula, sin tocar el costo del grupo ni del curso.
  * 4. Registra los requisitos ya entregados (`requisitosEntregados`: ids de
  *    `capacitacion_requisitos` del curso).
  * 5. Pago inicial OPCIONAL (`pagoInicial: { concepto, monto, ... }`, delega en
@@ -106,7 +109,7 @@ export class CreateInscripcionCapacitacionUseCase {
 
   /**
    * @param {Object} body - { capacitacionId (alias cursoId), participanteId? | participante?,
-   *   fechaInscripcion?, capacitacionGrupoId?, requisitosEntregados?, pagoInicial?, fechaCompromiso? }
+   *   fechaInscripcion?, capacitacionGrupoId?, exonerarMatricula?, requisitosEntregados?, pagoInicial?, fechaCompromiso? }
    *   pagoInicial: { concepto, monto, metodoPagoId, cuentaPagoId?, fechaPago?, observaciones?, fechaCompromiso? }
    * @param {number|null} userId - Usuario que inscribe (auditoría)
    * @returns {Promise<{inscripcionCapacitacion: Object}>}
@@ -169,7 +172,9 @@ export class CreateInscripcionCapacitacionUseCase {
 
     // 4. Montos (snapshot en este instante). Un curso totalmente gratuito no registra pagos.
     const costo = curso.tieneCosto ? Number(curso.costo ?? 0) : 0;
-    const costoMatricula = resolverCostoMatricula(curso, grupo);
+    // Exoneración: el participante entra a cualquier grupo con matrícula 0 (no altera el costo del grupo)
+    const exonerarMatricula = body.exonerarMatricula === true || body.exonerarMatricula === 'true';
+    const costoMatricula = exonerarMatricula ? 0 : resolverCostoMatricula(curso, grupo);
     const esGratuito = esCursoGratuito(curso);
     const pagoInicialBody = body.pagoInicial ?? null;
     if (pagoInicialBody !== null && (typeof pagoInicialBody !== 'object' || Array.isArray(pagoInicialBody))) {
@@ -314,6 +319,7 @@ export class CreateInscripcionCapacitacionUseCase {
       conPagoInicial: Boolean(pagoInicial),
       requisitosEntregados: requisitosEntregados.length,
       conCompromiso: Boolean(compromisoCreado),
+      matriculaExonerada: exonerarMatricula,
     });
 
     const presentation = InscripcionCapacitacionMapper.entityToPresentation(inscripcionCreada);

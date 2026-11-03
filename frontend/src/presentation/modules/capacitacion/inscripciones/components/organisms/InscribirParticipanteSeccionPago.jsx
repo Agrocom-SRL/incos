@@ -13,6 +13,7 @@
 import { Alert, Flex, Form, Switch, Typography } from 'antd';
 import { FormWorkspaceSection } from '@organisms';
 import { allSpacing } from '@theme/tokens';
+import ExonerarMatriculaCard from '@capacitacion/inscripciones/components/molecules/ExonerarMatriculaCard';
 import PagoCapacitacionFormFields from './PagoCapacitacionFormFields';
 
 const AYUDA_SIN_PAGO =
@@ -35,8 +36,25 @@ const InscribirParticipanteSeccionPago = ({
   cursoExterno = false,
   onMetodoPagoChange,
   disabled = false,
+  puedeExonerarMatricula = false,
+  exonerarMatricula = false,
+  onExonerarMatriculaChange,
+  montoMatriculaGrupo = 0,
 }) => (
   <FormWorkspaceSection title={section?.title} description={section?.description} form={form}>
+    {puedeExonerarMatricula ? (
+      <ExonerarMatriculaCard
+        checked={exonerarMatricula}
+        onChange={onExonerarMatriculaChange}
+        montoMatriculaGrupo={montoMatriculaGrupo}
+        disabled={disabled}
+      />
+    ) : null}
+    {conceptoOptions.length === 0 ? (
+      <Typography.Text type="secondary">
+        Sin matrícula y sin costo por cobrar: no hay pago inicial que registrar.
+      </Typography.Text>
+    ) : (
     <Form.Item label="Registrar un pago inicial ahora">
       <Flex vertical align="flex-start" gap={allSpacing.marginXS}>
         <Switch
@@ -50,8 +68,9 @@ const InscribirParticipanteSeccionPago = ({
         </Typography.Text>
       </Flex>
     </Form.Item>
+    )}
 
-    {registrarPagoInicial ? (
+    {registrarPagoInicial && conceptoOptions.length > 0 ? (
       <>
         {errorCatalogos ? (
           <Alert
