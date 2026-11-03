@@ -20,12 +20,14 @@ const ESTADOS_CON_GRUPO_EDITABLE = [
   ESTADOS_INSCRIPCION_CAPACITACION.INSCRITO,
 ];
 
+const esVerdadero = (v) => v === true || v === 'true';
+
 /**
  * Use Case: UpdateInscripcionCapacitacionUseCase
  * Módulo: Capacitación (CAP)
  *
  * Corrige una inscripción (PUT /inscripciones-capacitacion/:id, permiso
- * capacitacion.inscripcion EDITAR). Body: `{ participante?: {...}, capacitacionGrupoId? }`.
+ * capacitacion.inscripcion EDITAR). Body: `{ participante?: {...}, capacitacionGrupoId?, exonerarMatricula? }`.
  *
  * - `participante`: corrige nombres, apellidos, CI, expedición, celular y correo
  *   delegando en `UpdateParticipanteUseCase` (mismas validaciones y unicidad de
@@ -36,6 +38,11 @@ const ESTADOS_CON_GRUPO_EDITABLE = [
  *   (`helpers/grupoInscripcion.js`): debe ser del curso y, si el grupo tiene cupo
  *   propio y está lleno, 409. Solo con la inscripción PENDIENTE o INSCRITO (una
  *   RETIRADA o ANULADA queda congelada, salvo los datos del participante).
+ *
+ * - `exonerarMatricula`: `true` exonera la matrícula de ESTA inscripción (personal
+ *   administrativo, etc.): el snapshot `montoMatricula` pasa a lo ya pagado (0 si no
+ *   pagó nada; con pago parcial queda saldada con lo abonado, sin perder los pagos).
+ *   `false` revierte a la matrícula vigente del grupo. Solo PENDIENTE o INSCRITO.
  *
  * Los cambios van en UNA transacción. Devuelve la ficha completa de la inscripción
  * (la misma de GET /:id).
@@ -85,8 +92,11 @@ export class UpdateInscripcionCapacitacionUseCase {
     const inscripcionId = parseIdPositivo(id, 'id de la inscripción');
     const datosParticipante = this._extraerDatosParticipante(body);
     const cambiaGrupo = 'capacitacionGrupoId' in body;
-    if (datosParticipante === null && !cambiaGrupo) {
-      throw new ValidationError('Debe enviarse participante y/o capacitacionGrupoId para corregir la inscripción');
+    const cambiaExoneracion = body.exonerarMatricula !== undefined && body.exonerarMatricula !== null;
+    if (datosParticipante === null && !cambiaGrupo && !cambiaExoneracion) {
+      throw new ValidationError(
+        'Debe enviarse participante, capacitacionGrupoId y/o exonerarMatricula para corregir la inscripción'
+      );
     }
 
     const inscripcion = await this.inscripcionCapacitacionRepository.findById(inscripcionId);
@@ -95,7 +105,12 @@ export class UpdateInscripcionCapacitacionUseCase {
     const nuevoGrupo = cambiaGrupo ? await this._resolverNuevoGrupo(inscripcion, body) : null;
     const nuevoGrupoId = nuevoGrupo?.id ?? null;
     const grupoCambia = cambiaGrupo && nuevoGrupoId !== (inscripcion.capacitacionGrupoId ?? null);
-    const montoMatricula = grupoCambia ? await this._matriculaDelGrupo(inscripcion, nuevoGrupo) : null;
+    let montoMatricula = grupoCambia ? await this._matriculaDelGrupo(inscripcion, nuevoGrupo) : null;
+    let matriculaCambia = grupoCambia;
+    if (cambiaExoneracion) {
+      montoMatricula = await this._matriculaExonerada(inscripcion, body.exonerarMatricula, nuevoGrupo, grupoCambia);
+      matriculaCambia = montoMatricula !== Number(inscripcion.montoMatricula ?? 0);
+    }
 
     await sequelize.transaction(async (transaction) => {
       if (datosParticipante !== null) {
@@ -106,17 +121,18 @@ export class UpdateInscripcionCapacitacionUseCase {
           { transaction }
         );
       }
-      if (grupoCambia) {
-        // La matrícula depende del grupo: el snapshot sigue al grupo nuevo y los estados se recalculan
+      if (grupoCambia || matriculaCambia) {
+        // La matrícula depende del grupo (o de la exoneración): el snapshot se actualiza y los estados se recalculan
+        const grupoFinalId = grupoCambia ? nuevoGrupoId : (inscripcion.capacitacionGrupoId ?? null);
         await this.inscripcionCapacitacionRepository.update(
           inscripcionId,
-          { capacitacionGrupoId: nuevoGrupoId, montoMatricula },
+          { capacitacionGrupoId: grupoFinalId, montoMatricula },
           userId,
           { transaction }
         );
         if (montoMatricula !== Number(inscripcion.montoMatricula ?? 0)) {
           await recalcularEstadoInscripcion({
-            inscripcion: { ...inscripcion, capacitacionGrupoId: nuevoGrupoId, montoMatricula },
+            inscripcion: { ...inscripcion, capacitacionGrupoId: grupoFinalId, montoMatricula },
             pagoCapacitacionRepository: this.pagoCapacitacionRepository,
             capacitacionInscritoRequisitoRepository: this.capacitacionInscritoRequisitoRepository,
             inscripcionCapacitacionRepository: this.inscripcionCapacitacionRepository,
@@ -132,6 +148,7 @@ export class UpdateInscripcionCapacitacionUseCase {
       id: inscripcionId,
       participante: datosParticipante !== null,
       grupoAnterior: inscripcion.capacitacionGrupoId ?? null,
+      matriculaExonerada: cambiaExoneracion ? esVerdadero(body.exonerarMatricula) : undefined,
       grupoNuevo: grupoCambia ? nuevoGrupoId : (inscripcion.capacitacionGrupoId ?? null),
     });
 
@@ -176,6 +193,28 @@ export class UpdateInscripcionCapacitacionUseCase {
       grupoActualId: inscripcion.capacitacionGrupoId ?? null,
     });
     return grupo;
+  }
+
+  /**
+   * Matrícula resultante de exonerar (o revertir la exoneración). Exonerar = lo ya pagado.
+   * Revertir = matrícula del grupo vigente (o del nuevo si también cambia).
+   * @private
+   * @returns {Promise<number>}
+   */
+  async _matriculaExonerada(inscripcion, valor, nuevoGrupo, grupoCambia) {
+    if (!ESTADOS_CON_GRUPO_EDITABLE.includes(inscripcion.estado)) {
+      throw new ConflictError('No se puede exonerar la matrícula de una inscripción retirada o anulada');
+    }
+    if (esVerdadero(valor)) {
+      const totales = await this.pagoCapacitacionRepository.sumMontosPorConcepto(inscripcion.id);
+      return Number(totales?.MATRICULA ?? 0);
+    }
+    let grupo = nuevoGrupo;
+    if (!grupoCambia && inscripcion.capacitacionGrupoId) {
+      const grupos = await this.grupoCapacitacionRepository.findByCapacitacionId(inscripcion.capacitacionId);
+      grupo = grupos.find((g) => g.id === inscripcion.capacitacionGrupoId) ?? null;
+    }
+    return this._matriculaDelGrupo(inscripcion, grupo);
   }
 
   /**

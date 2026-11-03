@@ -13,6 +13,7 @@
 import { Alert, Empty, Spin } from 'antd';
 import { FormWorkspaceSection } from '@organisms';
 import { DataCards } from '@molecules';
+import ExonerarMatriculaCard from '@capacitacion/inscripciones/components/molecules/ExonerarMatriculaCard';
 import GrupoCapacitacionCard from '@capacitacion/components/molecules/GrupoCapacitacionCard';
 
 const InscribirParticipanteSeccionGrupo = ({
@@ -23,6 +24,10 @@ const InscribirParticipanteSeccionGrupo = ({
   grupos = [],
   capacitacionGrupoId = null,
   onGrupoChange,
+  puedeExonerarMatricula = false,
+  exonerarMatricula = false,
+  onExonerarMatriculaChange,
+  montoMatriculaGrupo = 0,
 }) => {
   const titulo = grupos.length >= 2 ? `${section?.title ?? 'Grupo'} (obligatorio)` : section?.title;
   const seleccionado = grupos.find((g) => g.id === capacitacionGrupoId) ?? null;
@@ -49,6 +54,13 @@ const InscribirParticipanteSeccionGrupo = ({
           )}
         </Spin>
       )}
+      {puedeExonerarMatricula && !error ? (
+        <ExonerarMatriculaCard
+          checked={exonerarMatricula}
+          onChange={onExonerarMatriculaChange}
+          montoMatriculaGrupo={montoMatriculaGrupo}
+        />
+      ) : null}
     </FormWorkspaceSection>
   );
 };

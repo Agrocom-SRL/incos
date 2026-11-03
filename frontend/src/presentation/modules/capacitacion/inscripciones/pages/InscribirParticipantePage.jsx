@@ -93,6 +93,10 @@ const InscribirParticipantePage = () => {
     grupoSeleccionado,
     capacitacionGrupoId,
     setCapacitacionGrupoId,
+    exonerarMatricula,
+    setExonerarMatricula,
+    puedeExonerarMatricula,
+    montoMatriculaGrupo,
     requisitosEntregados,
     setRequisitosEntregados,
     registrarPagoInicial,
@@ -215,6 +219,10 @@ const InscribirParticipantePage = () => {
             grupos={gruposCurso}
             capacitacionGrupoId={capacitacionGrupoId}
             onGrupoChange={grupoMotivoDeshabilitado ? undefined : setCapacitacionGrupoId}
+            puedeExonerarMatricula={esEdicion && puedeExonerarMatricula}
+            exonerarMatricula={exonerarMatricula}
+            onExonerarMatriculaChange={setExonerarMatricula}
+            montoMatriculaGrupo={montoMatriculaGrupo}
           />
         );
       }
@@ -251,6 +259,10 @@ const InscribirParticipantePage = () => {
             cursoExterno={cursoExterno}
             onMetodoPagoChange={handleMetodoPagoChange}
             disabled={inscribiendo}
+            puedeExonerarMatricula={puedeExonerarMatricula}
+            exonerarMatricula={exonerarMatricula}
+            onExonerarMatriculaChange={setExonerarMatricula}
+            montoMatriculaGrupo={montoMatriculaGrupo}
           />
         );
       }
@@ -303,6 +315,11 @@ const InscribirParticipantePage = () => {
       capacitacionGrupoId,
       grupoMotivoDeshabilitado,
       setCapacitacionGrupoId,
+      esEdicion,
+      exonerarMatricula,
+      setExonerarMatricula,
+      puedeExonerarMatricula,
+      montoMatriculaGrupo,
       requisitosEntregados,
       setRequisitosEntregados,
       registrarPagoInicial,

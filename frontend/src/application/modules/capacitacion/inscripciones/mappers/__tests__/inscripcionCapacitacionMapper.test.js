@@ -151,6 +151,11 @@ describe('mapRequisitosToPayload', () => {
 });
 
 describe('buildInscripcionPayload', () => {
+  it('envía exonerarMatricula solo cuando es true', () => {
+    expect(buildInscripcionPayload({ cursoId: 1, participanteId: 9, exonerarMatricula: true }).exonerarMatricula).toBe(true);
+    expect(buildInscripcionPayload({ cursoId: 1, participanteId: 9 })).not.toHaveProperty('exonerarMatricula');
+  });
+
   it('mínimo: solo curso y participante existente (pendiente de todo)', () => {
     expect(buildInscripcionPayload({ cursoId: '1', participanteId: '9' })).toEqual({
       capacitacionId: 1,
