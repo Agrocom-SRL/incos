@@ -16,6 +16,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { App } from 'antd';
 import { useCursoCapacitacionDetailContext } from '@application-capacitacion/cursos/hooks/context/useCursoCapacitacionDetailContext';
+import { useExportarInscritosCapacitacionExcel } from '@application-capacitacion/cursos/hooks/api/useExportarInscritosCapacitacionExcel';
 import { useCursoCapacitacionMutations } from '@application-capacitacion/cursos/hooks/api/useCursoCapacitacionMutations';
 import {
   CURSOS_CAP_LIST_PATH,
@@ -64,6 +65,20 @@ export const useCursoCapacitacionDetailPage = () => {
       state: { cursoOrigenId: cursoId, returnListPath, menuSidebarKey },
     });
   }, [navigate, cursoId, returnListPath, menuSidebarKey]);
+
+  const { exportar: exportarInscritos, loading: exportandoInscritos } =
+    useExportarInscritosCapacitacionExcel();
+
+  /** Excel de inscritos del curso: hoja general + una por grupo. */
+  const handleExportarInscritos = useCallback(async () => {
+    const result = await exportarInscritos(cursoId);
+    if (!result?.success) {
+      notification.error({
+        title: 'No se pudo exportar',
+        description: result?.error || 'No se pudo exportar el listado de inscritos',
+      });
+    }
+  }, [exportarInscritos, cursoId, notification]);
 
   const puedeAbrir = curso?.estado === 'PROPUESTO';
   const puedeCancelar = ['PROPUESTO', 'ABIERTO'].includes(curso?.estado);
@@ -133,6 +148,8 @@ export const useCursoCapacitacionDetailPage = () => {
     handleVolver,
     handleEditar,
     handleNuevaEdicion,
+    handleExportarInscritos,
+    exportandoInscritos,
     puedeAbrir,
     puedeCancelar,
     handleAbrirInscripciones,

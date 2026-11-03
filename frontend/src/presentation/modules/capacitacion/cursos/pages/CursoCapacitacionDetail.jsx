@@ -7,7 +7,7 @@
  */
 
 import { Alert, Empty, Flex, Spin, Tabs } from 'antd';
-import { ArrowLeftOutlined, CopyOutlined, PlayCircleOutlined, StopOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, CopyOutlined, FileExcelOutlined, PlayCircleOutlined, StopOutlined } from '@ant-design/icons';
 import { allSpacing } from '@theme/tokens';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
@@ -30,6 +30,8 @@ const CursoCapacitacionDetail = () => {
     handleVolver,
     handleEditar,
     handleNuevaEdicion,
+    handleExportarInscritos,
+    exportandoInscritos,
     puedeAbrir,
     puedeCancelar,
     handleAbrirInscripciones,
@@ -64,6 +66,16 @@ const CursoCapacitacionDetail = () => {
           Cancelar curso
         </ActionButton>
       )}
+      <ActionButton
+        permiso={CAPACITACION_PERMISOS.inscripcion}
+        accion="EXPORTAR"
+        variant="alternative"
+        icon={<FileExcelOutlined />}
+        loading={exportandoInscritos}
+        onClick={handleExportarInscritos}
+      >
+        Exportar inscritos
+      </ActionButton>
       <ActionButton
         permiso={CAPACITACION_PERMISOS.curso}
         accion="CREAR"
